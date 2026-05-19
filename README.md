@@ -4,8 +4,9 @@ Lightweight tables for R, inspired by [gt](https://gt.rstudio.com).
 
 `lt` provides a small grammar of tables that covers the structure most
 reports need — titles, column spanners, row groups, footnotes, and number
-formatting — without the heavy dependency stack. The entire runtime is a
-single vanilla-JS file under 5 KB.
+formatting — without the heavy dependency stack. It targets HTML only (no
+LaTeX or RTF), which keeps the implementation minimal: the entire runtime
+is a single vanilla-JS file under 5 KB.
 
 ## Grammar
 
