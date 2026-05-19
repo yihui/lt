@@ -10,6 +10,7 @@ jobs:
   R-CMD-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: yihui/actions/setup-r-dependencies@v1
-      - uses: yihui/actions/check-r-package@v1
+      - uses: actions/checkout@HEAD
+      - uses: r-lib/actions/setup-r@HEAD
+      - uses: yihui/actions/setup-r-dependencies@HEAD
+      - uses: yihui/actions/check-r-package@HEAD
