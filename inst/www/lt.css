@@ -1,0 +1,45 @@
+.lt-table {
+  border-collapse: collapse;
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+
+  caption {
+    .lt-title    { font-size: 1.2em; font-weight: 600; }
+    .lt-subtitle { font-size: 0.9em; }
+  }
+
+  thead th { border-bottom: 1px solid #888; }
+  thead .lt-spanner-row {
+    .lt-spanner       { border-bottom: 1px solid #bbb; text-align: center; }
+    .lt-spanner-empty { border-bottom: none; }
+  }
+
+  tbody {
+    th.lt-stub { text-align: left; }
+    .lt-row-group th {
+      text-align: left;
+      font-weight: 600;
+      font-style: italic;
+      border-top: 1px solid #ccc;
+    }
+  }
+
+  tfoot.lt-footer {
+    td {
+      font-size: 0.85em;
+      border-top: 1px solid #aaa;
+    }
+    .lt-footnote td             { border-top: none; }
+    .lt-footnote:first-child td { border-top: 1px solid #aaa; }
+    .lt-source-note td          { border-top: 1px dashed #bbb; font-style: italic; }
+  }
+
+  .al-r { text-align: right; }
+  .al-c { text-align: center; }
+
+  sup.lt-fnref {
+    color: #06c;
+    &::before { content: " ["; }
+    &::after  { content: "]"; }
+  }
+}
