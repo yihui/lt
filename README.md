@@ -24,7 +24,7 @@ A table is built in two steps:
 | `lt_footnote()` | Anchored footnotes (title, column, spanner, group, body) |
 | `lt_note()` | Unanchored footer note |
 | `lt_align()` | Override column alignment |
-| `lt_fmt()` | Number formatting (decimals, big mark) |
+| `lt_format()` | Number formatting (decimals, big mark) |
 
 The result prints to the RStudio Viewer / browser and can be embedded in
 R Markdown, Quarto (via litedown or knitr), and Shiny.
@@ -45,7 +45,7 @@ lt(head(mtcars[, 1:4]))
 lt(head(mtcars[, 1:4])) |>
   lt_header("Motor Trend Cars", "First 6 rows") |>
   lt_spanner("Engine", c("cyl", "disp")) |>
-  lt_fmt(c("mpg", "disp"), decimals = 1)
+  lt_format(c("mpg", "disp"), decimals = 1)
 ```
 
 ### Row groups and footnotes
@@ -75,7 +75,7 @@ fixed_design_ahr(
   lt() |>
   lt_header("Fixed Design under AHR Method") |>
   lt_footnote("Power based on average hazard ratio method.", "title") |>
-  lt_fmt(c("N", "Events", "AHR", "Bound", "Power"), decimals = 4)
+  lt_format(c("N", "Events", "AHR", "Bound", "Power"), decimals = 4)
 ```
 
 ## Installation

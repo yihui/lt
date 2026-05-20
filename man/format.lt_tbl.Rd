@@ -26,8 +26,6 @@ page.}
 A character scalar containing HTML.
 }
 \description{
-Emits the lt CSS+JS runtime followed by a \verb{<script class="lt-spec">}
-carrying the table's JSON spec. The runtime auto-mounts every spec on
-the page, so multiple \code{format()} calls on the same page only need the
-runtime block once — \code{knit_print()} / \code{record_print()} dedup automatically.
+Emits the CSS+JS runtime and a script block carrying the table's JSON spec.
+Multiple tables on the same page only need the runtime once.
 }

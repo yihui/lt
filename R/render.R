@@ -159,10 +159,8 @@ spec_block = function(x) paste0(
 
 #' Render an `lt_tbl` to HTML
 #'
-#' Emits the lt CSS+JS runtime followed by a `<script class="lt-spec">`
-#' carrying the table's JSON spec. The runtime auto-mounts every spec on
-#' the page, so multiple `format()` calls on the same page only need the
-#' runtime block once — `knit_print()` / `record_print()` dedup automatically.
+#' Emits the CSS+JS runtime and a script block carrying the table's JSON spec.
+#' Multiple tables on the same page only need the runtime once.
 #'
 #' @param x An `lt_tbl` object.
 #' @param fragment If `TRUE` (default), return an HTML fragment suitable for

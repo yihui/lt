@@ -105,7 +105,7 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' @param big_mark Character scalar.
 #' @return The `lt_tbl` with the formatting recorded.
 #' @export
-lt_fmt = function(x, columns, decimals = 2, big_mark = '') {
+lt_format = function(x, columns, decimals = 2, big_mark = '') {
   cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
   add_op(x, 'fmt_number', columns = cols, decimals = decimals, big_mark = big_mark)
 }
