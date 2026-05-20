@@ -115,14 +115,15 @@ read_asset = function(file) {
   paste(readLines(p, warn = FALSE, encoding = 'UTF-8'), collapse = '\n')
 }
 
-# URL prefix for non-inlined assets. Default: absolute file:// path to the
-# installed package — works for local litedown rendering. Override via
-# `options(lt.assets_url = 'https://cdn.../lt@<v>/inst/www/')` once lt is
-# published.
 asset_url = function(file) {
-  base = getOption('lt.assets_url')
-  if (is.null(base)) base = paste0('file://', dirname(asset_path(file)), '/')
-  paste0(base, file)
+  url = getOption('lt.assets_url')
+  if (!is.null(url)) return(paste0(url, file))
+  sub = if (grepl('\\.js$', file)) 'js' else 'css'
+  sprintf(
+    'https://cdn.jsdelivr.net/npm/@xiee/utils@%s/%s/%s',
+    read.dcf(system.file('DESCRIPTION', package = 'lt'))[, 'Config/lt.js'],
+    sub, sub('\\.(js|css)$', '.min.\\1', file)
+  )
 }
 
 # Anything inlined inside a <script>...</script> wrapper must not contain
