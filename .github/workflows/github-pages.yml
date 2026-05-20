@@ -20,8 +20,6 @@ jobs:
 
       - if: github.event_name != 'pull_request'
         uses: actions/configure-pages@HEAD
-        with:
-          enablement: true
 
       - uses: r-lib/actions/setup-r@HEAD
         with:
