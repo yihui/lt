@@ -1,0 +1,57 @@
+---
+title: Basics
+---
+
+```{r}
+library(lt)
+```
+
+## A simple table
+
+Pass any data frame to `lt()`:
+
+```{r}
+lt(head(mtcars[, 1:6]))
+```
+
+## Title and subtitle
+
+```{r}
+lt(head(iris[, 1:4])) |>
+  lt_header(title = "Iris Measurements", subtitle = "First six observations")
+```
+
+## Column alignment
+
+By default, numeric columns are right-aligned and character columns are
+left-aligned. Override with `lt_align()`:
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_align(c("mpg", "cyl"), "center")
+```
+
+## Number formatting
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_format(c("mpg", "disp"), decimals = 1)
+```
+
+## Footnotes
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_header(title = "Motor Trend Cars") |>
+  lt_footnote("Source: 1974 Motor Trend US magazine.", "title") |>
+  lt_footnote("Miles per US gallon.", "column", "mpg")
+```
+
+## Notes
+
+Notes appear in the footer below numbered footnotes:
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_note("Data from the 1974 Motor Trend US magazine.")
+```

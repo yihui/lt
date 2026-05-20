@@ -1,0 +1,50 @@
+---
+title: Number Formatting
+---
+
+```{r}
+library(lt)
+```
+
+## Decimal places
+
+Control the number of decimal places with `decimals`:
+
+```{r}
+d = data.frame(
+  Metric = c("Revenue", "Costs", "Profit"),
+  Q1 = c(1234567.891, 987654.321, 246913.570),
+  Q2 = c(1345678.912, 1012345.678, 333333.234)
+)
+lt(d, row_label = "Metric") |>
+  lt_format(c("Q1", "Q2"), decimals = 2)
+```
+
+## Big mark (thousands separator)
+
+```{r}
+lt(d, row_label = "Metric") |>
+  lt_format(c("Q1", "Q2"), decimals = 0, big_mark = ",")
+```
+
+## Combining formatting and structure
+
+```{r}
+d = data.frame(
+  Group = c("Treatment", "Treatment", "Control", "Control"),
+  Endpoint = c("Primary", "Secondary", "Primary", "Secondary"),
+  Estimate = c(0.6123, 0.7891, 0.4567, 0.5432),
+  CI_Lower = c(0.4012, 0.5678, 0.2345, 0.3210),
+  CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
+  P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
+)
+lt(d, row_group = "Group", row_label = "Endpoint") |>
+  lt_header(
+    title = "Study Results",
+    subtitle = "Primary and secondary endpoints"
+  ) |>
+  lt_spanner("95% CI", c("CI_Lower", "CI_Upper")) |>
+  lt_format(c("Estimate", "CI_Lower", "CI_Upper"), decimals = 3) |>
+  lt_format("P_Value", decimals = 4) |>
+  lt_footnote("Two-sided p-value from log-rank test.", "column", "P_Value")
+```
