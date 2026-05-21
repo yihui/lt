@@ -57,7 +57,7 @@
           fIdx = matcher(fns, reg.idx),
           stubLabel = spec.stub_label || "",
           nCol = cols.length + (stub ? 1 : 0),
-          out = [`<table class="lt-table table">`];
+          out = [`<table class="lt-table">`];
     const alCls = i => { const a = align[i]; return a === "right" ? " class=\"al-r\"" : a === "center" ? " class=\"al-c\"" : ""; };
     const mark = (type, p) => { const i = fIdx(type, p); return i ? sup(i) : ""; };
 
