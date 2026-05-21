@@ -24,5 +24,5 @@ Suggests:
     testit
 VignetteBuilder: litedown
 Roxygen: list(markdown = TRUE)
-Config/lt.js: 1.14.41
+Config/lt.js: 1.14.42
 Config/roxygen2/version: 8.0.0
