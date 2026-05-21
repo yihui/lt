@@ -37,10 +37,9 @@ lt_output = function(outputId, ...) shiny::tagList(
 #' @return A render function for use with [lt_output()].
 #' @export
 render_lt = function(expr, env = parent.frame(), quoted = FALSE) {
-  if (!quoted) expr = substitute(expr)
-  func = function() eval(expr, envir = env)
-  shiny::markRenderFunction(lt_output, function() {
-    x = func()
-    list(spec = build_spec(x))
-  })
+  func = shiny::installExprFunction(expr, 'func', env, quoted)
+  shiny::createRenderFunction(func, function(result, shinysession, name, ...) {
+    if (is.null(result)) return(NULL)
+    list(spec = build_spec(result))
+  }, lt_output)
 }
