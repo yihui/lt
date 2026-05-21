@@ -22,7 +22,6 @@
     th.lt-stub { text-align: left; }
     .lt-row-group th {
       text-align: left;
-      font-weight: 600;
       font-style: italic;
       border-top: var(--b) var(--c-grp);
     }
