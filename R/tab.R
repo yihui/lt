@@ -48,17 +48,29 @@ lt_group = function(x, label, rows) {
 #' @param where One of `'title'`, `'subtitle'`, `'column'`, `'spanner'`,
 #'   `'group'`, or `'body'`.
 #' @param columns Character vector of column names (for `'column'` or `'body'`).
+#'   For `'group'` with `match = "starts_with"`, a single prefix string.
 #' @param rows Integer vector of 1-based row indices (for `'body'`; `NULL`
 #'   means all rows).
+#' @param match For `where = "group"`: one of `"exact"` (default),
+#'   `"starts_with"`, or `"all"`.
 #' @return The `lt_tbl` with the footnote recorded.
 #' @export
-lt_footnote = function(x, text, where, columns = NULL, rows = NULL) {
+lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL) {
   loc = switch(where,
     title = list(type = 'title', group = 'title'),
     subtitle = list(type = 'title', group = 'subtitle'),
     column = list(type = 'column_labels', columns = I(as.character(columns))),
     spanner = list(type = 'column_spanners', spanners = I(as.character(columns))),
-    group = list(type = 'row_groups', match = 'exact', values = I(as.character(columns))),
+    group = {
+      m = match %||% 'exact'
+      if (m == 'starts_with') {
+        list(type = 'row_groups', match = 'starts_with', value = as.character(columns))
+      } else if (m == 'all') {
+        list(type = 'row_groups', match = 'all')
+      } else {
+        list(type = 'row_groups', match = 'exact', values = I(as.character(columns)))
+      }
+    },
     body = list(type = 'body', columns = I(as.character(columns)),
       rows = if (is.null(rows)) NULL else I(as.integer(rows))),
     stop("'where' must be one of: title, subtitle, column, spanner, group, body")
@@ -108,4 +120,16 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 lt_format = function(x, columns, decimals = 2, big_mark = '') {
   cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
   add_op(x, 'fmt_number', columns = cols, decimals = decimals, big_mark = big_mark)
+}
+
+#' Rename Column Labels
+#'
+#' Override column headers without modifying the underlying data frame.
+#'
+#' @param x An `lt_tbl` object.
+#' @param ... Named arguments of the form `col_name = "Display Label"`.
+#' @return The `lt_tbl` with the column label overrides recorded.
+#' @export
+lt_cols_label = function(x, ...) {
+  add_op(x, 'cols_label', labels = list(...))
 }

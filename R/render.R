@@ -61,6 +61,7 @@ build_spec = function(x) {
     },
     fmt_number = NULL,
     align = NULL,
+    cols_label = NULL,
     stop('unknown op type: ', op$type)
   )
 
@@ -87,9 +88,20 @@ build_spec = function(x) {
     align[idx] = op$align
   }
 
+  # Column labels: default to column names, then apply overrides.
+  col_labels = visible
+  for (op in x$ops) {
+    if (op$type != 'cols_label') next
+    for (nm in names(op$labels)) {
+      idx = match(nm, visible)
+      if (!is.na(idx)) col_labels[idx] = op$labels[[nm]]
+    }
+  }
+
   rows_mat = lapply(seq_len(nrow(d)), function(i) I(unname(unlist(d[i, visible]))))
   spec = list(
     columns = I(visible),
+    col_labels = if (!identical(col_labels, visible)) I(col_labels),
     align = I(unname(align)),
     rows = rows_mat,
     stub = if (!is.null(x$row_label)) I(as.character(d[[x$row_label]])),

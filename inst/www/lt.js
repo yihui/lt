@@ -44,6 +44,7 @@
 
   function buildHtml(spec) {
     const cols = spec.columns || [],
+          colLabels = spec.col_labels || cols,
           align = spec.align || [],
           rows = spec.rows || [],
           stub = spec.stub,
@@ -88,7 +89,7 @@
     }
     out.push(`<tr>${stub ? `<th scope="col">${esc(stubLabel)}</th>` : ""}`);
     for (let i = 0; i < cols.length; i++)
-      out.push(`<th scope="col"${alCls(i)}>${esc(cols[i])}${mark("column_labels", { columns: [cols[i]] })}</th>`);
+      out.push(`<th scope="col"${alCls(i)}>${esc(colLabels[i])}${mark("column_labels", { columns: [cols[i]] })}</th>`);
     out.push(`</tr></thead>`);
 
     // body-footnote markers per (row,col), 1-based row.
