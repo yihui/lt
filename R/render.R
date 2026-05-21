@@ -182,7 +182,8 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
     if (assets) js_block(inline_assets)
   ), collapse = '')
   if (fragment) body else paste0(
-    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>lt</title></head>',
+    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>lt</title>',
+    '<style>body{font-family:system-ui,sans-serif;padding:1em}th,td{padding:5px}</style></head>',
     '<body>', body, '</body></html>'
   )
 }
