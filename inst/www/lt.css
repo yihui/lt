@@ -3,12 +3,16 @@ th, td{ padding: 5px; }
   --b: 1px solid; --bg: 4px solid transparent;
   --c-head: #888; --c-span: #bbb; --c-row: #ddd; --c-foot: #aaa; --c-grp: #ccc;
 
+  border-collapse: separate;
+  margin: auto;
   border-spacing: 0;
   border-top: var(--b);
   border-bottom: var(--b);
 
   caption {
     border-top: var(--b);
+    padding: .5em;
+    text-align: center;
     .lt-title    { font-size: 1.2em; font-weight: 600; }
     .lt-subtitle { font-size: 0.9em; }
   }
@@ -24,9 +28,10 @@ th, td{ padding: 5px; }
     th.lt-stub { text-align: left; }
     .lt-row-group th {
       text-align: left;
-      font-style: italic;
-      border-top: var(--b) var(--c-grp);
+      background: radial-gradient(circle, #ccc 0.75px, transparent 0.75px);
+      background-size: 8px 8px;
     }
+    .lt-row-group ~ tr:not(.lt-row-group) > :first-child { padding-left: 1em; }
   }
 
   tfoot.lt-footer {
