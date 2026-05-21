@@ -148,6 +148,8 @@
 
   const mount = (s, spec) => s.insertAdjacentHTML("afterend", buildHtml(spec));
 
-  (root.LT && root.LT.q || []).forEach(e => mount(e.s, e.d));
-  root.LT = { build(spec) { mount(document.currentScript, spec); }, buildHtml };
+  const q = root.LT && root.LT.q || [];
+  while (q.length) { const e = q.shift(); mount(e.s, e.d); }
+  root.LT = { build(spec) { mount(document.currentScript, spec); }, buildHtml,
+    q: { push(e) { mount(e.s, e.d); } } };
 })(window);
