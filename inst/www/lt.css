@@ -1,16 +1,20 @@
 .lt-table {
-  border-spacing: 5px 0;
-  border-top: 1px solid;
-  border-bottom: 1px solid;
+  --b: 1px solid; --bg: 4px solid transparent;
+  --c-head: #888; --c-span: #bbb; --c-row: #ddd; --c-foot: #aaa; --c-grp: #ccc;
+
+  border-spacing: 0;
+  border-top: var(--b);
+  border-bottom: var(--b);
 
   caption {
     .lt-title    { font-size: 1.2em; font-weight: 600; }
     .lt-subtitle { font-size: 0.9em; }
   }
 
-  thead th { border-bottom: 1px solid #888; }
+  tbody td, tbody th { border-bottom: var(--b) var(--c-row); }
+  thead th { border-bottom: var(--b) var(--c-head); border-left: var(--bg); border-right: var(--bg); }
   thead .lt-spanner-row {
-    .lt-spanner       { border-bottom: 1px solid #bbb; text-align: center; }
+    .lt-spanner       { border-bottom: var(--b) var(--c-span); text-align: center; }
     .lt-spanner-empty { border-bottom: none; }
   }
 
@@ -20,18 +24,18 @@
       text-align: left;
       font-weight: 600;
       font-style: italic;
-      border-top: 1px solid #ccc;
+      border-top: var(--b) var(--c-grp);
     }
   }
 
   tfoot.lt-footer {
     td {
       font-size: 0.85em;
-      border-top: 1px solid #aaa;
+      border-top: var(--b) var(--c-foot);
     }
     .lt-footnote td             { border-top: none; }
-    .lt-footnote:first-child td { border-top: 1px solid #aaa; }
-    .lt-source-note td          { border-top: 1px dashed #bbb; font-style: italic; }
+    .lt-footnote:first-child td { border-top: var(--b) var(--c-foot); }
+    .lt-source-note td          { border-top: 1px dashed var(--c-span); font-style: italic; }
   }
 
   .al-r { text-align: right; }
