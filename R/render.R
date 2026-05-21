@@ -218,7 +218,7 @@ print.lt_tbl = function(x, ...) {
 
 knit_print.lt_tbl = function(x, ...) {
   first = !isTRUE(knitr::opts_knit$get(.knit_flag))
-  if (first) knitr::opts_knit$set(setNames(list(TRUE), .knit_flag))
+  if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), .knit_flag))
   structure(format(x, assets = first), class = c('knit_asis', 'html'))
 }
 

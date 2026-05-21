@@ -4,7 +4,7 @@
 \alias{lt_footnote}
 \title{Add a Footnote}
 \usage{
-lt_footnote(x, text, where, columns = NULL, rows = NULL)
+lt_footnote(x, text, where, columns = NULL, rows = NULL, match = NULL)
 }
 \arguments{
 \item{x}{An \code{lt_tbl} object.}
@@ -14,10 +14,14 @@ lt_footnote(x, text, where, columns = NULL, rows = NULL)
 \item{where}{One of \code{'title'}, \code{'subtitle'}, \code{'column'}, \code{'spanner'},
 \code{'group'}, or \code{'body'}.}
 
-\item{columns}{Character vector of column names (for \code{'column'} or \code{'body'}).}
+\item{columns}{Character vector of column names (for \code{'column'} or \code{'body'}).
+For \code{'group'} with \code{match = "starts_with"}, a single prefix string.}
 
 \item{rows}{Integer vector of 1-based row indices (for \code{'body'}; \code{NULL}
 means all rows).}
+
+\item{match}{For \code{where = "group"}: one of \code{"exact"} (default),
+\code{"starts_with"}, or \code{"all"}.}
 }
 \value{
 The \code{lt_tbl} with the footnote recorded.
