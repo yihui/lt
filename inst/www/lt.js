@@ -45,6 +45,7 @@
   function buildHtml(spec) {
     const cols = spec.columns || [],
           colLabels = spec.col_labels || cols,
+          colWidths = spec.col_widths || [],
           align = spec.align || [],
           rows = spec.rows || [],
           stub = spec.stub,
@@ -53,6 +54,7 @@
           groups = spec.row_groups || [],
           fns = spec.footnotes || [],
           notes = spec.notes || [],
+          styles = spec.styles || [],
           hdr = spec.header || {},
           reg = indexFootnotes(fns),
           fIdx = matcher(fns, reg.idx),
@@ -61,6 +63,30 @@
           out = [`<table class="lt-table">`];
     const alCls = i => { const a = align[i]; return a === "right" ? " class=\"al-r\"" : a === "center" ? " class=\"al-c\"" : ""; };
     const mark = (type, p) => { const i = fIdx(type, p); return i ? sup(i) : ""; };
+
+    // Build style map: styleMap[`${r},${ci}`] = "css;..."
+    const styleMap = {};
+    for (const s of styles) {
+      const sCols = s.columns || cols, sRows = s.rows;
+      for (let r = 1; r <= rows.length; r++) {
+        if (sRows && sRows.indexOf(r) < 0) continue;
+        for (const c of sCols) {
+          const ci = cols.indexOf(c);
+          if (ci < 0) continue;
+          const key = `${r},${ci}`;
+          styleMap[key] = styleMap[key] ? styleMap[key] + ";" + s.css : s.css;
+        }
+      }
+    }
+
+    // <colgroup> for column widths
+    if (colWidths.some(w => w)) {
+      out.push(`<colgroup>`);
+      if (stub) out.push(`<col>`);
+      for (let i = 0; i < cols.length; i++)
+        out.push(colWidths[i] ? `<col style="width:${colWidths[i]}">` : `<col>`);
+      out.push(`</colgroup>`);
+    }
 
     // <caption>
     const hasT = hdr.title != null && hdr.title !== "",
@@ -118,7 +144,8 @@
       }
       for (let ci = 0; ci < cols.length; ci++) {
         const m = bodyMarks[`${r},${ci}`];
-        out.push(`<td${alCls(ci)}>${esc(rows[r - 1][ci])}${m ? sup(m) : ""}</td>`);
+        const s = styleMap[`${r},${ci}`];
+        out.push(`<td${alCls(ci)}${s ? ` style="${s}"` : ""}>${esc(rows[r - 1][ci])}${m ? sup(m) : ""}</td>`);
       }
       out.push(`</tr>`);
     };

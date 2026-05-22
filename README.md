@@ -21,6 +21,7 @@ A table is built in two steps:
 | `lt_header()` | Title and subtitle |
 | `lt_spanner()` | Label spanning multiple column headers |
 | `lt_group()` | Manual row grouping |
+| `lt_group_order()` | Control row group display order |
 | `lt_footnote()` | Anchored footnotes (title, column, spanner, group, body) |
 | `lt_note()` | Unanchored footer note |
 | `lt_align()` | Override column alignment |
@@ -29,6 +30,11 @@ A table is built in two steps:
 | `lt_indent()` | Hierarchical row indentation |
 | `lt_sub()` | Replace NA/zero/small values with text |
 | `lt_hide()` | Hide columns from display |
+| `lt_style()` | Cell-level styling (bold, color, background, borders) |
+| `lt_cols_width()` | Set column widths |
+| `lt_cols_move()` | Rearrange column order |
+| `lt_cols_label()` | Rename column headers |
+| `lt_stubhead()` | Label the stub (row label) column header |
 
 The result prints to the RStudio Viewer / browser and can be embedded in
 R Markdown, Quarto (via litedown or knitr), and Shiny.

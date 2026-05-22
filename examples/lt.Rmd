@@ -221,6 +221,62 @@ lt(d) |>
   lt_hide("sort_order")
 ```
 
+## Cell styling
+
+Highlight specific cells with bold, color, background, or any CSS
+property (camelCase or dash-case):
+
+```{r}
+d = data.frame(
+  Endpoint = c("Primary", "Secondary", "Exploratory"),
+  HR = c(0.62, 0.79, 0.91),
+  P = c(0.001, 0.042, 0.38)
+)
+lt(d, row_label = "Endpoint") |>
+  lt_format("HR", decimals = 2) |>
+  lt_format("P", decimals = 3) |>
+  lt_style("P", rows = 1:2L, bold = TRUE, color = "#06c") |>
+  lt_style("HR", rows = 1L, bg = "#e8f4e8", borderBottom = "2px solid #4a4")
+```
+
+## Column widths
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_cols_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
+```
+
+## Column reordering
+
+```{r}
+lt(head(iris[, 1:4])) |>
+  lt_cols_move(c("Petal.Length", "Petal.Width"), after = NULL)
+```
+
+## Row group ordering
+
+```{r}
+d = data.frame(
+  arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+  stat = c("n", "Mean", "n", "Mean"),
+  value = c("30", "4.2", "31", "6.8")
+)
+lt(d, row_group = "arm", row_label = "stat") |>
+  lt_group_order(c("Treatment", "Placebo"))
+```
+
+## Stubhead label
+
+```{r}
+d = data.frame(
+  endpoint = c("OS", "PFS", "ORR"),
+  result = c("0.72", "0.58", "42%")
+)
+lt(d, row_label = "endpoint") |>
+  lt_stubhead("Endpoint") |>
+  lt_cols_label(result = "Result")
+```
+
 ## Combining formatting and structure
 
 ```{r}

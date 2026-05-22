@@ -206,3 +206,95 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
   if (length(columns) < 2) stop('lt_merge() requires at least 2 columns')
   add_op(x, 'merge', columns = I(columns), pattern = pattern, hide = hide)
 }
+
+#' Style Cells
+#'
+#' Apply CSS styling to specific cells. Target cells by column, row, or both.
+#'
+#' @param x An `lt_tbl` object.
+#' @param columns Character vector of column names (or `NULL` for all).
+#' @param rows Integer vector of 1-based row indices (or `NULL` for all).
+#' @param bold Logical: apply bold weight?
+#' @param italic Logical: apply italic style?
+#' @param color Text color (any CSS color value, e.g., `"red"`, `"#06c"`).
+#' @param bg Background color.
+#' @param ... Additional CSS properties as named arguments. Names can be
+#'   camelCase (e.g., `borderLeft`) or quoted dash-case (e.g.,
+#'   `` `border-left` ``). Values are CSS strings.
+#' @return The `lt_tbl` with the style recorded.
+#' @export
+#' @examples
+#' lt(head(mtcars[, 1:3])) |>
+#'   lt_style("mpg", rows = 1L, bold = TRUE, borderBottom = "2px solid red")
+lt_style = function(x, columns = NULL, rows = NULL, bold = NULL, italic = NULL,
+                    color = NULL, bg = NULL, ...) {
+  css = character()
+  if (isTRUE(bold))   css = c(css, 'font-weight:bold')
+  if (isTRUE(italic)) css = c(css, 'font-style:italic')
+  if (!is.null(color)) css = c(css, paste0('color:', color))
+  if (!is.null(bg))    css = c(css, paste0('background:', bg))
+  dots = list(...)
+  for (nm in names(dots)) {
+    prop = gsub('([A-Z])', '-\\L\\1', nm, perl = TRUE)
+    css = c(css, paste0(prop, ':', dots[[nm]]))
+  }
+  if (!length(css)) return(x)
+  add_op(x, 'style',
+    columns = if (!is.null(columns)) as.character(columns),
+    rows = if (!is.null(rows)) I(as.integer(rows)),
+    css = paste(css, collapse = ';'))
+}
+
+#' Set Column Widths
+#'
+#' @param x An `lt_tbl` object.
+#' @param ... Named arguments of the form `col_name = "width"`. Width
+#'   can be any CSS value (e.g., `"100px"`, `"20%"`, `"8em"`).
+#' @return The `lt_tbl` with the column widths recorded.
+#' @export
+lt_cols_width = function(x, ...) {
+  widths = list(...)
+  add_op(x, 'cols_width', widths = widths)
+}
+
+#' Reorder Row Groups
+#'
+#' Control the display order of row groups independently from their order
+#' in the data.
+#'
+#' @param x An `lt_tbl` object.
+#' @param order Character vector of group labels in the desired display
+#'   order. Groups not listed appear after those listed, in their original
+#'   order.
+#' @return The `lt_tbl` with the group order recorded.
+#' @export
+lt_group_order = function(x, order) {
+  add_op(x, 'group_order', order = as.character(order))
+}
+
+#' Move Columns
+#'
+#' Rearrange column display order without modifying the data frame.
+#'
+#' @param x An `lt_tbl` object.
+#' @param columns Character vector of column names to move.
+#' @param after Column name after which to place the moved columns. Use
+#'   `NULL` to move to the start.
+#' @return The `lt_tbl` with the column move recorded.
+#' @export
+lt_cols_move = function(x, columns, after = NULL) {
+  add_op(x, 'cols_move', columns = as.character(columns),
+    after = if (!is.null(after)) as.character(after))
+}
+
+#' Set Stubhead Label
+#'
+#' Override the column header for the stub (row label) column.
+#'
+#' @param x An `lt_tbl` object.
+#' @param label Character scalar for the stub column header.
+#' @return The `lt_tbl` with the stubhead label recorded.
+#' @export
+lt_stubhead = function(x, label) {
+  add_op(x, 'stubhead', label = label)
+}

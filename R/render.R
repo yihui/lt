@@ -135,6 +135,11 @@ build_spec = function(x) {
     merge = NULL,
     sub = NULL,
     indent = NULL,
+    style = NULL,
+    cols_width = NULL,
+    group_order = NULL,
+    cols_move = NULL,
+    stubhead = NULL,
     stop('unknown op type: ', op$type)
   )
 
@@ -151,6 +156,33 @@ build_spec = function(x) {
     }
   }
   if (length(manual_groups)) groups = c(groups, manual_groups)
+
+  # Apply group ordering
+  for (op in x$ops) {
+    if (op$type != 'group_order' || !length(groups)) next
+    labels = vapply(groups, `[[`, '', 'label')
+    ordered_idx = match(op$order, labels)
+    ordered_idx = ordered_idx[!is.na(ordered_idx)]
+    rest = setdiff(seq_along(groups), ordered_idx)
+    groups = groups[c(ordered_idx, rest)]
+  }
+
+  # Apply column reordering
+  for (op in x$ops) {
+    if (op$type != 'cols_move') next
+    cols_to_move = intersect(op$columns, visible)
+    if (!length(cols_to_move)) next
+    rest = setdiff(visible, cols_to_move)
+    if (is.null(op$after)) {
+      visible = c(cols_to_move, rest)
+    } else {
+      pos = match(op$after, rest)
+      if (!is.na(pos)) {
+        visible = c(rest[seq_len(pos)], cols_to_move,
+          if (pos < length(rest)) rest[(pos + 1L):length(rest)])
+      }
+    }
+  }
 
   # Column alignment: default from data type, then apply manual overrides.
   align = ifelse(vapply(x$data[visible], is.numeric, FALSE), 'right', 'left')
@@ -171,6 +203,18 @@ build_spec = function(x) {
     }
   }
 
+  # Column widths
+  col_widths = NULL
+  for (op in x$ops) {
+    if (op$type != 'cols_width') next
+    if (is.null(col_widths)) col_widths = rep('', length(visible))
+    for (nm in names(op$widths)) {
+      idx = match(nm, visible)
+      if (!is.na(idx)) col_widths[idx] = op$widths[[nm]]
+    }
+  }
+  if (!is.null(col_widths) && all(col_widths == '')) col_widths = NULL
+
   # Collect indent levels per row (only if stub exists)
   indent = NULL
   if (!is.null(x$row_label)) {
@@ -182,20 +226,38 @@ build_spec = function(x) {
     if (any(ind > 0L)) indent = I(ind)
   }
 
+  # Stubhead label override
+  stub_label = x$row_label
+  for (op in x$ops) {
+    if (op$type == 'stubhead') stub_label = op$label
+  }
+
+  # Collect cell styles as [{css, columns, rows}]
+  styles = list()
+  for (op in x$ops) {
+    if (op$type != 'style') next
+    s = list(css = op$css)
+    if (!is.null(op$columns)) s$columns = I(op$columns)
+    if (!is.null(op$rows))    s$rows = op$rows
+    styles[[length(styles) + 1L]] = s
+  }
+
   rows_mat = lapply(seq_len(nrow(d)), function(i) I(unname(unlist(d[i, visible]))))
   spec = list(
     columns = I(visible),
     col_labels = if (!identical(col_labels, visible)) I(col_labels),
+    col_widths = if (!is.null(col_widths)) I(col_widths),
     align = I(unname(align)),
     rows = rows_mat,
     stub = if (!is.null(x$row_label)) I(as.character(d[[x$row_label]])),
-    stub_label = x$row_label,
+    stub_label = stub_label,
     indent = indent,
     header = header,
     spanners = spanners,
     footnotes = footnotes,
     notes = as.list(notes),
-    row_groups = groups
+    row_groups = groups,
+    styles = styles
   )
   spec[lengths(spec) > 0L]
 }
