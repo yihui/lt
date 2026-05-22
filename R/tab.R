@@ -6,7 +6,8 @@
 #' @return The `lt_tbl` with the header recorded.
 #' @export
 lt_header = function(x, title = NULL, subtitle = NULL) {
-  add_op(x, 'header', title = title, subtitle = subtitle)
+  x$header = drop_null(list(title = title, subtitle = subtitle))
+  x
 }
 
 #' Add a Column Spanner
@@ -20,7 +21,8 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
 #' @return The `lt_tbl` with the spanner recorded.
 #' @export
 lt_spanner = function(x, label, columns) {
-  add_op(x, 'spanner', label = label, columns = I(as.character(columns)))
+  x$spanners = c(x$spanners, list(list(label = label, columns = I(as.character(columns)))))
+  x
 }
 
 #' Add a Manual Row Group
@@ -75,7 +77,8 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
       rows = if (is.null(rows)) NULL else I(as.integer(rows))),
     stop("'where' must be one of: title, subtitle, column, spanner, group, body")
   )
-  add_op(x, 'footnote', text = text, location = loc)
+  x$footnotes = c(x$footnotes, list(list(text = text, location = loc)))
+  x
 }
 
 #' Add a Note
@@ -87,7 +90,8 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
 #' @return The `lt_tbl` with the note recorded.
 #' @export
 lt_note = function(x, text) {
-  add_op(x, 'note', text = text)
+  x$notes = c(x$notes, list(text))
+  x
 }
 
 #' Set Column Alignment
@@ -107,19 +111,20 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 
 #' Format Numeric Columns
 #'
-#' Applies `formatC(..., format = 'f', digits = decimals, big.mark = big_mark)`
-#' to the named columns. The formatting is done in R so the rendered HTML
-#' carries the formatted strings — the JS layer never re-parses numbers.
+#' Control the number of decimal places and thousands separator for numeric
+#' columns.
 #'
 #' @param x An `lt_tbl` object.
 #' @param columns Character or integer vector of columns.
-#' @param decimals Integer scalar.
-#' @param big_mark Character scalar.
+#' @param decimals Number of decimal places (default `NULL` means no change).
+#' @param big_mark Thousands separator (e.g., `","`). `NULL` or `""` means
+#'   none.
 #' @return The `lt_tbl` with the formatting recorded.
 #' @export
-lt_format = function(x, columns, decimals = 2, big_mark = '') {
+lt_format = function(x, columns, decimals = NULL, big_mark = NULL) {
   cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
-  add_op(x, 'fmt_number', columns = cols, decimals = decimals, big_mark = big_mark)
+  add_op(x, 'fmt_number', columns = cols, decimals = decimals,
+    big_mark = if (nzchar(big_mark %||% '')) big_mark)
 }
 
 #' Rename Column Labels
@@ -137,8 +142,7 @@ lt_cols_label = function(x, ...) {
 
 #' Substitute Cell Values
 #'
-#' Replace `NA`, zero, or small values with display text. Runs after number
-#' formatting so the substitution targets the formatted character cells.
+#' Replace `NA`, zero, or small values with display text.
 #'
 #' @param x An `lt_tbl` object.
 #' @param columns Character vector of column names (or `NULL` for all).

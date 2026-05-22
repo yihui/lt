@@ -5,89 +5,6 @@
 # (format, sub, merge, etc.) to the raw data and renders the <table>.
 # One runtime per page renders any number of tables.
 
-# Build the spec list serialised to JSON for the JS layer to consume.
-# The spec carries raw data as column arrays and declarative ops.
-build_spec = function(x) {
-  d = x$data
-
-  # Collect ops to emit in spec (order matters for application)
-  ops = list()
-  for (op in x$ops) {
-    out_op = switch(
-      op$type,
-      fmt_number = list(type = 'fmt_number', columns = I(op$columns),
-        decimals = op$decimals, big_mark = op$big_mark),
-      sub = {
-        s = list(type = 'sub')
-        if (!is.null(op$columns)) s$columns = I(op$columns)
-        if (!is.null(op$missing)) s$missing = op$missing
-        if (!is.null(op$zero))    s$zero = op$zero
-        if (!is.null(op$small))   s$small = op$small
-        if (!is.null(op$small_text)) s$small_text = op$small_text
-        s
-      },
-      merge = list(type = 'merge', columns = I(op$columns),
-        pattern = op$pattern, hide = op$hide),
-      align = list(type = 'align', columns = I(op$columns), align = op$align),
-      cols_label = list(type = 'cols_label', labels = op$labels),
-      cols_width = list(type = 'cols_width', widths = op$widths),
-      cols_move = list(type = 'cols_move', columns = I(op$columns),
-        after = op$after),
-      indent = list(type = 'indent', rows = op$rows, level = op$level),
-      style = {
-        s = list(type = 'style', css = op$css)
-        if (!is.null(op$columns)) s$columns = I(op$columns)
-        if (!is.null(op$rows))    s$rows = op$rows
-        s
-      },
-      row_group = list(type = 'row_group', label = op$label, rows = op$rows),
-      group_order = list(type = 'group_order', order = I(op$order)),
-      stubhead = list(type = 'stubhead', label = op$label),
-      header = NULL,
-      spanner = NULL,
-      footnote = NULL,
-      note = NULL,
-      NULL
-    )
-    if (!is.null(out_op)) ops[[length(ops) + 1L]] = out_op
-  }
-
-  # Structural fields (header, spanners, footnotes, notes)
-  header = list()
-  spanners = list()
-  footnotes = list()
-  notes = character()
-  for (op in x$ops) switch(
-    op$type,
-    header = {
-      if (!is.null(op$title))    header$title    = op$title
-      if (!is.null(op$subtitle)) header$subtitle = op$subtitle
-    },
-    spanner = {
-      spanners[[length(spanners) + 1L]] = list(label = op$label, columns = op$columns)
-    },
-    footnote = {
-      footnotes[[length(footnotes) + 1L]] = list(text = op$text, location = op$location)
-    },
-    note = {
-      notes = c(notes, op$text)
-    },
-    NULL
-  )
-
-  spec = list(
-    data = d,
-    row_group = x$row_group,
-    row_label = x$row_label,
-    ops = ops,
-    header = header,
-    spanners = spanners,
-    footnotes = footnotes,
-    notes = as.list(notes)
-  )
-  spec[lengths(spec) > 0L]
-}
-
 asset_path = function(file) {
   p = system.file('www', file, package = 'lt')
   if (!nzchar(p)) p = file.path('inst', 'www', file)
@@ -140,7 +57,7 @@ js_block = function(inline = TRUE) {
 # The runtime drains the queue when it loads.
 spec_block = function(x) paste0(
   '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
-  inline_safe(xfun::tojson(build_spec(x))),
+  inline_safe(xfun::tojson(x[lengths(x) > 0L])),
   '})</script>'
 )
 

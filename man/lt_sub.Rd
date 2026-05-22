@@ -32,6 +32,5 @@ replaced by \code{small_text}.}
 The \code{lt_tbl} with the substitution recorded.
 }
 \description{
-Replace \code{NA}, zero, or small values with display text. Runs after number
-formatting so the substitution targets the formatted character cells.
+Replace \code{NA}, zero, or small values with display text.
 }

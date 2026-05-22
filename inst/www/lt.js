@@ -15,13 +15,13 @@
   // --- Number formatting ---
   function fmtNumber(v, decimals, bigMark) {
     if (v == null || typeof v !== "number" || isNaN(v)) return null;
-    let s = v.toFixed(decimals);
+    let s = decimals != null ? v.toFixed(decimals) : String(v);
     if (bigMark) {
       const parts = s.split(".");
       parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, bigMark);
       s = parts.join(".");
     }
-    return s;
+    return decimals != null || bigMark ? s : null;
   }
 
   // --- Pattern merge ---
@@ -67,7 +67,7 @@
             if (!data[c]) continue;
             for (let i = 0; i < nRow; i++) {
               const raw = data[c][i];
-              const f = fmtNumber(raw, op.decimals ?? 2, op.big_mark ?? "");
+              const f = fmtNumber(raw, op.decimals, op.big_mark ?? "");
               if (f != null) display[c][i] = f;
             }
           }

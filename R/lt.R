@@ -45,11 +45,10 @@ lt = function(data, row_group = NULL, row_label = NULL) {
   )
 }
 
-# Append one operation to an lt_tbl. Each op is a list with a `type` and the
-# arguments needed to render it. Ops are data, not closures, so the whole
-# spec can be JSON-serialised.
+drop_null = function(x) x[!vapply(x, is.null, logical(1))]
+
 add_op = function(x, type, ...) {
-  x$ops = c(x$ops, list(list(type = type, ...)))
+  x$ops = c(x$ops, list(drop_null(list(type = type, ...))))
   x
 }
 

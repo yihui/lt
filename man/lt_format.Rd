@@ -4,22 +4,22 @@
 \alias{lt_format}
 \title{Format Numeric Columns}
 \usage{
-lt_format(x, columns, decimals = 2, big_mark = "")
+lt_format(x, columns, decimals = NULL, big_mark = NULL)
 }
 \arguments{
 \item{x}{An \code{lt_tbl} object.}
 
 \item{columns}{Character or integer vector of columns.}
 
-\item{decimals}{Integer scalar.}
+\item{decimals}{Number of decimal places (default \code{NULL} means no change).}
 
-\item{big_mark}{Character scalar.}
+\item{big_mark}{Thousands separator (e.g., \code{","}). \code{NULL} or \code{""} means
+none.}
 }
 \value{
 The \code{lt_tbl} with the formatting recorded.
 }
 \description{
-Applies \code{formatC(..., format = 'f', digits = decimals, big.mark = big_mark)}
-to the named columns. The formatting is done in R so the rendered HTML
-carries the formatted strings — the JS layer never re-parses numbers.
+Control the number of decimal places and thousands separator for numeric
+columns.
 }
