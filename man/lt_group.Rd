@@ -2,22 +2,31 @@
 % Please edit documentation in R/tab.R
 \name{lt_group}
 \alias{lt_group}
-\title{Add a Manual Row Group}
+\title{Define or Reorder Row Groups}
 \usage{
-lt_group(x, label, rows)
+lt_group(x, ...)
 }
 \arguments{
 \item{x}{An \code{lt_tbl} object.}
 
-\item{label}{Group label.}
-
-\item{rows}{Integer vector of row indices belonging to this group.}
+\item{...}{Either named arguments of the form \code{"Label" = rows} (integer
+vector of 1-based row indices) to define manual groups, or unnamed
+character strings to reorder auto-detected groups.}
 }
 \value{
-The \code{lt_tbl} with the row group recorded.
+The \code{lt_tbl} with the row groups recorded.
 }
 \description{
-Most tables get row groups via \code{lt(data, row_group = "Analysis")}. Use
-\code{lt_group()} only when you need to override or rename auto-detected
-groups.
+Define manual row groups, or reorder auto-detected groups (from
+\code{lt(data, row_group = "col")}). The display order matches argument order.
+}
+\examples{
+# Manual groups
+lt(head(mtcars[, 1:4])) |>
+  lt_group("First three" = 1:3, "Last three" = 4:6)
+
+# Reorder auto-detected groups
+d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+               stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
+lt(d, row_group = "arm") |> lt_group("Treatment", "Placebo")
 }

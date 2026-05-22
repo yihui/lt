@@ -20,8 +20,7 @@ A table is built in two steps:
 |------|---------|
 | `lt_header()` | Title and subtitle |
 | `lt_spanner()` | Label spanning multiple column headers |
-| `lt_group()` | Manual row grouping |
-| `lt_group_order()` | Control row group display order |
+| `lt_group()` | Manual row grouping / reorder groups |
 | `lt_footnote()` | Anchored footnotes (title, column, spanner, group, body) |
 | `lt_note()` | Unanchored footer note |
 | `lt_align()` | Override column alignment |

@@ -25,19 +25,38 @@ lt_spanner = function(x, label, columns) {
   x
 }
 
-#' Add a Manual Row Group
+#' Define or Reorder Row Groups
 #'
-#' Most tables get row groups via `lt(data, row_group = "Analysis")`. Use
-#' `lt_group()` only when you need to override or rename auto-detected
-#' groups.
+#' Define manual row groups, or reorder auto-detected groups (from
+#' `lt(data, row_group = "col")`). The display order matches argument order.
 #'
 #' @param x An `lt_tbl` object.
-#' @param label Group label.
-#' @param rows Integer vector of row indices belonging to this group.
-#' @return The `lt_tbl` with the row group recorded.
+#' @param ... Either named arguments of the form `"Label" = rows` (integer
+#'   vector of 1-based row indices) to define manual groups, or unnamed
+#'   character strings to reorder auto-detected groups.
+#' @return The `lt_tbl` with the row groups recorded.
 #' @export
-lt_group = function(x, label, rows) {
-  add_op(x, 'row_group', label = label, rows = I(as.integer(rows)))
+#' @examples
+#' # Manual groups
+#' lt(head(mtcars[, 1:4])) |>
+#'   lt_group("First three" = 1:3, "Last three" = 4:6)
+#'
+#' # Reorder auto-detected groups
+#' d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+#'                stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
+#' lt(d, row_group = "arm") |> lt_group("Treatment", "Placebo")
+lt_group = function(x, ...) {
+  args = list(...)
+  nms = names(args)
+  if (is.null(nms) || all(!nzchar(nms))) {
+    # Unnamed strings: reorder auto-detected groups
+    add_op(x, 'group_order', order = I(as.character(unlist(args))))
+  } else {
+    # Named arguments: define manual groups
+    for (i in seq_along(args))
+      x = add_op(x, 'row_group', label = nms[i], rows = I(as.integer(args[[i]])))
+    x
+  }
 }
 
 #' Add a Footnote
@@ -249,20 +268,6 @@ lt_cols_width = function(x, ...) {
   add_op(x, 'cols_width', widths = widths)
 }
 
-#' Reorder Row Groups
-#'
-#' Control the display order of row groups independently from their order
-#' in the data.
-#'
-#' @param x An `lt_tbl` object.
-#' @param order Character vector of group labels in the desired display
-#'   order. Groups not listed appear after those listed, in their original
-#'   order.
-#' @return The `lt_tbl` with the group order recorded.
-#' @export
-lt_group_order = function(x, order) {
-  add_op(x, 'group_order', order = as.character(order))
-}
 
 #' Move Columns
 #'
