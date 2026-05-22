@@ -48,6 +48,7 @@
           align = spec.align || [],
           rows = spec.rows || [],
           stub = spec.stub,
+          indent = spec.indent || [],
           spanners = spec.spanners || [],
           groups = spec.row_groups || [],
           fns = spec.footnotes || [],
@@ -110,7 +111,11 @@
 
     const pushRow = r => {
       out.push(`<tr>`);
-      if (stub) out.push(`<th scope="row" class="lt-stub">${esc(stub[r - 1])}</th>`);
+      if (stub) {
+        const ind = indent[r - 1] || 0;
+        const style = ind ? ` style="padding-left:${ind + 1}em"` : "";
+        out.push(`<th scope="row" class="lt-stub"${style}>${esc(stub[r - 1])}</th>`);
+      }
       for (let ci = 0; ci < cols.length; ci++) {
         const m = bodyMarks[`${r},${ci}`];
         out.push(`<td${alCls(ci)}>${esc(rows[r - 1][ci])}${m ? sup(m) : ""}</td>`);

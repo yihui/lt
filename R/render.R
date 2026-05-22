@@ -17,16 +17,79 @@ apply_formats = function(x) {
     if (op$type != 'fmt_number') next
     for (col in op$columns) {
       if (col %in% names(d) && is.numeric(d[[col]])) {
-        out[[col]] = formatC(
-          d[[col]], format = 'f', digits = op$decimals, big.mark = op$big_mark
-        )
+        v = formatC(d[[col]], format = 'f', digits = op$decimals, big.mark = op$big_mark)
+        v[is.na(d[[col]])] = NA_character_
+        out[[col]] = v
       }
+    }
+  }
+  # Apply substitutions before blanking NAs (so we can distinguish NA from "")
+  for (op in x$ops) {
+    if (op$type != 'sub') next
+    cols = op$columns %||% names(out)
+    for (col in cols) {
+      if (!col %in% names(out)) next
+      v = out[[col]]
+      # small threshold (compare against original numeric values)
+      if (!is.null(op$small) && col %in% names(d) && is.numeric(d[[col]])) {
+        i = !is.na(d[[col]]) & d[[col]] != 0 & abs(d[[col]]) < op$small
+        v[i] = op$small_text %||% paste0('<', op$small)
+      }
+      # zero substitution (check original numeric values)
+      if (!is.null(op$zero) && col %in% names(d) && is.numeric(d[[col]])) {
+        v[!is.na(d[[col]]) & d[[col]] == 0] = op$zero
+      }
+      # missing substitution
+      if (!is.null(op$missing)) {
+        v[is.na(d[[col]])] = op$missing
+      }
+      out[[col]] = v
     }
   }
   for (j in seq_along(out)) {
     v = out[[j]]; v[is.na(v)] = ''; out[[j]] = v
   }
+  # Apply merge ops: combine columns using pattern
+  for (op in x$ops) {
+    if (op$type != 'merge') next
+    cols = op$columns
+    if (!all(cols %in% names(out))) next
+    target = cols[1]
+    pat = op$pattern
+    nr = nrow(out)
+    merged = character(nr)
+    for (i in seq_len(nr)) {
+      vals = vapply(cols, function(c) out[[c]][i], '')
+      if (is.null(pat)) {
+        merged[i] = paste(vals[nzchar(vals)], collapse = ' ')
+      } else {
+        remaining = pat
+        result = ''
+        while (nzchar(remaining)) {
+          m = regexpr('<<.*?>>', remaining, perl = TRUE)
+          if (m < 0) {
+            result = paste0(result, sub_refs(remaining, vals))
+            break
+          }
+          if (m > 1) result = paste0(result, sub_refs(substr(remaining, 1, m - 1), vals))
+          block = substr(remaining, m + 2, m + attr(m, 'match.length') - 3)
+          refs = as.integer(regmatches(block, gregexpr('(?<=\\{)\\d+(?=\\})', block, perl = TRUE))[[1]])
+          if (!length(refs) || !any(vals[refs] == ''))
+            result = paste0(result, sub_refs(block, vals))
+          remaining = substr(remaining, m + attr(m, 'match.length'), nchar(remaining))
+        }
+        merged[i] = result
+      }
+    }
+    out[[target]] = merged
+  }
   out
+}
+
+# Replace {1}, {2}, ... placeholders with values
+sub_refs = function(s, vals) {
+  for (k in seq_along(vals)) s = gsub(paste0('{', k, '}'), vals[k], s, fixed = TRUE)
+  s
 }
 
 # Build the spec list serialised to JSON for the JS layer to consume. Empty
@@ -35,7 +98,13 @@ apply_formats = function(x) {
 build_spec = function(x) {
   d = apply_formats(x)
   skip = c(x$row_group, x$row_label)
-  visible = setdiff(names(d), skip)
+  # Collect hidden columns from lt_hide() and auto-hide from lt_merge()
+  hidden = character()
+  for (op in x$ops) {
+    if (op$type == 'cols_hide') hidden = c(hidden, op$columns)
+    if (op$type == 'merge' && isTRUE(op$hide)) hidden = c(hidden, op$columns[-1])
+  }
+  visible = setdiff(names(d), c(skip, hidden))
   if (!length(visible)) stop('table has no visible columns')
 
   header = list(); spanners = list(); footnotes = list()
@@ -62,6 +131,10 @@ build_spec = function(x) {
     fmt_number = NULL,
     align = NULL,
     cols_label = NULL,
+    cols_hide = NULL,
+    merge = NULL,
+    sub = NULL,
+    indent = NULL,
     stop('unknown op type: ', op$type)
   )
 
@@ -98,6 +171,17 @@ build_spec = function(x) {
     }
   }
 
+  # Collect indent levels per row (only if stub exists)
+  indent = NULL
+  if (!is.null(x$row_label)) {
+    ind = integer(nrow(d))
+    for (op in x$ops) {
+      if (op$type != 'indent') next
+      ind[op$rows] = op$level
+    }
+    if (any(ind > 0L)) indent = I(ind)
+  }
+
   rows_mat = lapply(seq_len(nrow(d)), function(i) I(unname(unlist(d[i, visible]))))
   spec = list(
     columns = I(visible),
@@ -106,6 +190,7 @@ build_spec = function(x) {
     rows = rows_mat,
     stub = if (!is.null(x$row_label)) I(as.character(d[[x$row_label]])),
     stub_label = x$row_label,
+    indent = indent,
     header = header,
     spanners = spanners,
     footnotes = footnotes,

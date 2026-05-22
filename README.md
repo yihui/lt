@@ -25,6 +25,10 @@ A table is built in two steps:
 | `lt_note()` | Unanchored footer note |
 | `lt_align()` | Override column alignment |
 | `lt_format()` | Number formatting (decimals, big mark) |
+| `lt_merge()` | Combine columns with a pattern (e.g., "N (%)") |
+| `lt_indent()` | Hierarchical row indentation |
+| `lt_sub()` | Replace NA/zero/small values with text |
+| `lt_hide()` | Hide columns from display |
 
 The result prints to the RStudio Viewer / browser and can be embedded in
 R Markdown, Quarto (via litedown or knitr), and Shiny.
@@ -102,7 +106,8 @@ preferred.
 
 ## Status
 
-Pre-alpha. The first goal is feature parity with what `gsDesign2::as_gt()`
-needs (HTML output only). Beyond that, we look to the
+Alpha. The first goal — feature parity with what `gsDesign2::as_gt()`
+needs (HTML output only) — is reached. We now look to the
 [R Tables for Regulatory Submissions](https://rconsortium.github.io/rtrs-wg/)
-work to cover what clinical-trial TLFs typically need.
+work to cover what clinical-trial TLFs typically need: column merging,
+row indentation, value substitution, and column hiding are in place.

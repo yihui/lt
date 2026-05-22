@@ -133,3 +133,76 @@ lt_format = function(x, columns, decimals = 2, big_mark = '') {
 lt_cols_label = function(x, ...) {
   add_op(x, 'cols_label', labels = list(...))
 }
+
+#' Hide Columns
+#'
+#' Remove columns from display without dropping them from the data. Hidden
+#' columns can still be referenced by other operations (e.g., merging).
+#'
+#' @param x An `lt_tbl` object.
+#' @param columns Character vector of column names to hide.
+#' @return The `lt_tbl` with the hidden columns recorded.
+#' @export
+lt_hide = function(x, columns) {
+  add_op(x, 'cols_hide', columns = as.character(columns))
+}
+
+#' Substitute Cell Values
+#'
+#' Replace `NA`, zero, or small values with display text. Runs after number
+#' formatting so the substitution targets the formatted character cells.
+#'
+#' @param x An `lt_tbl` object.
+#' @param columns Character vector of column names (or `NULL` for all).
+#' @param missing Replacement for `NA` cells (e.g., `"—"`). `NULL` to
+#'   leave NAs as empty strings (the default rendering).
+#' @param zero Replacement for zero values (e.g., `"—"`).
+#' @param small Threshold: values whose absolute value is below this are
+#'   replaced by `small_text`.
+#' @param small_text Text shown for values below `small` (e.g., `"<0.1"`).
+#' @return The `lt_tbl` with the substitution recorded.
+#' @export
+lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
+                  small = NULL, small_text = NULL) {
+  cols = if (!is.null(columns)) as.character(columns)
+  add_op(x, 'sub', columns = cols, missing = missing, zero = zero,
+    small = small, small_text = small_text)
+}
+
+#' Indent Stub Rows
+#'
+#' Add hierarchical indentation to row labels (stub cells). Requires that
+#' the table was created with a `row_label` column via [lt()].
+#'
+#' @param x An `lt_tbl` object.
+#' @param rows Integer vector of 1-based row indices to indent.
+#' @param level Indent level (default 1). Each level adds one unit of
+#'   left padding.
+#' @return The `lt_tbl` with the indentation recorded.
+#' @export
+lt_indent = function(x, rows, level = 1) {
+  add_op(x, 'indent', rows = I(as.integer(rows)), level = as.integer(level))
+}
+
+#' Merge Columns
+#'
+#' Combine values from multiple columns into a single display column using
+#' a pattern. Source columns (all except the first) are hidden by default.
+#'
+#' @param x An `lt_tbl` object.
+#' @param columns Character vector of column names. The first column is the
+#'   target (receives merged content); the rest are sources.
+#' @param pattern A glue-style template using `\{1\}`, `\{2\}`, etc. to refer
+#'   to columns by position. Wrap sections in `<<` and `>>` for conditional
+#'   NA handling: `"\{1\}<< (\{2\})>>"` drops the wrapped portion when any
+#'   referenced value is missing/empty. If `NULL`, columns are concatenated
+#'   separated by spaces.
+#' @param hide If `TRUE` (default), source columns (all but the first) are
+#'   automatically hidden.
+#' @return The `lt_tbl` with the merge recorded.
+#' @export
+lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
+  columns = as.character(columns)
+  if (length(columns) < 2) stop('lt_merge() requires at least 2 columns')
+  add_op(x, 'merge', columns = I(columns), pattern = pattern, hide = hide)
+}
