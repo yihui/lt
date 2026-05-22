@@ -1,0 +1,284 @@
+---
+title: Examples
+---
+
+```{r}
+library(lt)
+```
+
+## A simple table
+
+Pass any data frame to `lt()`:
+
+```{r}
+lt(head(mtcars[, 1:6]))
+```
+
+## Title and subtitle
+
+```{r}
+lt(head(iris[, 1:4])) |>
+  lt_header(title = "Iris Measurements", subtitle = "First six observations")
+```
+
+## Column alignment
+
+By default, numeric columns are right-aligned and character columns are
+left-aligned. Override with `lt_align()`:
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_align(c("mpg", "cyl"), "center")
+```
+
+## Number formatting
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_format(c("mpg", "disp"), decimals = 1)
+```
+
+### Decimal places
+
+Control the number of decimal places with `decimals`:
+
+```{r}
+d = data.frame(
+  Metric = c("Revenue", "Costs", "Profit"),
+  Q1 = c(1234567.891, 987654.321, 246913.570),
+  Q2 = c(1345678.912, 1012345.678, 333333.234)
+)
+lt(d, row_label = "Metric") |>
+  lt_format(c("Q1", "Q2"), decimals = 2)
+```
+
+### Big mark (thousands separator)
+
+```{r}
+lt(d, row_label = "Metric") |>
+  lt_format(c("Q1", "Q2"), decimals = 0, big_mark = ",")
+```
+
+## Footnotes
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_header(title = "Motor Trend Cars") |>
+  lt_footnote("Source: 1974 Motor Trend US magazine.", "title") |>
+  lt_footnote("Miles per US gallon.", "column", "mpg")
+```
+
+## Notes
+
+Notes appear in the footer below numbered footnotes:
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_note("Data from the 1974 Motor Trend US magazine.")
+```
+
+## Column spanners
+
+A spanner groups contiguous columns under a shared label:
+
+```{r}
+lt(head(iris)) |>
+  lt_spanner("Sepal", c("Sepal.Length", "Sepal.Width")) |>
+  lt_spanner("Petal", c("Petal.Length", "Petal.Width"))
+```
+
+### Spanner with formatting
+
+```{r}
+lt(head(iris)) |>
+  lt_header(title = "Iris Dataset") |>
+  lt_spanner("Sepal", c("Sepal.Length", "Sepal.Width")) |>
+  lt_spanner("Petal", c("Petal.Length", "Petal.Width")) |>
+  lt_format(c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width"), decimals = 1)
+```
+
+## Row groups
+
+### Auto-detected row groups
+
+Pass `row_group` to `lt()` to partition rows by a column's values. The
+column is removed from the body and its values become group headers:
+
+```{r}
+d = data.frame(
+  Region = c("East", "East", "West", "West", "West"),
+  City = c("New York", "Boston", "Seattle", "Portland", "Denver"),
+  Population = c(8336817, 675647, 737015, 652503, 715522)
+)
+lt(d, row_group = "Region") |>
+  lt_header(title = "US Cities by Region") |>
+  lt_format("Population", big_mark = ",")
+```
+
+### Row groups with a stub
+
+Use `row_label` to designate a column as the row "stub" (left-aligned label
+column with no header):
+
+```{r}
+d = data.frame(
+  Category = c("Fruits", "Fruits", "Vegetables", "Vegetables"),
+  Item = c("Apple", "Banana", "Carrot", "Broccoli"),
+  Calories = c(95, 105, 25, 55),
+  Fiber_g = c(4.4, 3.1, 2.8, 5.1)
+)
+lt(d, row_group = "Category", row_label = "Item") |>
+  lt_header(title = "Nutritional Information") |>
+  lt_format("Fiber_g", decimals = 1)
+```
+
+### Manual row groups
+
+Use `lt_group()` when you need explicit control over which rows belong to
+each group:
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_group("First three" = 1:3, "Last three" = 4:6)
+```
+
+## Column merging
+
+Combine columns into one using a pattern. Source columns are hidden
+automatically:
+
+```{r}
+d = data.frame(
+  stat = c("Age", "Weight", "Height"),
+  n = c(67, 65, 64),
+  pct = c(100, 97.0, 95.5)
+)
+lt(d, row_label = "stat") |>
+  lt_format("pct", decimals = 1) |>
+  lt_merge(c("n", "pct"), pattern = "{1} ({2}%)") |>
+  lt_cols_label(n = "n (%)")
+```
+
+### Conditional merge with `<< >>`
+
+Wrap pattern sections in `<<` and `>>` to drop them when any referenced
+column is empty/NA:
+
+```{r}
+d = data.frame(
+  endpoint = c("Primary", "Secondary", "Tertiary"),
+  est = c(0.61, 0.79, 0.45),
+  ci_lo = c(0.40, 0.57, NA),
+  ci_hi = c(0.82, 1.01, NA)
+)
+lt(d, row_label = "endpoint") |>
+  lt_format(c("est", "ci_lo", "ci_hi"), decimals = 2) |>
+  lt_merge(c("est", "ci_lo", "ci_hi"), pattern = "{1}<< ({2}, {3})>>") |>
+  lt_cols_label(est = "Estimate (95% CI)")
+```
+
+## Row indentation
+
+Indent stub rows to show hierarchy:
+
+```{r}
+d = data.frame(
+  label = c("Any AE", "SOC: Cardiac", "Tachycardia", "Bradycardia",
+            "SOC: GI", "Nausea"),
+  n_pct = c("45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)")
+)
+lt(d, row_label = "label") |>
+  lt_header("Adverse Events", "Safety Population") |>
+  lt_indent(c(2, 5), level = 1) |>
+  lt_indent(c(3, 4, 6), level = 2)
+```
+
+## Substituting missing/small values
+
+```{r}
+d = data.frame(
+  Metric = c("HR", "p-value", "Events", "Rate"),
+  Value = c(0.62, 0.0003, 0, NA)
+)
+lt(d, row_label = "Metric") |>
+  lt_format("Value", decimals = 2) |>
+  lt_sub("Value", missing = "—", zero = "—", small = 0.001, small_text = "<0.001")
+```
+
+## Cell styling
+
+Highlight specific cells with bold, color, background, or any CSS
+property (camelCase or dash-case):
+
+```{r}
+d = data.frame(
+  Endpoint = c("Primary", "Secondary", "Exploratory"),
+  HR = c(0.62, 0.79, 0.91),
+  P = c(0.001, 0.042, 0.38)
+)
+lt(d, row_label = "Endpoint") |>
+  lt_format("HR", decimals = 2) |>
+  lt_format("P", decimals = 3) |>
+  lt_style("P", rows = 1:2L, bold = TRUE, color = "#06c") |>
+  lt_style("HR", rows = 1L, bg = "#e8f4e8", borderBottom = "2px solid #4a4")
+```
+
+## Column widths
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_cols_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
+```
+
+## Column reordering
+
+```{r}
+lt(head(iris[, 1:4])) |>
+  lt_cols_move(c("Petal.Length", "Petal.Width"), after = NULL)
+```
+
+## Row group ordering
+
+```{r}
+d = data.frame(
+  arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+  stat = c("n", "Mean", "n", "Mean"),
+  value = c("30", "4.2", "31", "6.8")
+)
+lt(d, row_group = "arm", row_label = "stat") |>
+  lt_group("Treatment", "Placebo")
+```
+
+## Stubhead label
+
+```{r}
+d = data.frame(
+  endpoint = c("OS", "PFS", "ORR"),
+  result = c("0.72", "0.58", "42%")
+)
+lt(d, row_label = "endpoint") |>
+  lt_stubhead("Endpoint") |>
+  lt_cols_label(result = "Result")
+```
+
+## Combining formatting and structure
+
+```{r}
+d = data.frame(
+  Group = c("Treatment", "Treatment", "Control", "Control"),
+  Endpoint = c("Primary", "Secondary", "Primary", "Secondary"),
+  Estimate = c(0.6123, 0.7891, 0.4567, 0.5432),
+  CI_Lower = c(0.4012, 0.5678, 0.2345, 0.3210),
+  CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
+  P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
+)
+lt(d, row_group = "Group", row_label = "Endpoint") |>
+  lt_header(
+    title = "Study Results",
+    subtitle = "Primary and secondary endpoints"
+  ) |>
+  lt_spanner("95% CI", c("CI_Lower", "CI_Upper")) |>
+  lt_format(c("Estimate", "CI_Lower", "CI_Upper"), decimals = 3) |>
+  lt_format("P_Value", decimals = 4) |>
+  lt_footnote("Two-sided p-value from log-rank test.", "column", "P_Value")
+```
