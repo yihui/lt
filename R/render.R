@@ -275,6 +275,7 @@ read_asset = function(file) {
 asset_url = function(file) {
   url = getOption('lt.assets_url')
   if (!is.null(url)) return(paste0(url, file))
+  if (isTRUE(getOption('lt.local'))) return(paste0('file://', asset_path(file)))
   sub = if (grepl('\\.js$', file)) 'js' else 'css'
   sprintf(
     'https://cdn.jsdelivr.net/npm/@xiee/utils@%s/%s/%s',
@@ -381,8 +382,6 @@ knit_print.lt_tbl = function(x, ...) {
 #' @importFrom xfun record_print
 #' @export
 record_print.lt_tbl = function(x, ...) xfun::new_record(c(
-  # Linked (not inlined) so litedown's embed_resources() dedups them across
-  # tables: identical <link href> / <script src> tags collapse to one.
   css_block(inline = FALSE), spec_block(x), js_block(inline = FALSE), ''
 ), 'asis')
 
