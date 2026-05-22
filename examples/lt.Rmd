@@ -206,21 +206,6 @@ lt(d, row_label = "Metric") |>
   lt_sub("Value", missing = "—", zero = "—", small = 0.001, small_text = "<0.001")
 ```
 
-## Hiding columns
-
-Remove columns from display without dropping them from the data:
-
-```{r}
-d = data.frame(
-  city = c("New York", "LA", "Chicago"),
-  pop = c(8336817, 3979576, 2693976),
-  sort_order = 1:3
-)
-lt(d) |>
-  lt_format("pop", big_mark = ",") |>
-  lt_hide("sort_order")
-```
-
 ## Cell styling
 
 Highlight specific cells with bold, color, background, or any CSS

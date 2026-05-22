@@ -98,10 +98,9 @@ sub_refs = function(s, vals) {
 build_spec = function(x) {
   d = apply_formats(x)
   skip = c(x$row_group, x$row_label)
-  # Collect hidden columns from lt_hide() and auto-hide from lt_merge()
+  # Collect hidden columns (auto-hide from lt_merge)
   hidden = character()
   for (op in x$ops) {
-    if (op$type == 'cols_hide') hidden = c(hidden, op$columns)
     if (op$type == 'merge' && isTRUE(op$hide)) hidden = c(hidden, op$columns[-1])
   }
   visible = setdiff(names(d), c(skip, hidden))
@@ -131,7 +130,6 @@ build_spec = function(x) {
     fmt_number = NULL,
     align = NULL,
     cols_label = NULL,
-    cols_hide = NULL,
     merge = NULL,
     sub = NULL,
     indent = NULL,

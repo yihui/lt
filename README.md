@@ -29,7 +29,6 @@ A table is built in two steps:
 | `lt_merge()` | Combine columns with a pattern (e.g., "N (%)") |
 | `lt_indent()` | Hierarchical row indentation |
 | `lt_sub()` | Replace NA/zero/small values with text |
-| `lt_hide()` | Hide columns from display |
 | `lt_style()` | Cell-level styling (bold, color, background, borders) |
 | `lt_cols_width()` | Set column widths |
 | `lt_cols_move()` | Rearrange column order |

@@ -134,18 +134,6 @@ lt_cols_label = function(x, ...) {
   add_op(x, 'cols_label', labels = list(...))
 }
 
-#' Hide Columns
-#'
-#' Remove columns from display without dropping them from the data. Hidden
-#' columns can still be referenced by other operations (e.g., merging).
-#'
-#' @param x An `lt_tbl` object.
-#' @param columns Character vector of column names to hide.
-#' @return The `lt_tbl` with the hidden columns recorded.
-#' @export
-lt_hide = function(x, columns) {
-  add_op(x, 'cols_hide', columns = as.character(columns))
-}
 
 #' Substitute Cell Values
 #'
