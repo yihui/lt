@@ -39,7 +39,6 @@ lt_output = function(outputId, ...) shiny::tagList(
 render_lt = function(expr, env = parent.frame(), quoted = FALSE) {
   func = shiny::installExprFunction(expr, 'func', env, quoted)
   shiny::createRenderFunction(func, function(result, shinysession, name, ...) {
-    if (is.null(result)) return(NULL)
-    list(spec = build_spec(result))
+    if (!is.null(result)) list(spec = result)
   }, lt_output)
 }
