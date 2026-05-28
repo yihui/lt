@@ -12,9 +12,9 @@ emits the lt CSS+JS runtime (no knitr coupling), the runtime is included
 once per chunk; the runtime self-guards (`if (root.LT) return`) so the
 duplicate inclusions are no-ops at execution time.
 
-```{r setup}
+```{r setup, message=FALSE}
 library(lt)
-suppressMessages(library(gsDesign2))
+library(gsDesign2)
 
 enroll_rate = define_enroll_rate(duration = 18, rate = 20)
 fail_rate = define_fail_rate(
