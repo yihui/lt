@@ -284,6 +284,35 @@ lt_cols_move = function(x, columns, after = NULL) {
     after = if (!is.null(after)) as.character(after))
 }
 
+#' Attach Custom CSS
+#'
+#' Add user-supplied stylesheets that render after the built-in CSS, so
+#' rules can override the defaults. Each argument is either a URL
+#' (emitted as a `<link>` tag) or a local file path (read and inlined as
+#' a `<style>` block).
+#'
+#' @param x An `lt_tbl` object.
+#' @param ... One or more character scalars: URLs (containing `://` or
+#'   starting with `//`) or paths to local `.css` files.
+#' @return The `lt_tbl` with the stylesheets recorded.
+#' @export
+#' @examples
+#' \dontrun{
+#' lt(head(mtcars[, 1:3])) |> lt_css("custom.css")
+#' lt(head(mtcars[, 1:3])) |> lt_css("https://example.com/theme.css")
+#' }
+lt_css = function(x, ...) {
+  paths = unlist(list(...), use.names = FALSE)
+  if (!length(paths)) return(x)
+  paths = as.character(paths)
+  for (p in paths) if (!is_url(p) && !file.exists(p))
+    stop("CSS file not found: ", p)
+  x$css = c(x$css, paths)
+  x
+}
+
+is_url = function(x) grepl('^(https?:)?//', x)
+
 #' Set Stubhead Label
 #'
 #' Override the column header for the stub (row label) column.

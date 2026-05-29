@@ -14,7 +14,7 @@ asset_path = function(file) {
 read_asset = function(file) {
   p = asset_path(file)
   if (!file.exists(p)) stop('asset not found: ', file, ' (looked at ', p, ')')
-  paste(readLines(p, warn = FALSE, encoding = 'UTF-8'), collapse = '\n')
+  xfun::file_string(p)
 }
 
 asset_url = function(file) {
@@ -48,6 +48,26 @@ css_block = function(inline = TRUE) {
   else sprintf('<link rel="stylesheet" href="%s">', asset_url('lt.css'))
 }
 
+# User CSS path -> tag. URLs and relative paths become <link> (browser
+# dedups identical hrefs). Absolute paths are inlined as <style> by default
+# because file:// URLs only resolve on the client's local filesystem — which
+# breaks RStudio Server, Shiny Server, and any remote-render scenario. The
+# `local` flag opts into file:// for the record_print path, where litedown
+# inlines such files at document-assembly time.
+user_css_tag = function(p, local = FALSE) {
+  if (is_url(p) || !xfun::is_abs_path(p))
+    sprintf('<link rel="stylesheet" href="%s">', p)
+  else if (local)
+    sprintf('<link rel="stylesheet" href="file://%s">', p)
+  else
+    paste0('<style>\n', xfun::file_string(p), '</style>')
+}
+
+user_css_block = function(paths, local = FALSE) {
+  if (!length(paths)) return(NULL)
+  paste(vapply(paths, user_css_tag, character(1), local = local), collapse = '')
+}
+
 js_block = function(inline = TRUE) {
   if (inline) paste0('<script>', inline_safe(read_asset('lt.js')), '</script>')
   else sprintf('<script src="%s" defer></script>', asset_url('lt.js'))
@@ -55,11 +75,16 @@ js_block = function(inline = TRUE) {
 
 # Per-table block: queue the spec with a reference to the current script.
 # The runtime drains the queue when it loads.
-spec_block = function(x) paste0(
-  '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
-  inline_safe(xfun::tojson(x[lengths(x) > 0L])),
-  '})</script>'
-)
+spec_block = function(x) {
+  # Drop css from the static-path spec (already emitted as <link>); for the
+  # Shiny path we keep it on the wire so the output binding can inject links.
+  x$css = NULL
+  paste0(
+    '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
+    inline_safe(xfun::tojson(x[lengths(x) > 0L])),
+    '})</script>'
+  )
+}
 
 #' Render an `lt_tbl` to HTML
 #'
@@ -81,6 +106,7 @@ spec_block = function(x) paste0(
 format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
   body = paste(c(
     if (assets) css_block(inline_assets),
+    user_css_block(x$css),
     spec_block(x),
     if (assets) js_block(inline_assets)
   ), collapse = '')
@@ -127,7 +153,8 @@ knit_print.lt_tbl = function(x, ...) {
 #' @importFrom xfun record_print
 #' @export
 record_print.lt_tbl = function(x, ...) xfun::new_record(c(
-  css_block(inline = FALSE), spec_block(x), js_block(inline = FALSE), ''
+  css_block(inline = FALSE), user_css_block(x$css, local = TRUE),
+  spec_block(x), js_block(inline = FALSE), ''
 ), 'asis')
 
 # Each Jupyter cell is rendered as a sandboxed document, so we always emit

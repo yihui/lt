@@ -39,6 +39,14 @@ lt_output = function(outputId, ...) shiny::tagList(
 render_lt = function(expr, env = parent.frame(), quoted = FALSE) {
   func = shiny::installExprFunction(expr, 'func', env, quoted)
   shiny::createRenderFunction(func, function(result, shinysession, name, ...) {
-    if (!is.null(result)) list(spec = result)
+    if (is.null(result)) return(NULL)
+    # Wire format: list of {href} or {content} items. Absolute file paths
+    # are inlined — file:// would resolve against the client's filesystem,
+    # not the Shiny server. URLs and relative paths ride as hrefs.
+    if (length(result$css)) result$css = lapply(result$css, function(p) {
+      if (is_url(p) || !xfun::is_abs_path(p)) list(href = p)
+      else list(content = xfun::file_string(p))
+    })
+    list(spec = result)
   }, lt_output)
 }
