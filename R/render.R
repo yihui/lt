@@ -132,10 +132,19 @@ print.lt_tbl = function(x, ...) {
 # (per-document, auto-resets between knits). knitr is loaded when
 # knit_print fires, so this never reaches knitr:: when knitr is absent.
 .knit_flag = 'lt.assets_added'
+.css_flag = 'lt.css_added'
 
 knit_print.lt_tbl = function(x, ...) {
   first = !isTRUE(knitr::opts_knit$get(.knit_flag))
   if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), .knit_flag))
+  # Dedup user CSS (from lt_css()) across the document: a stylesheet shared
+  # by many tables (e.g. a package theme) should be emitted once. Identical
+  # <link> hrefs would dedup in the browser, but inlined <style> blocks
+  # (absolute paths) would not — so filter against what's already emitted.
+  seen = knitr::opts_knit$get(.css_flag)
+  x$css = setdiff(x$css, seen)
+  if (length(x$css))
+    knitr::opts_knit$set(stats::setNames(list(c(seen, x$css)), .css_flag))
   structure(format(x, assets = first), class = c('knit_asis', 'html'))
 }
 
