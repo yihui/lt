@@ -14,7 +14,7 @@ asset_path = function(file) {
 read_asset = function(file) {
   p = asset_path(file)
   if (!file.exists(p)) stop('asset not found: ', file, ' (looked at ', p, ')')
-  xfun::file_string(p)
+  xfun::read_utf8(p)
 }
 
 asset_url = function(file) {
@@ -44,7 +44,7 @@ inline_safe = function(s) gsub(
 # included twice, but the bytes are wasteful — pass `inline = FALSE` for
 # the linked form (litedown dedups identical <link>/<script src> tags).
 css_block = function(inline = TRUE) {
-  if (inline) paste0('<style>', read_asset('lt.css'), '</style>')
+  if (inline) c('<style>', read_asset('lt.css'), '</style>')
   else sprintf('<link rel="stylesheet" href="%s">', asset_url('lt.css'))
 }
 
@@ -60,16 +60,15 @@ user_css_tag = function(p, local = FALSE) {
   else if (local)
     sprintf('<link rel="stylesheet" href="file://%s">', p)
   else
-    paste0('<style>\n', xfun::file_string(p), '</style>')
+    c('<style>', xfun::read_utf8(p), '</style>')
 }
 
 user_css_block = function(paths, local = FALSE) {
-  if (!length(paths)) return(NULL)
-  paste(vapply(paths, user_css_tag, character(1), local = local), collapse = '')
+  unlist(lapply(paths, user_css_tag, local = local))
 }
 
 js_block = function(inline = TRUE) {
-  if (inline) paste0('<script>', inline_safe(read_asset('lt.js')), '</script>')
+  if (inline) c('<script>', inline_safe(read_asset('lt.js')), '</script>')
   else sprintf('<script src="%s" defer></script>', asset_url('lt.js'))
 }
 
@@ -79,7 +78,7 @@ spec_block = function(x) {
   # Drop css from the static-path spec (already emitted as <link>); for the
   # Shiny path we keep it on the wire so the output binding can inject links.
   x$css = NULL
-  paste0(
+  c(
     '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
     inline_safe(xfun::tojson(x[lengths(x) > 0L])),
     '})</script>'
@@ -104,17 +103,18 @@ spec_block = function(x) {
 #' @return A character scalar containing HTML.
 #' @export
 format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
-  body = paste(c(
+  body = c(
     if (assets) css_block(inline_assets),
     user_css_block(x$css),
     spec_block(x),
     if (assets) js_block(inline_assets)
-  ), collapse = '')
-  if (fragment) body else paste0(
+  )
+  if (!fragment) body = c(
     '<!DOCTYPE html><html><head><meta charset="utf-8"><title>lt</title>',
     '<style>body{font-family:system-ui,sans-serif;padding:1em}</style></head>',
     '<body>', body, '</body></html>'
   )
+  paste(body, collapse = '\n')
 }
 
 #' Print an `lt_tbl` (Opens in the Viewer or Browser)
@@ -140,15 +140,6 @@ knit_print.lt_tbl = function(x, ...) {
 }
 
 # record_print (litedown / xfun::record): we always emit the assets block.
-# knitr is not a hard dep so we don't reach into opts_knit here. The runtime
-# itself self-guards (`if (root.LT) return`) against duplicate execution,
-# so the cost is only the inline bytes — which we accept to avoid coupling
-# to knitr. (Same trade-off gglite makes for record_print.g2.)
-#
-# Each element in the new_record() vector is a separate Markdown block —
-# CommonMark requires blank lines between raw-HTML blocks for them to be
-# recognised as raw, so we hand back css / js / spec as separate strings
-# rather than a single concatenation.
 
 #' @importFrom xfun record_print
 #' @export

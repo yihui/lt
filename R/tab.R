@@ -287,9 +287,7 @@ lt_cols_move = function(x, columns, after = NULL) {
 #' Attach Custom CSS
 #'
 #' Add user-supplied stylesheets that render after the built-in CSS, so
-#' rules can override the defaults. Each argument is either a URL
-#' (emitted as a `<link>` tag) or a local file path (read and inlined as
-#' a `<style>` block).
+#' rules can override the defaults.
 #'
 #' @param x An `lt_tbl` object.
 #' @param ... One or more character scalars: URLs (containing `://` or

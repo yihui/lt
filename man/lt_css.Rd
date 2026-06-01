@@ -17,9 +17,7 @@ The \code{lt_tbl} with the stylesheets recorded.
 }
 \description{
 Add user-supplied stylesheets that render after the built-in CSS, so
-rules can override the defaults. Each argument is either a URL
-(emitted as a \verb{<link>} tag) or a local file path (read and inlined as
-a \verb{<style>} block).
+rules can override the defaults.
 }
 \examples{
 \dontrun{
