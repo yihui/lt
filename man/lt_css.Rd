@@ -10,7 +10,10 @@ lt_css(x, ...)
 \item{x}{An \code{lt_tbl} object.}
 
 \item{...}{One or more character scalars: URLs (containing \verb{://} or
-starting with \verb{//}) or paths to local \code{.css} files.}
+starting with \verb{//}) or paths to local \code{.css} files. A bare filename
+(no directory component) that does not exist in the working directory
+is resolved against the stylesheets shipped with lt, so e.g.
+\code{lt_css(x, "lt-gt.css")} uses the bundled gt-like theme.}
 }
 \value{
 The \code{lt_tbl} with the stylesheets recorded.
@@ -23,5 +26,6 @@ rules can override the defaults.
 \dontrun{
 lt(head(mtcars[, 1:3])) |> lt_css("custom.css")
 lt(head(mtcars[, 1:3])) |> lt_css("https://example.com/theme.css")
+lt(head(mtcars[, 1:3])) |> lt_css("lt-gt.css")  # bundled theme
 }
 }

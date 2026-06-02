@@ -291,22 +291,34 @@ lt_cols_move = function(x, columns, after = NULL) {
 #'
 #' @param x An `lt_tbl` object.
 #' @param ... One or more character scalars: URLs (containing `://` or
-#'   starting with `//`) or paths to local `.css` files.
+#'   starting with `//`) or paths to local `.css` files. A bare filename
+#'   (no directory component) that does not exist in the working directory
+#'   is resolved against the stylesheets shipped with lt, so e.g.
+#'   `lt_css(x, "lt-gt.css")` uses the bundled gt-like theme.
 #' @return The `lt_tbl` with the stylesheets recorded.
 #' @export
 #' @examples
 #' \dontrun{
 #' lt(head(mtcars[, 1:3])) |> lt_css("custom.css")
 #' lt(head(mtcars[, 1:3])) |> lt_css("https://example.com/theme.css")
+#' lt(head(mtcars[, 1:3])) |> lt_css("lt-gt.css")  # bundled theme
 #' }
 lt_css = function(x, ...) {
   paths = unlist(list(...), use.names = FALSE)
   if (!length(paths)) return(x)
-  paths = as.character(paths)
-  for (p in paths) if (!is_url(p) && !file.exists(p))
-    stop("CSS file not found: ", p)
-  x$css = c(x$css, paths)
+  x$css = c(x$css, vapply(as.character(paths), resolve_css, character(1)))
   x
+}
+
+# A URL or an existing file is used as-is. A bare filename that is not in the
+# working directory is resolved against lt's bundled stylesheets.
+resolve_css = function(p) {
+  if (is_url(p) || file.exists(p)) return(p)
+  if (basename(p) == p) {
+    f = asset_path(p)
+    if (file.exists(f)) return(f)
+  }
+  stop("CSS file not found: ", p)
 }
 
 is_url = function(x) grepl('^(https?:)?//', x)
