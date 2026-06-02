@@ -13,7 +13,7 @@ th, td{ padding: 5px; }
     border-top: var(--b);
     padding: .5em;
     text-align: center;
-    .lt-title    { font-size: 1.2em; font-weight: 600; }
+    .lt-title    { font-size: 1.2em; }
     .lt-subtitle { font-size: 0.9em; }
   }
 
