@@ -294,7 +294,10 @@ rules can override the defaults.
 <tr><td><code>...</code></td>
 <td>
 <p>One or more character scalars: URLs (containing <code>://</code> or
-starting with <code>//</code>) or paths to local <code>.css</code> files.</p>
+starting with <code>//</code>) or paths to local <code>.css</code> files. A bare filename
+(no directory component) that does not exist in the working directory
+is resolved against the stylesheets shipped with lt, so e.g.
+<code>lt_css(x, "lt-gt.css")</code> uses the bundled gt-like theme.</p>
 </td></tr>
 </table>
 <h3 id="sec:value_7" class="unnumbered unlisted">Value</h3>
@@ -303,6 +306,7 @@ starting with <code>//</code>) or paths to local <code>.css</code> files.</p>
 <h3 id="sec:examples_2" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r fade">lt(head(mtcars[, 1:3])) |&gt; lt_css(&quot;custom.css&quot;)
 lt(head(mtcars[, 1:3])) |&gt; lt_css(&quot;https://example.com/theme.css&quot;)
+lt(head(mtcars[, 1:3])) |&gt; lt_css(&quot;lt-gt.css&quot;)  # bundled theme
 </code></pre>
 <h2 id="sec:man-lt_footnote"><span class="section-number main-number">9</span> Add a Footnote</h2>
 <h3 id="sec:description_9" class="unnumbered unlisted">Description</h3>
