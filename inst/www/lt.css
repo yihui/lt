@@ -6,8 +6,8 @@ th, td{ padding: 5px; }
   caption-side: top;
   margin: 1em auto;
   border-spacing: 0;
-  border-top: 2px solid #888;
-  border-bottom: 2px solid #888;
+  border-top: 1.5px solid #888;
+  border-bottom: 1.5px solid #888;
 
   caption {
     padding: .5em;
@@ -18,19 +18,22 @@ th, td{ padding: 5px; }
 
   th { font-weight: normal; }
   tbody {
-    :not(:last-child) :is(td, th) { border-bottom: 1px solid #ddd; }
-    .lt-row-group :is(td, th) { border-bottom: 2px solid #ddd; }
-    th.lt-stub { text-align: left; }
-    .lt-row-group th { text-align: left; }
+    :not(:last-child) :is(td, th) { border-bottom: 1px   solid #ddd; }
+    .lt-row-group :is(td, th)     { border-bottom: 1.5px solid #ddd; }
+    .lt-stub, .lt-row-group th { text-align: left; }
     .lt-row-group ~ tr:not(.lt-row-group) > :first-child { padding-left: 1em; }
   }
-  thead th { border-bottom: 1px solid #888; border-left: var(--bg); border-right: var(--bg); }
-  thead .lt-spanner-row {
+  thead th {
+    border-bottom: 1px solid #888;
+    &:not(:first-child) { border-left: var(--bg); }
+    &:not(:last-child) { border-right: var(--bg); }
+  }
+  .lt-spanner-row {
     .lt-spanner       { border-bottom: 1px solid #bbb; text-align: center; }
     .lt-spanner-empty { border-bottom: none; }
   }
 
-  tfoot.lt-footer {
+  .lt-footer {
     font-size: 0.85em;
     .lt-footnote:first-child td { border-top: 1px solid #aaa; }
     .lt-source-note:first-child td { border-top: 1px dashed #aaa; }
@@ -40,7 +43,7 @@ th, td{ padding: 5px; }
   .al-r { text-align: right; }
   .al-c { text-align: center; }
 
-  sup.lt-fnref {
+  .lt-fnref {
     color: #06c;
     &::before { content: " ["; }
     &::after  { content: "]"; }
