@@ -125,7 +125,7 @@ lt_note = function(x, text) {
 #' @export
 lt_align = function(x, columns, align = c('left', 'center', 'right')) {
   align = match.arg(align)
-  add_op(x, 'align', columns = as.character(columns), align = align)
+  add_op(x, 'align', columns = I(as.character(columns)), align = align)
 }
 
 #' Format Numeric Columns
@@ -142,7 +142,7 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' @export
 lt_format = function(x, columns, decimals = NULL, big_mark = NULL) {
   cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
-  add_op(x, 'fmt_number', columns = cols, decimals = decimals,
+  add_op(x, 'fmt_number', columns = I(cols), decimals = decimals,
     big_mark = if (nzchar(big_mark %||% '')) big_mark)
 }
 
@@ -175,7 +175,7 @@ lt_cols_label = function(x, ...) {
 #' @export
 lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
                   small = NULL, small_text = NULL) {
-  cols = if (!is.null(columns)) as.character(columns)
+  cols = if (!is.null(columns)) I(as.character(columns))
   add_op(x, 'sub', columns = cols, missing = missing, zero = zero,
     small = small, small_text = small_text)
 }
@@ -280,7 +280,7 @@ lt_cols_width = function(x, ...) {
 #' @return The `lt_tbl` with the column move recorded.
 #' @export
 lt_cols_move = function(x, columns, after = NULL) {
-  add_op(x, 'cols_move', columns = as.character(columns),
+  add_op(x, 'cols_move', columns = I(as.character(columns)),
     after = if (!is.null(after)) as.character(after))
 }
 
