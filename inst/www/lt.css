@@ -21,7 +21,7 @@ th, td{ padding: 5px; }
     :not(:last-child) :is(td, th) { border-bottom: 1px   solid #ddd; }
     .lt-row-group :is(td, th)     { border-bottom: 1.5px solid #ddd; }
     .lt-stub, .lt-row-group th { text-align: left; }
-    .lt-row-group ~ tr:not(.lt-row-group) > :first-child { padding-left: 1em; }
+    .lt-indent { padding-left: 1em; }
   }
   thead th {
     border-bottom: 1px solid #888;
