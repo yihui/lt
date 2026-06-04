@@ -3,7 +3,7 @@
 ^\.github$
 ^\.git$
 ^README\.Rmd$
-^cran-comments\.md$
+^CLAUDE\.md$
 ^LICENSE\.md$
 ^examples$
 ^playground$

@@ -19,5 +19,5 @@ left padding.}
 }
 \description{
 Add hierarchical indentation to row labels (stub cells). Requires that
-the table was created with a \code{row_label} column via \code{\link[=lt]{lt()}}.
+the table has a stub column (see \code{\link[=lt_stub]{lt_stub()}}).
 }

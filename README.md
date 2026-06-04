@@ -8,83 +8,29 @@ formatting — without the heavy dependency stack. It targets HTML only (no
 LaTeX or RTF), which keeps the implementation minimal: the entire runtime
 is a single vanilla-JS file under 5 KB.
 
-## Grammar
-
-A table is built in two steps:
-
-1. **Declare** the table with `lt(data)`, optionally naming a column for
-   row groups and a column for row labels (the "stub").
-2. **Layer on** structure with piped verbs:
-
-| Verb | Purpose |
-|------|---------|
-| `lt_header()` | Title and subtitle |
-| `lt_spanner()` | Label spanning multiple column headers |
-| `lt_group()` | Manual row grouping / reorder groups |
-| `lt_footnote()` | Anchored footnotes (title, column, spanner, group, body) |
-| `lt_note()` | Unanchored footer note |
-| `lt_align()` | Override column alignment |
-| `lt_format()` | Number formatting (decimals, big mark) |
-| `lt_merge()` | Combine columns with a pattern (e.g., "N (%)") |
-| `lt_indent()` | Hierarchical row indentation |
-| `lt_sub()` | Replace NA/zero/small values with text |
-| `lt_style()` | Cell-level styling (bold, color, background, borders) |
-| `lt_cols_width()` | Set column widths |
-| `lt_cols_move()` | Rearrange column order |
-| `lt_cols_label()` | Rename column headers |
-| `lt_stubhead()` | Label the stub (row label) column header |
-
-The result prints to the RStudio Viewer / browser and can be embedded in
-R Markdown, Quarto (via litedown or knitr), and Shiny.
-
-## Examples
-
-### Basic table
+## Example
 
 ```r
 library(lt)
 
-lt(head(mtcars[, 1:4]))
+d = data.frame(
+  Group = c("Treatment", "Treatment", "Control", "Control"),
+  Endpoint = c("Primary", "Secondary", "Primary", "Secondary"),
+  Estimate = c(0.6123, 0.7891, 0.4567, 0.5432),
+  CI_Lower = c(0.4012, 0.5678, 0.2345, 0.3210),
+  CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
+  P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
+)
+lt(d) |>
+  lt_group(~ Group) |>
+  lt_header("Study Results", "Primary and secondary endpoints") |>
+  lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |>
+  lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |>
+  lt_format(~ P_Value, decimals = 4) |>
+  lt_footnote("Two-sided p-value from log-rank test.", "column", ~ P_Value)
 ```
 
-### Title, spanner, and formatting
-
-```r
-lt(head(mtcars[, 1:4])) |>
-  lt_header("Motor Trend Cars", "First 6 rows") |>
-  lt_spanner("Engine", c("cyl", "disp")) |>
-  lt_format(c("mpg", "disp"), decimals = 1)
-```
-
-### Row groups and footnotes
-
-```r
-lt(PlantGrowth, row_group = "group") |>
-  lt_header("Plant Growth Experiment") |>
-  lt_footnote("Dried weight in grams", "column", "weight") |>
-  lt_note("Source: Dobson (1983)")
-```
-
-### Clinical-trial example (gsDesign2)
-
-```r
-library(gsDesign2)
-
-fixed_design_ahr(
-  alpha = 0.025, power = 0.9,
-  enroll_rate = define_enroll_rate(duration = 18, rate = 20),
-  fail_rate = define_fail_rate(
-    duration = c(4, 100), fail_rate = log(2) / 12,
-    dropout_rate = .001, hr = c(1, .6)
-  ),
-  study_duration = 36
-) |>
-  summary() |>
-  lt() |>
-  lt_header("Fixed Design under AHR Method") |>
-  lt_footnote("Power based on average hazard ratio method.", "title") |>
-  lt_format(c("N", "Events", "AHR", "Bound", "Power"), decimals = 4)
-```
+More examples at <https://pkg.yihui.org/lt/examples.html>.
 
 ## Installation
 

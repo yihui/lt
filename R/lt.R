@@ -17,32 +17,15 @@
 #' print method).
 #'
 #' @param data A data frame (or anything coercible to one).
-#' @param row_group Name of a column whose values should become row-group
-#'   labels. The column is removed from the body. Mirrors
-#'   `dplyr::group_by()` + `gt::gt()`.
-#' @param row_label Name of a column whose values become row labels (the
-#'   "stub", left-aligned, no header). `NULL` means no stub.
 #' @return A table object that can be piped into `lt_*()` functions.
 #' @export
 #' @examples
 #' lt(head(mtcars[, 1:4]))
-lt = function(data, row_group = NULL, row_label = NULL) {
+lt = function(data) {
   data = as.data.frame(
     data, stringsAsFactors = FALSE, check.names = FALSE, optional = TRUE
   )
-  if (!is.null(row_group) && !row_group %in% names(data))
-    stop("row_group '", row_group, "' is not a column of data")
-  if (!is.null(row_label) && !row_label %in% names(data))
-    stop("row_label '", row_label, "' is not a column of data")
-  structure(
-    list(
-      data = data,
-      row_group = row_group,
-      row_label = row_label,
-      ops = list()
-    ),
-    class = 'lt_tbl'
-  )
+  structure(list(data = data, ops = list()), class = 'lt_tbl')
 }
 
 drop_null = function(x) x[!vapply(x, is.null, logical(1))]

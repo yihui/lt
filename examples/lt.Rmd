@@ -48,15 +48,17 @@ d = data.frame(
   Q1 = c(1234567.891, 987654.321, 246913.570),
   Q2 = c(1345678.912, 1012345.678, 333333.234)
 )
-lt(d, row_label = "Metric") |>
-  lt_format(c("Q1", "Q2"), decimals = 2)
+lt(d) |>
+  lt_stub(~ Metric) |>
+  lt_format(~ Q1 + Q2, decimals = 2)
 ```
 
 ### Big mark (thousands separator)
 
 ```{r}
-lt(d, row_label = "Metric") |>
-  lt_format(c("Q1", "Q2"), decimals = 0, big_mark = ",")
+lt(d) |>
+  lt_stub(~ Metric) |>
+  lt_format(~ Q1 + Q2, decimals = 0, big_mark = ",")
 ```
 
 ## Footnotes
@@ -99,10 +101,11 @@ lt(head(iris)) |>
 
 ## Row groups
 
-### Auto-detected row groups
+### Group by column
 
-Pass `row_group` to `lt()` to partition rows by a column's values. The
-column is removed from the body and its values become group headers:
+Pass a column name to `lt_group()` to partition rows by that column's
+values. The column is removed from the body and its values become group
+headers:
 
 ```{r}
 d = data.frame(
@@ -110,15 +113,17 @@ d = data.frame(
   City = c("New York", "Boston", "Seattle", "Portland", "Denver"),
   Population = c(8336817, 675647, 737015, 652503, 715522)
 )
-lt(d, row_group = "Region") |>
+lt(d) |>
+  lt_group(~ Region) |>
   lt_header(title = "US Cities by Region") |>
-  lt_format("Population", big_mark = ",")
+  lt_format(~ Population, big_mark = ",")
 ```
 
 ### Row groups with a stub
 
-Use `row_label` to designate a column as the row "stub" (left-aligned label
-column with no header):
+When groups exist, the first visible column is automatically used as the
+row stub. Use `lt_stub()` only to override that default (e.g., to pick a
+non-first column):
 
 ```{r}
 d = data.frame(
@@ -127,15 +132,16 @@ d = data.frame(
   Calories = c(95, 105, 25, 55),
   Fiber_g = c(4.4, 3.1, 2.8, 5.1)
 )
-lt(d, row_group = "Category", row_label = "Item") |>
+lt(d) |>
+  lt_group(~ Category) |>
   lt_header(title = "Nutritional Information") |>
-  lt_format("Fiber_g", decimals = 1)
+  lt_format(~ Fiber_g, decimals = 1)
 ```
 
 ### Manual row groups
 
-Use `lt_group()` when you need explicit control over which rows belong to
-each group:
+Use named arguments in `lt_group()` for explicit control over which rows
+belong to each group:
 
 ```{r}
 lt(head(mtcars[, 1:4])) |>
@@ -153,9 +159,10 @@ d = data.frame(
   n = c(67, 65, 64),
   pct = c(100, 97.0, 95.5)
 )
-lt(d, row_label = "stat") |>
-  lt_format("pct", decimals = 1) |>
-  lt_merge(c("n", "pct"), pattern = "{1} ({2}%)") |>
+lt(d) |>
+  lt_stub(~ stat) |>
+  lt_format(~ pct, decimals = 1) |>
+  lt_merge(~ n + pct, pattern = "{1} ({2}%)") |>
   lt_cols_label(n = "n (%)")
 ```
 
@@ -171,9 +178,10 @@ d = data.frame(
   ci_lo = c(0.40, 0.57, NA),
   ci_hi = c(0.82, 1.01, NA)
 )
-lt(d, row_label = "endpoint") |>
-  lt_format(c("est", "ci_lo", "ci_hi"), decimals = 2) |>
-  lt_merge(c("est", "ci_lo", "ci_hi"), pattern = "{1}<< ({2}, {3})>>") |>
+lt(d) |>
+  lt_stub(~ endpoint) |>
+  lt_format(~ est + ci_lo + ci_hi, decimals = 2) |>
+  lt_merge(~ est + ci_lo + ci_hi, pattern = "{1}<< ({2}, {3})>>") |>
   lt_cols_label(est = "Estimate (95% CI)")
 ```
 
@@ -187,7 +195,8 @@ d = data.frame(
             "SOC: GI", "Nausea"),
   n_pct = c("45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)")
 )
-lt(d, row_label = "label") |>
+lt(d) |>
+  lt_stub(~ label) |>
   lt_header("Adverse Events", "Safety Population") |>
   lt_indent(c(2, 5), level = 1) |>
   lt_indent(c(3, 4, 6), level = 2)
@@ -200,9 +209,10 @@ d = data.frame(
   Metric = c("HR", "p-value", "Events", "Rate"),
   Value = c(0.62, 0.0003, 0, NA)
 )
-lt(d, row_label = "Metric") |>
-  lt_format("Value", decimals = 2) |>
-  lt_sub("Value", missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
+lt(d) |>
+  lt_stub(~ Metric) |>
+  lt_format(~ Value, decimals = 2) |>
+  lt_sub(~ Value, missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
 ```
 
 ## Cell styling
@@ -216,9 +226,10 @@ d = data.frame(
   HR = c(0.62, 0.79, 0.91),
   P = c(0.001, 0.042, 0.38)
 )
-lt(d, row_label = "Endpoint") |>
-  lt_format("HR", decimals = 2) |>
-  lt_format("P", decimals = 3) |>
+lt(d) |>
+  lt_stub(~ Endpoint) |>
+  lt_format(~ HR, decimals = 2) |>
+  lt_format(~ P, decimals = 3) |>
   lt_style("P", rows = 1:2L, bold = TRUE, color = "#06c") |>
   lt_style("HR", rows = 1L, bg = "#e8f4e8", borderBottom = "2px solid #4a4")
 ```
@@ -245,7 +256,8 @@ d = data.frame(
   stat = c("n", "Mean", "n", "Mean"),
   value = c("30", "4.2", "31", "6.8")
 )
-lt(d, row_group = "arm", row_label = "stat") |>
+lt(d) |>
+  lt_group(~ arm) |>
   lt_group("Treatment", "Placebo")
 ```
 
@@ -256,7 +268,8 @@ d = data.frame(
   endpoint = c("OS", "PFS", "ORR"),
   result = c("0.72", "0.58", "42%")
 )
-lt(d, row_label = "endpoint") |>
+lt(d) |>
+  lt_stub(~ endpoint) |>
   lt_stubhead("Endpoint") |>
   lt_cols_label(result = "Result")
 ```
@@ -272,7 +285,8 @@ d = data.frame(
   CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
   P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
 )
-lt(d, row_group = "Group", row_label = "Endpoint") |>
+lt(d) |>
+  lt_group(~ Group) |>
   lt_header(
     title = "Study Results",
     subtitle = "Primary and secondary endpoints"

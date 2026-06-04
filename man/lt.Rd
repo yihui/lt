@@ -4,17 +4,10 @@
 \alias{lt}
 \title{Create a Table Specification}
 \usage{
-lt(data, row_group = NULL, row_label = NULL)
+lt(data)
 }
 \arguments{
 \item{data}{A data frame (or anything coercible to one).}
-
-\item{row_group}{Name of a column whose values should become row-group
-labels. The column is removed from the body. Mirrors
-\code{dplyr::group_by()} + \code{gt::gt()}.}
-
-\item{row_label}{Name of a column whose values become row labels (the
-"stub", left-aligned, no header). \code{NULL} means no stub.}
 }
 \value{
 A table object that can be piped into \verb{lt_*()} functions.

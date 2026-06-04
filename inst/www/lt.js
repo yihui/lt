@@ -182,7 +182,7 @@
     }
 
     // Stubhead
-    let stubLabel = rowLabelCol || "";
+    let stubLabel = "";
     for (const op of ops) {
       if (op.type === "stubhead") stubLabel = op.label;
     }
@@ -226,10 +226,19 @@
       styles.push(s);
     }
 
-    // Stub values from row_label column
-    const stub = rowLabelCol && data[rowLabelCol]
-      ? data[rowLabelCol].map(v => v == null ? "" : String(v))
+    // Stub: explicit row_label, or auto-promote first visible non-numeric column when groups exist
+    const autoStub = groups.length && !rowLabelCol && visible.length
+      ? visible.find(c => !data[c] || !data[c].length || typeof data[c].find(v => v != null) !== "number")
       : null;
+    const stubCol = rowLabelCol || autoStub || null;
+    const stub = stubCol && data[stubCol]
+      ? data[stubCol].map(v => v == null ? "" : String(v))
+      : null;
+    if (stubCol && !rowLabelCol) {
+      align.shift(); colLabels.shift(); visible = visible.slice(1);
+      if (colWidths) colWidths.shift();
+    }
+    if (stubCol && !stubLabel) stubLabel = stubCol;
 
     return {
       visible, align, colLabels, colWidths, indent, stubLabel, stub,

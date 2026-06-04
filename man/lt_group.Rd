@@ -2,31 +2,33 @@
 % Please edit documentation in R/tab.R
 \name{lt_group}
 \alias{lt_group}
-\title{Define or Reorder Row Groups}
+\title{Define Row Groups}
 \usage{
 lt_group(x, ...)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{...}{Either named arguments of the form \code{"Label" = rows} (integer
-vector of 1-based row indices) to define manual groups, or unnamed
-character strings to reorder auto-detected groups.}
+\item{...}{A single column name (character scalar or one-sided formula) to
+group by that column's values, or named arguments of the form
+\code{"Label" = rows} (integer vector of 1-based row indices) for manual
+groups. Unnamed character strings reorder previously defined groups.}
 }
 \value{
 \code{x} with the row groups recorded.
 }
 \description{
-Define manual row groups, or reorder auto-detected groups (from
-\code{lt(data, row_group = "col")}). The display order matches argument order.
+Partition rows into labeled groups. Pass a column name to group by that
+column's values (the column is removed from the body), or use named
+arguments to define manual groups by row index.
 }
 \examples{
+# Group by a column
+d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+               stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
+lt(d) |> lt_group(~ arm)
+
 # Manual groups
 lt(head(mtcars[, 1:4])) |>
   lt_group("First three" = 1:3, "Last three" = 4:6)
-
-# Reorder auto-detected groups
-d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
-               stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
-lt(d, row_group = "arm") |> lt_group("Treatment", "Placebo")
 }

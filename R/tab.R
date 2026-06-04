@@ -31,34 +31,41 @@ lt_spanner = function(x, label, columns) {
   x
 }
 
-#' Define or Reorder Row Groups
+#' Define Row Groups
 #'
-#' Define manual row groups, or reorder auto-detected groups (from
-#' `lt(data, row_group = "col")`). The display order matches argument order.
+#' Partition rows into labeled groups. Pass a column name to group by that
+#' column's values (the column is removed from the body), or use named
+#' arguments to define manual groups by row index.
 #'
 #' @inheritParams lt_align
-#' @param ... Either named arguments of the form `"Label" = rows` (integer
-#'   vector of 1-based row indices) to define manual groups, or unnamed
-#'   character strings to reorder auto-detected groups.
+#' @param ... A single column name (character scalar or one-sided formula) to
+#'   group by that column's values, or named arguments of the form
+#'   `"Label" = rows` (integer vector of 1-based row indices) for manual
+#'   groups. Unnamed character strings reorder previously defined groups.
 #' @return `x` with the row groups recorded.
 #' @export
 #' @examples
+#' # Group by a column
+#' d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+#'                stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
+#' lt(d) |> lt_group(~ arm)
+#'
 #' # Manual groups
 #' lt(head(mtcars[, 1:4])) |>
 #'   lt_group("First three" = 1:3, "Last three" = 4:6)
-#'
-#' # Reorder auto-detected groups
-#' d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
-#'                stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
-#' lt(d, row_group = "arm") |> lt_group("Treatment", "Placebo")
 lt_group = function(x, ...) {
   args = list(...)
   nms = names(args)
+  if (length(args) == 1 && (is.null(nms) || !nzchar(nms))) {
+    col = f_cols(args[[1]])
+    if (length(col) == 1 && col %in% names(x$data)) {
+      x$row_group = col
+      return(x)
+    }
+  }
   if (is.null(nms) || all(!nzchar(nms))) {
-    # Unnamed strings: reorder auto-detected groups
     add_op(x, 'group_order', order = I(as.character(unlist(args))))
   } else {
-    # Named arguments: define manual groups
     for (i in seq_along(args))
       x = add_op(x, 'row_group', label = nms[i], rows = I(as.integer(args[[i]])))
     x
@@ -196,7 +203,7 @@ lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
 #' Indent Stub Rows
 #'
 #' Add hierarchical indentation to row labels (stub cells). Requires that
-#' the table was created with a `row_label` column via [lt()].
+#' the table has a stub column (see [lt_stub()]).
 #'
 #' @inheritParams lt_align
 #' @param rows Integer vector of 1-based row indices to indent.
@@ -338,6 +345,25 @@ resolve_css = function(p) {
 }
 
 is_url = function(x) grepl('^(https?:)?//', x)
+
+#' Designate a Stub Column
+#'
+#' Mark a column as the row-label stub. Its values become left-aligned row
+#' headers and the column is removed from the table body. When row groups
+#' exist and no stub is declared, the first visible column is automatically
+#' promoted; use this function to override that default.
+#'
+#' @inheritParams lt_align
+#' @param column A column name (character scalar or one-sided formula).
+#' @return `x` with the stub column recorded.
+#' @export
+#' @examples
+#' d = data.frame(endpoint = c("OS", "PFS"), result = c("0.72", "0.58"))
+#' lt(d) |> lt_stub(~ endpoint)
+lt_stub = function(x, column) {
+  x$row_label = f_cols(column)
+  x
+}
 
 #' Set Stubhead Label
 #'
