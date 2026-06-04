@@ -21,13 +21,13 @@ th, td{ padding: 5px; }
     :not(:last-child) :is(td, th) { border-bottom: 1px   solid #ddd; }
     .lt-row-group :is(td, th)     { border-bottom: 1.5px solid #ddd; }
     .lt-stub, .lt-row-group th { text-align: left; }
-    .lt-indent { padding-left: 1em; }
   }
   thead th {
     border-bottom: 1px solid #888;
     &:not(:first-child) { border-left: var(--bg); }
     &:not(:last-child) { border-right: var(--bg); }
   }
+  .lt-indent { padding-left: 1em; }
   .lt-spanner-row {
     .lt-spanner       { border-bottom: 1px solid #bbb; text-align: center; }
     .lt-spanner-empty { border-bottom: none; }
