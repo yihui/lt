@@ -202,7 +202,7 @@ d = data.frame(
 )
 lt(d, row_label = "Metric") |>
   lt_format("Value", decimals = 2) |>
-  lt_sub("Value", missing = "n/a", zero = "—", small = 0.001, small_text = "<0.001")
+  lt_sub("Value", missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
 ```
 
 ## Cell styling
