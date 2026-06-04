@@ -74,7 +74,8 @@ s = gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) |>
   summary()
 
 s |>
-  lt(row_group = "Analysis", row_label = "Bound") |>
+  lt() |>
+  lt_group(~ Analysis) |>
   lt_header(
     title = "Bound summary for AHR design",
     subtitle = "AHR approximations of ~HR at bound"
@@ -105,7 +106,8 @@ Equivalent of `gs_design_ahr() |> summary() |> as_gt()`.
 s = gs_design_ahr() |> summary()
 
 s |>
-  lt(row_group = "Analysis", row_label = "Bound") |>
+  lt() |>
+  lt_group(~ Analysis) |>
   lt_header(
     title = "Bound summary for AHR design",
     subtitle = "AHR approximations of ~HR at bound"
@@ -130,7 +132,7 @@ now the chunks above show that the gt → lt mapping is mechanical:
 
 | gt                                | lt                                  |
 |-----------------------------------|-------------------------------------|
-| `gt::gt(groupname_col=, rowname_col=)` | `lt(row_group=, row_label=)`   |
+| `gt::gt(groupname_col=, rowname_col=)` | `lt_group(~ col)` (first column auto-becomes stub) |
 | `gt::tab_header(title=, subtitle=)`    | `lt_header(title=, subtitle=)` |
 | `gt::tab_spanner(label=, columns=)`    | `lt_spanner(label=, columns=)` |
 | `gt::tab_footnote(footnote=, locations=cells_*())` | `lt_footnote(text, where, columns)` |

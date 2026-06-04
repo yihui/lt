@@ -15,7 +15,6 @@
 </head>
 <body>
 <nav><p><a href="index.html">Home</a>
-<a href="articles.html">Articles</a>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="playground/">Playground</a></p></nav>
@@ -125,7 +124,8 @@ s = gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) |&gt;
   summary()
 
 s |&gt;
-  lt(row_group = &quot;Analysis&quot;, row_label = &quot;Bound&quot;) |&gt;
+  lt() |&gt;
+  lt_group(~ Analysis) |&gt;
   lt_header(
     title = &quot;Bound summary for AHR design&quot;,
     subtitle = &quot;AHR approximations of ~HR at bound&quot;
@@ -156,7 +156,8 @@ Equivalent of `gs_design_ahr() |&gt; summary() |&gt; as_gt()`.
 s = gs_design_ahr() |&gt; summary()
 
 s |&gt;
-  lt(row_group = &quot;Analysis&quot;, row_label = &quot;Bound&quot;) |&gt;
+  lt() |&gt;
+  lt_group(~ Analysis) |&gt;
   lt_header(
     title = &quot;Bound summary for AHR design&quot;,
     subtitle = &quot;AHR approximations of ~HR at bound&quot;
@@ -181,7 +182,7 @@ now the chunks above show that the gt → lt mapping is mechanical:
 
 | gt                                | lt                                  |
 |-----------------------------------|-------------------------------------|
-| `gt::gt(groupname_col=, rowname_col=)` | `lt(row_group=, row_label=)`   |
+| `gt::gt(groupname_col=, rowname_col=)` | `lt_group(~ col)` (first column auto-becomes stub) |
 | `gt::tab_header(title=, subtitle=)`    | `lt_header(title=, subtitle=)` |
 | `gt::tab_spanner(label=, columns=)`    | `lt_spanner(label=, columns=)` |
 | `gt::tab_footnote(footnote=, locations=cells_*())` | `lt_footnote(text, where, columns)` |
@@ -243,15 +244,17 @@ d = data.frame(
   Q1 = c(1234567.891, 987654.321, 246913.570),
   Q2 = c(1345678.912, 1012345.678, 333333.234)
 )
-lt(d, row_label = &quot;Metric&quot;) |&gt;
-  lt_format(c(&quot;Q1&quot;, &quot;Q2&quot;), decimals = 2)
+lt(d) |&gt;
+  lt_stub(~ Metric) |&gt;
+  lt_format(~ Q1 + Q2, decimals = 2)
 ```
 
 ### Big mark (thousands separator)
 
 ```{r}
-lt(d, row_label = &quot;Metric&quot;) |&gt;
-  lt_format(c(&quot;Q1&quot;, &quot;Q2&quot;), decimals = 0, big_mark = &quot;,&quot;)
+lt(d) |&gt;
+  lt_stub(~ Metric) |&gt;
+  lt_format(~ Q1 + Q2, decimals = 0, big_mark = &quot;,&quot;)
 ```
 
 ## Footnotes
@@ -294,10 +297,11 @@ lt(head(iris)) |&gt;
 
 ## Row groups
 
-### Auto-detected row groups
+### Group by column
 
-Pass `row_group` to `lt()` to partition rows by a column's values. The
-column is removed from the body and its values become group headers:
+Pass a column name to `lt_group()` to partition rows by that column's
+values. The column is removed from the body and its values become group
+headers:
 
 ```{r}
 d = data.frame(
@@ -305,15 +309,17 @@ d = data.frame(
   City = c(&quot;New York&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Portland&quot;, &quot;Denver&quot;),
   Population = c(8336817, 675647, 737015, 652503, 715522)
 )
-lt(d, row_group = &quot;Region&quot;) |&gt;
+lt(d) |&gt;
+  lt_group(~ Region) |&gt;
   lt_header(title = &quot;US Cities by Region&quot;) |&gt;
-  lt_format(&quot;Population&quot;, big_mark = &quot;,&quot;)
+  lt_format(~ Population, big_mark = &quot;,&quot;)
 ```
 
 ### Row groups with a stub
 
-Use `row_label` to designate a column as the row &quot;stub&quot; (left-aligned label
-column with no header):
+When groups exist, the first visible column is automatically used as the
+row stub. Use `lt_stub()` only to override that default (e.g., to pick a
+non-first column):
 
 ```{r}
 d = data.frame(
@@ -322,15 +328,16 @@ d = data.frame(
   Calories = c(95, 105, 25, 55),
   Fiber_g = c(4.4, 3.1, 2.8, 5.1)
 )
-lt(d, row_group = &quot;Category&quot;, row_label = &quot;Item&quot;) |&gt;
+lt(d) |&gt;
+  lt_group(~ Category) |&gt;
   lt_header(title = &quot;Nutritional Information&quot;) |&gt;
-  lt_format(&quot;Fiber_g&quot;, decimals = 1)
+  lt_format(~ Fiber_g, decimals = 1)
 ```
 
 ### Manual row groups
 
-Use `lt_group()` when you need explicit control over which rows belong to
-each group:
+Use named arguments in `lt_group()` for explicit control over which rows
+belong to each group:
 
 ```{r}
 lt(head(mtcars[, 1:4])) |&gt;
@@ -348,9 +355,10 @@ d = data.frame(
   n = c(67, 65, 64),
   pct = c(100, 97.0, 95.5)
 )
-lt(d, row_label = &quot;stat&quot;) |&gt;
-  lt_format(&quot;pct&quot;, decimals = 1) |&gt;
-  lt_merge(c(&quot;n&quot;, &quot;pct&quot;), pattern = &quot;{1} ({2}%)&quot;) |&gt;
+lt(d) |&gt;
+  lt_stub(~ stat) |&gt;
+  lt_format(~ pct, decimals = 1) |&gt;
+  lt_merge(~ n + pct, pattern = &quot;{1} ({2}%)&quot;) |&gt;
   lt_cols_label(n = &quot;n (%)&quot;)
 ```
 
@@ -366,9 +374,10 @@ d = data.frame(
   ci_lo = c(0.40, 0.57, NA),
   ci_hi = c(0.82, 1.01, NA)
 )
-lt(d, row_label = &quot;endpoint&quot;) |&gt;
-  lt_format(c(&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;), decimals = 2) |&gt;
-  lt_merge(c(&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;), pattern = &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot;) |&gt;
+lt(d) |&gt;
+  lt_stub(~ endpoint) |&gt;
+  lt_format(~ est + ci_lo + ci_hi, decimals = 2) |&gt;
+  lt_merge(~ est + ci_lo + ci_hi, pattern = &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot;) |&gt;
   lt_cols_label(est = &quot;Estimate (95% CI)&quot;)
 ```
 
@@ -382,7 +391,8 @@ d = data.frame(
             &quot;SOC: GI&quot;, &quot;Nausea&quot;),
   n_pct = c(&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;)
 )
-lt(d, row_label = &quot;label&quot;) |&gt;
+lt(d) |&gt;
+  lt_stub(~ label) |&gt;
   lt_header(&quot;Adverse Events&quot;, &quot;Safety Population&quot;) |&gt;
   lt_indent(c(2, 5), level = 1) |&gt;
   lt_indent(c(3, 4, 6), level = 2)
@@ -395,9 +405,10 @@ d = data.frame(
   Metric = c(&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;),
   Value = c(0.62, 0.0003, 0, NA)
 )
-lt(d, row_label = &quot;Metric&quot;) |&gt;
-  lt_format(&quot;Value&quot;, decimals = 2) |&gt;
-  lt_sub(&quot;Value&quot;, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt;0.001&quot;)
+lt(d) |&gt;
+  lt_stub(~ Metric) |&gt;
+  lt_format(~ Value, decimals = 2) |&gt;
+  lt_sub(~ Value, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt; 0.001&quot;)
 ```
 
 ## Cell styling
@@ -411,9 +422,10 @@ d = data.frame(
   HR = c(0.62, 0.79, 0.91),
   P = c(0.001, 0.042, 0.38)
 )
-lt(d, row_label = &quot;Endpoint&quot;) |&gt;
-  lt_format(&quot;HR&quot;, decimals = 2) |&gt;
-  lt_format(&quot;P&quot;, decimals = 3) |&gt;
+lt(d) |&gt;
+  lt_stub(~ Endpoint) |&gt;
+  lt_format(~ HR, decimals = 2) |&gt;
+  lt_format(~ P, decimals = 3) |&gt;
   lt_style(&quot;P&quot;, rows = 1:2L, bold = TRUE, color = &quot;#06c&quot;) |&gt;
   lt_style(&quot;HR&quot;, rows = 1L, bg = &quot;#e8f4e8&quot;, borderBottom = &quot;2px solid #4a4&quot;)
 ```
@@ -440,7 +452,8 @@ d = data.frame(
   stat = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
   value = c(&quot;30&quot;, &quot;4.2&quot;, &quot;31&quot;, &quot;6.8&quot;)
 )
-lt(d, row_group = &quot;arm&quot;, row_label = &quot;stat&quot;) |&gt;
+lt(d) |&gt;
+  lt_group(~ arm) |&gt;
   lt_group(&quot;Treatment&quot;, &quot;Placebo&quot;)
 ```
 
@@ -451,7 +464,8 @@ d = data.frame(
   endpoint = c(&quot;OS&quot;, &quot;PFS&quot;, &quot;ORR&quot;),
   result = c(&quot;0.72&quot;, &quot;0.58&quot;, &quot;42%&quot;)
 )
-lt(d, row_label = &quot;endpoint&quot;) |&gt;
+lt(d) |&gt;
+  lt_stub(~ endpoint) |&gt;
   lt_stubhead(&quot;Endpoint&quot;) |&gt;
   lt_cols_label(result = &quot;Result&quot;)
 ```
@@ -467,7 +481,8 @@ d = data.frame(
   CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
   P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
 )
-lt(d, row_group = &quot;Group&quot;, row_label = &quot;Endpoint&quot;) |&gt;
+lt(d) |&gt;
+  lt_group(~ Group) |&gt;
   lt_header(
     title = &quot;Study Results&quot;,
     subtitle = &quot;Primary and secondary endpoints&quot;

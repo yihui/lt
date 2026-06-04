@@ -4,7 +4,20 @@ title: Hello lt
 
 ```{r}
 library(lt)
-lt(head(mtcars[, 1:6])) |>
-  lt_header(title = "Motor Trend Cars", subtitle = "First six observations") |>
-  lt_format(c("mpg", "disp", "drat", "wt"), decimals = 1)
+
+d = data.frame(
+  Group = c("Treatment", "Treatment", "Control", "Control"),
+  Endpoint = c("Primary", "Secondary", "Primary", "Secondary"),
+  Estimate = c(0.6123, 0.7891, 0.4567, 0.5432),
+  CI_Lower = c(0.4012, 0.5678, 0.2345, 0.3210),
+  CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
+  P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
+)
+lt(d) |>
+  lt_group(~ Group) |>
+  lt_header("Study Results", "Primary and secondary endpoints") |>
+  lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |>
+  lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |>
+  lt_format(~ P_Value, decimals = 4) |>
+  lt_footnote("Two-sided p-value from log-rank test.", "column", ~ P_Value)
 ```

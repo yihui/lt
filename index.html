@@ -15,29 +15,20 @@
 </head>
 <body>
 <nav><p><a href="index.html">Home</a>
-<a href="articles.html">Articles</a>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="playground/">Playground</a></p></nav>
 <div class="frontmatter">
 <div class="title"><h1>lt: Lightweight Tables via JSON Specs and JavaScript</h1></div>
-<div class="date"><h3>2026-06-03</h3></div>
+<div class="date"><h3>2026-06-04</h3></div>
 </div>
 <div class="body">
 <div id="TOC">
 <ul class="numbered">
-<li><a href="#sec:grammar"><span class="section-number main-number">1</span> Grammar</a></li>
-<li><a href="#sec:examples"><span class="section-number main-number">2</span> Examples</a>
-<ul>
-<li><a href="#sec:basic-table"><span class="section-number">2.1</span> Basic table</a></li>
-<li><a href="#sec:title-spanner-and-formatting"><span class="section-number">2.2</span> Title, spanner, and formatting</a></li>
-<li><a href="#sec:row-groups-and-footnotes"><span class="section-number">2.3</span> Row groups and footnotes</a></li>
-<li><a href="#sec:clinical-trial-example-gsdesign2"><span class="section-number">2.4</span> Clinical-trial example (gsDesign2)</a></li>
-</ul>
-</li>
-<li><a href="#sec:installation"><span class="section-number main-number">3</span> Installation</a></li>
-<li><a href="#sec:acknowledgements"><span class="section-number main-number">4</span> Acknowledgements</a></li>
-<li><a href="#sec:status"><span class="section-number main-number">5</span> Status</a></li>
+<li><a href="#sec:example"><span class="section-number main-number">1</span> Example</a></li>
+<li><a href="#sec:installation"><span class="section-number main-number">2</span> Installation</a></li>
+<li><a href="#sec:acknowledgements"><span class="section-number main-number">3</span> Acknowledgements</a></li>
+<li><a href="#sec:status"><span class="section-number main-number">4</span> Status</a></li>
 <li><a href="#sec:appendix">Appendix</a></li>
 </ul>
 </div>
@@ -48,7 +39,7 @@
 </tr>
 <tr>
 <td>Version</td>
-<td>0.0.8</td>
+<td>0.0.9</td>
 </tr>
 <tr>
 <td>Description</td>
@@ -84,10 +75,6 @@ testit</td>
 <td><a href="https://github.com/yihui/lt/issues">https://github.com/yihui/lt/issues</a></td>
 </tr>
 <tr>
-<td>VignetteBuilder</td>
-<td>litedown</td>
-</tr>
-<tr>
 <td>Author</td>
 <td>Yihui Xie <a href="https://orcid.org/0000-0003-0645-5666"><img src="https://cloud.r-project.org/web/orcid.svg" alt="ORCID iD" class="orcid" /></a> [aut, cre]</td>
 </tr>
@@ -99,125 +86,30 @@ reports need — titles, column spanners, row groups, footnotes, and number
 formatting — without the heavy dependency stack. It targets HTML only (no
 LaTeX or RTF), which keeps the implementation minimal: the entire runtime
 is a single vanilla-JS file under 5 KB.</p>
-<h2 id="sec:grammar"><span class="section-number main-number">1</span> Grammar</h2>
-<p>A table is built in two steps:</p>
-<ol>
-<li><strong>Declare</strong> the table with <code>lt(data)</code>, optionally naming a column for
-row groups and a column for row labels (the “stub”).</li>
-<li><strong>Layer on</strong> structure with piped verbs:</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>Verb</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>lt_header()</code></td>
-<td>Title and subtitle</td>
-</tr>
-<tr>
-<td><code>lt_spanner()</code></td>
-<td>Label spanning multiple column headers</td>
-</tr>
-<tr>
-<td><code>lt_group()</code></td>
-<td>Manual row grouping / reorder groups</td>
-</tr>
-<tr>
-<td><code>lt_footnote()</code></td>
-<td>Anchored footnotes (title, column, spanner, group, body)</td>
-</tr>
-<tr>
-<td><code>lt_note()</code></td>
-<td>Unanchored footer note</td>
-</tr>
-<tr>
-<td><code>lt_align()</code></td>
-<td>Override column alignment</td>
-</tr>
-<tr>
-<td><code>lt_format()</code></td>
-<td>Number formatting (decimals, big mark)</td>
-</tr>
-<tr>
-<td><code>lt_merge()</code></td>
-<td>Combine columns with a pattern (e.g., “N (%)”)</td>
-</tr>
-<tr>
-<td><code>lt_indent()</code></td>
-<td>Hierarchical row indentation</td>
-</tr>
-<tr>
-<td><code>lt_sub()</code></td>
-<td>Replace NA/zero/small values with text</td>
-</tr>
-<tr>
-<td><code>lt_style()</code></td>
-<td>Cell-level styling (bold, color, background, borders)</td>
-</tr>
-<tr>
-<td><code>lt_cols_width()</code></td>
-<td>Set column widths</td>
-</tr>
-<tr>
-<td><code>lt_cols_move()</code></td>
-<td>Rearrange column order</td>
-</tr>
-<tr>
-<td><code>lt_cols_label()</code></td>
-<td>Rename column headers</td>
-</tr>
-<tr>
-<td><code>lt_stubhead()</code></td>
-<td>Label the stub (row label) column header</td>
-</tr>
-</tbody>
-</table>
-<p>The result prints to the RStudio Viewer / browser and can be embedded in
-R Markdown, Quarto (via litedown or knitr), and Shiny.</p>
-<h2 id="sec:examples"><span class="section-number main-number">2</span> Examples</h2>
-<h3 id="sec:basic-table"><span class="section-number">2.1</span> Basic table</h3>
+<h2 id="sec:example"><span class="section-number main-number">1</span> Example</h2>
 <pre><code class="language-r">library(lt)
 
-lt(head(mtcars[, 1:4]))
+d = data.frame(
+  Group = c(&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;),
+  Endpoint = c(&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Primary&quot;, &quot;Secondary&quot;),
+  Estimate = c(0.6123, 0.7891, 0.4567, 0.5432),
+  CI_Lower = c(0.4012, 0.5678, 0.2345, 0.3210),
+  CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
+  P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
+)
+lt(d) |&gt;
+  lt_group(~ Group) |&gt;
+  lt_header(&quot;Study Results&quot;, &quot;Primary and secondary endpoints&quot;) |&gt;
+  lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |&gt;
+  lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |&gt;
+  lt_format(~ P_Value, decimals = 4) |&gt;
+  lt_footnote(&quot;Two-sided p-value from log-rank test.&quot;, &quot;column&quot;, ~ P_Value)
 </code></pre>
-<h3 id="sec:title-spanner-and-formatting"><span class="section-number">2.2</span> Title, spanner, and formatting</h3>
-<pre><code class="language-r">lt(head(mtcars[, 1:4])) |&gt;
-  lt_header(&quot;Motor Trend Cars&quot;, &quot;First 6 rows&quot;) |&gt;
-  lt_spanner(&quot;Engine&quot;, c(&quot;cyl&quot;, &quot;disp&quot;)) |&gt;
-  lt_format(c(&quot;mpg&quot;, &quot;disp&quot;), decimals = 1)
-</code></pre>
-<h3 id="sec:row-groups-and-footnotes"><span class="section-number">2.3</span> Row groups and footnotes</h3>
-<pre><code class="language-r">lt(PlantGrowth, row_group = &quot;group&quot;) |&gt;
-  lt_header(&quot;Plant Growth Experiment&quot;) |&gt;
-  lt_footnote(&quot;Dried weight in grams&quot;, &quot;column&quot;, &quot;weight&quot;) |&gt;
-  lt_note(&quot;Source: Dobson (1983)&quot;)
-</code></pre>
-<h3 id="sec:clinical-trial-example-gsdesign2"><span class="section-number">2.4</span> Clinical-trial example (gsDesign2)</h3>
-<pre><code class="language-r">library(gsDesign2)
-
-fixed_design_ahr(
-  alpha = 0.025, power = 0.9,
-  enroll_rate = define_enroll_rate(duration = 18, rate = 20),
-  fail_rate = define_fail_rate(
-    duration = c(4, 100), fail_rate = log(2) / 12,
-    dropout_rate = .001, hr = c(1, .6)
-  ),
-  study_duration = 36
-) |&gt;
-  summary() |&gt;
-  lt() |&gt;
-  lt_header(&quot;Fixed Design under AHR Method&quot;) |&gt;
-  lt_footnote(&quot;Power based on average hazard ratio method.&quot;, &quot;title&quot;) |&gt;
-  lt_format(c(&quot;N&quot;, &quot;Events&quot;, &quot;AHR&quot;, &quot;Bound&quot;, &quot;Power&quot;), decimals = 4)
-</code></pre>
-<h2 id="sec:installation"><span class="section-number main-number">3</span> Installation</h2>
+<p>More examples at <a href="https://pkg.yihui.org/lt/examples.html">https://pkg.yihui.org/lt/examples.html</a>.</p>
+<h2 id="sec:installation"><span class="section-number main-number">2</span> Installation</h2>
 <pre><code class="language-r">remotes::install_github(&quot;yihui/lt&quot;)
 </code></pre>
-<h2 id="sec:acknowledgements"><span class="section-number main-number">4</span> Acknowledgements</h2>
+<h2 id="sec:acknowledgements"><span class="section-number main-number">3</span> Acknowledgements</h2>
 <p>This package was written with the help of Claude Code. While I have verified
 that it does not directly copy code from other projects, I do not have a clear
 picture of whether it may have indirectly reused open-source code. If you
@@ -230,7 +122,7 @@ team. The grammar of tables that <strong>gt</strong> pioneered — layering titl
 footnotes, and formatters onto a data frame — is a great idea; <strong>lt</strong> aims to
 provide a minimal re-implementation for contexts where a lighter footprint is
 preferred.</p>
-<h2 id="sec:status"><span class="section-number main-number">5</span> Status</h2>
+<h2 id="sec:status"><span class="section-number main-number">4</span> Status</h2>
 <p>Alpha. The first goal — feature parity with what <code>gsDesign2::as_gt()</code>
 needs (HTML output only) — is reached. We now look to the
 <a href="https://rconsortium.github.io/rtrs-wg/">R Tables for Regulatory Submissions</a>
@@ -239,12 +131,12 @@ row indentation, value substitution, and column hiding are in place.</p>
 <h2 id="sec:appendix" class="appendix">Appendix</h2>
 <p>To cite the package <strong>lt</strong> in publications, please use:</p>
 <p>Xie Y (2026). <em>lt: Lightweight Tables via JSON Specs and JavaScript</em>. R
-package version 0.0.8, <a href="https://github.com/yihui/lt">https://github.com/yihui/lt</a>.</p>
+package version 0.0.9, <a href="https://github.com/yihui/lt">https://github.com/yihui/lt</a>.</p>
 <pre><code class="language-latex">@Manual{,
   title = {lt: Lightweight Tables via JSON Specs and JavaScript},
   author = {Yihui Xie},
   year = {2026},
-  note = {R package version 0.0.8},
+  note = {R package version 0.0.9},
   url = {https://github.com/yihui/lt},
 }
 </code></pre>

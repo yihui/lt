@@ -15,7 +15,6 @@
 </head>
 <body>
 <nav><p><a href="../index.html">Home</a>
-<a href="../articles.html">Articles</a>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../playground/">Playground</a></p></nav>
@@ -43,7 +42,7 @@
 </li>
 <li><a href="#sec:row-groups"><span class="section-number main-number">8</span> Row groups</a>
 <ul>
-<li><a href="#sec:auto-detected-row-groups"><span class="section-number">8.1</span> Auto-detected row groups</a></li>
+<li><a href="#sec:group-by-column"><span class="section-number">8.1</span> Group by column</a></li>
 <li><a href="#sec:row-groups-with-a-stub"><span class="section-number">8.2</span> Row groups with a stub</a></li>
 <li><a href="#sec:manual-row-groups"><span class="section-number">8.3</span> Manual row groups</a></li>
 </ul>
@@ -69,7 +68,7 @@
 <p>Pass any data frame to <code>lt()</code>:</p>
 <pre><code class="language-r">lt(head(mtcars[, 1:6]))
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.47/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/css/lt.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -82,7 +81,7 @@
   }
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.47/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/js/lt.min.js" defer></script>
 <h2 id="sec:title-and-subtitle"><span class="section-number main-number">2</span> Title and subtitle</h2>
 <pre><code class="language-r">lt(head(iris[, 1:4])) |&gt;
   lt_header(title = &quot;Iris Measurements&quot;, subtitle = &quot;First six observations&quot;)
@@ -152,8 +151,9 @@ left-aligned. Override with <code>lt_align()</code>:</p>
   Q1 = c(1234567.891, 987654.321, 246913.570),
   Q2 = c(1345678.912, 1012345.678, 333333.234)
 )
-lt(d, row_label = &quot;Metric&quot;) |&gt;
-  lt_format(c(&quot;Q1&quot;, &quot;Q2&quot;), decimals = 2)
+lt(d) |&gt;
+  lt_stub(~ Metric) |&gt;
+  lt_format(~ Q1 + Q2, decimals = 2)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -162,19 +162,20 @@ lt(d, row_label = &quot;Metric&quot;) |&gt;
     "Q1": [1234567.891, 987654.321, 246913.57],
     "Q2": [1345678.912, 1012345.678, 333333.234]
   },
-  "row_label": "Metric",
   "ops": [
     {
       "type": "fmt_number",
       "columns": ["Q1", "Q2"],
       "decimals": 2
     }
-  ]
+  ],
+  "row_label": "Metric"
 }
 })</script>
 <h3 id="sec:big-mark-thousands-separator"><span class="section-number">4.2</span> Big mark (thousands separator)</h3>
-<pre><code class="language-r">lt(d, row_label = &quot;Metric&quot;) |&gt;
-  lt_format(c(&quot;Q1&quot;, &quot;Q2&quot;), decimals = 0, big_mark = &quot;,&quot;)
+<pre><code class="language-r">lt(d) |&gt;
+  lt_stub(~ Metric) |&gt;
+  lt_format(~ Q1 + Q2, decimals = 0, big_mark = &quot;,&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -183,7 +184,6 @@ lt(d, row_label = &quot;Metric&quot;) |&gt;
     "Q1": [1234567.891, 987654.321, 246913.57],
     "Q2": [1345678.912, 1012345.678, 333333.234]
   },
-  "row_label": "Metric",
   "ops": [
     {
       "type": "fmt_number",
@@ -191,7 +191,8 @@ lt(d, row_label = &quot;Metric&quot;) |&gt;
       "decimals": 0,
       "big_mark": ","
     }
-  ]
+  ],
+  "row_label": "Metric"
 }
 })</script>
 <h2 id="sec:footnotes"><span class="section-number main-number">5</span> Footnotes</h2>
@@ -313,17 +314,19 @@ lt(d, row_label = &quot;Metric&quot;) |&gt;
 }
 })</script>
 <h2 id="sec:row-groups"><span class="section-number main-number">8</span> Row groups</h2>
-<h3 id="sec:auto-detected-row-groups"><span class="section-number">8.1</span> Auto-detected row groups</h3>
-<p>Pass <code>row_group</code> to <code>lt()</code> to partition rows by a column’s values. The
-column is removed from the body and its values become group headers:</p>
+<h3 id="sec:group-by-column"><span class="section-number">8.1</span> Group by column</h3>
+<p>Pass a column name to <code>lt_group()</code> to partition rows by that column’s
+values. The column is removed from the body and its values become group
+headers:</p>
 <pre><code class="language-r">d = data.frame(
   Region = c(&quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;),
   City = c(&quot;New York&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Portland&quot;, &quot;Denver&quot;),
   Population = c(8336817, 675647, 737015, 652503, 715522)
 )
-lt(d, row_group = &quot;Region&quot;) |&gt;
+lt(d) |&gt;
+  lt_group(~ Region) |&gt;
   lt_header(title = &quot;US Cities by Region&quot;) |&gt;
-  lt_format(&quot;Population&quot;, big_mark = &quot;,&quot;)
+  lt_format(~ Population, big_mark = &quot;,&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -332,7 +335,6 @@ lt(d, row_group = &quot;Region&quot;) |&gt;
     "City": ["New York", "Boston", "Seattle", "Portland", "Denver"],
     "Population": [8336817, 675647, 737015, 652503, 715522]
   },
-  "row_group": "Region",
   "ops": [
     {
       "type": "fmt_number",
@@ -340,23 +342,26 @@ lt(d, row_group = &quot;Region&quot;) |&gt;
       "big_mark": ","
     }
   ],
+  "row_group": "Region",
   "header": {
     "title": "US Cities by Region"
   }
 }
 })</script>
 <h3 id="sec:row-groups-with-a-stub"><span class="section-number">8.2</span> Row groups with a stub</h3>
-<p>Use <code>row_label</code> to designate a column as the row “stub” (left-aligned label
-column with no header):</p>
+<p>When groups exist, the first visible column is automatically used as the
+row stub. Use <code>lt_stub()</code> only to override that default (e.g., to pick a
+non-first column):</p>
 <pre><code class="language-r">d = data.frame(
   Category = c(&quot;Fruits&quot;, &quot;Fruits&quot;, &quot;Vegetables&quot;, &quot;Vegetables&quot;),
   Item = c(&quot;Apple&quot;, &quot;Banana&quot;, &quot;Carrot&quot;, &quot;Broccoli&quot;),
   Calories = c(95, 105, 25, 55),
   Fiber_g = c(4.4, 3.1, 2.8, 5.1)
 )
-lt(d, row_group = &quot;Category&quot;, row_label = &quot;Item&quot;) |&gt;
+lt(d) |&gt;
+  lt_group(~ Category) |&gt;
   lt_header(title = &quot;Nutritional Information&quot;) |&gt;
-  lt_format(&quot;Fiber_g&quot;, decimals = 1)
+  lt_format(~ Fiber_g, decimals = 1)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -366,8 +371,6 @@ lt(d, row_group = &quot;Category&quot;, row_label = &quot;Item&quot;) |&gt;
     "Calories": [95, 105, 25, 55],
     "Fiber_g": [4.4, 3.1, 2.8, 5.1]
   },
-  "row_group": "Category",
-  "row_label": "Item",
   "ops": [
     {
       "type": "fmt_number",
@@ -375,14 +378,15 @@ lt(d, row_group = &quot;Category&quot;, row_label = &quot;Item&quot;) |&gt;
       "decimals": 1
     }
   ],
+  "row_group": "Category",
   "header": {
     "title": "Nutritional Information"
   }
 }
 })</script>
 <h3 id="sec:manual-row-groups"><span class="section-number">8.3</span> Manual row groups</h3>
-<p>Use <code>lt_group()</code> when you need explicit control over which rows belong to
-each group:</p>
+<p>Use named arguments in <code>lt_group()</code> for explicit control over which rows
+belong to each group:</p>
 <pre><code class="language-r">lt(head(mtcars[, 1:4])) |&gt;
   lt_group(&quot;First three&quot; = 1:3, &quot;Last three&quot; = 4:6)
 </code></pre>
@@ -416,9 +420,10 @@ automatically:</p>
   n = c(67, 65, 64),
   pct = c(100, 97.0, 95.5)
 )
-lt(d, row_label = &quot;stat&quot;) |&gt;
-  lt_format(&quot;pct&quot;, decimals = 1) |&gt;
-  lt_merge(c(&quot;n&quot;, &quot;pct&quot;), pattern = &quot;{1} ({2}%)&quot;) |&gt;
+lt(d) |&gt;
+  lt_stub(~ stat) |&gt;
+  lt_format(~ pct, decimals = 1) |&gt;
+  lt_merge(~ n + pct, pattern = &quot;{1} ({2}%)&quot;) |&gt;
   lt_cols_label(n = &quot;n (%)&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -428,7 +433,6 @@ lt(d, row_label = &quot;stat&quot;) |&gt;
     "n": [67, 65, 64],
     "pct": [100, 97, 95.5]
   },
-  "row_label": "stat",
   "ops": [
     {
       "type": "fmt_number",
@@ -447,7 +451,8 @@ lt(d, row_label = &quot;stat&quot;) |&gt;
         "n": "n (%)"
       }
     }
-  ]
+  ],
+  "row_label": "stat"
 }
 })</script>
 <h3 id="sec:conditional-merge-with-lt-lt-gt-gt"><span class="section-number">9.1</span> Conditional merge with <code>&lt;&lt; &gt;&gt;</code></h3>
@@ -459,9 +464,10 @@ column is empty/NA:</p>
   ci_lo = c(0.40, 0.57, NA),
   ci_hi = c(0.82, 1.01, NA)
 )
-lt(d, row_label = &quot;endpoint&quot;) |&gt;
-  lt_format(c(&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;), decimals = 2) |&gt;
-  lt_merge(c(&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;), pattern = &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot;) |&gt;
+lt(d) |&gt;
+  lt_stub(~ endpoint) |&gt;
+  lt_format(~ est + ci_lo + ci_hi, decimals = 2) |&gt;
+  lt_merge(~ est + ci_lo + ci_hi, pattern = &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot;) |&gt;
   lt_cols_label(est = &quot;Estimate (95% CI)&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -472,7 +478,6 @@ lt(d, row_label = &quot;endpoint&quot;) |&gt;
     "ci_lo": [0.4, 0.57, null],
     "ci_hi": [0.82, 1.01, null]
   },
-  "row_label": "endpoint",
   "ops": [
     {
       "type": "fmt_number",
@@ -491,7 +496,8 @@ lt(d, row_label = &quot;endpoint&quot;) |&gt;
         "est": "Estimate (95% CI)"
       }
     }
-  ]
+  ],
+  "row_label": "endpoint"
 }
 })</script>
 <h2 id="sec:row-indentation"><span class="section-number main-number">10</span> Row indentation</h2>
@@ -501,7 +507,8 @@ lt(d, row_label = &quot;endpoint&quot;) |&gt;
             &quot;SOC: GI&quot;, &quot;Nausea&quot;),
   n_pct = c(&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;)
 )
-lt(d, row_label = &quot;label&quot;) |&gt;
+lt(d) |&gt;
+  lt_stub(~ label) |&gt;
   lt_header(&quot;Adverse Events&quot;, &quot;Safety Population&quot;) |&gt;
   lt_indent(c(2, 5), level = 1) |&gt;
   lt_indent(c(3, 4, 6), level = 2)
@@ -512,7 +519,6 @@ lt(d, row_label = &quot;label&quot;) |&gt;
     "label": ["Any AE", "SOC: Cardiac", "Tachycardia", "Bradycardia", "SOC: GI", "Nausea"],
     "n_pct": ["45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)"]
   },
-  "row_label": "label",
   "ops": [
     {
       "type": "indent",
@@ -525,6 +531,7 @@ lt(d, row_label = &quot;label&quot;) |&gt;
       "level": 2
     }
   ],
+  "row_label": "label",
   "header": {
     "title": "Adverse Events",
     "subtitle": "Safety Population"
@@ -536,9 +543,10 @@ lt(d, row_label = &quot;label&quot;) |&gt;
   Metric = c(&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;),
   Value = c(0.62, 0.0003, 0, NA)
 )
-lt(d, row_label = &quot;Metric&quot;) |&gt;
-  lt_format(&quot;Value&quot;, decimals = 2) |&gt;
-  lt_sub(&quot;Value&quot;, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt;0.001&quot;)
+lt(d) |&gt;
+  lt_stub(~ Metric) |&gt;
+  lt_format(~ Value, decimals = 2) |&gt;
+  lt_sub(~ Value, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt; 0.001&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -546,7 +554,6 @@ lt(d, row_label = &quot;Metric&quot;) |&gt;
     "Metric": ["HR", "p-value", "Events", "Rate"],
     "Value": [0.62, 3e-04, 0, null]
   },
-  "row_label": "Metric",
   "ops": [
     {
       "type": "fmt_number",
@@ -559,9 +566,10 @@ lt(d, row_label = &quot;Metric&quot;) |&gt;
       "missing": "n/a",
       "zero": "—",
       "small": 0.001,
-      "small_text": "<0.001"
+      "small_text": "< 0.001"
     }
-  ]
+  ],
+  "row_label": "Metric"
 }
 })</script>
 <h2 id="sec:cell-styling"><span class="section-number main-number">12</span> Cell styling</h2>
@@ -572,9 +580,10 @@ property (camelCase or dash-case):</p>
   HR = c(0.62, 0.79, 0.91),
   P = c(0.001, 0.042, 0.38)
 )
-lt(d, row_label = &quot;Endpoint&quot;) |&gt;
-  lt_format(&quot;HR&quot;, decimals = 2) |&gt;
-  lt_format(&quot;P&quot;, decimals = 3) |&gt;
+lt(d) |&gt;
+  lt_stub(~ Endpoint) |&gt;
+  lt_format(~ HR, decimals = 2) |&gt;
+  lt_format(~ P, decimals = 3) |&gt;
   lt_style(&quot;P&quot;, rows = 1:2L, bold = TRUE, color = &quot;#06c&quot;) |&gt;
   lt_style(&quot;HR&quot;, rows = 1L, bg = &quot;#e8f4e8&quot;, borderBottom = &quot;2px solid #4a4&quot;)
 </code></pre>
@@ -585,7 +594,6 @@ lt(d, row_label = &quot;Endpoint&quot;) |&gt;
     "HR": [0.62, 0.79, 0.91],
     "P": [0.001, 0.042, 0.38]
   },
-  "row_label": "Endpoint",
   "ops": [
     {
       "type": "fmt_number",
@@ -609,7 +617,8 @@ lt(d, row_label = &quot;Endpoint&quot;) |&gt;
       "rows": [1],
       "css": "background:#e8f4e8;border-bottom:2px solid #4a4"
     }
-  ]
+  ],
+  "row_label": "Endpoint"
 }
 })</script>
 <h2 id="sec:column-widths"><span class="section-number main-number">13</span> Column widths</h2>
@@ -663,7 +672,8 @@ lt(d, row_label = &quot;Endpoint&quot;) |&gt;
   stat = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
   value = c(&quot;30&quot;, &quot;4.2&quot;, &quot;31&quot;, &quot;6.8&quot;)
 )
-lt(d, row_group = &quot;arm&quot;, row_label = &quot;stat&quot;) |&gt;
+lt(d) |&gt;
+  lt_group(~ arm) |&gt;
   lt_group(&quot;Treatment&quot;, &quot;Placebo&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -673,14 +683,13 @@ lt(d, row_group = &quot;arm&quot;, row_label = &quot;stat&quot;) |&gt;
     "stat": ["n", "Mean", "n", "Mean"],
     "value": ["30", "4.2", "31", "6.8"]
   },
-  "row_group": "arm",
-  "row_label": "stat",
   "ops": [
     {
       "type": "group_order",
       "order": ["Treatment", "Placebo"]
     }
-  ]
+  ],
+  "row_group": "arm"
 }
 })</script>
 <h2 id="sec:stubhead-label"><span class="section-number main-number">16</span> Stubhead label</h2>
@@ -688,7 +697,8 @@ lt(d, row_group = &quot;arm&quot;, row_label = &quot;stat&quot;) |&gt;
   endpoint = c(&quot;OS&quot;, &quot;PFS&quot;, &quot;ORR&quot;),
   result = c(&quot;0.72&quot;, &quot;0.58&quot;, &quot;42%&quot;)
 )
-lt(d, row_label = &quot;endpoint&quot;) |&gt;
+lt(d) |&gt;
+  lt_stub(~ endpoint) |&gt;
   lt_stubhead(&quot;Endpoint&quot;) |&gt;
   lt_cols_label(result = &quot;Result&quot;)
 </code></pre>
@@ -698,7 +708,6 @@ lt(d, row_label = &quot;endpoint&quot;) |&gt;
     "endpoint": ["OS", "PFS", "ORR"],
     "result": ["0.72", "0.58", "42%"]
   },
-  "row_label": "endpoint",
   "ops": [
     {
       "type": "stubhead",
@@ -710,7 +719,8 @@ lt(d, row_label = &quot;endpoint&quot;) |&gt;
         "result": "Result"
       }
     }
-  ]
+  ],
+  "row_label": "endpoint"
 }
 })</script>
 <h2 id="sec:combining-formatting-and-structure"><span class="section-number main-number">17</span> Combining formatting and structure</h2>
@@ -722,7 +732,8 @@ lt(d, row_label = &quot;endpoint&quot;) |&gt;
   CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
   P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
 )
-lt(d, row_group = &quot;Group&quot;, row_label = &quot;Endpoint&quot;) |&gt;
+lt(d) |&gt;
+  lt_group(~ Group) |&gt;
   lt_header(
     title = &quot;Study Results&quot;,
     subtitle = &quot;Primary and secondary endpoints&quot;
@@ -742,8 +753,6 @@ lt(d, row_group = &quot;Group&quot;, row_label = &quot;Endpoint&quot;) |&gt;
     "CI_Upper": [0.8234, 1.0104, 0.6789, 0.7654],
     "P_Value": [0.0012, 0.0456, 0.1234, 0.2345]
   },
-  "row_group": "Group",
-  "row_label": "Endpoint",
   "ops": [
     {
       "type": "fmt_number",
@@ -756,6 +765,7 @@ lt(d, row_group = &quot;Group&quot;, row_label = &quot;Endpoint&quot;) |&gt;
       "decimals": 4
     }
   ],
+  "row_group": "Group",
   "header": {
     "title": "Study Results",
     "subtitle": "Primary and secondary endpoints"

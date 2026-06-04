@@ -15,7 +15,6 @@
 </head>
 <body>
 <nav><p><a href="../index.html">Home</a>
-<a href="../articles.html">Articles</a>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../playground/">Playground</a></p></nav>
@@ -66,7 +65,7 @@ s |&gt;
   lt_footnote(attr(s, &quot;footnote&quot;), &quot;title&quot;) |&gt;
   lt_format(c(&quot;N&quot;, &quot;Events&quot;, &quot;AHR&quot;, &quot;Bound&quot;, &quot;Power&quot;), decimals = 4)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.47/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/css/lt.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -100,7 +99,7 @@ s |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.47/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/js/lt.min.js" defer></script>
 <h2 id="sec:fixed-design-fleming-harrington"><span class="section-number main-number">2</span> Fixed design — Fleming-Harrington</h2>
 <p>Equivalent of <code>fixed_design_fh() |&gt; summary() |&gt; as_gt()</code>.</p>
 <pre><code class="language-r">s = fixed_design_fh(
@@ -156,7 +155,8 @@ s |&gt;
   summary()
 
 s |&gt;
-  lt(row_group = &quot;Analysis&quot;, row_label = &quot;Bound&quot;) |&gt;
+  lt() |&gt;
+  lt_group(~ Analysis) |&gt;
   lt_header(
     title = &quot;Bound summary for AHR design&quot;,
     subtitle = &quot;AHR approximations of ~HR at bound&quot;
@@ -189,8 +189,6 @@ s |&gt;
     "Alternate hypothesis": [0.0349, 0.0231, 0.0668, 0.0897, 0.1008, 0.207],
     "Null hypothesis": [0.1208, 0.0038, 0.2655, 0.0122, 0.4303, 0.025]
   },
-  "row_group": "Analysis",
-  "row_label": "Bound",
   "ops": [
     {
       "type": "fmt_number",
@@ -198,6 +196,7 @@ s |&gt;
       "decimals": 4
     }
   ],
+  "row_group": "Analysis",
   "header": {
     "title": "Bound summary for AHR design",
     "subtitle": "AHR approximations of ~HR at bound"
@@ -231,7 +230,8 @@ s |&gt;
 <pre><code class="language-r">s = gs_design_ahr() |&gt; summary()
 
 s |&gt;
-  lt(row_group = &quot;Analysis&quot;, row_label = &quot;Bound&quot;) |&gt;
+  lt() |&gt;
+  lt_group(~ Analysis) |&gt;
   lt_header(
     title = &quot;Bound summary for AHR design&quot;,
     subtitle = &quot;AHR approximations of ~HR at bound&quot;
@@ -256,8 +256,6 @@ s |&gt;
     "Alternate hypothesis": [0.9],
     "Null hypothesis": [0.025]
   },
-  "row_group": "Analysis",
-  "row_label": "Bound",
   "ops": [
     {
       "type": "fmt_number",
@@ -265,6 +263,7 @@ s |&gt;
       "decimals": 4
     }
   ],
+  "row_group": "Analysis",
   "header": {
     "title": "Bound summary for AHR design",
     "subtitle": "AHR approximations of ~HR at bound"
@@ -293,7 +292,7 @@ now the chunks above show that the gt → lt mapping is mechanical:</p>
 <tbody>
 <tr>
 <td><code>gt::gt(groupname_col=, rowname_col=)</code></td>
-<td><code>lt(row_group=, row_label=)</code></td>
+<td><code>lt_group(~ col)</code> (first column auto-becomes stub)</td>
 </tr>
 <tr>
 <td><code>gt::tab_header(title=, subtitle=)</code></td>
