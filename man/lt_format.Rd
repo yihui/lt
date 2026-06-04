@@ -7,9 +7,10 @@
 lt_format(x, columns, decimals = NULL, big_mark = NULL)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character or integer vector of columns.}
+\item{columns}{Character or integer vector of columns (or a one-sided
+formula).}
 
 \item{decimals}{Number of decimal places (default \code{NULL} means no change).}
 
@@ -17,7 +18,7 @@ lt_format(x, columns, decimals = NULL, big_mark = NULL)
 none.}
 }
 \value{
-The \code{lt_tbl} with the formatting recorded.
+\code{x} with the formatting recorded.
 }
 \description{
 Control the number of decimal places and thousands separator for numeric

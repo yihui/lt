@@ -2,12 +2,12 @@
 % Please edit documentation in R/shiny.R
 \name{render_lt}
 \alias{render_lt}
-\title{Render an \code{lt_tbl} in Shiny}
+\title{Render an lt Table in Shiny}
 \usage{
 render_lt(expr, env = parent.frame(), quoted = FALSE)
 }
 \arguments{
-\item{expr}{An expression that returns an \code{lt_tbl} object.}
+\item{expr}{An expression that returns an \code{\link[=lt]{lt()}} object.}
 
 \item{env}{Environment in which to evaluate \code{expr}.}
 
@@ -17,5 +17,5 @@ render_lt(expr, env = parent.frame(), quoted = FALSE)
 A render function for use with \code{\link[=lt_output]{lt_output()}}.
 }
 \description{
-Render an \code{lt_tbl} in Shiny
+Render an lt Table in Shiny
 }

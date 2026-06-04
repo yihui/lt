@@ -7,12 +7,12 @@
 lt_cols_label(x, ...)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{...}{Named arguments of the form \code{col_name = "Display Label"}.}
 }
 \value{
-The \code{lt_tbl} with the column label overrides recorded.
+\code{x} with the column label overrides recorded.
 }
 \description{
 Override column headers without modifying the underlying data frame.

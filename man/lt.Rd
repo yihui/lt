@@ -17,13 +17,13 @@ labels. The column is removed from the body. Mirrors
 "stub", left-aligned, no header). \code{NULL} means no stub.}
 }
 \value{
-An object of class \code{lt_tbl}.
+A table object that can be piped into \verb{lt_*()} functions.
 }
 \description{
-Entry point of the lightweight grammar of tables. Returns an \code{lt_tbl}
-object (a list) that records the data plus a list of table-modifying
-operations. The object is rendered to HTML by \code{\link[=format]{format()}} (called
-automatically by the print method).
+Entry point of the lightweight grammar of tables. Returns an object (a
+list) that records the data plus a list of table-modifying operations. The
+object is rendered to HTML by \code{\link[=format]{format()}} (called automatically by the
+print method).
 }
 \examples{
 lt(head(mtcars[, 1:4]))

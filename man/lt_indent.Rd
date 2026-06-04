@@ -7,7 +7,7 @@
 lt_indent(x, rows, level = 1)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{rows}{Integer vector of 1-based row indices to indent.}
 
@@ -15,7 +15,7 @@ lt_indent(x, rows, level = 1)
 left padding.}
 }
 \value{
-The \code{lt_tbl} with the indentation recorded.
+\code{x} with the indentation recorded.
 }
 \description{
 Add hierarchical indentation to row labels (stub cells). Requires that

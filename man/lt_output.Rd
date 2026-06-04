@@ -2,7 +2,7 @@
 % Please edit documentation in R/shiny.R
 \name{lt_output}
 \alias{lt_output}
-\title{Shiny Output for an \code{lt_tbl}}
+\title{Shiny Output for lt}
 \usage{
 lt_output(outputId, ...)
 }
@@ -15,7 +15,7 @@ lt_output(outputId, ...)
 A Shiny UI element.
 }
 \description{
-Pair with \code{\link[=render_lt]{render_lt()}} to render an \code{lt_tbl} in a Shiny app. The UI side
+Pair with \code{\link[=render_lt]{render_lt()}} to render an \code{\link[=lt]{lt()}} table in a Shiny app. The UI side
 is a \verb{<div class="lt-output">} placeholder; an output binding swaps in
 the rendered \verb{<table>} whenever the server side re-evaluates the spec.
 No \code{renderUI()} involved — Shiny treats the table like any other custom

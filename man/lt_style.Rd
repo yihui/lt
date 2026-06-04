@@ -16,9 +16,10 @@ lt_style(
 )
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names (or \code{NULL} for all).}
+\item{columns}{Character vector of column names, a one-sided formula, or
+\code{NULL} for all.}
 
 \item{rows}{Integer vector of 1-based row indices (or \code{NULL} for all).}
 
@@ -35,7 +36,7 @@ camelCase (e.g., \code{borderLeft}) or quoted dash-case (e.g.,
 \code{`border-left`}). Values are CSS strings.}
 }
 \value{
-The \code{lt_tbl} with the style recorded.
+\code{x} with the style recorded.
 }
 \description{
 Apply CSS styling to specific cells. Target cells by column, row, or both.

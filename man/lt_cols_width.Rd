@@ -7,13 +7,13 @@
 lt_cols_width(x, ...)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{...}{Named arguments of the form \code{col_name = "width"}. Width
 can be any CSS value (e.g., \code{"100px"}, \code{"20\%"}, \code{"8em"}).}
 }
 \value{
-The \code{lt_tbl} with the column widths recorded.
+\code{x} with the column widths recorded.
 }
 \description{
 Set Column Widths

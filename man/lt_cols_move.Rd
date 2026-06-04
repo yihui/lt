@@ -7,15 +7,15 @@
 lt_cols_move(x, columns, after = NULL)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names to move.}
+\item{columns}{Character vector of column names (or a one-sided formula).}
 
 \item{after}{Column name after which to place the moved columns. Use
 \code{NULL} to move to the start.}
 }
 \value{
-The \code{lt_tbl} with the column move recorded.
+\code{x} with the column move recorded.
 }
 \description{
 Rearrange column display order without modifying the data frame.

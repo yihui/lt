@@ -7,14 +7,14 @@
 lt_header(x, title = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{title}{A character scalar.}
 
 \item{subtitle}{A character scalar.}
 }
 \value{
-The \code{lt_tbl} with the header recorded.
+\code{x} with the header recorded.
 }
 \description{
 Add a Title and Subtitle

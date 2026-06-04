@@ -7,15 +7,16 @@
 lt_footnote(x, text, where, columns = NULL, rows = NULL, match = NULL)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{text}{Footnote text.}
 
 \item{where}{One of \code{'title'}, \code{'subtitle'}, \code{'column'}, \code{'spanner'},
 \code{'group'}, or \code{'body'}.}
 
-\item{columns}{Character vector of column names (for \code{'column'} or \code{'body'}).
-For \code{'group'} with \code{match = "starts_with"}, a single prefix string.}
+\item{columns}{Character vector of column names or a one-sided formula (for
+\code{'column'} or \code{'body'}). For \code{'group'} with \code{match = "starts_with"}, a
+single prefix string.}
 
 \item{rows}{Integer vector of 1-based row indices (for \code{'body'}; \code{NULL}
 means all rows).}
@@ -24,7 +25,7 @@ means all rows).}
 \code{"starts_with"}, or \code{"all"}.}
 }
 \value{
-The \code{lt_tbl} with the footnote recorded.
+\code{x} with the footnote recorded.
 }
 \description{
 Attaches a footnote \code{text} to a table region. Footnotes are numbered

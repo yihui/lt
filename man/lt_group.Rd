@@ -7,14 +7,14 @@
 lt_group(x, ...)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{...}{Either named arguments of the form \code{"Label" = rows} (integer
 vector of 1-based row indices) to define manual groups, or unnamed
 character strings to reorder auto-detected groups.}
 }
 \value{
-The \code{lt_tbl} with the row groups recorded.
+\code{x} with the row groups recorded.
 }
 \description{
 Define manual row groups, or reorder auto-detected groups (from

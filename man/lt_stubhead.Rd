@@ -7,12 +7,12 @@
 lt_stubhead(x, label)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{label}{Character scalar for the stub column header.}
 }
 \value{
-The \code{lt_tbl} with the stubhead label recorded.
+\code{x} with the stubhead label recorded.
 }
 \description{
 Override the column header for the stub (row label) column.

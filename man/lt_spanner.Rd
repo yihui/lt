@@ -7,16 +7,20 @@
 lt_spanner(x, label, columns)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{label}{A character scalar — the spanner text.}
+\item{label}{A character scalar — the spanner text. Alternatively, a
+two-sided formula \code{Label ~ col1 + col2} providing both the label (LHS)
+and columns (RHS).}
 
-\item{columns}{A character vector of column names that the spanner covers.
-The columns must be contiguous in the body of the table.}
+\item{columns}{Character vector of column names (or a one-sided formula).}
 }
 \value{
-The \code{lt_tbl} with the spanner recorded.
+\code{x} with the spanner recorded.
 }
 \description{
 A spanner is a label rendered above a contiguous group of column headers.
+}
+\note{
+The columns must be contiguous in the body of the table.
 }

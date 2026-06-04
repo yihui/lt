@@ -1,9 +1,9 @@
 #' Add a Title and Subtitle
 #'
-#' @param x An `lt_tbl` object.
+#' @inheritParams lt_align
 #' @param title A character scalar.
 #' @param subtitle A character scalar.
-#' @return The `lt_tbl` with the header recorded.
+#' @return `x` with the header recorded.
 #' @export
 lt_header = function(x, title = NULL, subtitle = NULL) {
   x$header = drop_null(list(title = title, subtitle = subtitle))
@@ -14,13 +14,19 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
 #'
 #' A spanner is a label rendered above a contiguous group of column headers.
 #'
-#' @param x An `lt_tbl` object.
-#' @param label A character scalar — the spanner text.
-#' @param columns A character vector of column names that the spanner covers.
-#'   The columns must be contiguous in the body of the table.
-#' @return The `lt_tbl` with the spanner recorded.
+#' @inheritParams lt_align
+#' @param label A character scalar — the spanner text. Alternatively, a
+#'   two-sided formula `Label ~ col1 + col2` providing both the label (LHS)
+#'   and columns (RHS).
+#' @note The columns must be contiguous in the body of the table.
+#' @return `x` with the spanner recorded.
 #' @export
 lt_spanner = function(x, label, columns) {
+  if (inherits(label, 'formula')) {
+    columns = f_cols(label)
+    label = deparse(label[[2]])
+  }
+  columns = f_cols(columns)
   x$spanners = c(x$spanners, list(list(label = label, columns = I(as.character(columns)))))
   x
 }
@@ -30,11 +36,11 @@ lt_spanner = function(x, label, columns) {
 #' Define manual row groups, or reorder auto-detected groups (from
 #' `lt(data, row_group = "col")`). The display order matches argument order.
 #'
-#' @param x An `lt_tbl` object.
+#' @inheritParams lt_align
 #' @param ... Either named arguments of the form `"Label" = rows` (integer
 #'   vector of 1-based row indices) to define manual groups, or unnamed
 #'   character strings to reorder auto-detected groups.
-#' @return The `lt_tbl` with the row groups recorded.
+#' @return `x` with the row groups recorded.
 #' @export
 #' @examples
 #' # Manual groups
@@ -64,19 +70,21 @@ lt_group = function(x, ...) {
 #' Attaches a footnote `text` to a table region. Footnotes are numbered
 #' automatically in the order they are added (de-duplicated by text).
 #'
-#' @param x An `lt_tbl` object.
+#' @inheritParams lt_align
 #' @param text Footnote text.
 #' @param where One of `'title'`, `'subtitle'`, `'column'`, `'spanner'`,
 #'   `'group'`, or `'body'`.
-#' @param columns Character vector of column names (for `'column'` or `'body'`).
-#'   For `'group'` with `match = "starts_with"`, a single prefix string.
+#' @param columns Character vector of column names or a one-sided formula (for
+#'   `'column'` or `'body'`). For `'group'` with `match = "starts_with"`, a
+#'   single prefix string.
 #' @param rows Integer vector of 1-based row indices (for `'body'`; `NULL`
 #'   means all rows).
 #' @param match For `where = "group"`: one of `"exact"` (default),
 #'   `"starts_with"`, or `"all"`.
-#' @return The `lt_tbl` with the footnote recorded.
+#' @return `x` with the footnote recorded.
 #' @export
 lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL) {
+  columns = f_cols(columns)
   loc = switch(where,
     title = list(type = 'title', group = 'title'),
     subtitle = list(type = 'title', group = 'subtitle'),
@@ -104,9 +112,9 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
 #'
 #' Notes are rendered in the table footer below numbered footnotes.
 #'
-#' @param x An `lt_tbl` object.
+#' @inheritParams lt_align
 #' @param text Note text.
-#' @return The `lt_tbl` with the note recorded.
+#' @return `x` with the note recorded.
 #' @export
 lt_note = function(x, text) {
   x$notes = c(x$notes, list(text))
@@ -118,12 +126,13 @@ lt_note = function(x, text) {
 #' Override the auto-detected alignment for specific columns. By default,
 #' numeric columns are right-aligned and character columns are left-aligned.
 #'
-#' @param x An `lt_tbl` object.
-#' @param columns Character vector of column names.
+#' @param x An [lt()] object.
+#' @param columns Character vector of column names (or a one-sided formula).
 #' @param align One of `"left"`, `"center"`, or `"right"`.
-#' @return The `lt_tbl` with the alignment recorded.
+#' @return `x` with the alignment recorded.
 #' @export
 lt_align = function(x, columns, align = c('left', 'center', 'right')) {
+  columns = f_cols(columns)
   align = match.arg(align)
   add_op(x, 'align', columns = I(as.character(columns)), align = align)
 }
@@ -133,14 +142,16 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' Control the number of decimal places and thousands separator for numeric
 #' columns.
 #'
-#' @param x An `lt_tbl` object.
-#' @param columns Character or integer vector of columns.
+#' @inheritParams lt_align
+#' @param columns Character or integer vector of columns (or a one-sided
+#'   formula).
 #' @param decimals Number of decimal places (default `NULL` means no change).
 #' @param big_mark Thousands separator (e.g., `","`). `NULL` or `""` means
 #'   none.
-#' @return The `lt_tbl` with the formatting recorded.
+#' @return `x` with the formatting recorded.
 #' @export
 lt_format = function(x, columns, decimals = NULL, big_mark = NULL) {
+  columns = f_cols(columns)
   cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
   add_op(x, 'fmt_number', columns = I(cols), decimals = decimals,
     big_mark = if (nzchar(big_mark %||% '')) big_mark)
@@ -150,9 +161,9 @@ lt_format = function(x, columns, decimals = NULL, big_mark = NULL) {
 #'
 #' Override column headers without modifying the underlying data frame.
 #'
-#' @param x An `lt_tbl` object.
+#' @inheritParams lt_align
 #' @param ... Named arguments of the form `col_name = "Display Label"`.
-#' @return The `lt_tbl` with the column label overrides recorded.
+#' @return `x` with the column label overrides recorded.
 #' @export
 lt_cols_label = function(x, ...) {
   add_op(x, 'cols_label', labels = list(...))
@@ -163,18 +174,20 @@ lt_cols_label = function(x, ...) {
 #'
 #' Replace `NA`, zero, or small values with display text.
 #'
-#' @param x An `lt_tbl` object.
-#' @param columns Character vector of column names (or `NULL` for all).
+#' @inheritParams lt_align
+#' @param columns Character vector of column names, a one-sided formula, or
+#'   `NULL` for all.
 #' @param missing Replacement for `NA` cells (e.g., `"—"`). `NULL` to
 #'   leave NAs as empty strings (the default rendering).
 #' @param zero Replacement for zero values (e.g., `"—"`).
 #' @param small Threshold: values whose absolute value is below this are
 #'   replaced by `small_text`.
 #' @param small_text Text shown for values below `small` (e.g., `"<0.1"`).
-#' @return The `lt_tbl` with the substitution recorded.
+#' @return `x` with the substitution recorded.
 #' @export
 lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
                   small = NULL, small_text = NULL) {
+  columns = f_cols(columns)
   cols = if (!is.null(columns)) I(as.character(columns))
   add_op(x, 'sub', columns = cols, missing = missing, zero = zero,
     small = small, small_text = small_text)
@@ -185,11 +198,11 @@ lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
 #' Add hierarchical indentation to row labels (stub cells). Requires that
 #' the table was created with a `row_label` column via [lt()].
 #'
-#' @param x An `lt_tbl` object.
+#' @inheritParams lt_align
 #' @param rows Integer vector of 1-based row indices to indent.
 #' @param level Indent level (default 1). Each level adds one unit of
 #'   left padding.
-#' @return The `lt_tbl` with the indentation recorded.
+#' @return `x` with the indentation recorded.
 #' @export
 lt_indent = function(x, rows, level = 1) {
   add_op(x, 'indent', rows = I(as.integer(rows)), level = as.integer(level))
@@ -200,9 +213,10 @@ lt_indent = function(x, rows, level = 1) {
 #' Combine values from multiple columns into a single display column using
 #' a pattern. Source columns (all except the first) are hidden by default.
 #'
-#' @param x An `lt_tbl` object.
-#' @param columns Character vector of column names. The first column is the
-#'   target (receives merged content); the rest are sources.
+#' @inheritParams lt_align
+#' @param columns Character vector of column names (or a one-sided formula).
+#'   The first column is the target (receives merged content); the rest are
+#'   sources.
 #' @param pattern A glue-style template using `\{1\}`, `\{2\}`, etc. to refer
 #'   to columns by position. Wrap sections in `<<` and `>>` for conditional
 #'   NA handling: `"\{1\}<< (\{2\})>>"` drops the wrapped portion when any
@@ -210,10 +224,10 @@ lt_indent = function(x, rows, level = 1) {
 #'   separated by spaces.
 #' @param hide If `TRUE` (default), source columns (all but the first) are
 #'   automatically hidden.
-#' @return The `lt_tbl` with the merge recorded.
+#' @return `x` with the merge recorded.
 #' @export
 lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
-  columns = as.character(columns)
+  columns = f_cols(columns)
   if (length(columns) < 2) stop('lt_merge() requires at least 2 columns')
   add_op(x, 'merge', columns = I(columns), pattern = pattern, hide = hide)
 }
@@ -222,8 +236,9 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #'
 #' Apply CSS styling to specific cells. Target cells by column, row, or both.
 #'
-#' @param x An `lt_tbl` object.
-#' @param columns Character vector of column names (or `NULL` for all).
+#' @inheritParams lt_align
+#' @param columns Character vector of column names, a one-sided formula, or
+#'   `NULL` for all.
 #' @param rows Integer vector of 1-based row indices (or `NULL` for all).
 #' @param bold Logical: apply bold weight?
 #' @param italic Logical: apply italic style?
@@ -232,13 +247,14 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @param ... Additional CSS properties as named arguments. Names can be
 #'   camelCase (e.g., `borderLeft`) or quoted dash-case (e.g.,
 #'   `` `border-left` ``). Values are CSS strings.
-#' @return The `lt_tbl` with the style recorded.
+#' @return `x` with the style recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars[, 1:3])) |>
 #'   lt_style("mpg", rows = 1L, bold = TRUE, borderBottom = "2px solid red")
 lt_style = function(x, columns = NULL, rows = NULL, bold = NULL, italic = NULL,
                     color = NULL, bg = NULL, ...) {
+  columns = f_cols(columns)
   css = character()
   if (isTRUE(bold))   css = c(css, 'font-weight:bold')
   if (isTRUE(italic)) css = c(css, 'font-style:italic')
@@ -258,10 +274,10 @@ lt_style = function(x, columns = NULL, rows = NULL, bold = NULL, italic = NULL,
 
 #' Set Column Widths
 #'
-#' @param x An `lt_tbl` object.
+#' @inheritParams lt_align
 #' @param ... Named arguments of the form `col_name = "width"`. Width
 #'   can be any CSS value (e.g., `"100px"`, `"20%"`, `"8em"`).
-#' @return The `lt_tbl` with the column widths recorded.
+#' @return `x` with the column widths recorded.
 #' @export
 lt_cols_width = function(x, ...) {
   widths = list(...)
@@ -273,13 +289,13 @@ lt_cols_width = function(x, ...) {
 #'
 #' Rearrange column display order without modifying the data frame.
 #'
-#' @param x An `lt_tbl` object.
-#' @param columns Character vector of column names to move.
+#' @inheritParams lt_align
 #' @param after Column name after which to place the moved columns. Use
 #'   `NULL` to move to the start.
-#' @return The `lt_tbl` with the column move recorded.
+#' @return `x` with the column move recorded.
 #' @export
 lt_cols_move = function(x, columns, after = NULL) {
+  columns = f_cols(columns)
   add_op(x, 'cols_move', columns = I(as.character(columns)),
     after = if (!is.null(after)) as.character(after))
 }
@@ -289,13 +305,13 @@ lt_cols_move = function(x, columns, after = NULL) {
 #' Add user-supplied stylesheets that render after the built-in CSS, so
 #' rules can override the defaults.
 #'
-#' @param x An `lt_tbl` object.
+#' @inheritParams lt_align
 #' @param ... One or more character scalars: URLs (containing `://` or
 #'   starting with `//`) or paths to local `.css` files. A bare filename
 #'   (no directory component) that does not exist in the working directory
 #'   is resolved against the stylesheets shipped with lt, so e.g.
 #'   `lt_css(x, "lt-gt.css")` uses the bundled gt-like theme.
-#' @return The `lt_tbl` with the stylesheets recorded.
+#' @return `x` with the stylesheets recorded.
 #' @export
 #' @examples
 #' \dontrun{
@@ -327,9 +343,9 @@ is_url = function(x) grepl('^(https?:)?//', x)
 #'
 #' Override the column header for the stub (row label) column.
 #'
-#' @param x An `lt_tbl` object.
+#' @inheritParams lt_align
 #' @param label Character scalar for the stub column header.
-#' @return The `lt_tbl` with the stubhead label recorded.
+#' @return `x` with the stubhead label recorded.
 #' @export
 lt_stubhead = function(x, label) {
   add_op(x, 'stubhead', label = label)

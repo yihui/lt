@@ -7,10 +7,11 @@
 lt_merge(x, columns, pattern = NULL, hide = TRUE)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names. The first column is the
-target (receives merged content); the rest are sources.}
+\item{columns}{Character vector of column names (or a one-sided formula).
+The first column is the target (receives merged content); the rest are
+sources.}
 
 \item{pattern}{A glue-style template using \verb{\\\{1\\\}}, \verb{\\\{2\\\}}, etc. to refer
 to columns by position. Wrap sections in \verb{<<} and \verb{>>} for conditional
@@ -22,7 +23,7 @@ separated by spaces.}
 automatically hidden.}
 }
 \value{
-The \code{lt_tbl} with the merge recorded.
+\code{x} with the merge recorded.
 }
 \description{
 Combine values from multiple columns into a single display column using

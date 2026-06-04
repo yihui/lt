@@ -11,10 +11,10 @@
 
 #' Create a Table Specification
 #'
-#' Entry point of the lightweight grammar of tables. Returns an `lt_tbl`
-#' object (a list) that records the data plus a list of table-modifying
-#' operations. The object is rendered to HTML by [format()] (called
-#' automatically by the print method).
+#' Entry point of the lightweight grammar of tables. Returns an object (a
+#' list) that records the data plus a list of table-modifying operations. The
+#' object is rendered to HTML by [format()] (called automatically by the
+#' print method).
 #'
 #' @param data A data frame (or anything coercible to one).
 #' @param row_group Name of a column whose values should become row-group
@@ -22,7 +22,7 @@
 #'   `dplyr::group_by()` + `gt::gt()`.
 #' @param row_label Name of a column whose values become row labels (the
 #'   "stub", left-aligned, no header). `NULL` means no stub.
-#' @return An object of class `lt_tbl`.
+#' @return A table object that can be piped into `lt_*()` functions.
 #' @export
 #' @examples
 #' lt(head(mtcars[, 1:4]))
@@ -53,3 +53,6 @@ add_op = function(x, type, ...) {
 }
 
 `%||%` = function(x, y) if (is.null(x)) y else x
+
+# If x is a formula, extract variable names from its RHS; otherwise return as-is
+f_cols = function(x) if (inherits(x, 'formula')) all.vars(x[[length(x)]]) else x

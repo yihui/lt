@@ -7,14 +7,14 @@
 lt_align(x, columns, align = c("left", "center", "right"))
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names.}
+\item{columns}{Character vector of column names (or a one-sided formula).}
 
 \item{align}{One of \code{"left"}, \code{"center"}, or \code{"right"}.}
 }
 \value{
-The \code{lt_tbl} with the alignment recorded.
+\code{x} with the alignment recorded.
 }
 \description{
 Override the auto-detected alignment for specific columns. By default,

@@ -7,7 +7,7 @@
 lt_css(x, ...)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{...}{One or more character scalars: URLs (containing \verb{://} or
 starting with \verb{//}) or paths to local \code{.css} files. A bare filename
@@ -16,7 +16,7 @@ is resolved against the stylesheets shipped with lt, so e.g.
 \code{lt_css(x, "lt-gt.css")} uses the bundled gt-like theme.}
 }
 \value{
-The \code{lt_tbl} with the stylesheets recorded.
+\code{x} with the stylesheets recorded.
 }
 \description{
 Add user-supplied stylesheets that render after the built-in CSS, so

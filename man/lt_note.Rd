@@ -7,12 +7,12 @@
 lt_note(x, text)
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{text}{Note text.}
 }
 \value{
-The \code{lt_tbl} with the note recorded.
+\code{x} with the note recorded.
 }
 \description{
 Notes are rendered in the table footer below numbered footnotes.

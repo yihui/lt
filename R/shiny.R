@@ -12,9 +12,9 @@ lt_dependency = function() htmltools::htmlDependency(
   script = c('lt.js', 'lt-binding.js')
 )
 
-#' Shiny Output for an `lt_tbl`
+#' Shiny Output for lt
 #'
-#' Pair with [render_lt()] to render an `lt_tbl` in a Shiny app. The UI side
+#' Pair with [render_lt()] to render an [lt()] table in a Shiny app. The UI side
 #' is a `<div class="lt-output">` placeholder; an output binding swaps in
 #' the rendered `<table>` whenever the server side re-evaluates the spec.
 #' No `renderUI()` involved — Shiny treats the table like any other custom
@@ -29,9 +29,9 @@ lt_output = function(outputId, ...) shiny::tagList(
   shiny::div(id = outputId, class = 'lt-output')
 )
 
-#' Render an `lt_tbl` in Shiny
+#' Render an lt Table in Shiny
 #'
-#' @param expr An expression that returns an `lt_tbl` object.
+#' @param expr An expression that returns an [lt()] object.
 #' @param env Environment in which to evaluate `expr`.
 #' @param quoted Whether `expr` is already quoted.
 #' @return A render function for use with [lt_output()].

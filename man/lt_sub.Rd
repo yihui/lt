@@ -14,9 +14,10 @@ lt_sub(
 )
 }
 \arguments{
-\item{x}{An \code{lt_tbl} object.}
+\item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names (or \code{NULL} for all).}
+\item{columns}{Character vector of column names, a one-sided formula, or
+\code{NULL} for all.}
 
 \item{missing}{Replacement for \code{NA} cells (e.g., \code{"—"}). \code{NULL} to
 leave NAs as empty strings (the default rendering).}
@@ -29,7 +30,7 @@ replaced by \code{small_text}.}
 \item{small_text}{Text shown for values below \code{small} (e.g., \code{"<0.1"}).}
 }
 \value{
-The \code{lt_tbl} with the substitution recorded.
+\code{x} with the substitution recorded.
 }
 \description{
 Replace \code{NA}, zero, or small values with display text.
