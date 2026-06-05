@@ -2,12 +2,17 @@
 % Please edit documentation in R/lt.R
 \name{lt}
 \alias{lt}
+\alias{lt.default}
 \title{Create a Table Specification}
 \usage{
-lt(data, auto_fmt = TRUE)
+lt(data, ...)
+
+\method{lt}{default}(data, auto_fmt = TRUE, ...)
 }
 \arguments{
 \item{data}{A data frame (or anything coercible to one).}
+
+\item{...}{Arguments passed to methods.}
 
 \item{auto_fmt}{Whether to automatically format numeric columns (rounding,
 thousand separators, percentage detection). Set to \code{FALSE} to disable

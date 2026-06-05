@@ -17,6 +17,7 @@
 #' print method).
 #'
 #' @param data A data frame (or anything coercible to one).
+#' @param ... Arguments passed to methods.
 #' @param auto_fmt Whether to automatically format numeric columns (rounding,
 #'   thousand separators, percentage detection). Set to `FALSE` to disable
 #'   for the whole table; use [lt_format()] on specific columns to disable
@@ -25,7 +26,11 @@
 #' @export
 #' @examples
 #' lt(head(mtcars[, 1:4]))
-lt = function(data, auto_fmt = TRUE) {
+lt = function(data, ...) UseMethod('lt')
+
+#' @rdname lt
+#' @export
+lt.default = function(data, auto_fmt = TRUE, ...) {
   grp = if (inherits(data, 'grouped_df'))
     setdiff(names(attr(data, 'groups')), '.rows')
   data = as.data.frame(
