@@ -89,6 +89,15 @@ lt(head(iris)) |>
   lt_spanner("Petal", c("Petal.Length", "Petal.Width"))
 ```
 
+### Auto-inferred spanners
+
+When column names share a common prefix separated by `.` or `_`, call
+`lt_spanner()` with no arguments to infer spanners automatically:
+
+```{r}
+lt(head(iris)) |> lt_spanner()
+```
+
 ### Spanner with formatting
 
 ```{r}

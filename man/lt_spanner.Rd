@@ -4,16 +4,19 @@
 \alias{lt_spanner}
 \title{Add a Column Spanner}
 \usage{
-lt_spanner(x, label, columns)
+lt_spanner(x, label, columns, sep = "[._]")
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{label}{A character scalar — the spanner text. Alternatively, a
 two-sided formula \code{Label ~ col1 + col2} providing both the label (LHS)
-and columns (RHS).}
+and columns (RHS). When missing, spanners are inferred from column names.}
 
-\item{columns}{Character vector of column names (or a one-sided formula).}
+\item{columns}{Column names (character or formula). When missing, inferred
+from column names.}
+
+\item{sep}{Separator pattern for auto-inference (default \code{"[._]"}).}
 }
 \value{
 \code{x} with the spanner recorded.
@@ -21,6 +24,19 @@ and columns (RHS).}
 \description{
 A spanner is a label rendered above a contiguous group of column headers.
 }
+\details{
+When called with no \code{label} or \code{columns}, infers spanners from column
+names by splitting on the first \code{.} or \verb{_} separator. Contiguous columns
+sharing a prefix are grouped under that prefix, and column labels are
+shortened to the suffix.
+}
 \note{
 The columns must be contiguous in the body of the table.
+}
+\examples{
+# Explicit spanner
+lt(head(iris)) |> lt_spanner("Sepal", c("Sepal.Length", "Sepal.Width"))
+
+# Auto-infer from column names
+lt(head(iris)) |> lt_spanner()
 }

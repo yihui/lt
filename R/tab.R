@@ -14,20 +14,66 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
 #'
 #' A spanner is a label rendered above a contiguous group of column headers.
 #'
+#' When called with no `label` or `columns`, infers spanners from column
+#' names by splitting on the first `.` or `_` separator. Contiguous columns
+#' sharing a prefix are grouped under that prefix, and column labels are
+#' shortened to the suffix.
+#'
 #' @inheritParams lt_align
 #' @param label A character scalar — the spanner text. Alternatively, a
 #'   two-sided formula `Label ~ col1 + col2` providing both the label (LHS)
-#'   and columns (RHS).
+#'   and columns (RHS). When missing, spanners are inferred from column names.
+#' @param columns Column names (character or formula). When missing, inferred
+#'   from column names.
+#' @param sep Separator pattern for auto-inference (default `"[._]"`).
 #' @note The columns must be contiguous in the body of the table.
 #' @return `x` with the spanner recorded.
 #' @export
-lt_spanner = function(x, label, columns) {
+#' @examples
+#' # Explicit spanner
+#' lt(head(iris)) |> lt_spanner("Sepal", c("Sepal.Length", "Sepal.Width"))
+#'
+#' # Auto-infer from column names
+#' lt(head(iris)) |> lt_spanner()
+lt_spanner = function(x, label, columns, sep = '[._]') {
+  if (missing(label) && missing(columns)) return(auto_spanner(x, sep))
   if (inherits(label, 'formula')) {
     columns = f_cols(label)
     label = deparse(label[[2]])
   }
   columns = f_cols(columns)
   x$spanners = c(x$spanners, list(list(label = label, columns = I(as.character(columns)))))
+  x
+}
+
+auto_spanner = function(x, sep) {
+  nms = names(x$data)
+  # Split each name on first separator
+  parts = regmatches(nms, regexpr(sep, nms), invert = TRUE)
+  prefix = vapply(parts, `[`, character(1), 1)
+  suffix = vapply(parts, function(p) if (length(p) > 1) paste(p[-1], collapse = '_') else NA_character_, character(1))
+  # Only consider columns that split successfully
+  has_split = !is.na(suffix)
+  # Find contiguous runs sharing a prefix (2+ columns)
+  i = 1
+  labels = list()
+  while (i <= length(nms)) {
+    if (has_split[i]) {
+      j = i
+      while (j < length(nms) && has_split[j + 1] && prefix[j + 1] == prefix[i]) j = j + 1
+      if (j > i) {
+        lbl = prefix[i]
+        cols = nms[i:j]
+        x$spanners = c(x$spanners, list(list(label = lbl, columns = I(cols))))
+        labels[[length(labels) + 1]] = `names<-`(as.list(suffix[i:j]), cols)
+      }
+      i = j + 1
+    } else {
+      i = i + 1
+    }
+  }
+  # Shorten column labels to suffix
+  if (length(labels)) x = add_op(x, 'label', labels = unlist(labels, recursive = FALSE))
   x
 }
 
