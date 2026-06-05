@@ -23,5 +23,5 @@ Suggests:
     shiny,
     testit
 Roxygen: list(markdown = TRUE)
-Config/lt.js: 1.14.49
+Config/lt.js: 1.14.50
 Config/roxygen2/version: 8.0.0
