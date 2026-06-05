@@ -33,33 +33,39 @@ lt_spanner = function(x, label, columns) {
 
 #' Define Row Groups
 #'
-#' Partition rows into labeled groups. Pass a column name to group by that
-#' column's values (the column is removed from the body), or use named
-#' arguments to define manual groups by row index.
+#' Partition rows into labeled groups. Pass column names to group by those
+#' columns' values (the columns are removed from the body and rendered as
+#' rowspan cells on the left). Use `sep = TRUE` to render groups as
+#' full-width separator rows instead of rowspan.
 #'
 #' @inheritParams lt_align
-#' @param ... A single column name (character scalar or one-sided formula) to
-#'   group by that column's values, or named arguments of the form
+#' @param ... A column name or formula (e.g., `~col` or `~col1 + col2`) to
+#'   group by column values, or named arguments of the form
 #'   `"Label" = rows` (integer vector of 1-based row indices) for manual
 #'   groups. Unnamed character strings reorder previously defined groups.
+#' @param sep If `TRUE`, render groups as full-width separator rows instead
+#'   of the default rowspan style. Only supports a single grouping column.
 #' @return `x` with the row groups recorded.
 #' @export
 #' @examples
-#' # Group by a column
+#' # Group by a column (rowspan, default)
 #' d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
 #'                stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
 #' lt(d) |> lt_group(~ arm)
 #'
-#' # Manual groups
+#' # Separator-row style
+#' lt(d) |> lt_group(~ arm, sep = TRUE)
+#'
+#' # Manual groups (always separator rows)
 #' lt(head(mtcars[, 1:4])) |>
 #'   lt_group("First three" = 1:3, "Last three" = 4:6)
-lt_group = function(x, ...) {
+lt_group = function(x, ..., sep = FALSE) {
   args = list(...)
   nms = names(args)
   if (length(args) == 1 && (is.null(nms) || !nzchar(nms))) {
     col = f_cols(args[[1]])
-    if (length(col) == 1 && col %in% names(x$data)) {
-      x$row_group = col
+    if (all(col %in% names(x$data))) {
+      x$row_group = if (sep) col[1] else I(col)
       return(x)
     }
   }

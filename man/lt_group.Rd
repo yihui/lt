@@ -4,31 +4,38 @@
 \alias{lt_group}
 \title{Define Row Groups}
 \usage{
-lt_group(x, ...)
+lt_group(x, ..., sep = FALSE)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{...}{A single column name (character scalar or one-sided formula) to
-group by that column's values, or named arguments of the form
+\item{...}{A column name or formula (e.g., \code{~col} or \code{~col1 + col2}) to
+group by column values, or named arguments of the form
 \code{"Label" = rows} (integer vector of 1-based row indices) for manual
 groups. Unnamed character strings reorder previously defined groups.}
+
+\item{sep}{If \code{TRUE}, render groups as full-width separator rows instead
+of the default rowspan style. Only supports a single grouping column.}
 }
 \value{
 \code{x} with the row groups recorded.
 }
 \description{
-Partition rows into labeled groups. Pass a column name to group by that
-column's values (the column is removed from the body), or use named
-arguments to define manual groups by row index.
+Partition rows into labeled groups. Pass column names to group by those
+columns' values (the columns are removed from the body and rendered as
+rowspan cells on the left). Use \code{sep = TRUE} to render groups as
+full-width separator rows instead of rowspan.
 }
 \examples{
-# Group by a column
+# Group by a column (rowspan, default)
 d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
                stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
 lt(d) |> lt_group(~ arm)
 
-# Manual groups
+# Separator-row style
+lt(d) |> lt_group(~ arm, sep = TRUE)
+
+# Manual groups (always separator rows)
 lt(head(mtcars[, 1:4])) |>
   lt_group("First three" = 1:3, "Last three" = 4:6)
 }

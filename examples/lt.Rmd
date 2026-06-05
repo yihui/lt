@@ -138,6 +138,41 @@ lt(d) |>
   lt_format(~ Fiber_g, decimals = 1)
 ```
 
+### Group by multiple columns (rowspan)
+
+Pass multiple columns to `lt_group()` to render hierarchical rowspan
+cells on the left side of the table:
+
+```{r}
+d = data.frame(
+  Region = c("East", "East", "East", "West", "West", "West"),
+  State = c("NY", "NY", "MA", "WA", "WA", "OR"),
+  City = c("New York", "Buffalo", "Boston", "Seattle", "Spokane", "Portland"),
+  Population = c(8336817, 278349, 675647, 737015, 228989, 652503)
+)
+lt(d) |>
+  lt_group(~ Region + State) |>
+  lt_header(title = "Cities by Region and State") |>
+  lt_format(~ Population, big_mark = ",")
+```
+
+### Separator-row style
+
+Use `sep = TRUE` to render groups as full-width separator rows instead of
+rowspan cells:
+
+```{r}
+d = data.frame(
+  Region = c("East", "East", "West", "West", "West"),
+  City = c("New York", "Boston", "Seattle", "Portland", "Denver"),
+  Population = c(8336817, 675647, 737015, 652503, 715522)
+)
+lt(d) |>
+  lt_group(~ Region, sep = TRUE) |>
+  lt_header(title = "US Cities by Region") |>
+  lt_format(~ Population, big_mark = ",")
+```
+
 ### Manual row groups
 
 Use named arguments in `lt_group()` for explicit control over which rows
@@ -257,7 +292,7 @@ d = data.frame(
   value = c("30", "4.2", "31", "6.8")
 )
 lt(d) |>
-  lt_group(~ arm) |>
+  lt_group(~ arm, sep = TRUE) |>
   lt_group("Treatment", "Placebo")
 ```
 

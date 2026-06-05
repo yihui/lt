@@ -75,7 +75,7 @@ s = gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) |>
 
 s |>
   lt() |>
-  lt_group(~ Analysis) |>
+  lt_group(~ Analysis, sep = TRUE) |>
   lt_header(
     title = "Bound summary for AHR design",
     subtitle = "AHR approximations of ~HR at bound"
@@ -107,7 +107,7 @@ s = gs_design_ahr() |> summary()
 
 s |>
   lt() |>
-  lt_group(~ Analysis) |>
+  lt_group(~ Analysis, sep = TRUE) |>
   lt_header(
     title = "Bound summary for AHR design",
     subtitle = "AHR approximations of ~HR at bound"

@@ -26,11 +26,14 @@
 #' @examples
 #' lt(head(mtcars[, 1:4]))
 lt = function(data, auto_fmt = TRUE) {
+  grp = if (inherits(data, 'grouped_df'))
+    setdiff(names(attr(data, 'groups')), '.rows')
   data = as.data.frame(
     data, stringsAsFactors = FALSE, check.names = FALSE, optional = TRUE
   )
   x = structure(list(data = data, ops = list()), class = 'lt_tbl')
   if (!auto_fmt) x$auto_fmt = FALSE
+  if (length(grp)) x$row_group = I(grp)
   x
 }
 
