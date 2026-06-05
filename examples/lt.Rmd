@@ -269,8 +269,7 @@ d = data.frame(
   result = c("0.72", "0.58", "42%")
 )
 lt(d) |>
-  lt_stub(~ endpoint) |>
-  lt_stubhead("Endpoint") |>
+  lt_stub(~ endpoint, label = "Endpoint") |>
   lt_label(result = "Result")
 ```
 

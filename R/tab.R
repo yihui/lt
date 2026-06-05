@@ -355,24 +355,14 @@ is_url = function(x) grepl('^(https?:)?//', x)
 #'
 #' @inheritParams lt_align
 #' @param column A column name (character scalar or one-sided formula).
+#' @param label Optional header label for the stub column.
 #' @return `x` with the stub column recorded.
 #' @export
 #' @examples
 #' d = data.frame(endpoint = c("OS", "PFS"), result = c("0.72", "0.58"))
-#' lt(d) |> lt_stub(~ endpoint)
-lt_stub = function(x, column) {
+#' lt(d) |> lt_stub(~ endpoint, label = "Endpoint")
+lt_stub = function(x, column, label = NULL) {
   x$row_label = f_cols(column)
+  if (!is.null(label)) add_op(x, 'stubhead', label = label)
   x
-}
-
-#' Set Stubhead Label
-#'
-#' Override the column header for the stub (row label) column.
-#'
-#' @inheritParams lt_align
-#' @param label Character scalar for the stub column header.
-#' @return `x` with the stubhead label recorded.
-#' @export
-lt_stubhead = function(x, label) {
-  add_op(x, 'stubhead', label = label)
 }
