@@ -10,6 +10,19 @@ output:
 This document demonstrates the lt.js runtime directly from JavaScript.
 Each example shows a JSON spec and renders the table with `LT.build()`.
 
+## Including lt.js
+
+Add the stylesheet and script to your HTML page:
+
+``` html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js"></script>
+```
+
+Then call `LT.build(spec)` from an inline `<script>` wherever you want a
+table to appear. The runtime renders the table immediately after the
+calling script element.
+
 ```{r, echo = FALSE}
 iris5 = head(iris, 5)
 mtcars6 = head(mtcars[, 1:6], 6)
