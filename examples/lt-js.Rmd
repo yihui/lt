@@ -211,6 +211,17 @@ LT.build({
 });
 ```
 
+### Auto-inferred spanners
+
+Set `auto_span: true` to infer spanners from column names. Names are
+split on the first `.` or `_`; contiguous columns sharing a prefix are
+grouped, and labels are shortened to the suffix. Pass a custom regex
+string (e.g., `"[.]"`) to change the separator.
+
+```{js}
+LT.build({ data: iris, auto_span: true });
+```
+
 ## Row groups (separator rows)
 
 Pass `row_group` as a string to use separator-row style:
