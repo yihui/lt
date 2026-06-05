@@ -163,7 +163,7 @@ lt(d) |>
   lt_stub(~ stat) |>
   lt_format(~ pct, decimals = 1) |>
   lt_merge(~ n + pct, pattern = "{1} ({2}%)") |>
-  lt_cols_label(n = "n (%)")
+  lt_label(n = "n (%)")
 ```
 
 ### Conditional merge with `<< >>`
@@ -182,7 +182,7 @@ lt(d) |>
   lt_stub(~ endpoint) |>
   lt_format(~ est + ci_lo + ci_hi, decimals = 2) |>
   lt_merge(~ est + ci_lo + ci_hi, pattern = "{1}<< ({2}, {3})>>") |>
-  lt_cols_label(est = "Estimate (95% CI)")
+  lt_label(est = "Estimate (95% CI)")
 ```
 
 ## Row indentation
@@ -238,14 +238,14 @@ lt(d) |>
 
 ```{r}
 lt(head(mtcars[, 1:4])) |>
-  lt_cols_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
+  lt_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
 ```
 
 ## Column reordering
 
 ```{r}
 lt(head(iris[, 1:4])) |>
-  lt_cols_move(c("Petal.Length", "Petal.Width"), after = NULL)
+  lt_move(c("Petal.Length", "Petal.Width"), after = NULL)
 ```
 
 ## Row group ordering
@@ -271,7 +271,7 @@ d = data.frame(
 lt(d) |>
   lt_stub(~ endpoint) |>
   lt_stubhead("Endpoint") |>
-  lt_cols_label(result = "Result")
+  lt_label(result = "Result")
 ```
 
 ## Combining formatting and structure

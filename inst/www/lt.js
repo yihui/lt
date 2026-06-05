@@ -126,9 +126,9 @@
     // Visible columns after hiding
     let visible = colNames.filter(c => !hidden.has(c));
 
-    // Apply cols_move
+    // Apply move
     for (const op of ops) {
-      if (op.type !== "cols_move") continue;
+      if (op.type !== "move") continue;
       const toMove = (op.columns || []).filter(c => visible.includes(c));
       if (!toMove.length) continue;
       const rest = visible.filter(c => !toMove.includes(c));
@@ -156,7 +156,7 @@
     // Column labels
     const colLabels = [...visible];
     for (const op of ops) {
-      if (op.type !== "cols_label" || !op.labels) continue;
+      if (op.type !== "label" || !op.labels) continue;
       for (const [c, lbl] of Object.entries(op.labels)) {
         const i = visible.indexOf(c);
         if (i >= 0) colLabels[i] = lbl;
@@ -166,7 +166,7 @@
     // Column widths
     let colWidths = null;
     for (const op of ops) {
-      if (op.type !== "cols_width" || !op.widths) continue;
+      if (op.type !== "width" || !op.widths) continue;
       if (!colWidths) colWidths = visible.map(() => "");
       for (const [c, w] of Object.entries(op.widths)) {
         const i = visible.indexOf(c);

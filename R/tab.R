@@ -172,8 +172,8 @@ lt_format = function(x, columns, decimals = NULL, big_mark = NULL) {
 #' @param ... Named arguments of the form `col_name = "Display Label"`.
 #' @return `x` with the column label overrides recorded.
 #' @export
-lt_cols_label = function(x, ...) {
-  add_op(x, 'cols_label', labels = list(...))
+lt_label = function(x, ...) {
+  add_op(x, 'label', labels = list(...))
 }
 
 
@@ -286,9 +286,9 @@ lt_style = function(x, columns = NULL, rows = NULL, bold = NULL, italic = NULL,
 #'   can be any CSS value (e.g., `"100px"`, `"20%"`, `"8em"`).
 #' @return `x` with the column widths recorded.
 #' @export
-lt_cols_width = function(x, ...) {
+lt_width = function(x, ...) {
   widths = list(...)
-  add_op(x, 'cols_width', widths = widths)
+  add_op(x, 'width', widths = widths)
 }
 
 
@@ -301,9 +301,9 @@ lt_cols_width = function(x, ...) {
 #'   `NULL` to move to the start.
 #' @return `x` with the column move recorded.
 #' @export
-lt_cols_move = function(x, columns, after = NULL) {
+lt_move = function(x, columns, after = NULL) {
   columns = f_cols(columns)
-  add_op(x, 'cols_move', columns = I(as.character(columns)),
+  add_op(x, 'move', columns = I(as.character(columns)),
     after = if (!is.null(after)) as.character(after))
 }
 
