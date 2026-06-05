@@ -13,14 +13,18 @@
   const sup = i => `<sup class="lt-fnref">${i}</sup>`;
 
   // --- Number formatting ---
+  const isNum = v => typeof v === "number" && !isNaN(v);
+
   function fmtNumber(v, decimals, bigMark) {
-    if (v == null || typeof v !== "number" || isNaN(v)) return null;
+    if (v == null || !isNum(v)) return null;
     let s = decimals != null ? v.toFixed(decimals) : String(v);
+    if (/^-0(\.0+)?$/.test(s)) s = s.slice(1);
     if (bigMark) {
       const parts = s.split(".");
       parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, bigMark);
       s = parts.join(".");
     }
+    if (s[0] === "-") s = "−" + s.slice(1);
     return decimals != null || bigMark ? s : null;
   }
 
@@ -32,8 +36,8 @@
       const m = remaining.match(/<<(.*?)>>/);
       if (!m) { result += subRefs(remaining, vals); break; }
       if (m.index > 0) result += subRefs(remaining.slice(0, m.index), vals);
-      const block = m[1];
-      const refs = [...block.matchAll(/\{(\d+)\}/g)].map(x => +x[1]);
+      const block = m[1],
+            refs = [...block.matchAll(/\{(\d+)\}/g)].map(x => +x[1]);
       if (!refs.length || refs.every(i => vals[i - 1] !== ""))
         result += subRefs(block, vals);
       remaining = remaining.slice(m.index + m[0].length);
@@ -44,6 +48,64 @@
     for (let i = 0; i < vals.length; i++)
       s = s.split("{" + (i + 1) + "}").join(vals[i]);
     return s;
+  }
+
+  // --- Auto-format numeric columns ---
+  function autoFmt(spec, display, nRow) {
+    if (spec.auto_fmt === false) return;
+    const data = spec.data || {}, ops = spec.ops || [],
+          colNames = Object.keys(data);
+
+    const fmtCols = new Set();
+    for (const op of ops) {
+      if (op.type === "fmt_number") for (const c of (op.columns || colNames)) fmtCols.add(c);
+    }
+
+    const getLabel = c => {
+      for (const op of ops) {
+        if (op.type === "label" && op.labels && op.labels[c] != null) return op.labels[c];
+      }
+      return c;
+    };
+
+    for (const c of colNames) {
+      if (fmtCols.has(c)) continue;
+      const col = data[c];
+      if (!col || !col.length) continue;
+      if (typeof col.find(v => v != null) !== "number") continue;
+
+      const lbl = getLabel(c),
+            pct = /%|[ _](pct|percent)$/i.test(lbl);
+
+      if (/year/i.test(lbl) && col.every(v => v == null || /^\d{4}$/.test(String(v)))) continue;
+
+      // Determine decimal places: find max significant decimals across column,
+      // then cap dynamically based on the largest integer-part width (targeting
+      // ~4 total significant digits): e.g., values <1 get up to 4 decimals,
+      // 10-99 get 2, >=1000 get 0.
+      let maxInt = 0, n = 0;
+      for (const v of col) {
+        if (!isNum(v)) continue;
+        // Number of digits before the decimal point
+        const a = Math.abs(pct ? v * 100 : v),
+              intW = a < 1 ? 0 : Math.floor(Math.log10(a)) + 1;
+        if (intW > maxInt) maxInt = intW;
+        // Significant decimals (strip trailing zeros; adjust for pct *100)
+        const m = String(v).match(/\.(\d+)/);
+        if (!m) continue;
+        const d = m[1].replace(/0+$/, "").length - (pct ? 2 : 0);
+        if (d > n) n = d;
+      }
+      // Cap: 4 decimals max, minus integer width (so large numbers get fewer)
+      n = Math.max(Math.min(n, Math.max(4 - maxInt, 0)), 0);
+
+      for (let i = 0; i < nRow; i++) {
+        const v = col[i];
+        if (!isNum(v)) continue;
+        const s = fmtNumber(pct ? v * 100 : v, n, " ");
+        if (s != null) display[c][i] = s + (pct ? "%" : "");
+      }
+    }
   }
 
   // --- Apply ops to data columns, return display strings per column ---
@@ -59,6 +121,8 @@
       display[c] = data[c].map(v => v == null ? "" : String(v));
     }
 
+    autoFmt(spec, display, nRow);
+
     for (const op of ops) {
       const cols = op.columns || colNames;
       switch (op.type) {
@@ -67,8 +131,12 @@
             if (!data[c]) continue;
             for (let i = 0; i < nRow; i++) {
               const raw = data[c][i];
-              const f = fmtNumber(raw, op.decimals, op.big_mark ?? "");
-              if (f != null) display[c][i] = f;
+              if (raw == null || !isNum(raw)) continue;
+              const v = op.percent === true ? raw * 100 : raw,
+                    sfx = op.percent ? "%" : "",
+                    f = fmtNumber(v, op.decimals, op.big_mark ?? "");
+              if (f != null) display[c][i] = f + sfx;
+              else if (sfx) display[c][i] = String(v) + sfx;
             }
           }
           break;
@@ -77,8 +145,8 @@
             if (!data[c]) continue;
             for (let i = 0; i < nRow; i++) {
               const raw = data[c][i];
-              if (op.small != null && typeof raw === "number" && raw !== 0 &&
-                  !isNaN(raw) && raw != null && Math.abs(raw) < op.small) {
+              if (op.small != null && isNum(raw) && raw !== 0 &&
+                  Math.abs(raw) < op.small) {
                 display[c][i] = op.small_text ?? ("<" + op.small);
               } else if (op.zero != null && raw === 0) {
                 display[c][i] = op.zero;
@@ -280,11 +348,10 @@
   };
 
   function buildHtml(spec) {
-    const { display, nRow } = applyOps(spec);
-    const res = resolveSpec(spec);
-    const { visible: cols, align, colLabels, colWidths, indent, stubLabel,
-            stub, groups, styles, spanners, footnotes: fns, notes, header: hdr } = res;
-    const reg = indexFootnotes(fns),
+    const { display, nRow } = applyOps(spec),
+          { visible: cols, align, colLabels, colWidths, indent, stubLabel,
+            stub, groups, styles, spanners, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+          reg = indexFootnotes(fns),
           fIdx = matcher(fns, reg.idx),
           nCol = cols.length + (stub ? 1 : 0),
           out = [`<table class="lt-table">`];
@@ -370,15 +437,15 @@
     const pushRow = r => {
       out.push(`<tr>`);
       if (stub) {
-        const ind = indent[r - 1] || 0;
-        const cls = `lt-stub${groups.length ? " lt-indent" : ""}`;
-        const style = ind ? ` style="padding-left:${ind + 1}em"` : "";
+        const ind = indent[r - 1] || 0,
+              cls = `lt-stub${groups.length ? " lt-indent" : ""}`,
+              style = ind ? ` style="padding-left:${ind + 1}em"` : "";
         out.push(`<th scope="row" class="${cls}"${style}>${esc(stub[r - 1])}</th>`);
       }
       for (let ci = 0; ci < cols.length; ci++) {
-        const m = bodyMarks[`${r},${ci}`];
-        const s = styleMap[`${r},${ci}`];
-        const val = display[cols[ci]] ? display[cols[ci]][r - 1] : "";
+        const m = bodyMarks[`${r},${ci}`],
+              s = styleMap[`${r},${ci}`],
+              val = display[cols[ci]] ? display[cols[ci]][r - 1] : "";
         out.push(`<td${colCls[ci]}${s ? ` style="${s}"` : ""}>${esc(val)}${m ? sup(m) : ""}</td>`);
       }
       out.push(`</tr>`);

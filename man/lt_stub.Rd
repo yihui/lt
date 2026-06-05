@@ -4,12 +4,14 @@
 \alias{lt_stub}
 \title{Designate a Stub Column}
 \usage{
-lt_stub(x, column)
+lt_stub(x, column, label = NULL)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{column}{A column name (character scalar or one-sided formula).}
+
+\item{label}{Optional header label for the stub column.}
 }
 \value{
 \code{x} with the stub column recorded.
@@ -22,5 +24,5 @@ promoted; use this function to override that default.
 }
 \examples{
 d = data.frame(endpoint = c("OS", "PFS"), result = c("0.72", "0.58"))
-lt(d) |> lt_stub(~ endpoint)
+lt(d) |> lt_stub(~ endpoint, label = "Endpoint")
 }

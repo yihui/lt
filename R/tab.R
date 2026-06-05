@@ -147,7 +147,10 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' Format Numeric Columns
 #'
 #' Control the number of decimal places and thousands separator for numeric
-#' columns.
+#' columns. Columns passed to this function are excluded from automatic
+#' formatting (see the `auto_fmt` argument of [lt()]). To disable auto-format
+#' for a column without otherwise changing its display, call `lt_format(x,
+#' ~col)` with no other arguments.
 #'
 #' @inheritParams lt_align
 #' @param columns Character or integer vector of columns (or a one-sided
@@ -155,13 +158,17 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' @param decimals Number of decimal places (default `NULL` means no change).
 #' @param big_mark Thousands separator (e.g., `","`). `NULL` or `""` means
 #'   none.
+#' @param percent If `TRUE`, multiply values by 100 and append `"%"`. If
+#'   `"%"`, only append `"%"` without multiplying (for values already in
+#'   percent scale).
 #' @return `x` with the formatting recorded.
 #' @export
-lt_format = function(x, columns, decimals = NULL, big_mark = NULL) {
+lt_format = function(x, columns, decimals = NULL, big_mark = NULL, percent = NULL) {
   columns = f_cols(columns)
   cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
+  pct = if (identical(percent, "%")) "%" else if (isTRUE(percent)) TRUE
   add_op(x, 'fmt_number', columns = I(cols), decimals = decimals,
-    big_mark = if (nzchar(big_mark %||% '')) big_mark)
+    big_mark = if (nzchar(big_mark %||% '')) big_mark, percent = pct)
 }
 
 #' Rename Column Labels

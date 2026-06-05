@@ -17,15 +17,21 @@
 #' print method).
 #'
 #' @param data A data frame (or anything coercible to one).
+#' @param auto_fmt Whether to automatically format numeric columns (rounding,
+#'   thousand separators, percentage detection). Set to `FALSE` to disable
+#'   for the whole table; use [lt_format()] on specific columns to disable
+#'   selectively.
 #' @return A table object that can be piped into `lt_*()` functions.
 #' @export
 #' @examples
 #' lt(head(mtcars[, 1:4]))
-lt = function(data) {
+lt = function(data, auto_fmt = TRUE) {
   data = as.data.frame(
     data, stringsAsFactors = FALSE, check.names = FALSE, optional = TRUE
   )
-  structure(list(data = data, ops = list()), class = 'lt_tbl')
+  x = structure(list(data = data, ops = list()), class = 'lt_tbl')
+  if (!auto_fmt) x$auto_fmt = FALSE
+  x
 }
 
 drop_null = function(x) x[!vapply(x, is.null, logical(1))]

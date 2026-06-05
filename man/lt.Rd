@@ -4,10 +4,15 @@
 \alias{lt}
 \title{Create a Table Specification}
 \usage{
-lt(data)
+lt(data, auto_fmt = TRUE)
 }
 \arguments{
 \item{data}{A data frame (or anything coercible to one).}
+
+\item{auto_fmt}{Whether to automatically format numeric columns (rounding,
+thousand separators, percentage detection). Set to \code{FALSE} to disable
+for the whole table; use \code{\link[=lt_format]{lt_format()}} on specific columns to disable
+selectively.}
 }
 \value{
 A table object that can be piped into \verb{lt_*()} functions.

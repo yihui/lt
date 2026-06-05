@@ -4,7 +4,7 @@
 \alias{lt_format}
 \title{Format Numeric Columns}
 \usage{
-lt_format(x, columns, decimals = NULL, big_mark = NULL)
+lt_format(x, columns, decimals = NULL, big_mark = NULL, percent = NULL)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
@@ -16,11 +16,17 @@ formula).}
 
 \item{big_mark}{Thousands separator (e.g., \code{","}). \code{NULL} or \code{""} means
 none.}
+
+\item{percent}{If \code{TRUE}, multiply values by 100 and append \code{"\%"}. If
+\code{"\%"}, only append \code{"\%"} without multiplying (for values already in
+percent scale).}
 }
 \value{
 \code{x} with the formatting recorded.
 }
 \description{
 Control the number of decimal places and thousands separator for numeric
-columns.
+columns. Columns passed to this function are excluded from automatic
+formatting (see the \code{auto_fmt} argument of \code{\link[=lt]{lt()}}). To disable auto-format
+for a column without otherwise changing its display, call \code{lt_format(x, ~col)} with no other arguments.
 }
