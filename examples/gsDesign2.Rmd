@@ -25,7 +25,7 @@ alpha = 0.025
 beta = 0.1
 
 lt.fixed_design_summary = function(data, ...) {
-  x = lt.default(data, ...)
+  x = lt(as.data.frame(data), ...)
   if (!is.null(attr(data, "title")))
     x = lt_header(x, title = attr(data, "title"))
   if (!is.null(attr(data, "footnote")))
@@ -34,7 +34,7 @@ lt.fixed_design_summary = function(data, ...) {
 }
 
 lt.gs_design_summary = function(data, ...) {
-  x = lt.default(data, ...) |>
+  x = lt(as.data.frame(data), ...) |>
     lt_group(~ Analysis, sep = TRUE) |>
     lt_spanner(
       label = "Cumulative boundary crossing probability",
@@ -47,6 +47,9 @@ lt.gs_design_summary = function(data, ...) {
     )
   x
 }
+
+registerS3method("lt", "fixed_design_summary", lt.fixed_design_summary, asNamespace("lt"))
+registerS3method("lt", "gs_design_summary", lt.gs_design_summary, asNamespace("lt"))
 ```
 
 ## Fixed design — AHR method
