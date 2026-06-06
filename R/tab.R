@@ -62,7 +62,9 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #'   `"Label" = rows` (integer vector of 1-based row indices) for manual
 #'   groups. Unnamed character strings reorder previously defined groups.
 #' @param sep If `TRUE`, render groups as full-width separator rows instead
-#'   of the default rowspan style. Only supports a single grouping column.
+#'   of the default rowspan style. Only supports a single grouping column. The
+#'   default `'auto'` uses separator rows when there is a single grouping
+#'   column with any value longer than 20 characters.
 #' @return `x` with the row groups recorded.
 #' @export
 #' @examples
@@ -77,13 +79,13 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' # Manual groups (always separator rows)
 #' lt(head(mtcars[, 1:4])) |>
 #'   lt_group("First three" = 1:3, "Last three" = 4:6)
-lt_group = function(x, ..., sep = FALSE) {
+lt_group = function(x, ..., sep = 'auto') {
   args = list(...)
   nms = names(args)
   if (length(args) == 1 && (is.null(nms) || !nzchar(nms))) {
     col = f_cols(args[[1]])
     if (all(col %in% names(x$data))) {
-      x$row_group = if (sep) col[1] else I(col)
+      x$row_group = if (identical(sep, TRUE)) col[1] else I(col)
       return(x)
     }
   }

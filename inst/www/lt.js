@@ -179,10 +179,12 @@
           nRow = colNames.length ? data[colNames[0]].length : 0;
 
     // row_group: array → rowspan mode; string → separator-row mode
+    let rowGroupSep = typeof spec.row_group === "string";
     const rowGroupCols = Array.isArray(spec.row_group) ? spec.row_group
           : (spec.row_group ? [spec.row_group] : []),
-          rowGroupSep = typeof spec.row_group === "string",
           rowLabelCol = spec.row_label || null;
+    if (!rowGroupSep && rowGroupCols.length === 1 &&
+        data[rowGroupCols[0]]?.some(v => (v + "").length > 20)) rowGroupSep = true;
 
     // Hidden columns: row_group, row_label, merge sources
     const hidden = new Set();

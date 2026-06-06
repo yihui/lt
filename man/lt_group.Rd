@@ -4,7 +4,7 @@
 \alias{lt_group}
 \title{Define Row Groups}
 \usage{
-lt_group(x, ..., sep = FALSE)
+lt_group(x, ..., sep = "auto")
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
@@ -15,7 +15,9 @@ group by column values, or named arguments of the form
 groups. Unnamed character strings reorder previously defined groups.}
 
 \item{sep}{If \code{TRUE}, render groups as full-width separator rows instead
-of the default rowspan style. Only supports a single grouping column.}
+of the default rowspan style. Only supports a single grouping column. The
+default \code{'auto'} uses separator rows when there is a single grouping
+column with any value longer than 20 characters.}
 }
 \value{
 \code{x} with the row groups recorded.
