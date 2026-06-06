@@ -7,10 +7,9 @@ This document re-runs a few of the `as_gt()` examples from
 the tables with `lt` instead of `gt`. The first goal of `lt` is to be a
 drop-in lightweight replacement for `gt` in gsDesign2 outputs.
 
-Each chunk below is independent. Because `record_print.lt_tbl` always
-emits the lt CSS+JS runtime (no knitr coupling), the runtime is included
-once per chunk; the runtime self-guards (`if (root.LT) return`) so the
-duplicate inclusions are no-ops at execution time.
+Because `lt()` is an S3 generic, we define methods for gsDesign2's summary
+classes. In practice these methods would live in gsDesign2 (or a bridge
+package); here they're defined inline for demonstration.
 
 ```{r setup, message=FALSE}
 library(lt)
@@ -24,6 +23,33 @@ fail_rate = define_fail_rate(
 study_duration = 36
 alpha = 0.025
 beta = 0.1
+
+lt.fixed_design_summary = function(data, ...) {
+  x = lt(as.data.frame(data), ...)
+  if (!is.null(attr(data, "title")))
+    x = lt_header(x, title = attr(data, "title"))
+  if (!is.null(attr(data, "footnote")))
+    x = lt_footnote(x, attr(data, "footnote"), "title")
+  x
+}
+
+lt.gs_design_summary = function(data, ...) {
+  x = lt(as.data.frame(data), ...) |>
+    lt_group(~ Analysis, sep = TRUE) |>
+    lt_spanner(
+      label = "Cumulative boundary crossing probability",
+      columns = c("Alternate hypothesis", "Null hypothesis")
+    ) |>
+    lt_format(
+      c("Z", "~HR at bound", "Nominal p",
+        "Alternate hypothesis", "Null hypothesis"),
+      decimals = 4
+    )
+  x
+}
+
+registerS3method("lt", "fixed_design_summary", lt.fixed_design_summary, asNamespace("lt"))
+registerS3method("lt", "gs_design_summary", lt.gs_design_summary, asNamespace("lt"))
 ```
 
 ## Fixed design — AHR method
@@ -31,17 +57,11 @@ beta = 0.1
 Equivalent of `fixed_design_ahr() |> summary() |> as_gt()`.
 
 ```{r fixed-ahr}
-s = fixed_design_ahr(
+fixed_design_ahr(
   alpha = alpha, power = 1 - beta,
   enroll_rate = enroll_rate, fail_rate = fail_rate,
   study_duration = study_duration, ratio = 1
-) |> summary()
-
-s |>
-  lt() |>
-  lt_header(title = attr(s, "title")) |>
-  lt_footnote(attr(s, "footnote"), "title") |>
-  lt_format(c("N", "Events", "AHR", "Bound", "Power"), decimals = 4)
+) |> summary() |> lt()
 ```
 
 ## Fixed design — Fleming-Harrington
@@ -49,40 +69,27 @@ s |>
 Equivalent of `fixed_design_fh() |> summary() |> as_gt()`.
 
 ```{r fixed-fh}
-s = fixed_design_fh(
+fixed_design_fh(
   alpha = alpha, power = 1 - beta,
   enroll_rate = enroll_rate, fail_rate = fail_rate,
   study_duration = study_duration, ratio = 1
-) |> summary()
-
-s |>
-  lt() |>
-  lt_header(title = attr(s, "title")) |>
-  lt_footnote(attr(s, "footnote"), "title") |>
-  lt_format(c("N", "Events", "Bound", "Power"), decimals = 4)
+) |> summary() |> lt()
 ```
 
 ## Group sequential — `gs_power_ahr`
 
 Equivalent of `gs_power_ahr(lpar = ...) |> summary() |> as_gt()`. The long
-"Analysis: N Time: ... AHR: ..." label is a natural row-group header
-(gt does the same via `gt::gt(groupname_col = "Analysis", rowname_col =
-"Bound")`).
+"Analysis: N Time: ... AHR: ..." label is a natural row-group header.
+The `lt.gs_design_summary` method handles grouping, spanner, and
+formatting automatically.
 
 ```{r gs-power-ahr}
-s = gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) |>
-  summary()
-
-s |>
+gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) |>
+  summary() |>
   lt() |>
-  lt_group(~ Analysis) |>
   lt_header(
     title = "Bound summary for AHR design",
     subtitle = "AHR approximations of ~HR at bound"
-  ) |>
-  lt_spanner(
-    label = "Cumulative boundary crossing probability",
-    columns = c("Alternate hypothesis", "Null hypothesis")
   ) |>
   lt_footnote(
     "Approximate hazard ratio to cross bound.",
@@ -91,10 +98,6 @@ s |>
   lt_footnote(
     "One-sided p-value for experimental vs control treatment.",
     "column", "Nominal p"
-  ) |>
-  lt_format(
-    c("Z", "~HR at bound", "Nominal p", "Alternate hypothesis", "Null hypothesis"),
-    decimals = 4
   )
 ```
 
@@ -103,32 +106,20 @@ s |>
 Equivalent of `gs_design_ahr() |> summary() |> as_gt()`.
 
 ```{r gs-design-ahr}
-s = gs_design_ahr() |> summary()
-
-s |>
+gs_design_ahr() |>
+  summary() |>
   lt() |>
-  lt_group(~ Analysis) |>
   lt_header(
     title = "Bound summary for AHR design",
     subtitle = "AHR approximations of ~HR at bound"
-  ) |>
-  lt_spanner(
-    label = "Cumulative boundary crossing probability",
-    columns = c("Alternate hypothesis", "Null hypothesis")
-  ) |>
-  lt_format(
-    c("Z", "~HR at bound", "Nominal p", "Alternate hypothesis", "Null hypothesis"),
-    decimals = 4
   )
 ```
 
 ## What's missing vs `as_gt()`
 
-A direct `as_lt()` wrapper analogous to `as_gt.gs_design_summary` (with
-`title=`, `subtitle=`, `colname_spanner=`, `colname_spannersub=`,
-`footnote=`, `display_bound=`, `display_columns=`, `display_inf_bound=`
-arguments) is the obvious next step once the lt vocabulary settles. For
-now the chunks above show that the gt → lt mapping is mechanical:
+With `lt()` as an S3 generic, gsDesign2 can ship its own `lt.gs_design_summary`
+and `lt.fixed_design_summary` methods (similar to the ones defined above),
+making `summary() |> lt()` work out of the box. The mapping from gt to lt is:
 
 | gt                                | lt                                  |
 |-----------------------------------|-------------------------------------|

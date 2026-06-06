@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="generator" content="litedown 0.9.10">
 <title>lt vs gt — gsDesign2 examples</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/prism-xcode.min.css">
 </head>
 <body>
 <nav><p><a href="../index.html">Home</a>
@@ -35,10 +35,9 @@
 <a href="https://github.com/Merck/gsDesign2">gsDesign2</a>’s documentation, but builds
 the tables with <code>lt</code> instead of <code>gt</code>. The first goal of <code>lt</code> is to be a
 drop-in lightweight replacement for <code>gt</code> in gsDesign2 outputs.</p>
-<p>Each chunk below is independent. Because <code>record_print.lt_tbl</code> always
-emits the lt CSS+JS runtime (no knitr coupling), the runtime is included
-once per chunk; the runtime self-guards (<code>if (root.LT) return</code>) so the
-duplicate inclusions are no-ops at execution time.</p>
+<p>Because <code>lt()</code> is an S3 generic, we define methods for gsDesign2’s summary
+classes. In practice these methods would live in gsDesign2 (or a bridge
+package); here they’re defined inline for demonstration.</p>
 <pre><code class="language-r">library(lt)
 library(gsDesign2)
 
@@ -50,22 +49,43 @@ fail_rate = define_fail_rate(
 study_duration = 36
 alpha = 0.025
 beta = 0.1
+
+lt.fixed_design_summary = function(data, ...) {
+  x = lt(as.data.frame(data), ...)
+  if (!is.null(attr(data, &quot;title&quot;)))
+    x = lt_header(x, title = attr(data, &quot;title&quot;))
+  if (!is.null(attr(data, &quot;footnote&quot;)))
+    x = lt_footnote(x, attr(data, &quot;footnote&quot;), &quot;title&quot;)
+  x
+}
+
+lt.gs_design_summary = function(data, ...) {
+  x = lt(as.data.frame(data), ...) |&gt;
+    lt_group(~ Analysis, sep = TRUE) |&gt;
+    lt_spanner(
+      label = &quot;Cumulative boundary crossing probability&quot;,
+      columns = c(&quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;)
+    ) |&gt;
+    lt_format(
+      c(&quot;Z&quot;, &quot;~HR at bound&quot;, &quot;Nominal p&quot;,
+        &quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;),
+      decimals = 4
+    )
+  x
+}
+
+registerS3method(&quot;lt&quot;, &quot;fixed_design_summary&quot;, lt.fixed_design_summary, asNamespace(&quot;lt&quot;))
+registerS3method(&quot;lt&quot;, &quot;gs_design_summary&quot;, lt.gs_design_summary, asNamespace(&quot;lt&quot;))
 </code></pre>
 <h2 id="sec:fixed-design-ahr-method"><span class="section-number main-number">1</span> Fixed design — AHR method</h2>
 <p>Equivalent of <code>fixed_design_ahr() |&gt; summary() |&gt; as_gt()</code>.</p>
-<pre><code class="language-r">s = fixed_design_ahr(
+<pre><code class="language-r">fixed_design_ahr(
   alpha = alpha, power = 1 - beta,
   enroll_rate = enroll_rate, fail_rate = fail_rate,
   study_duration = study_duration, ratio = 1
-) |&gt; summary()
-
-s |&gt;
-  lt() |&gt;
-  lt_header(title = attr(s, &quot;title&quot;)) |&gt;
-  lt_footnote(attr(s, &quot;footnote&quot;), &quot;title&quot;) |&gt;
-  lt_format(c(&quot;N&quot;, &quot;Events&quot;, &quot;AHR&quot;, &quot;Bound&quot;, &quot;Power&quot;), decimals = 4)
+) |&gt; summary() |&gt; lt()
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.49/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/lt.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -78,13 +98,6 @@ s |&gt;
     "alpha": [0.025],
     "Power": [0.9]
   },
-  "ops": [
-    {
-      "type": "fmt_number",
-      "columns": ["N", "Events", "AHR", "Bound", "Power"],
-      "decimals": 4
-    }
-  ],
   "header": {
     "title": "Fixed Design under AHR Method"
   },
@@ -99,20 +112,14 @@ s |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.49/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/lt.min.js" defer></script>
 <h2 id="sec:fixed-design-fleming-harrington"><span class="section-number main-number">2</span> Fixed design — Fleming-Harrington</h2>
 <p>Equivalent of <code>fixed_design_fh() |&gt; summary() |&gt; as_gt()</code>.</p>
-<pre><code class="language-r">s = fixed_design_fh(
+<pre><code class="language-r">fixed_design_fh(
   alpha = alpha, power = 1 - beta,
   enroll_rate = enroll_rate, fail_rate = fail_rate,
   study_duration = study_duration, ratio = 1
-) |&gt; summary()
-
-s |&gt;
-  lt() |&gt;
-  lt_header(title = attr(s, &quot;title&quot;)) |&gt;
-  lt_footnote(attr(s, &quot;footnote&quot;), &quot;title&quot;) |&gt;
-  lt_format(c(&quot;N&quot;, &quot;Events&quot;, &quot;Bound&quot;, &quot;Power&quot;), decimals = 4)
+) |&gt; summary() |&gt; lt()
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -126,13 +133,6 @@ s |&gt;
     "alpha": [0.025],
     "Power": [0.9]
   },
-  "ops": [
-    {
-      "type": "fmt_number",
-      "columns": ["N", "Events", "Bound", "Power"],
-      "decimals": 4
-    }
-  ],
   "header": {
     "title": "Fixed Design under Fleming-Harrington Method"
   },
@@ -149,21 +149,15 @@ s |&gt;
 })</script>
 <h2 id="sec:group-sequential-gs-power-ahr"><span class="section-number main-number">3</span> Group sequential — <code>gs_power_ahr</code></h2>
 <p>Equivalent of <code>gs_power_ahr(lpar = ...) |&gt; summary() |&gt; as_gt()</code>. The long
-“Analysis: N Time: … AHR: …” label is a natural row-group header
-(gt does the same via <code>gt::gt(groupname_col = &quot;Analysis&quot;, rowname_col = &quot;Bound&quot;)</code>).</p>
-<pre><code class="language-r">s = gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) |&gt;
-  summary()
-
-s |&gt;
+“Analysis: N Time: … AHR: …” label is a natural row-group header.
+The <code>lt.gs_design_summary</code> method handles grouping, spanner, and
+formatting automatically.</p>
+<pre><code class="language-r">gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) |&gt;
+  summary() |&gt;
   lt() |&gt;
-  lt_group(~ Analysis) |&gt;
   lt_header(
     title = &quot;Bound summary for AHR design&quot;,
     subtitle = &quot;AHR approximations of ~HR at bound&quot;
-  ) |&gt;
-  lt_spanner(
-    label = &quot;Cumulative boundary crossing probability&quot;,
-    columns = c(&quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;)
   ) |&gt;
   lt_footnote(
     &quot;Approximate hazard ratio to cross bound.&quot;,
@@ -172,10 +166,6 @@ s |&gt;
   lt_footnote(
     &quot;One-sided p-value for experimental vs control treatment.&quot;,
     &quot;column&quot;, &quot;Nominal p&quot;
-  ) |&gt;
-  lt_format(
-    c(&quot;Z&quot;, &quot;~HR at bound&quot;, &quot;Nominal p&quot;, &quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;),
-    decimals = 4
   )
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -197,16 +187,16 @@ s |&gt;
     }
   ],
   "row_group": "Analysis",
-  "header": {
-    "title": "Bound summary for AHR design",
-    "subtitle": "AHR approximations of ~HR at bound"
-  },
   "spanners": [
     {
       "label": "Cumulative boundary crossing probability",
       "columns": ["Alternate hypothesis", "Null hypothesis"]
     }
   ],
+  "header": {
+    "title": "Bound summary for AHR design",
+    "subtitle": "AHR approximations of ~HR at bound"
+  },
   "footnotes": [
     {
       "text": "Approximate hazard ratio to cross bound.",
@@ -227,22 +217,12 @@ s |&gt;
 })</script>
 <h2 id="sec:group-sequential-gs-design-ahr"><span class="section-number main-number">4</span> Group sequential — <code>gs_design_ahr</code></h2>
 <p>Equivalent of <code>gs_design_ahr() |&gt; summary() |&gt; as_gt()</code>.</p>
-<pre><code class="language-r">s = gs_design_ahr() |&gt; summary()
-
-s |&gt;
+<pre><code class="language-r">gs_design_ahr() |&gt;
+  summary() |&gt;
   lt() |&gt;
-  lt_group(~ Analysis) |&gt;
   lt_header(
     title = &quot;Bound summary for AHR design&quot;,
     subtitle = &quot;AHR approximations of ~HR at bound&quot;
-  ) |&gt;
-  lt_spanner(
-    label = &quot;Cumulative boundary crossing probability&quot;,
-    columns = c(&quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;)
-  ) |&gt;
-  lt_format(
-    c(&quot;Z&quot;, &quot;~HR at bound&quot;, &quot;Nominal p&quot;, &quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;),
-    decimals = 4
   )
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -264,24 +244,22 @@ s |&gt;
     }
   ],
   "row_group": "Analysis",
-  "header": {
-    "title": "Bound summary for AHR design",
-    "subtitle": "AHR approximations of ~HR at bound"
-  },
   "spanners": [
     {
       "label": "Cumulative boundary crossing probability",
       "columns": ["Alternate hypothesis", "Null hypothesis"]
     }
-  ]
+  ],
+  "header": {
+    "title": "Bound summary for AHR design",
+    "subtitle": "AHR approximations of ~HR at bound"
+  }
 }
 })</script>
 <h2 id="sec:what-s-missing-vs-as-gt"><span class="section-number main-number">5</span> What’s missing vs <code>as_gt()</code></h2>
-<p>A direct <code>as_lt()</code> wrapper analogous to <code>as_gt.gs_design_summary</code> (with
-<code>title=</code>, <code>subtitle=</code>, <code>colname_spanner=</code>, <code>colname_spannersub=</code>,
-<code>footnote=</code>, <code>display_bound=</code>, <code>display_columns=</code>, <code>display_inf_bound=</code>
-arguments) is the obvious next step once the lt vocabulary settles. For
-now the chunks above show that the gt → lt mapping is mechanical:</p>
+<p>With <code>lt()</code> as an S3 generic, gsDesign2 can ship its own <code>lt.gs_design_summary</code>
+and <code>lt.fixed_design_summary</code> methods (similar to the ones defined above),
+making <code>summary() |&gt; lt()</code> work out of the box. The mapping from gt to lt is:</p>
 <table>
 <thead>
 <tr>
@@ -321,12 +299,12 @@ now the chunks above show that the gt → lt mapping is mechanical:</p>
 <p>Developed by Yihui Xie</p>
 <p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.9.10</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/js/appendix.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.48/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/appendix.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/pages.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
 </body>

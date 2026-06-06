@@ -1,2 +1,3 @@
 gsDesign2.Rmd
+lt-js.Rmd
 lt.Rmd

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 0.9.10">
+<title>lt.js — JavaScript API Reference</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/css/prism-xcode.min.css">
+</head>
+<body>
+<nav><p><a href="../index.html">Home</a>
+<a href="../examples.html">Examples</a>
+<a href="../manual.html">Manual</a>
+<a href="../playground/">Playground</a></p></nav>
+<div class="frontmatter">
+<div class="title"><h1>lt.js — JavaScript API Reference</h1></div>
+</div>
+<div class="body">
+<div id="TOC">
+<ul class="numbered">
+<li><a href="#sec:including-lt-js"><span class="section-number main-number">1</span> Including lt.js</a></li>
+<li><a href="#sec:basic-table"><span class="section-number main-number">2</span> Basic table</a></li>
+<li><a href="#sec:auto-formatting"><span class="section-number main-number">3</span> Auto-formatting</a>
+<ul>
+<li><a href="#sec:disabling-auto-format"><span class="section-number">3.1</span> Disabling auto-format</a></li>
+<li><a href="#sec:percentage-detection"><span class="section-number">3.2</span> Percentage detection</a></li>
+</ul>
+</li>
+<li><a href="#sec:title-and-subtitle"><span class="section-number main-number">4</span> Title and subtitle</a></li>
+<li><a href="#sec:column-labels"><span class="section-number main-number">5</span> Column labels</a></li>
+<li><a href="#sec:column-alignment"><span class="section-number main-number">6</span> Column alignment</a></li>
+<li><a href="#sec:number-formatting-fmt-number"><span class="section-number main-number">7</span> Number formatting (<code>fmt_number</code>)</a>
+<ul>
+<li><a href="#sec:percent-without-multiplication"><span class="section-number">7.1</span> Percent without multiplication</a></li>
+</ul>
+</li>
+<li><a href="#sec:value-substitution-sub"><span class="section-number main-number">8</span> Value substitution (<code>sub</code>)</a></li>
+<li><a href="#sec:column-merging-merge"><span class="section-number main-number">9</span> Column merging (<code>merge</code>)</a></li>
+<li><a href="#sec:column-spanners"><span class="section-number main-number">10</span> Column spanners</a>
+<ul>
+<li><a href="#sec:auto-inferred-spanners"><span class="section-number">10.1</span> Auto-inferred spanners</a></li>
+</ul>
+</li>
+<li><a href="#sec:row-groups-separator-rows"><span class="section-number main-number">11</span> Row groups (separator rows)</a></li>
+<li><a href="#sec:row-groups-rowspan"><span class="section-number main-number">12</span> Row groups (rowspan)</a></li>
+<li><a href="#sec:row-group-ordering"><span class="section-number main-number">13</span> Row group ordering</a></li>
+<li><a href="#sec:manual-row-groups"><span class="section-number main-number">14</span> Manual row groups</a></li>
+<li><a href="#sec:stub-column"><span class="section-number main-number">15</span> Stub column</a></li>
+<li><a href="#sec:row-indentation"><span class="section-number main-number">16</span> Row indentation</a></li>
+<li><a href="#sec:column-widths"><span class="section-number main-number">17</span> Column widths</a></li>
+<li><a href="#sec:column-reordering-move"><span class="section-number main-number">18</span> Column reordering (<code>move</code>)</a></li>
+<li><a href="#sec:cell-styling"><span class="section-number main-number">19</span> Cell styling</a></li>
+<li><a href="#sec:footnotes"><span class="section-number main-number">20</span> Footnotes</a></li>
+<li><a href="#sec:source-notes"><span class="section-number main-number">21</span> Source notes</a></li>
+<li><a href="#sec:complete-example"><span class="section-number main-number">22</span> Complete example</a></li>
+</ul>
+</div>
+<p>This document demonstrates the lt.js runtime directly from JavaScript.
+Each example shows a JSON spec and renders the table with <code>LT.build()</code>.</p>
+<h2 id="sec:including-lt-js"><span class="section-number main-number">1</span> Including lt.js</h2>
+<p>Add the stylesheet and script to your HTML page:</p>
+<pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css&quot;&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p>Then call <code>LT.build(spec)</code> from an inline <code>&lt;script&gt;</code> wherever you want a
+table to appear. The runtime renders the table immediately after the
+calling script element.</p>
+<script>// Shim: lt.js is deferred, so queue calls until it loads
+if (!window.LT) window.LT = {
+  q: [],
+  build(spec) { this.q.push({s: document.currentScript, d: spec}); }
+};</script>
+<p>Define sample datasets as JavaScript objects (interpolated from R via
+litedown’s <code>fill</code> option):</p>
+<pre><code class="language-js">const mtcars = {
+  &quot;mpg&quot;: [21, 21, 22.8, 21.4, 18.7, 18.1],
+  &quot;cyl&quot;: [6, 6, 4, 6, 8, 6],
+  &quot;disp&quot;: [160, 160, 108, 258, 360, 225],
+  &quot;hp&quot;: [110, 110, 93, 110, 175, 105],
+  &quot;drat&quot;: [3.9, 3.9, 3.85, 3.08, 3.15, 2.76],
+  &quot;wt&quot;: [2.62, 2.875, 2.32, 3.215, 3.44, 3.46]
+};
+const iris = {
+  &quot;Sepal.Length&quot;: [5.1, 4.9, 4.7, 4.6, 5],
+  &quot;Sepal.Width&quot;: [3.5, 3, 3.2, 3.1, 3.6],
+  &quot;Petal.Length&quot;: [1.4, 1.4, 1.3, 1.5, 1.4],
+  &quot;Petal.Width&quot;: [0.2, 0.2, 0.2, 0.2, 0.2],
+  &quot;Species&quot;: [&quot;setosa&quot;, &quot;setosa&quot;, &quot;setosa&quot;, &quot;setosa&quot;, &quot;setosa&quot;]
+};
+</code></pre>
+<script>const mtcars = {
+  "mpg": [21, 21, 22.8, 21.4, 18.7, 18.1],
+  "cyl": [6, 6, 4, 6, 8, 6],
+  "disp": [160, 160, 108, 258, 360, 225],
+  "hp": [110, 110, 93, 110, 175, 105],
+  "drat": [3.9, 3.9, 3.85, 3.08, 3.15, 2.76],
+  "wt": [2.62, 2.875, 2.32, 3.215, 3.44, 3.46]
+};
+const iris = {
+  "Sepal.Length": [5.1, 4.9, 4.7, 4.6, 5],
+  "Sepal.Width": [3.5, 3, 3.2, 3.1, 3.6],
+  "Petal.Length": [1.4, 1.4, 1.3, 1.5, 1.4],
+  "Petal.Width": [0.2, 0.2, 0.2, 0.2, 0.2],
+  "Species": ["setosa", "setosa", "setosa", "setosa", "setosa"]
+};</script>
+<h2 id="sec:basic-table"><span class="section-number main-number">2</span> Basic table</h2>
+<p>The simplest spec: just <code>data</code> (a column-oriented object).</p>
+<pre><code class="language-js">LT.build({ data: mtcars });
+</code></pre>
+<script>LT.build({ data: mtcars });</script>
+<h2 id="sec:auto-formatting"><span class="section-number main-number">3</span> Auto-formatting</h2>
+<p>Numeric columns are automatically formatted: decimal places are capped
+dynamically based on magnitude, large numbers get thousand separators
+(non-breaking space), and negative values use typographic minus (U+2212).</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Metric: [&quot;Revenue&quot;, &quot;Costs&quot;, &quot;Profit&quot;, &quot;Loss&quot;],
+    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+  }
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Metric: ["Revenue", "Costs", "Profit", "Loss"],
+    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+  }
+});</script>
+<h3 id="sec:disabling-auto-format"><span class="section-number">3.1</span> Disabling auto-format</h3>
+<p>Set <code>auto_fmt: false</code> to show raw values. Compare with the table above:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Metric: [&quot;Revenue&quot;, &quot;Costs&quot;, &quot;Profit&quot;, &quot;Loss&quot;],
+    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+  },
+  auto_fmt: false
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Metric: ["Revenue", "Costs", "Profit", "Loss"],
+    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+  },
+  auto_fmt: false
+});</script>
+<h3 id="sec:percentage-detection"><span class="section-number">3.2</span> Percentage detection</h3>
+<p>Columns whose label matches <code>/%|[ _](pct|percent)$/i</code> are auto-detected
+as percentages: values are multiplied by 100 and suffixed with “%”.</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Endpoint: [&quot;Primary&quot;, &quot;Secondary&quot;],
+    success_pct: [0.7823, 0.4512]
+  }
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Endpoint: ["Primary", "Secondary"],
+    success_pct: [0.7823, 0.4512]
+  }
+});</script>
+<h2 id="sec:title-and-subtitle"><span class="section-number main-number">4</span> Title and subtitle</h2>
+<pre><code class="language-js">LT.build({
+  data: iris,
+  header: {
+    title: &quot;Iris Measurements&quot;,
+    subtitle: &quot;First five observations&quot;
+  }
+});
+</code></pre>
+<script>LT.build({
+  data: iris,
+  header: {
+    title: "Iris Measurements",
+    subtitle: "First five observations"
+  }
+});</script>
+<h2 id="sec:column-labels"><span class="section-number main-number">5</span> Column labels</h2>
+<p>Rename column headers without modifying the data keys:</p>
+<pre><code class="language-js">LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;label&quot;, labels: {
+      &quot;Sepal.Length&quot;: &quot;Length (cm)&quot;, &quot;Sepal.Width&quot;: &quot;Width (cm)&quot;,
+      &quot;Petal.Length&quot;: &quot;Length (cm)&quot;, &quot;Petal.Width&quot;: &quot;Width (cm)&quot;
+    }}
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: iris,
+  ops: [
+    { type: "label", labels: {
+      "Sepal.Length": "Length (cm)", "Sepal.Width": "Width (cm)",
+      "Petal.Length": "Length (cm)", "Petal.Width": "Width (cm)"
+    }}
+  ]
+});</script>
+<h2 id="sec:column-alignment"><span class="section-number main-number">6</span> Column alignment</h2>
+<p>By default, numeric columns are right-aligned. Override with an <code>align</code> op:</p>
+<pre><code class="language-js">LT.build({
+  data: mtcars,
+  ops: [
+    { type: &quot;align&quot;, columns: [&quot;mpg&quot;, &quot;cyl&quot;], align: &quot;center&quot; }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: mtcars,
+  ops: [
+    { type: "align", columns: ["mpg", "cyl"], align: "center" }
+  ]
+});</script>
+<h2 id="sec:number-formatting-fmt-number"><span class="section-number main-number">7</span> Number formatting (<code>fmt_number</code>)</h2>
+<p>Explicit control over decimals and thousands separators:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Item: [&quot;Widget&quot;, &quot;Gadget&quot;, &quot;Doohickey&quot;],
+    Revenue: [1234567.891, 987654.321, 246913.57],
+    Margin: [0.1234, 0.0567, 0.2345]
+  },
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;Revenue&quot;], decimals: 0, big_mark: &quot;,&quot; },
+    { type: &quot;fmt_number&quot;, columns: [&quot;Margin&quot;], decimals: 2, percent: true }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Item: ["Widget", "Gadget", "Doohickey"],
+    Revenue: [1234567.891, 987654.321, 246913.57],
+    Margin: [0.1234, 0.0567, 0.2345]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Revenue"], decimals: 0, big_mark: "," },
+    { type: "fmt_number", columns: ["Margin"], decimals: 2, percent: true }
+  ]
+});</script>
+<h3 id="sec:percent-without-multiplication"><span class="section-number">7.1</span> Percent without multiplication</h3>
+<p>Use <code>percent: &quot;%&quot;</code> when values are already in percent scale (no <code>*100</code>):</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Test: [&quot;A&quot;, &quot;B&quot;],
+    Rate: [78.5, 42.1]
+  },
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;Rate&quot;], decimals: 1, percent: &quot;%&quot; }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Test: ["A", "B"],
+    Rate: [78.5, 42.1]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Rate"], decimals: 1, percent: "%" }
+  ]
+});</script>
+<h2 id="sec:value-substitution-sub"><span class="section-number main-number">8</span> Value substitution (<code>sub</code>)</h2>
+<p>Replace missing, zero, or small values with display text:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Metric: [&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;],
+    Value: [0.62, 0.0003, 0, null]
+  },
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;Value&quot;], decimals: 2 },
+    { type: &quot;sub&quot;, columns: [&quot;Value&quot;], missing: &quot;n/a&quot;, zero: &quot;—&quot;, small: 0.001, small_text: &quot;&lt; 0.001&quot; }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Metric: ["HR", "p-value", "Events", "Rate"],
+    Value: [0.62, 0.0003, 0, null]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Value"], decimals: 2 },
+    { type: "sub", columns: ["Value"], missing: "n/a", zero: "—", small: 0.001, small_text: "< 0.001" }
+  ]
+});</script>
+<h2 id="sec:column-merging-merge"><span class="section-number main-number">9</span> Column merging (<code>merge</code>)</h2>
+<p>Combine multiple columns into one display column. The <code>pattern</code> uses
+<code>{1}</code>, <code>{2}</code>, etc. for column positions. Wrap sections in <code>&lt;&lt;</code> <code>&gt;&gt;</code> for
+conditional NA handling.</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Endpoint: [&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Tertiary&quot;],
+    est: [0.61, 0.79, 0.45],
+    ci_lo: [0.40, 0.57, null],
+    ci_hi: [0.82, 1.01, null]
+  },
+  row_label: &quot;Endpoint&quot;,
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;], decimals: 2 },
+    { type: &quot;merge&quot;, columns: [&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;], pattern: &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot; },
+    { type: &quot;label&quot;, labels: { est: &quot;Estimate (95% CI)&quot; } }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Endpoint: ["Primary", "Secondary", "Tertiary"],
+    est: [0.61, 0.79, 0.45],
+    ci_lo: [0.40, 0.57, null],
+    ci_hi: [0.82, 1.01, null]
+  },
+  row_label: "Endpoint",
+  ops: [
+    { type: "fmt_number", columns: ["est", "ci_lo", "ci_hi"], decimals: 2 },
+    { type: "merge", columns: ["est", "ci_lo", "ci_hi"], pattern: "{1}<< ({2}, {3})>>" },
+    { type: "label", labels: { est: "Estimate (95% CI)" } }
+  ]
+});</script>
+<h2 id="sec:column-spanners"><span class="section-number main-number">10</span> Column spanners</h2>
+<p>Group contiguous columns under a shared header:</p>
+<pre><code class="language-js">LT.build({
+  data: iris,
+  spanners: [
+    { label: &quot;Sepal&quot;, columns: [&quot;Sepal.Length&quot;, &quot;Sepal.Width&quot;] },
+    { label: &quot;Petal&quot;, columns: [&quot;Petal.Length&quot;, &quot;Petal.Width&quot;] }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: iris,
+  spanners: [
+    { label: "Sepal", columns: ["Sepal.Length", "Sepal.Width"] },
+    { label: "Petal", columns: ["Petal.Length", "Petal.Width"] }
+  ]
+});</script>
+<h3 id="sec:auto-inferred-spanners"><span class="section-number">10.1</span> Auto-inferred spanners</h3>
+<p>Set <code>auto_span: true</code> to infer spanners from column names. Names are
+split on the first <code>.</code> or <code>_</code>; contiguous columns sharing a prefix are
+grouped, and labels are shortened to the suffix. Pass a custom regex
+string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
+<pre><code class="language-js">LT.build({ data: iris, auto_span: true });
+</code></pre>
+<script>LT.build({ data: iris, auto_span: true });</script>
+<h2 id="sec:row-groups-separator-rows"><span class="section-number main-number">11</span> Row groups (separator rows)</h2>
+<p>Pass <code>row_group</code> as a string to use separator-row style:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    arm: [&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;],
+    stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
+    value: [30, 4.2, 31, 6.8]
+  },
+  row_group: &quot;arm&quot;,
+  row_label: &quot;stat&quot;
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
+    stat: ["n", "Mean", "n", "Mean"],
+    value: [30, 4.2, 31, 6.8]
+  },
+  row_group: "arm",
+  row_label: "stat"
+});</script>
+<h2 id="sec:row-groups-rowspan"><span class="section-number main-number">12</span> Row groups (rowspan)</h2>
+<p>Pass <code>row_group</code> as an array to render as rowspan cells on the left:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Region: [&quot;East&quot;, &quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;],
+    State: [&quot;NY&quot;, &quot;NY&quot;, &quot;MA&quot;, &quot;WA&quot;, &quot;WA&quot;, &quot;OR&quot;],
+    City: [&quot;New York&quot;, &quot;Buffalo&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Spokane&quot;, &quot;Portland&quot;],
+    Population: [8336817, 278349, 675647, 737015, 228989, 652503]
+  },
+  row_group: [&quot;Region&quot;, &quot;State&quot;]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Region: ["East", "East", "East", "West", "West", "West"],
+    State: ["NY", "NY", "MA", "WA", "WA", "OR"],
+    City: ["New York", "Buffalo", "Boston", "Seattle", "Spokane", "Portland"],
+    Population: [8336817, 278349, 675647, 737015, 228989, 652503]
+  },
+  row_group: ["Region", "State"]
+});</script>
+<h2 id="sec:row-group-ordering"><span class="section-number main-number">13</span> Row group ordering</h2>
+<p>Reorder separator-row groups with a <code>group_order</code> op:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    arm: [&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;],
+    stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
+    value: [&quot;30&quot;, &quot;4.2&quot;, &quot;31&quot;, &quot;6.8&quot;]
+  },
+  row_group: &quot;arm&quot;,
+  row_label: &quot;stat&quot;,
+  ops: [
+    { type: &quot;group_order&quot;, order: [&quot;Treatment&quot;, &quot;Placebo&quot;] }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
+    stat: ["n", "Mean", "n", "Mean"],
+    value: ["30", "4.2", "31", "6.8"]
+  },
+  row_group: "arm",
+  row_label: "stat",
+  ops: [
+    { type: "group_order", order: ["Treatment", "Placebo"] }
+  ]
+});</script>
+<h2 id="sec:manual-row-groups"><span class="section-number main-number">14</span> Manual row groups</h2>
+<p>Define groups explicitly by row index:</p>
+<pre><code class="language-js">LT.build({
+  data: mtcars,
+  ops: [
+    { type: &quot;row_group&quot;, label: &quot;First three&quot;, rows: [1, 2, 3] },
+    { type: &quot;row_group&quot;, label: &quot;Last three&quot;, rows: [4, 5, 6] }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: mtcars,
+  ops: [
+    { type: "row_group", label: "First three", rows: [1, 2, 3] },
+    { type: "row_group", label: "Last three", rows: [4, 5, 6] }
+  ]
+});</script>
+<h2 id="sec:stub-column"><span class="section-number main-number">15</span> Stub column</h2>
+<p>Use <code>row_label</code> to designate a column as the row-label stub:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    endpoint: [&quot;OS&quot;, &quot;PFS&quot;, &quot;ORR&quot;],
+    result: [&quot;0.72&quot;, &quot;0.58&quot;, &quot;42%&quot;]
+  },
+  row_label: &quot;endpoint&quot;,
+  ops: [
+    { type: &quot;stubhead&quot;, label: &quot;Endpoint&quot; }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    endpoint: ["OS", "PFS", "ORR"],
+    result: ["0.72", "0.58", "42%"]
+  },
+  row_label: "endpoint",
+  ops: [
+    { type: "stubhead", label: "Endpoint" }
+  ]
+});</script>
+<h2 id="sec:row-indentation"><span class="section-number main-number">16</span> Row indentation</h2>
+<p>Indent specific rows in the stub to show hierarchy:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    label: [&quot;Any AE&quot;, &quot;SOC: Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;, &quot;SOC: GI&quot;, &quot;Nausea&quot;],
+    n_pct: [&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;]
+  },
+  row_label: &quot;label&quot;,
+  ops: [
+    { type: &quot;indent&quot;, rows: [2, 5], level: 1 },
+    { type: &quot;indent&quot;, rows: [3, 4, 6], level: 2 }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    label: ["Any AE", "SOC: Cardiac", "Tachycardia", "Bradycardia", "SOC: GI", "Nausea"],
+    n_pct: ["45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)"]
+  },
+  row_label: "label",
+  ops: [
+    { type: "indent", rows: [2, 5], level: 1 },
+    { type: "indent", rows: [3, 4, 6], level: 2 }
+  ]
+});</script>
+<h2 id="sec:column-widths"><span class="section-number main-number">17</span> Column widths</h2>
+<pre><code class="language-js">LT.build({
+  data: mtcars,
+  ops: [
+    { type: &quot;width&quot;, widths: { mpg: &quot;10em&quot;, cyl: &quot;5em&quot;, disp: &quot;10em&quot;, hp: &quot;8em&quot; } }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: mtcars,
+  ops: [
+    { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
+  ]
+});</script>
+<h2 id="sec:column-reordering-move"><span class="section-number main-number">18</span> Column reordering (<code>move</code>)</h2>
+<p>Move columns to the start or after a specific column:</p>
+<pre><code class="language-js">LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;move&quot;, columns: [&quot;Petal.Length&quot;, &quot;Petal.Width&quot;], after: null }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: iris,
+  ops: [
+    { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
+  ]
+});</script>
+<h2 id="sec:cell-styling"><span class="section-number main-number">19</span> Cell styling</h2>
+<p>Apply CSS to specific cells by column and/or row:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Endpoint: [&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Exploratory&quot;],
+    HR: [0.62, 0.79, 0.91],
+    P: [0.001, 0.042, 0.38]
+  },
+  row_label: &quot;Endpoint&quot;,
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;HR&quot;], decimals: 2 },
+    { type: &quot;fmt_number&quot;, columns: [&quot;P&quot;], decimals: 3 },
+    { type: &quot;style&quot;, columns: [&quot;P&quot;], rows: [1, 2], css: &quot;font-weight:bold;color:#06c&quot; },
+    { type: &quot;style&quot;, columns: [&quot;HR&quot;], rows: [1], css: &quot;background:#e8f4e8;border-bottom:2px solid #4a4&quot; }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Endpoint: ["Primary", "Secondary", "Exploratory"],
+    HR: [0.62, 0.79, 0.91],
+    P: [0.001, 0.042, 0.38]
+  },
+  row_label: "Endpoint",
+  ops: [
+    { type: "fmt_number", columns: ["HR"], decimals: 2 },
+    { type: "fmt_number", columns: ["P"], decimals: 3 },
+    { type: "style", columns: ["P"], rows: [1, 2], css: "font-weight:bold;color:#06c" },
+    { type: "style", columns: ["HR"], rows: [1], css: "background:#e8f4e8;border-bottom:2px solid #4a4" }
+  ]
+});</script>
+<h2 id="sec:footnotes"><span class="section-number main-number">20</span> Footnotes</h2>
+<p>Footnotes are de-duplicated by text and numbered automatically. Supported
+locations: <code>title</code>, <code>column_labels</code>, <code>column_spanners</code>, <code>row_groups</code>, <code>body</code>.</p>
+<pre><code class="language-js">LT.build({
+  data: mtcars,
+  header: { title: &quot;Motor Trend Cars&quot; },
+  footnotes: [
+    { text: &quot;Source: 1974 Motor Trend US magazine.&quot;, location: { type: &quot;title&quot;, group: &quot;title&quot; } },
+    { text: &quot;Miles per US gallon.&quot;, location: { type: &quot;column_labels&quot;, columns: [&quot;mpg&quot;] } }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: mtcars,
+  header: { title: "Motor Trend Cars" },
+  footnotes: [
+    { text: "Source: 1974 Motor Trend US magazine.", location: { type: "title", group: "title" } },
+    { text: "Miles per US gallon.", location: { type: "column_labels", columns: ["mpg"] } }
+  ]
+});</script>
+<h2 id="sec:source-notes"><span class="section-number main-number">21</span> Source notes</h2>
+<p>Notes appear below footnotes in the footer:</p>
+<pre><code class="language-js">LT.build({
+  data: mtcars,
+  notes: [&quot;Data from the 1974 Motor Trend US magazine.&quot;]
+});
+</code></pre>
+<script>LT.build({
+  data: mtcars,
+  notes: ["Data from the 1974 Motor Trend US magazine."]
+});</script>
+<h2 id="sec:complete-example"><span class="section-number main-number">22</span> Complete example</h2>
+<p>Combining multiple features in a single spec:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Group: [&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;],
+    Endpoint: [&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Primary&quot;, &quot;Secondary&quot;],
+    Estimate: [0.6123, 0.7891, 0.4567, 0.5432],
+    CI_Lower: [0.4012, 0.5678, 0.2345, 0.321],
+    CI_Upper: [0.8234, 1.0104, 0.6789, 0.7654],
+    P_Value: [0.0012, 0.0456, 0.1234, 0.2345]
+  },
+  row_group: &quot;Group&quot;,
+  header: {
+    title: &quot;Study Results&quot;,
+    subtitle: &quot;Primary and secondary endpoints&quot;
+  },
+  spanners: [
+    { label: &quot;95% CI&quot;, columns: [&quot;CI_Lower&quot;, &quot;CI_Upper&quot;] }
+  ],
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;Estimate&quot;, &quot;CI_Lower&quot;, &quot;CI_Upper&quot;], decimals: 3 },
+    { type: &quot;fmt_number&quot;, columns: [&quot;P_Value&quot;], decimals: 4 },
+    { type: &quot;style&quot;, columns: [&quot;P_Value&quot;], rows: [1, 3], css: &quot;font-weight:bold&quot; }
+  ],
+  footnotes: [
+    { text: &quot;Two-sided p-value from log-rank test.&quot;, location: { type: &quot;column_labels&quot;, columns: [&quot;P_Value&quot;] } }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Group: ["Treatment", "Treatment", "Control", "Control"],
+    Endpoint: ["Primary", "Secondary", "Primary", "Secondary"],
+    Estimate: [0.6123, 0.7891, 0.4567, 0.5432],
+    CI_Lower: [0.4012, 0.5678, 0.2345, 0.321],
+    CI_Upper: [0.8234, 1.0104, 0.6789, 0.7654],
+    P_Value: [0.0012, 0.0456, 0.1234, 0.2345]
+  },
+  row_group: "Group",
+  header: {
+    title: "Study Results",
+    subtitle: "Primary and secondary endpoints"
+  },
+  spanners: [
+    { label: "95% CI", columns: ["CI_Lower", "CI_Upper"] }
+  ],
+  ops: [
+    { type: "fmt_number", columns: ["Estimate", "CI_Lower", "CI_Upper"], decimals: 3 },
+    { type: "fmt_number", columns: ["P_Value"], decimals: 4 },
+    { type: "style", columns: ["P_Value"], rows: [1, 3], css: "font-weight:bold" }
+  ],
+  footnotes: [
+    { text: "Two-sided p-value from log-rank test.", location: { type: "column_labels", columns: ["P_Value"] } }
+  ]
+});</script>
+</div>
+<footer><div class="flex-col">
+<p>Developed by Yihui Xie</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.9.10</p>
+</div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/appendix.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.51/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</body>
+</html>

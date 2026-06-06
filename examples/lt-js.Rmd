@@ -1,0 +1,441 @@
+---
+title: "lt.js — JavaScript API Reference"
+output:
+  html:
+    meta:
+      css: ["@default", "@lt"]
+      js: ["@lt"]
+---
+
+This document demonstrates the lt.js runtime directly from JavaScript.
+Each example shows a JSON spec and renders the table with `LT.build()`.
+
+## Including lt.js
+
+Add the stylesheet and script to your HTML page:
+
+``` html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js"></script>
+```
+
+Then call `LT.build(spec)` from an inline `<script>` wherever you want a
+table to appear. The runtime renders the table immediately after the
+calling script element.
+
+```{r, echo = FALSE}
+iris5 = head(iris, 5)
+mtcars6 = head(mtcars[, 1:6], 6)
+```
+
+```{js, echo = FALSE}
+// Shim: lt.js is deferred, so queue calls until it loads
+if (!window.LT) window.LT = {
+  q: [],
+  build(spec) { this.q.push({s: document.currentScript, d: spec}); }
+};
+```
+
+Define sample datasets as JavaScript objects (interpolated from R via
+litedown's `fill` option):
+
+```{js, fill = xfun::tojson}
+const mtcars = `{ mtcars6 }`;
+const iris = `{ iris5 }`;
+```
+
+## Basic table
+
+The simplest spec: just `data` (a column-oriented object).
+
+```{js}
+LT.build({ data: mtcars });
+```
+
+## Auto-formatting
+
+Numeric columns are automatically formatted: decimal places are capped
+dynamically based on magnitude, large numbers get thousand separators
+(non-breaking space), and negative values use typographic minus (U+2212).
+
+```{js}
+LT.build({
+  data: {
+    Metric: ["Revenue", "Costs", "Profit", "Loss"],
+    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+  }
+});
+```
+
+### Disabling auto-format
+
+Set `auto_fmt: false` to show raw values. Compare with the table above:
+
+```{js}
+LT.build({
+  data: {
+    Metric: ["Revenue", "Costs", "Profit", "Loss"],
+    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+  },
+  auto_fmt: false
+});
+```
+
+### Percentage detection
+
+Columns whose label matches `/%|[ _](pct|percent)$/i` are auto-detected
+as percentages: values are multiplied by 100 and suffixed with "%".
+
+```{js}
+LT.build({
+  data: {
+    Endpoint: ["Primary", "Secondary"],
+    success_pct: [0.7823, 0.4512]
+  }
+});
+```
+
+## Title and subtitle
+
+```{js}
+LT.build({
+  data: iris,
+  header: {
+    title: "Iris Measurements",
+    subtitle: "First five observations"
+  }
+});
+```
+
+## Column labels
+
+Rename column headers without modifying the data keys:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "label", labels: {
+      "Sepal.Length": "Length (cm)", "Sepal.Width": "Width (cm)",
+      "Petal.Length": "Length (cm)", "Petal.Width": "Width (cm)"
+    }}
+  ]
+});
+```
+
+## Column alignment
+
+By default, numeric columns are right-aligned. Override with an `align` op:
+
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: "align", columns: ["mpg", "cyl"], align: "center" }
+  ]
+});
+```
+
+## Number formatting (`fmt_number`)
+
+Explicit control over decimals and thousands separators:
+
+```{js}
+LT.build({
+  data: {
+    Item: ["Widget", "Gadget", "Doohickey"],
+    Revenue: [1234567.891, 987654.321, 246913.57],
+    Margin: [0.1234, 0.0567, 0.2345]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Revenue"], decimals: 0, big_mark: "," },
+    { type: "fmt_number", columns: ["Margin"], decimals: 2, percent: true }
+  ]
+});
+```
+
+### Percent without multiplication
+
+Use `percent: "%"` when values are already in percent scale (no `*100`):
+
+```{js}
+LT.build({
+  data: {
+    Test: ["A", "B"],
+    Rate: [78.5, 42.1]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Rate"], decimals: 1, percent: "%" }
+  ]
+});
+```
+
+## Value substitution (`sub`)
+
+Replace missing, zero, or small values with display text:
+
+```{js}
+LT.build({
+  data: {
+    Metric: ["HR", "p-value", "Events", "Rate"],
+    Value: [0.62, 0.0003, 0, null]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Value"], decimals: 2 },
+    { type: "sub", columns: ["Value"], missing: "n/a", zero: "—", small: 0.001, small_text: "< 0.001" }
+  ]
+});
+```
+
+## Column merging (`merge`)
+
+Combine multiple columns into one display column. The `pattern` uses
+`{1}`, `{2}`, etc. for column positions. Wrap sections in `<<` `>>` for
+conditional NA handling.
+
+```{js}
+LT.build({
+  data: {
+    Endpoint: ["Primary", "Secondary", "Tertiary"],
+    est: [0.61, 0.79, 0.45],
+    ci_lo: [0.40, 0.57, null],
+    ci_hi: [0.82, 1.01, null]
+  },
+  row_label: "Endpoint",
+  ops: [
+    { type: "fmt_number", columns: ["est", "ci_lo", "ci_hi"], decimals: 2 },
+    { type: "merge", columns: ["est", "ci_lo", "ci_hi"], pattern: "{1}<< ({2}, {3})>>" },
+    { type: "label", labels: { est: "Estimate (95% CI)" } }
+  ]
+});
+```
+
+## Column spanners
+
+Group contiguous columns under a shared header:
+
+```{js}
+LT.build({
+  data: iris,
+  spanners: [
+    { label: "Sepal", columns: ["Sepal.Length", "Sepal.Width"] },
+    { label: "Petal", columns: ["Petal.Length", "Petal.Width"] }
+  ]
+});
+```
+
+### Auto-inferred spanners
+
+Set `auto_span: true` to infer spanners from column names. Names are
+split on the first `.` or `_`; contiguous columns sharing a prefix are
+grouped, and labels are shortened to the suffix. Pass a custom regex
+string (e.g., `"[.]"`) to change the separator.
+
+```{js}
+LT.build({ data: iris, auto_span: true });
+```
+
+## Row groups (separator rows)
+
+Pass `row_group` as a string to use separator-row style:
+
+```{js}
+LT.build({
+  data: {
+    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
+    stat: ["n", "Mean", "n", "Mean"],
+    value: [30, 4.2, 31, 6.8]
+  },
+  row_group: "arm",
+  row_label: "stat"
+});
+```
+
+## Row groups (rowspan)
+
+Pass `row_group` as an array to render as rowspan cells on the left:
+
+```{js}
+LT.build({
+  data: {
+    Region: ["East", "East", "East", "West", "West", "West"],
+    State: ["NY", "NY", "MA", "WA", "WA", "OR"],
+    City: ["New York", "Buffalo", "Boston", "Seattle", "Spokane", "Portland"],
+    Population: [8336817, 278349, 675647, 737015, 228989, 652503]
+  },
+  row_group: ["Region", "State"]
+});
+```
+
+## Row group ordering
+
+Reorder separator-row groups with a `group_order` op:
+
+```{js}
+LT.build({
+  data: {
+    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
+    stat: ["n", "Mean", "n", "Mean"],
+    value: ["30", "4.2", "31", "6.8"]
+  },
+  row_group: "arm",
+  row_label: "stat",
+  ops: [
+    { type: "group_order", order: ["Treatment", "Placebo"] }
+  ]
+});
+```
+
+## Manual row groups
+
+Define groups explicitly by row index:
+
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: "row_group", label: "First three", rows: [1, 2, 3] },
+    { type: "row_group", label: "Last three", rows: [4, 5, 6] }
+  ]
+});
+```
+
+## Stub column
+
+Use `row_label` to designate a column as the row-label stub:
+
+```{js}
+LT.build({
+  data: {
+    endpoint: ["OS", "PFS", "ORR"],
+    result: ["0.72", "0.58", "42%"]
+  },
+  row_label: "endpoint",
+  ops: [
+    { type: "stubhead", label: "Endpoint" }
+  ]
+});
+```
+
+## Row indentation
+
+Indent specific rows in the stub to show hierarchy:
+
+```{js}
+LT.build({
+  data: {
+    label: ["Any AE", "SOC: Cardiac", "Tachycardia", "Bradycardia", "SOC: GI", "Nausea"],
+    n_pct: ["45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)"]
+  },
+  row_label: "label",
+  ops: [
+    { type: "indent", rows: [2, 5], level: 1 },
+    { type: "indent", rows: [3, 4, 6], level: 2 }
+  ]
+});
+```
+
+## Column widths
+
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
+  ]
+});
+```
+
+## Column reordering (`move`)
+
+Move columns to the start or after a specific column:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
+  ]
+});
+```
+
+## Cell styling
+
+Apply CSS to specific cells by column and/or row:
+
+```{js}
+LT.build({
+  data: {
+    Endpoint: ["Primary", "Secondary", "Exploratory"],
+    HR: [0.62, 0.79, 0.91],
+    P: [0.001, 0.042, 0.38]
+  },
+  row_label: "Endpoint",
+  ops: [
+    { type: "fmt_number", columns: ["HR"], decimals: 2 },
+    { type: "fmt_number", columns: ["P"], decimals: 3 },
+    { type: "style", columns: ["P"], rows: [1, 2], css: "font-weight:bold;color:#06c" },
+    { type: "style", columns: ["HR"], rows: [1], css: "background:#e8f4e8;border-bottom:2px solid #4a4" }
+  ]
+});
+```
+
+## Footnotes
+
+Footnotes are de-duplicated by text and numbered automatically. Supported
+locations: `title`, `column_labels`, `column_spanners`, `row_groups`, `body`.
+
+```{js}
+LT.build({
+  data: mtcars,
+  header: { title: "Motor Trend Cars" },
+  footnotes: [
+    { text: "Source: 1974 Motor Trend US magazine.", location: { type: "title", group: "title" } },
+    { text: "Miles per US gallon.", location: { type: "column_labels", columns: ["mpg"] } }
+  ]
+});
+```
+
+## Source notes
+
+Notes appear below footnotes in the footer:
+
+```{js}
+LT.build({
+  data: mtcars,
+  notes: ["Data from the 1974 Motor Trend US magazine."]
+});
+```
+
+## Complete example
+
+Combining multiple features in a single spec:
+
+```{js}
+LT.build({
+  data: {
+    Group: ["Treatment", "Treatment", "Control", "Control"],
+    Endpoint: ["Primary", "Secondary", "Primary", "Secondary"],
+    Estimate: [0.6123, 0.7891, 0.4567, 0.5432],
+    CI_Lower: [0.4012, 0.5678, 0.2345, 0.321],
+    CI_Upper: [0.8234, 1.0104, 0.6789, 0.7654],
+    P_Value: [0.0012, 0.0456, 0.1234, 0.2345]
+  },
+  row_group: "Group",
+  header: {
+    title: "Study Results",
+    subtitle: "Primary and secondary endpoints"
+  },
+  spanners: [
+    { label: "95% CI", columns: ["CI_Lower", "CI_Upper"] }
+  ],
+  ops: [
+    { type: "fmt_number", columns: ["Estimate", "CI_Lower", "CI_Upper"], decimals: 3 },
+    { type: "fmt_number", columns: ["P_Value"], decimals: 4 },
+    { type: "style", columns: ["P_Value"], rows: [1, 3], css: "font-weight:bold" }
+  ],
+  footnotes: [
+    { text: "Two-sided p-value from log-rank test.", location: { type: "column_labels", columns: ["P_Value"] } }
+  ]
+});
+```
