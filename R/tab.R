@@ -400,8 +400,9 @@ lt_css = function(x, ...) {
     args = args[!named]
   }
   paths = unlist(args, use.names = FALSE)
-  if (length(paths))
-    x$css = c(x$css, vapply(as.character(paths), resolve_css, character(1)))
+  if (length(paths)) x$css = c(x$css, vapply(
+    as.character(paths), resolve_css, character(1), USE.NAMES = FALSE
+  ))
   x
 }
 
