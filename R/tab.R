@@ -435,6 +435,6 @@ is_url = function(x) grepl('^(https?:)?//', x)
 #' lt(d) |> lt_stub(~ endpoint, label = "Endpoint")
 lt_stub = function(x, column, label = NULL) {
   x$row_label = f_cols(column)
-  if (!is.null(label)) add_op(x, 'stubhead', label = label)
+  if (!is.null(label)) x = add_op(x, 'stubhead', label = label)
   x
 }
