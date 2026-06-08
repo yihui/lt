@@ -380,6 +380,55 @@ LT.build({
 });
 ```
 
+## Conditional styling
+
+Use `test` with a JavaScript function to apply styles based on cell
+values. The function receives the raw (pre-format) value and should
+return `true` to apply. Use `class` to assign CSS classes instead of
+inline `css`:
+
+```{js}
+LT.build({
+  data: {
+    Endpoint: ["Primary", "Secondary", "Exploratory"],
+    HR: [0.62, 0.79, 1.05],
+    P: [0.001, 0.042, 0.38]
+  },
+  row_label: "Endpoint",
+  ops: [
+    { type: "fmt_number", columns: ["HR", "P"], decimals: 3 },
+    { type: "style", columns: ["HR"], test: v => v < 1, class: "good" },
+    { type: "style", columns: ["P"], test: v => v < 0.05, css: "font-weight:bold" }
+  ]
+});
+```
+
+```{css}
+.lt-table .good { color: green; }
+```
+
+### Highlighting missing values
+
+Apply a class to all null cells across the table (omit `columns` to
+target all):
+
+```{js}
+LT.build({
+  data: {
+    arm: ["Treatment", "Control", "Treatment"],
+    n: [30, null, 28],
+    response: [0.67, null, 0.71]
+  },
+  ops: [
+    { type: "style", test: v => v == null, class: "na" }
+  ]
+});
+```
+
+```{css}
+.lt-table .na { background: #fee; }
+```
+
 ## Footnotes
 
 Footnotes are de-duplicated by text and numbered automatically. Supported
