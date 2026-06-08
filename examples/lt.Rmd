@@ -29,7 +29,7 @@ By default, numeric columns are right-aligned and character columns are
 left-aligned. Override with `lt_align()`:
 
 ```{r}
-tbl_cars |> lt_align(~ mpg + cyl, "center")
+tbl_cars |> lt_align(~ mpg + cyl, "center") |> lt_width(mpg = "6em")
 ```
 
 ## Number formatting
@@ -301,7 +301,7 @@ lt(d) |>
 d = data.frame(
   arm = c("Treatment", "Control", "Treatment"),
   n = c(30, NA, 28),
-  response = c(0.67, NA, 0.71)
+  response = c(0.67, NA, NA)
 )
 lt(d) |>
   lt_style(test = "v => v == null", class = "na") |>
@@ -364,6 +364,6 @@ lt(d) |>
   ) |>
   lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |>
   lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |>
-  lt_format("P_Value", decimals = 4) |>
+  lt_format(~ P_Value, decimals = 4) |>
   lt_footnote("Two-sided p-value from log-rank test.", "column", "P_Value")
 ```
