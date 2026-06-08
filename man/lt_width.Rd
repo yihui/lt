@@ -18,3 +18,6 @@ can be any CSS value (e.g., \code{"100px"}, \code{"20\%"}, \code{"8em"}).}
 \description{
 Set Column Widths
 }
+\examples{
+lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
+}

@@ -2,22 +2,40 @@
 % Please edit documentation in R/shiny.R
 \name{lt_output}
 \alias{lt_output}
-\title{Shiny Output for lt}
+\alias{render_lt}
+\title{Shiny Bindings for lt}
 \usage{
 lt_output(outputId, ...)
+
+render_lt(expr, env = parent.frame(), quoted = FALSE)
 }
 \arguments{
 \item{outputId}{Output variable name to read the table from.}
 
 \item{...}{Reserved for future use.}
+
+\item{expr}{An expression that returns an \code{\link[=lt]{lt()}} object.}
+
+\item{env}{Environment in which to evaluate \code{expr}.}
+
+\item{quoted}{Whether \code{expr} is already quoted.}
 }
 \value{
-A Shiny UI element.
+\code{lt_output()} returns a Shiny UI element; \code{render_lt()} returns a
+render function.
 }
 \description{
-Pair with \code{\link[=render_lt]{render_lt()}} to render an \code{\link[=lt]{lt()}} table in a Shiny app. The UI side
-is a \verb{<div class="lt-output">} placeholder; an output binding swaps in
-the rendered \verb{<table>} whenever the server side re-evaluates the spec.
-No \code{renderUI()} involved — Shiny treats the table like any other custom
-output.
+\code{lt_output()} creates a UI placeholder; \code{render_lt()} supplies the table
+spec from the server. Together they render an \code{\link[=lt]{lt()}} table as a custom
+Shiny output — no \code{renderUI()} involved.
+}
+\examples{
+if (interactive()) {
+library(shiny)
+ui = fluidPage(lt_output("tbl"))
+server = function(input, output) {
+  output$tbl = render_lt(lt(head(mtcars)) |> lt_header("Motor Trend"))
+}
+shinyApp(ui, server)
+}
 }

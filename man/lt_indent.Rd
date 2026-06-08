@@ -21,3 +21,7 @@ left padding.}
 Add hierarchical indentation to row labels (stub cells). Requires that
 the table has a stub column (see \code{\link[=lt_stub]{lt_stub()}}).
 }
+\examples{
+d = data.frame(label = c("Overall", "Male", "Female"), n = c(100, 55, 45))
+lt(d) |> lt_stub(~ label) |> lt_indent(2:3)
+}

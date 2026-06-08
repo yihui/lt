@@ -106,6 +106,10 @@ spec_block = function(x) {
 #' @param ... Reserved for future use.
 #' @return A character scalar containing HTML.
 #' @export
+#' @examples
+#' tbl = lt(head(mtcars))
+#' html = format(tbl)
+#' format(tbl, fragment = FALSE)
 format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
   body = c(
     if (assets) css_block(inline_assets),
@@ -128,6 +132,8 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
 #' @param ... Passed to [format()].
 #' @return `x`, invisibly.
 #' @export
+#' @examples
+#' print(lt(head(mtcars)))
 print.lt_tbl = function(x, ...) {
   xfun::html_view(format(x, fragment = FALSE, ...))
   invisible(x)

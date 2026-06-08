@@ -29,10 +29,6 @@ built-in CSS, so rules can override the defaults.
 }
 \examples{
 tbl = lt(head(mtcars))
-\dontrun{
-tbl |> lt_css("custom.css")
-tbl |> lt_css("https://example.com/theme.css")
-}
 tbl |>
   lt_style("mpg", test = "v => v > 20", class = "high") |>
   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))

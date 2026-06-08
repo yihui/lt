@@ -29,3 +29,8 @@ A character scalar containing HTML.
 Emits the CSS+JS runtime and a script block carrying the table's JSON spec.
 Multiple tables on the same page only need the runtime once.
 }
+\examples{
+tbl = lt(head(mtcars))
+html = format(tbl)
+format(tbl, fragment = FALSE)
+}

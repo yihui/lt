@@ -17,3 +17,6 @@ lt_label(x, ...)
 \description{
 Override column headers without modifying the underlying data frame.
 }
+\examples{
+lt(head(mtcars)) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
+}

@@ -29,3 +29,7 @@ automatically hidden.}
 Combine values from multiple columns into a single display column using
 a pattern. Source columns (all except the first) are hidden by default.
 }
+\examples{
+d = data.frame(stat = c("Mean", "SD"), value = c(4.2, 1.1), ci = c("(2.0, 6.4)", "(0.5, 1.7)"))
+lt(d) |> lt_merge(~ value + ci, pattern = "{1} {2}")
+}

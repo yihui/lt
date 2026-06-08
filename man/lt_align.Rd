@@ -20,3 +20,6 @@ lt_align(x, columns, align = c("left", "center", "right"))
 Override the auto-detected alignment for specific columns. By default,
 numeric columns are right-aligned and character columns are left-aligned.
 }
+\examples{
+lt(head(mtcars)) |> lt_align(~ cyl + gear, "center")
+}

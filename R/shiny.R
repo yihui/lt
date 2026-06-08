@@ -12,29 +12,35 @@ lt_dependency = function() htmltools::htmlDependency(
   script = c('lt.js', 'lt-binding.js')
 )
 
-#' Shiny Output for lt
+#' Shiny Bindings for lt
 #'
-#' Pair with [render_lt()] to render an [lt()] table in a Shiny app. The UI side
-#' is a `<div class="lt-output">` placeholder; an output binding swaps in
-#' the rendered `<table>` whenever the server side re-evaluates the spec.
-#' No `renderUI()` involved — Shiny treats the table like any other custom
-#' output.
+#' `lt_output()` creates a UI placeholder; `render_lt()` supplies the table
+#' spec from the server. Together they render an [lt()] table as a custom
+#' Shiny output — no `renderUI()` involved.
 #'
 #' @param outputId Output variable name to read the table from.
 #' @param ... Reserved for future use.
-#' @return A Shiny UI element.
+#' @param expr An expression that returns an [lt()] object.
+#' @param env Environment in which to evaluate `expr`.
+#' @param quoted Whether `expr` is already quoted.
+#' @return `lt_output()` returns a Shiny UI element; `render_lt()` returns a
+#'   render function.
 #' @export
+#' @examples
+#' if (interactive()) {
+#' library(shiny)
+#' ui = fluidPage(lt_output("tbl"))
+#' server = function(input, output) {
+#'   output$tbl = render_lt(lt(head(mtcars)) |> lt_header("Motor Trend"))
+#' }
+#' shinyApp(ui, server)
+#' }
 lt_output = function(outputId, ...) shiny::tagList(
   lt_dependency(),
   shiny::div(id = outputId, class = 'lt-output')
 )
 
-#' Render an lt Table in Shiny
-#'
-#' @param expr An expression that returns an [lt()] object.
-#' @param env Environment in which to evaluate `expr`.
-#' @param quoted Whether `expr` is already quoted.
-#' @return A render function for use with [lt_output()].
+#' @rdname lt_output
 #' @export
 render_lt = function(expr, env = parent.frame(), quoted = FALSE) {
   func = shiny::installExprFunction(expr, 'func', env, quoted)

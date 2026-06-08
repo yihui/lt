@@ -35,3 +35,7 @@ replaced by \code{small_text}.}
 \description{
 Replace \code{NA}, zero, or small values with display text.
 }
+\examples{
+d = data.frame(x = c(1, 0, NA, 0.001))
+lt(d) |> lt_sub(missing = "—", zero = "—", small = 0.01, small_text = "<0.01")
+}

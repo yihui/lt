@@ -19,3 +19,6 @@ lt_header(x, title = NULL, subtitle = NULL)
 \description{
 Add a Title and Subtitle
 }
+\examples{
+lt(head(mtcars)) |> lt_header("Motor Trend Cars", "First 6 rows")
+}

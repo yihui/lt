@@ -30,3 +30,6 @@ columns. Columns passed to this function are excluded from automatic
 formatting (see the \code{auto_fmt} argument of \code{\link[=lt]{lt()}}). To disable auto-format
 for a column without otherwise changing its display, call \code{lt_format(x, ~col)} with no other arguments.
 }
+\examples{
+lt(head(mtcars)) |> lt_format(~ mpg + wt, decimals = 1, big_mark = ",")
+}

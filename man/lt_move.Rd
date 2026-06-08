@@ -20,3 +20,6 @@ lt_move(x, columns, after = NULL)
 \description{
 Rearrange column display order without modifying the data frame.
 }
+\examples{
+lt(head(mtcars)) |> lt_move(~ gear + carb, after = "mpg")
+}

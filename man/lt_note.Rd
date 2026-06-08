@@ -17,3 +17,6 @@ lt_note(x, text)
 \description{
 Notes are rendered in the table footer below numbered footnotes.
 }
+\examples{
+lt(head(mtcars)) |> lt_note("CI = confidence interval.")
+}

@@ -5,6 +5,8 @@
 #' @param subtitle A character scalar.
 #' @return `x` with the header recorded.
 #' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_header("Motor Trend Cars", "First 6 rows")
 lt_header = function(x, title = NULL, subtitle = NULL) {
   x$header = drop_null(list(title = title, subtitle = subtitle))
   x
@@ -120,6 +122,9 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
 #'   `"starts_with"`, or `"all"`.
 #' @return `x` with the footnote recorded.
 #' @export
+#' @examples
+#' lt(head(mtcars)) |>
+#'   lt_footnote("Source: 1974 Motor Trend US magazine.", "title")
 lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL) {
   columns = f_cols(columns)
   loc = switch(where,
@@ -153,6 +158,8 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
 #' @param text Note text.
 #' @return `x` with the note recorded.
 #' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_note("CI = confidence interval.")
 lt_note = function(x, text) {
   x$notes = c(x$notes, list(text))
   x
@@ -168,6 +175,8 @@ lt_note = function(x, text) {
 #' @param align One of `"left"`, `"center"`, or `"right"`.
 #' @return `x` with the alignment recorded.
 #' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_align(~ cyl + gear, "center")
 lt_align = function(x, columns, align = c('left', 'center', 'right')) {
   columns = f_cols(columns)
   align = match.arg(align)
@@ -193,6 +202,8 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #'   percent scale).
 #' @return `x` with the formatting recorded.
 #' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_format(~ mpg + wt, decimals = 1, big_mark = ",")
 lt_format = function(x, columns, decimals = NULL, big_mark = NULL, percent = NULL) {
   columns = f_cols(columns)
   cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
@@ -209,6 +220,8 @@ lt_format = function(x, columns, decimals = NULL, big_mark = NULL, percent = NUL
 #' @param ... Named arguments of the form `col_name = "Display Label"`.
 #' @return `x` with the column label overrides recorded.
 #' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
 lt_label = function(x, ...) {
   add_op(x, 'label', labels = list(...))
 }
@@ -229,6 +242,9 @@ lt_label = function(x, ...) {
 #' @param small_text Text shown for values below `small` (e.g., `"<0.1"`).
 #' @return `x` with the substitution recorded.
 #' @export
+#' @examples
+#' d = data.frame(x = c(1, 0, NA, 0.001))
+#' lt(d) |> lt_sub(missing = "—", zero = "—", small = 0.01, small_text = "<0.01")
 lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
                   small = NULL, small_text = NULL) {
   columns = f_cols(columns)
@@ -248,6 +264,9 @@ lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
 #'   left padding.
 #' @return `x` with the indentation recorded.
 #' @export
+#' @examples
+#' d = data.frame(label = c("Overall", "Male", "Female"), n = c(100, 55, 45))
+#' lt(d) |> lt_stub(~ label) |> lt_indent(2:3)
 lt_indent = function(x, rows, level = 1) {
   add_op(x, 'indent', rows = I(as.integer(rows)), level = as.integer(level))
 }
@@ -270,6 +289,9 @@ lt_indent = function(x, rows, level = 1) {
 #'   automatically hidden.
 #' @return `x` with the merge recorded.
 #' @export
+#' @examples
+#' d = data.frame(stat = c("Mean", "SD"), value = c(4.2, 1.1), ci = c("(2.0, 6.4)", "(0.5, 1.7)"))
+#' lt(d) |> lt_merge(~ value + ci, pattern = "{1} {2}")
 lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
   columns = f_cols(columns)
   if (length(columns) < 2) stop('lt_merge() requires at least 2 columns')
@@ -335,6 +357,8 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
 #'   can be any CSS value (e.g., `"100px"`, `"20%"`, `"8em"`).
 #' @return `x` with the column widths recorded.
 #' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
 lt_width = function(x, ...) {
   widths = list(...)
   add_op(x, 'width', widths = widths)
@@ -350,6 +374,8 @@ lt_width = function(x, ...) {
 #'   `NULL` to move to the start.
 #' @return `x` with the column move recorded.
 #' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_move(~ gear + carb, after = "mpg")
 lt_move = function(x, columns, after = NULL) {
   columns = f_cols(columns)
   add_op(x, 'move', columns = I(as.character(columns)),
@@ -376,10 +402,6 @@ lt_move = function(x, columns, after = NULL) {
 #' @export
 #' @examples
 #' tbl = lt(head(mtcars))
-#' \dontrun{
-#' tbl |> lt_css("custom.css")
-#' tbl |> lt_css("https://example.com/theme.css")
-#' }
 #' tbl |>
 #'   lt_style("mpg", test = "v => v > 20", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))

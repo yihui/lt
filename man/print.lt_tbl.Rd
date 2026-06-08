@@ -17,3 +17,6 @@
 \description{
 Print an \code{lt_tbl} (Opens in the Viewer or Browser)
 }
+\examples{
+print(lt(head(mtcars)))
+}
