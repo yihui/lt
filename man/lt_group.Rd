@@ -42,6 +42,6 @@ lt(d) |> lt_group(~ arm)
 lt(d) |> lt_group(~ arm, sep = TRUE)
 
 # Manual groups (always separator rows)
-lt(head(mtcars[, 1:4])) |>
+lt(head(mtcars)) |>
   lt_group("First three" = 1:3, "Last three" = 4:6)
 }

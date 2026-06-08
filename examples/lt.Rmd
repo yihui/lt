@@ -11,13 +11,13 @@ library(lt)
 Pass any data frame to `lt()`:
 
 ```{r}
-lt(head(mtcars[, 1:6]))
+lt(head(mtcars))
 ```
 
 ## Title and subtitle
 
 ```{r}
-lt(head(iris[, 1:4])) |>
+lt(head(iris)) |>
   lt_header(title = "Iris Measurements", subtitle = "First six observations")
 ```
 
@@ -27,14 +27,14 @@ By default, numeric columns are right-aligned and character columns are
 left-aligned. Override with `lt_align()`:
 
 ```{r}
-lt(head(mtcars[, 1:4])) |>
+lt(head(mtcars)) |>
   lt_align(c("mpg", "cyl"), "center")
 ```
 
 ## Number formatting
 
 ```{r}
-lt(head(mtcars[, 1:4])) |>
+lt(head(mtcars)) |>
   lt_format(c("mpg", "disp"), decimals = 1)
 ```
 
@@ -64,7 +64,7 @@ lt(d) |>
 ## Footnotes
 
 ```{r}
-lt(head(mtcars[, 1:4])) |>
+lt(head(mtcars)) |>
   lt_header(title = "Motor Trend Cars") |>
   lt_footnote("Source: 1974 Motor Trend US magazine.", "title") |>
   lt_footnote("Miles per US gallon.", "column", "mpg")
@@ -75,7 +75,7 @@ lt(head(mtcars[, 1:4])) |>
 Notes appear in the footer below numbered footnotes:
 
 ```{r}
-lt(head(mtcars[, 1:4])) |>
+lt(head(mtcars)) |>
   lt_note("Data from the 1974 Motor Trend US magazine.")
 ```
 
@@ -188,7 +188,7 @@ Use named arguments in `lt_group()` for explicit control over which rows
 belong to each group:
 
 ```{r}
-lt(head(mtcars[, 1:4])) |>
+lt(head(mtcars)) |>
   lt_group("First three" = 1:3, "Last three" = 4:6)
 ```
 
@@ -313,14 +313,14 @@ lt(d) |>
 ## Column widths
 
 ```{r}
-lt(head(mtcars[, 1:4])) |>
+lt(head(mtcars)) |>
   lt_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
 ```
 
 ## Column reordering
 
 ```{r}
-lt(head(iris[, 1:4])) |>
+lt(head(iris)) |>
   lt_move(c("Petal.Length", "Petal.Width"), after = NULL)
 ```
 
