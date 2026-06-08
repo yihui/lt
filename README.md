@@ -1,4 +1,4 @@
-# lt
+# LT
 
 Lightweight tables for R, inspired by [gt](https://gt.rstudio.com).
 
