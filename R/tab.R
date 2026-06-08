@@ -353,27 +353,49 @@ lt_move = function(x, columns, after = NULL) {
 
 #' Attach Custom CSS
 #'
-#' Add user-supplied stylesheets that render after the built-in CSS, so
-#' rules can override the defaults.
+#' Add user-supplied stylesheets or inline rules that render after the
+#' built-in CSS, so rules can override the defaults.
 #'
 #' @inheritParams lt_align
-#' @param ... One or more character scalars: URLs (containing `://` or
-#'   starting with `//`) or paths to local `.css` files. A bare filename
-#'   (no directory component) that does not exist in the working directory
-#'   is resolved against the stylesheets shipped with lt, so e.g.
-#'   `lt_css(x, "lt-gt.css")` uses the bundled gt-like theme.
+#' @param ... Unnamed arguments are stylesheet paths or URLs. A bare
+#'   filename (no directory component) that does not exist in the working
+#'   directory is resolved against the stylesheets shipped with lt, so
+#'   e.g. `lt_css(x, "lt-gt.css")` uses the bundled gt-like theme.
+#'
+#'   Named arguments define inline CSS rules scoped to `.lt-table`. Names
+#'   are selectors (e.g., `.na`, `td.highlight`) and values are either a
+#'   CSS string or a named list of properties:
+#'   `lt_css(x, .na = "background: #eee")` or
+#'   `lt_css(x, .na = list(background = "#eee"))`.
 #' @return `x` with the stylesheets recorded.
 #' @export
 #' @examples
 #' \dontrun{
-#' lt(head(mtcars[, 1:3])) |> lt_css("custom.css")
-#' lt(head(mtcars[, 1:3])) |> lt_css("https://example.com/theme.css")
-#' lt(head(mtcars[, 1:3])) |> lt_css("lt-gt.css")  # bundled theme
+#' lt(head(mtcars)) |> lt_css("custom.css")
+#' lt(head(mtcars)) |> lt_css("https://example.com/theme.css")
 #' }
+#' lt(head(mtcars)) |>
+#'   lt_style("mpg", test = "v => v > 20", class = "high") |>
+#'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
 lt_css = function(x, ...) {
-  paths = unlist(list(...), use.names = FALSE)
-  if (!length(paths)) return(x)
-  x$css = c(x$css, vapply(as.character(paths), resolve_css, character(1)))
+  args = list(...)
+  nms = names(args)
+  named = if (!is.null(nms)) nms != ""
+  if (length(named) && any(named)) {
+    rules = character()
+    for (i in which(named)) {
+      sel = nms[i]
+      val = args[[i]]
+      if (is.list(val))
+        val = paste0(camel2dash(names(val)), ': ', val, ';', collapse = ' ')
+      rules = c(rules, sprintf('  %s { %s }', sel, val))
+    }
+    x$rules = c(x$rules, rules)
+    args = args[!named]
+  }
+  paths = unlist(args, use.names = FALSE)
+  if (length(paths))
+    x$css = c(x$css, vapply(as.character(paths), resolve_css, character(1)))
   x
 }
 

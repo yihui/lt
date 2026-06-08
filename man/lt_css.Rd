@@ -9,23 +9,30 @@ lt_css(x, ...)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{...}{One or more character scalars: URLs (containing \verb{://} or
-starting with \verb{//}) or paths to local \code{.css} files. A bare filename
-(no directory component) that does not exist in the working directory
-is resolved against the stylesheets shipped with lt, so e.g.
-\code{lt_css(x, "lt-gt.css")} uses the bundled gt-like theme.}
+\item{...}{Unnamed arguments are stylesheet paths or URLs. A bare
+filename (no directory component) that does not exist in the working
+directory is resolved against the stylesheets shipped with lt, so
+e.g. \code{lt_css(x, "lt-gt.css")} uses the bundled gt-like theme.
+
+Named arguments define inline CSS rules scoped to \code{.lt-table}. Names
+are selectors (e.g., \code{.na}, \code{td.highlight}) and values are either a
+CSS string or a named list of properties:
+\code{lt_css(x, .na = "background: #eee")} or
+\code{lt_css(x, .na = list(background = "#eee"))}.}
 }
 \value{
 \code{x} with the stylesheets recorded.
 }
 \description{
-Add user-supplied stylesheets that render after the built-in CSS, so
-rules can override the defaults.
+Add user-supplied stylesheets or inline rules that render after the
+built-in CSS, so rules can override the defaults.
 }
 \examples{
 \dontrun{
-lt(head(mtcars[, 1:3])) |> lt_css("custom.css")
-lt(head(mtcars[, 1:3])) |> lt_css("https://example.com/theme.css")
-lt(head(mtcars[, 1:3])) |> lt_css("lt-gt.css")  # bundled theme
+lt(head(mtcars)) |> lt_css("custom.css")
+lt(head(mtcars)) |> lt_css("https://example.com/theme.css")
 }
+lt(head(mtcars)) |>
+  lt_style("mpg", test = "v => v > 20", class = "high") |>
+  lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
 }

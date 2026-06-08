@@ -278,6 +278,38 @@ lt(d) |>
   lt_style("HR", rows = 1L, bg = "#e8f4e8", borderBottom = "2px solid #4a4")
 ```
 
+## Conditional styling
+
+Apply styles based on cell values using a JavaScript test function. Use
+`class` to assign CSS classes, then define the rules with `lt_css()`:
+
+```{r}
+d = data.frame(
+  Endpoint = c("Primary", "Secondary", "Exploratory"),
+  HR = c(0.62, 0.79, 1.05),
+  P = c(0.001, 0.042, 0.38)
+)
+lt(d) |>
+  lt_stub(~ Endpoint) |>
+  lt_format(~ HR + P, decimals = 3) |>
+  lt_style("HR", test = "v => v < 1", class = "good") |>
+  lt_style("P", test = "v => v < 0.05", class = "sig") |>
+  lt_css(.good = list(color = "green"), .sig = list(fontWeight = "bold"))
+```
+
+### Highlighting NA cells
+
+```{r}
+d = data.frame(
+  arm = c("Treatment", "Control", "Treatment"),
+  n = c(30, NA, 28),
+  response = c(0.67, NA, 0.71)
+)
+lt(d) |>
+  lt_style(test = "v => v == null", class = "na") |>
+  lt_css(.na = list(background = "#fee"))
+```
+
 ## Column widths
 
 ```{r}
