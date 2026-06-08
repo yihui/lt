@@ -51,5 +51,7 @@ add_op = function(x, type, ...) {
 
 `%||%` = function(x, y) if (is.null(x)) y else x
 
+camel2dash = function(x) gsub('([A-Z])', '-\\L\\1', x, perl = TRUE)
+
 # If x is a formula, extract variable names from its RHS; otherwise return as-is
 f_cols = function(x) if (inherits(x, 'formula')) all.vars(x[[length(x)]]) else x

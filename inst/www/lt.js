@@ -314,9 +314,12 @@
     const styles = [];
     for (const op of ops) {
       if (op.type !== "style") continue;
-      const s = { css: op.css };
+      const s = {};
+      if (op.css) s.css = op.css;
+      if (op.class) s.class = op.class;
       if (op.columns) s.columns = op.columns;
       if (op.rows) s.rows = op.rows;
+      if (op.test) s.test = op.test;
       styles.push(s);
     }
 
@@ -399,7 +402,8 @@
   };
 
   function buildHtml(spec) {
-    const { display, nRow } = applyOps(spec),
+    const data = spec.data || {},
+          { display, nRow } = applyOps(spec),
           { visible: cols, align, colLabels, colWidths, indent, stubLabel,
             stub, groups, rowSpans, styles, spanners, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
           reg = indexFootnotes(fns),
@@ -415,16 +419,18 @@
     });
 
     // Style map
-    const styleMap = {};
+    const styleMap = {}, classMap = {};
     for (const s of styles) {
-      const sCols = s.columns || cols, sRows = s.rows;
+      const sCols = s.columns ? [].concat(s.columns) : cols, sRows = s.rows;
       for (let r = 1; r <= nRow; r++) {
         if (sRows && sRows.indexOf(r) < 0) continue;
         for (const c of sCols) {
           const ci = cols.indexOf(c);
           if (ci < 0) continue;
+          if (s.test && !s.test(data[c][r - 1])) continue;
           const key = `${r},${ci}`;
-          styleMap[key] = styleMap[key] ? styleMap[key] + ";" + s.css : s.css;
+          if (s.css) styleMap[key] = styleMap[key] ? styleMap[key] + ";" + s.css : s.css;
+          if (s.class) classMap[key] = classMap[key] ? classMap[key] + " " + s.class : s.class;
         }
       }
     }
@@ -506,8 +512,12 @@
       for (let ci = 0; ci < cols.length; ci++) {
         const m = bodyMarks[`${r},${ci}`],
               s = styleMap[`${r},${ci}`],
-              val = display[cols[ci]] ? display[cols[ci]][r - 1] : "";
-        out.push(`<td${colCls[ci]}${s ? ` style="${s}"` : ""}>${esc(val)}${m ? sup(m) : ""}</td>`);
+              k = `${r},${ci}`, cc = classMap[k],
+              val = display[cols[ci]] ? display[cols[ci]][r - 1] : "",
+              cls = colCls[ci]
+                ? (cc ? colCls[ci].replace(/"$/, ` ${cc}"`) : colCls[ci])
+                : (cc ? ` class="${cc}"` : "");
+        out.push(`<td${cls}${s ? ` style="${s}"` : ""}>${esc(val)}${m ? sup(m) : ""}</td>`);
       }
       out.push(`</tr>`);
     };

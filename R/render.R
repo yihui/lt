@@ -67,6 +67,10 @@ user_css_block = function(paths, local = FALSE) {
   unlist(lapply(paths, user_css_tag, local = local))
 }
 
+rules_block = function(rules) {
+  if (length(rules)) c('<style>.lt-table {', rules, '}</style>')
+}
+
 js_block = function(inline = TRUE) {
   if (inline) c('<script>', inline_safe(read_asset('lt.js')), '</script>')
   else sprintf('<script src="%s" defer></script>', asset_url('lt.js'))
@@ -75,9 +79,9 @@ js_block = function(inline = TRUE) {
 # Per-table block: queue the spec with a reference to the current script.
 # The runtime drains the queue when it loads.
 spec_block = function(x) {
-  # Drop css from the static-path spec (already emitted as <link>); for the
-  # Shiny path we keep it on the wire so the output binding can inject links.
-  x$css = NULL
+  # Drop css from the static-path spec (already emitted as <link>/<style>);
+  # for the Shiny path we keep it on the wire so the output binding can inject links.
+  x$css = x$rules = NULL
   c(
     '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
     inline_safe(xfun::tojson(x[lengths(x) > 0L])),
@@ -106,6 +110,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
   body = c(
     if (assets) css_block(inline_assets),
     user_css_block(x$css),
+    rules_block(x$rules),
     spec_block(x),
     if (assets) js_block(inline_assets)
   )
@@ -154,7 +159,7 @@ knit_print.lt_tbl = function(x, ...) {
 #' @export
 record_print.lt_tbl = function(x, ...) xfun::new_record(c(
   css_block(inline = FALSE), user_css_block(x$css, local = TRUE),
-  spec_block(x), js_block(inline = FALSE), ''
+  rules_block(x$rules), spec_block(x), js_block(inline = FALSE), ''
 ), 'asis')
 
 # Each Jupyter cell is rendered as a sandboxed document, so we always emit

@@ -275,11 +275,18 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' Style Cells
 #'
 #' Apply CSS styling to specific cells. Target cells by column, row, or both.
+#' When `test` is provided, styles are applied conditionally based on cell
+#' values (evaluated in JavaScript).
 #'
 #' @inheritParams lt_align
 #' @param columns Character vector of column names, a one-sided formula, or
 #'   `NULL` for all.
 #' @param rows Integer vector of 1-based row indices (or `NULL` for all).
+#' @param test A JavaScript function as a string (e.g., `"v => v < 0"`) that
+#'   receives the raw cell value and returns `true` to apply the style. When
+#'   `NULL`, the style applies unconditionally.
+#' @param class CSS class name(s) to add to matching cells. Define the
+#'   corresponding rules in an external stylesheet via [lt_css()].
 #' @param bold Logical: apply bold weight?
 #' @param italic Logical: apply italic style?
 #' @param color Text color (any CSS color value, e.g., `"red"`, `"#06c"`).
@@ -290,10 +297,13 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @return `x` with the style recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars[, 1:3])) |>
+#' lt(head(mtcars)) |>
 #'   lt_style("mpg", rows = 1L, bold = TRUE, borderBottom = "2px solid red")
-lt_style = function(x, columns = NULL, rows = NULL, bold = NULL, italic = NULL,
-                    color = NULL, bg = NULL, ...) {
+#' lt(head(mtcars)) |>
+#'   lt_style("mpg", test = "v => v > 20", class = "high") |>
+#'   lt_css(.high = list(background = "#cfc"))
+lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
+                    bold = NULL, italic = NULL, color = NULL, bg = NULL, ...) {
   columns = f_cols(columns)
   css = character()
   if (isTRUE(bold))   css = c(css, 'font-weight:bold')
@@ -302,14 +312,15 @@ lt_style = function(x, columns = NULL, rows = NULL, bold = NULL, italic = NULL,
   if (!is.null(bg))    css = c(css, paste0('background:', bg))
   dots = list(...)
   for (nm in names(dots)) {
-    prop = gsub('([A-Z])', '-\\L\\1', nm, perl = TRUE)
-    css = c(css, paste0(prop, ':', dots[[nm]]))
+    css = c(css, paste0(camel2dash(nm), ':', dots[[nm]]))
   }
-  if (!length(css)) return(x)
+  css = if (length(css)) paste(css, collapse = ';')
+  if (is.null(css) && is.null(class)) return(x)
   add_op(x, 'style',
-    columns = if (!is.null(columns)) as.character(columns),
+    columns = if (!is.null(columns)) I(as.character(columns)),
     rows = if (!is.null(rows)) I(as.integer(rows)),
-    css = paste(css, collapse = ';'))
+    test = if (!is.null(test)) xfun::js(test),
+    class = class, css = css)
 }
 
 #' Set Column Widths

@@ -8,6 +8,8 @@ lt_style(
   x,
   columns = NULL,
   rows = NULL,
+  test = NULL,
+  class = NULL,
   bold = NULL,
   italic = NULL,
   color = NULL,
@@ -22,6 +24,13 @@ lt_style(
 \code{NULL} for all.}
 
 \item{rows}{Integer vector of 1-based row indices (or \code{NULL} for all).}
+
+\item{test}{A JavaScript function as a string (e.g., \code{"v => v < 0"}) that
+receives the raw cell value and returns \code{true} to apply the style. When
+\code{NULL}, the style applies unconditionally.}
+
+\item{class}{CSS class name(s) to add to matching cells. Define the
+corresponding rules in an external stylesheet via \code{\link[=lt_css]{lt_css()}}.}
 
 \item{bold}{Logical: apply bold weight?}
 
@@ -40,8 +49,13 @@ camelCase (e.g., \code{borderLeft}) or quoted dash-case (e.g.,
 }
 \description{
 Apply CSS styling to specific cells. Target cells by column, row, or both.
+When \code{test} is provided, styles are applied conditionally based on cell
+values (evaluated in JavaScript).
 }
 \examples{
-lt(head(mtcars[, 1:3])) |>
+lt(head(mtcars)) |>
   lt_style("mpg", rows = 1L, bold = TRUE, borderBottom = "2px solid red")
+lt(head(mtcars)) |>
+  lt_style("mpg", test = "v => v > 20", class = "high") |>
+  lt_css(.high = list(background = "#cfc"))
 }
