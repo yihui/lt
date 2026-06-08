@@ -4,7 +4,7 @@
 \alias{lt_group}
 \title{Define Row Groups}
 \usage{
-lt_group(x, ..., sep = "auto")
+lt_group(x, ..., sep = "auto", sort = TRUE)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
@@ -18,6 +18,10 @@ groups. Unnamed character strings reorder previously defined groups.}
 of the default rowspan style. Only supports a single grouping column. The
 default \code{'auto'} uses separator rows when there is a single grouping
 column with any value longer than 20 characters.}
+
+\item{sort}{If \code{TRUE} (default), sort rows by group columns so that
+identical group values are contiguous. Set to \code{FALSE} to preserve the
+original row order.}
 }
 \value{
 \code{x} with the row groups recorded.

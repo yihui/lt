@@ -65,6 +65,9 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #'   of the default rowspan style. Only supports a single grouping column. The
 #'   default `'auto'` uses separator rows when there is a single grouping
 #'   column with any value longer than 20 characters.
+#' @param sort If `TRUE` (default), sort rows by group columns so that
+#'   identical group values are contiguous. Set to `FALSE` to preserve the
+#'   original row order.
 #' @return `x` with the row groups recorded.
 #' @export
 #' @examples
@@ -79,9 +82,10 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' # Manual groups (always separator rows)
 #' lt(head(mtcars[, 1:4])) |>
 #'   lt_group("First three" = 1:3, "Last three" = 4:6)
-lt_group = function(x, ..., sep = 'auto') {
+lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
   args = list(...)
   nms = names(args)
+  if (!sort) x$sort = FALSE
   if (length(args) == 1 && (is.null(nms) || !nzchar(nms))) {
     col = f_cols(args[[1]])
     if (all(col %in% names(x$data))) {
