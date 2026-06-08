@@ -28,11 +28,12 @@ Add user-supplied stylesheets or inline rules that render after the
 built-in CSS, so rules can override the defaults.
 }
 \examples{
+tbl = lt(head(mtcars))
 \dontrun{
-lt(head(mtcars)) |> lt_css("custom.css")
-lt(head(mtcars)) |> lt_css("https://example.com/theme.css")
+tbl |> lt_css("custom.css")
+tbl |> lt_css("https://example.com/theme.css")
 }
-lt(head(mtcars)) |>
+tbl |>
   lt_style("mpg", test = "v => v > 20", class = "high") |>
   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
 }

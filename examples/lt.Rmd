@@ -11,13 +11,15 @@ library(lt)
 Pass any data frame to `lt()`:
 
 ```{r}
-lt(head(mtcars))
+tbl_cars = lt(head(mtcars))
+tbl_cars
 ```
 
 ## Title and subtitle
 
 ```{r}
-lt(head(iris)) |>
+tbl_iris = lt(head(iris))
+tbl_iris |>
   lt_header(title = "Iris Measurements", subtitle = "First six observations")
 ```
 
@@ -27,15 +29,13 @@ By default, numeric columns are right-aligned and character columns are
 left-aligned. Override with `lt_align()`:
 
 ```{r}
-lt(head(mtcars)) |>
-  lt_align(c("mpg", "cyl"), "center")
+tbl_cars |> lt_align(~ mpg + cyl, "center")
 ```
 
 ## Number formatting
 
 ```{r}
-lt(head(mtcars)) |>
-  lt_format(c("mpg", "disp"), decimals = 1)
+tbl_cars |> lt_format(~ mpg + disp, decimals = 1)
 ```
 
 ### Decimal places
@@ -64,7 +64,7 @@ lt(d) |>
 ## Footnotes
 
 ```{r}
-lt(head(mtcars)) |>
+tbl_cars |>
   lt_header(title = "Motor Trend Cars") |>
   lt_footnote("Source: 1974 Motor Trend US magazine.", "title") |>
   lt_footnote("Miles per US gallon.", "column", "mpg")
@@ -75,8 +75,7 @@ lt(head(mtcars)) |>
 Notes appear in the footer below numbered footnotes:
 
 ```{r}
-lt(head(mtcars)) |>
-  lt_note("Data from the 1974 Motor Trend US magazine.")
+tbl_cars |> lt_note("Data from the 1974 Motor Trend US magazine.")
 ```
 
 ## Column spanners
@@ -84,9 +83,9 @@ lt(head(mtcars)) |>
 A spanner groups contiguous columns under a shared label:
 
 ```{r}
-lt(head(iris)) |>
-  lt_spanner("Sepal", c("Sepal.Length", "Sepal.Width")) |>
-  lt_spanner("Petal", c("Petal.Length", "Petal.Width"))
+tbl_iris |>
+  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |>
+  lt_spanner(Petal ~ Petal.Length + Petal.Width)
 ```
 
 ### Auto-inferred spanners
@@ -95,17 +94,17 @@ When column names share a common prefix separated by `.` or `_`, call
 `lt_spanner()` with no arguments to infer spanners automatically:
 
 ```{r}
-lt(head(iris)) |> lt_spanner()
+tbl_iris |> lt_spanner()
 ```
 
 ### Spanner with formatting
 
 ```{r}
-lt(head(iris)) |>
+tbl_iris |>
   lt_header(title = "Iris Dataset") |>
-  lt_spanner("Sepal", c("Sepal.Length", "Sepal.Width")) |>
-  lt_spanner("Petal", c("Petal.Length", "Petal.Width")) |>
-  lt_format(c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width"), decimals = 1)
+  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |>
+  lt_spanner(Petal ~ Petal.Length + Petal.Width) |>
+  lt_format(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, decimals = 1)
 ```
 
 ## Row groups
@@ -188,8 +187,7 @@ Use named arguments in `lt_group()` for explicit control over which rows
 belong to each group:
 
 ```{r}
-lt(head(mtcars)) |>
-  lt_group("First three" = 1:3, "Last three" = 4:6)
+tbl_cars |> lt_group("First three" = 1:3, "Last three" = 4:6)
 ```
 
 ## Column merging
@@ -313,15 +311,13 @@ lt(d) |>
 ## Column widths
 
 ```{r}
-lt(head(mtcars)) |>
-  lt_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
+tbl_cars |> lt_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
 ```
 
 ## Column reordering
 
 ```{r}
-lt(head(iris)) |>
-  lt_move(c("Petal.Length", "Petal.Width"), after = NULL)
+tbl_iris |> lt_move(~ Petal.Length + Petal.Width, after = NULL)
 ```
 
 ## Row group ordering
@@ -366,8 +362,8 @@ lt(d) |>
     title = "Study Results",
     subtitle = "Primary and secondary endpoints"
   ) |>
-  lt_spanner("95% CI", c("CI_Lower", "CI_Upper")) |>
-  lt_format(c("Estimate", "CI_Lower", "CI_Upper"), decimals = 3) |>
+  lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |>
+  lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |>
   lt_format("P_Value", decimals = 4) |>
   lt_footnote("Two-sided p-value from log-rank test.", "column", "P_Value")
 ```

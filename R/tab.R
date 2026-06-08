@@ -30,11 +30,11 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
 #' @return `x` with the spanner recorded.
 #' @export
 #' @examples
+#' tbl = lt(head(iris))
 #' # Explicit spanner
-#' lt(head(iris)) |> lt_spanner("Sepal", c("Sepal.Length", "Sepal.Width"))
-#'
+#' tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
 #' # Auto-infer from column names
-#' lt(head(iris)) |> lt_spanner()
+#' tbl |> lt_spanner()
 lt_spanner = function(x, label, columns, sep = '[._]') {
   if (missing(label) && missing(columns)) {
     x$auto_span = if (identical(sep, '[._]')) TRUE else sep
@@ -301,9 +301,10 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @return `x` with the style recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |>
+#' tbl = lt(head(mtcars))
+#' tbl |>
 #'   lt_style("mpg", rows = 1L, bold = TRUE, borderBottom = "2px solid red")
-#' lt(head(mtcars)) |>
+#' tbl |>
 #'   lt_style("mpg", test = "v => v > 20", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc"))
 lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
@@ -374,11 +375,12 @@ lt_move = function(x, columns, after = NULL) {
 #' @return `x` with the stylesheets recorded.
 #' @export
 #' @examples
+#' tbl = lt(head(mtcars))
 #' \dontrun{
-#' lt(head(mtcars)) |> lt_css("custom.css")
-#' lt(head(mtcars)) |> lt_css("https://example.com/theme.css")
+#' tbl |> lt_css("custom.css")
+#' tbl |> lt_css("https://example.com/theme.css")
 #' }
-#' lt(head(mtcars)) |>
+#' tbl |>
 #'   lt_style("mpg", test = "v => v > 20", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
 lt_css = function(x, ...) {

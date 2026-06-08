@@ -34,9 +34,9 @@ shortened to the suffix.
 The columns must be contiguous in the body of the table.
 }
 \examples{
+tbl = lt(head(iris))
 # Explicit spanner
-lt(head(iris)) |> lt_spanner("Sepal", c("Sepal.Length", "Sepal.Width"))
-
+tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
 # Auto-infer from column names
-lt(head(iris)) |> lt_spanner()
+tbl |> lt_spanner()
 }
