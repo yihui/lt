@@ -6,7 +6,7 @@ Lightweight tables for R, inspired by [gt](https://gt.rstudio.com).
 reports need — titles, column spanners, row groups, footnotes, and number
 formatting — without the heavy dependency stack. It targets HTML only (no
 LaTeX or RTF), which keeps the implementation minimal: the entire runtime
-is a single vanilla-JS file under 5 KB.
+is a single vanilla-JS file ([under 10 KB minified](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)).
 
 ## Example
 
