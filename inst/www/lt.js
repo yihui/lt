@@ -4,19 +4,23 @@
  */
 (root => {
   "use strict";
-  if (root.LT && root.LT.buildHtml) return;  // duplicate inclusion is a no-op
+  if (root.LT?.buildHtml) return;  // duplicate inclusion is a no-op
 
   // `[<]` (not `<`) avoids `</…` so this file is safe to inline in <script>.
   const esc = s => String(s)
     .replace(/&/g, "&amp;").replace(/[<]/g, "&lt;")
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const sup = i => `<sup class="lt-fnref">${i}</sup>`;
+  // Stringify, mapping null/undefined to "" (0 and false stringify normally).
+  const str = v => String(v ?? "");
 
   // --- Number formatting ---
   const isNum = v => typeof v === "number" && !isNaN(v);
+  // A column is "numeric" if its first non-null value is a number.
+  const numCol = col => col?.length && typeof col.find(v => v != null) === "number";
 
   function fmtNumber(v, decimals, bigMark) {
-    if (v == null || !isNum(v)) return null;
+    if (!isNum(v)) return null;
     let s = decimals != null ? v.toFixed(decimals) : String(v);
     if (/^-0(\.0+)?$/.test(s)) s = s.slice(1);
     if (bigMark) {
@@ -63,7 +67,7 @@
 
     const getLabel = c => {
       for (const op of ops) {
-        if (op.type === "label" && op.labels && op.labels[c] != null) return op.labels[c];
+        if (op.type === "label" && op.labels?.[c] != null) return op.labels[c];
       }
       return c;
     };
@@ -71,8 +75,7 @@
     for (const c of colNames) {
       if (fmtCols.has(c)) continue;
       const col = data[c];
-      if (!col || !col.length) continue;
-      if (typeof col.find(v => v != null) !== "number") continue;
+      if (!numCol(col)) continue;
 
       const lbl = getLabel(c),
             pct = /%|[ _](pct|percent)$/i.test(lbl);
@@ -96,8 +99,9 @@
         const d = m[1].replace(/0+$/, "").length - (pct ? 2 : 0);
         if (d > n) n = d;
       }
-      // Cap: 4 decimals max, minus integer width (so large numbers get fewer)
-      n = Math.max(Math.min(n, Math.max(4 - maxInt, 0)), 0);
+      // Cap: 4 decimals max, minus integer width (so large numbers get fewer).
+      // n is already >= 0, so only the upper cap is needed.
+      n = Math.min(n, Math.max(4 - maxInt, 0));
 
       for (let i = 0; i < nRow; i++) {
         const v = col[i];
@@ -118,50 +122,50 @@
     // Working copy: display[col][row] = string
     const display = {};
     for (const c of colNames) {
-      display[c] = data[c].map(v => v == null ? "" : String(v));
+      display[c] = data[c].map(str);
     }
 
     autoFmt(spec, display, nRow);
+
+    // Run fn(col, row, rawValue) over each existing cell of the given columns.
+    const eachCell = (cols, fn) => {
+      for (const c of cols) {
+        if (!data[c]) continue;
+        for (let i = 0; i < nRow; i++) fn(c, i, data[c][i]);
+      }
+    };
 
     for (const op of ops) {
       const cols = op.columns || colNames;
       switch (op.type) {
         case "fmt_number":
-          for (const c of cols) {
-            if (!data[c]) continue;
-            for (let i = 0; i < nRow; i++) {
-              const raw = data[c][i];
-              if (raw == null || !isNum(raw)) continue;
-              const v = op.percent === true ? raw * 100 : raw,
-                    sfx = op.percent ? "%" : "",
-                    f = fmtNumber(v, op.decimals, op.big_mark ?? "");
-              if (f != null) display[c][i] = f + sfx;
-              else if (sfx) display[c][i] = String(v) + sfx;
-            }
-          }
+          eachCell(cols, (c, i, raw) => {
+            if (!isNum(raw)) return;
+            const v = op.percent === true ? raw * 100 : raw,
+                  sfx = op.percent ? "%" : "",
+                  f = fmtNumber(v, op.decimals, op.big_mark ?? "");
+            if (f != null) display[c][i] = f + sfx;
+            else if (sfx) display[c][i] = String(v) + sfx;
+          });
           break;
         case "sub":
-          for (const c of cols) {
-            if (!data[c]) continue;
-            for (let i = 0; i < nRow; i++) {
-              const raw = data[c][i];
-              if (op.small != null && isNum(raw) && raw !== 0 &&
-                  Math.abs(raw) < op.small) {
-                display[c][i] = op.small_text ?? ("<" + op.small);
-              } else if (op.zero != null && raw === 0) {
-                display[c][i] = op.zero;
-              } else if (op.missing != null && raw == null) {
-                display[c][i] = op.missing;
-              }
+          eachCell(cols, (c, i, raw) => {
+            if (op.small != null && isNum(raw) && raw !== 0 &&
+                Math.abs(raw) < op.small) {
+              display[c][i] = op.small_text ?? ("<" + op.small);
+            } else if (op.zero != null && raw === 0) {
+              display[c][i] = op.zero;
+            } else if (op.missing != null && raw == null) {
+              display[c][i] = op.missing;
             }
-          }
+          });
           break;
         case "merge": {
           const mCols = op.columns;
           if (!mCols || mCols.length < 2) break;
           const target = mCols[0];
           for (let i = 0; i < nRow; i++) {
-            const vals = mCols.map(c => display[c] ? display[c][i] : "");
+            const vals = mCols.map(c => display[c]?.[i] ?? "");
             display[target][i] = mergeVals(vals, op.pattern);
           }
           break;
@@ -176,7 +180,9 @@
     const data = spec.data || {},
           ops = spec.ops || [],
           colNames = Object.keys(data),
-          nRow = colNames.length ? data[colNames[0]].length : 0;
+          nRow = colNames.length ? data[colNames[0]].length : 0,
+          // Run fn on each op of the given type, in document order.
+          onOp = (t, fn) => { for (const op of ops) if (op.type === t) fn(op); };
 
     // row_group: array → rowspan mode; string → separator-row mode
     let rowGroupSep = typeof spec.row_group === "string";
@@ -190,19 +196,18 @@
     const hidden = new Set();
     for (const g of rowGroupCols) hidden.add(g);
     if (rowLabelCol) hidden.add(rowLabelCol);
-    for (const op of ops) {
-      if (op.type === "merge" && op.hide !== false && op.columns)
+    onOp("merge", op => {
+      if (op.hide !== false && op.columns)
         op.columns.slice(1).forEach(c => hidden.add(c));
-    }
+    });
 
     // Visible columns after hiding
     let visible = colNames.filter(c => !hidden.has(c));
 
     // Apply move
-    for (const op of ops) {
-      if (op.type !== "move") continue;
+    onOp("move", op => {
       const toMove = (op.columns || []).filter(c => visible.includes(c));
-      if (!toMove.length) continue;
+      if (!toMove.length) return;
       const rest = visible.filter(c => !toMove.includes(c));
       if (op.after == null) {
         visible = [...toMove, ...rest];
@@ -210,126 +215,92 @@
         const pos = rest.indexOf(op.after);
         if (pos >= 0) visible = [...rest.slice(0, pos + 1), ...toMove, ...rest.slice(pos + 1)];
       }
-    }
+    });
+
+    // Set arr[i] = val where i is the position of column c in `visible`.
+    const setByCol = (arr, c, val) => { const i = visible.indexOf(c); if (i >= 0) arr[i] = val; };
 
     // Alignment: default from data type (number→right, else left), then overrides
-    const align = visible.map(c => {
-      const col = data[c];
-      return col && col.length && typeof col.find(v => v != null) === "number" ? "right" : "left";
-    });
-    for (const op of ops) {
-      if (op.type !== "align") continue;
-      for (const c of (op.columns || [])) {
-        const i = visible.indexOf(c);
-        if (i >= 0) align[i] = op.align;
-      }
-    }
+    const align = visible.map(c => numCol(data[c]) ? "right" : "left");
+    onOp("align", op => { for (const c of (op.columns || [])) setByCol(align, c, op.align); });
 
     // Column labels
     const colLabels = [...visible];
-    for (const op of ops) {
-      if (op.type !== "label" || !op.labels) continue;
-      for (const [c, lbl] of Object.entries(op.labels)) {
-        const i = visible.indexOf(c);
-        if (i >= 0) colLabels[i] = lbl;
-      }
-    }
+    onOp("label", op => {
+      for (const [c, lbl] of Object.entries(op.labels || {})) setByCol(colLabels, c, lbl);
+    });
 
     // Column widths
     let colWidths = null;
-    for (const op of ops) {
-      if (op.type !== "width" || !op.widths) continue;
+    onOp("width", op => {
+      if (!op.widths) return;
       if (!colWidths) colWidths = visible.map(() => "");
-      for (const [c, w] of Object.entries(op.widths)) {
-        const i = visible.indexOf(c);
-        if (i >= 0) colWidths[i] = w;
-      }
-    }
+      for (const [c, w] of Object.entries(op.widths)) setByCol(colWidths, c, w);
+    });
 
     // Indent
     const indent = new Array(nRow).fill(0);
-    for (const op of ops) {
-      if (op.type !== "indent" || !op.rows) continue;
-      for (const r of op.rows) indent[r - 1] = op.level ?? 1;
-    }
+    onOp("indent", op => {
+      if (op.rows) for (const r of op.rows) indent[r - 1] = op.level ?? 1;
+    });
 
     // Stubhead
     let stubLabel = "";
-    for (const op of ops) {
-      if (op.type === "stubhead") stubLabel = op.label;
-    }
+    onOp("stubhead", op => { stubLabel = op.label; });
+
+    // Runs of equal consecutive values in col → [{ label, rows (1-based) }].
+    // Used for both separator-row groups and rowspan span sizes.
+    const runs = col => {
+      const out = [];
+      for (let i = 0; i < nRow;) {
+        const label = str(col[i]), rows = [i + 1];
+        while (++i < nRow && str(col[i]) === label) rows.push(i + 1);
+        out.push({ label, rows });
+      }
+      return out;
+    };
 
     // Row groups from data column (separator-row mode only)
     let groups = [];
-    if (rowGroupSep && rowGroupCols.length && data[rowGroupCols[0]]) {
-      const gCol = data[rowGroupCols[0]];
-      let i = 0;
-      while (i < nRow) {
-        const label = gCol[i] == null ? "" : String(gCol[i]);
-        const rows = [i + 1];
-        while (++i < nRow && String(gCol[i] ?? "") === label) rows.push(i + 1);
-        groups.push({ label, rows });
-      }
-    }
+    if (rowGroupSep && rowGroupCols.length && data[rowGroupCols[0]])
+      groups.push(...runs(data[rowGroupCols[0]]));
     // Manual groups
-    for (const op of ops) {
-      if (op.type === "row_group") groups.push({ label: op.label, rows: op.rows });
-    }
+    onOp("row_group", op => groups.push({ label: op.label, rows: op.rows }));
     // Group ordering
-    for (const op of ops) {
-      if (op.type !== "group_order" || !groups.length) continue;
-      const order = op.order || [];
+    onOp("group_order", op => {
+      if (!groups.length) return;
       const ordered = [], rest = [];
-      for (const lbl of order) {
+      for (const lbl of (op.order || [])) {
         const g = groups.find(x => x.label === lbl);
         if (g) ordered.push(g);
       }
       for (const g of groups) if (!ordered.includes(g)) rest.push(g);
       groups = [...ordered, ...rest];
-    }
+    });
 
     // Rowspan groups: compute span sizes for each group column
     const rowSpans = [];
     if (!rowGroupSep && rowGroupCols.length) {
       for (const gc of rowGroupCols) {
-        const col = data[gc] || [], spans = new Array(nRow).fill(0);
-        let i = 0;
-        while (i < nRow) {
-          const label = String(col[i] ?? "");
-          let j = i + 1;
-          while (j < nRow && String(col[j] ?? "") === label) j++;
-          spans[i] = j - i;
-          i = j;
-        }
-        // Resolve display label from label ops
+        const spans = new Array(nRow).fill(0);
+        for (const r of runs(data[gc] || [])) spans[r.rows[0] - 1] = r.rows.length;
+        // Resolve display label from label ops (last wins)
         let hdr = gc;
-        for (const op of ops) {
-          if (op.type === "label" && op.labels && op.labels[gc] != null) hdr = op.labels[gc];
-        }
+        onOp("label", op => { if (op.labels?.[gc] != null) hdr = op.labels[gc]; });
         rowSpans.push({ col: gc, label: hdr, spans });
       }
     }
 
-    // Styles
-    const styles = [];
-    for (const op of ops) {
-      if (op.type !== "style") continue;
-      const s = {};
-      if (op.css) s.css = op.css;
-      if (op.class) s.class = op.class;
-      if (op.columns) s.columns = op.columns;
-      if (op.rows) s.rows = op.rows;
-      if (op.test) s.test = op.test;
-      styles.push(s);
-    }
+    // Styles: the style ops are consumed directly (css/class/columns/rows/test).
+    const styles = ops.filter(op => op.type === "style");
 
     // Stub: explicit row_label, or auto-promote first visible non-numeric column when groups exist
     const autoStub = groups.length && !rowLabelCol && visible.length
-      ? visible.find(c => !data[c] || !data[c].length || typeof data[c].find(v => v != null) !== "number")
+      ? visible.find(c => !numCol(data[c]))
       : null;
     const stubCol = rowLabelCol || autoStub || null;
     const stub = stubCol && data[stubCol]
-      ? data[stubCol].map(v => v == null ? "" : String(v))
+      ? data[stubCol].map(str)
       : null;
     if (stubCol && !rowLabelCol) {
       align.shift(); colLabels.shift(); visible = visible.slice(1);
@@ -382,20 +353,21 @@
     return { order, idx };
   }
 
-  const matcher = (fns, idx) => (type, p) => {
+  // Find the footnote index for a (type, value) location; 0 if none.
+  // `val` is a scalar: the title group, a single column, a spanner label,
+  // or a row-group label, depending on `type`.
+  const matcher = (fns, idx) => (type, val) => {
     for (const f of fns) {
       const loc = f.location;
       if (loc.type !== type) continue;
       const hit = idx[f.text];
-      if (type === "title" && loc.group === p.group) return hit;
-      if (type === "column_labels" &&
-          p.columns.every(c => loc.columns.indexOf(c) >= 0)) return hit;
-      if (type === "column_spanners" &&
-          p.spanners.every(s => loc.spanners.indexOf(s) >= 0)) return hit;
+      if (type === "title" && loc.group === val) return hit;
+      if (type === "column_labels" && loc.columns.includes(val)) return hit;
+      if (type === "column_spanners" && loc.spanners.includes(val)) return hit;
       if (type === "row_groups") {
         if (loc.match === "all") return hit;
-        if (loc.match === "exact" && loc.values.indexOf(p.label) >= 0) return hit;
-        if (loc.match === "starts_with" && p.label.indexOf(loc.value) === 0) return hit;
+        if (loc.match === "exact" && loc.values.includes(val)) return hit;
+        if (loc.match === "starts_with" && val.startsWith(loc.value)) return hit;
       }
     }
     return 0;
@@ -440,62 +412,67 @@
           nGrp = rowSpans.length,
           nCol = cols.length + (stub ? 1 : 0) + nGrp,
           out = [`<table class="lt-table">`];
-    const mark = (type, p) => { const i = fIdx(type, p); return i ? sup(i) : ""; };
-    const colCls = cols.map((_, i) => {
-      const c = (!stub && i === 0 && groups.length ? "lt-indent " : "") +
-        ({right: "al-r", center: "al-c"}[align[i]] || "");
-      return c ? ` class="${c.trimEnd()}"` : "";
-    });
+    const mark = (type, val) => { const i = fIdx(type, val); return i ? sup(i) : ""; };
+    const cell = (c, r) => display[c]?.[r - 1] ?? "";
+    // ` name="val"` for a truthy val, else "" — for optional HTML attributes.
+    const attr = (n, v) => v ? ` ${n}="${v}"` : "";
+    // Plain class names per column (alignment + leading-indent), "" if none.
+    const colCls = cols.map((_, i) => (
+      (!stub && i === 0 && groups.length ? "lt-indent " : "") +
+      ({right: "al-r", center: "al-c"}[align[i]] || "")
+    ).trimEnd());
 
-    // Style map
-    const styleMap = {}, classMap = {};
-    for (const s of styles) {
-      const sCols = s.columns ? [].concat(s.columns) : cols, sRows = s.rows;
+    // Visit each cell at (rows × cols) that exists in the table, calling
+    // fn(key, c, r). rows null = all rows; cols falls back to all columns.
+    const eachLoc = (rows, locCols, fn) => {
       for (let r = 1; r <= nRow; r++) {
-        if (sRows && sRows.indexOf(r) < 0) continue;
-        for (const c of sCols) {
+        if (rows && !rows.includes(r)) continue;
+        for (const c of (locCols || cols)) {
           const ci = cols.indexOf(c);
-          if (ci < 0) continue;
-          if (s.test && !s.test(data[c][r - 1])) continue;
-          const key = `${r},${ci}`;
-          if (s.css) styleMap[key] = styleMap[key] ? styleMap[key] + ";" + s.css : s.css;
-          if (s.class) classMap[key] = classMap[key] ? classMap[key] + " " + s.class : s.class;
+          if (ci >= 0) fn(`${r},${ci}`, c, r);
         }
       }
-    }
+    };
+
+    // Style map: accumulate css (";") and class (" ") per cell.
+    const styleMap = {}, classMap = {};
+    const addTo = (map, key, val, sep) => { map[key] = map[key] ? map[key] + sep + val : val; };
+    for (const s of styles)
+      eachLoc(s.rows, s.columns ? [].concat(s.columns) : null, (key, c, r) => {
+        if (s.test && !s.test(data[c][r - 1])) return;
+        if (s.css) addTo(styleMap, key, s.css, ";");
+        if (s.class) addTo(classMap, key, s.class, " ");
+      });
 
     // <colgroup>
     if (colWidths && colWidths.some(w => w)) {
       out.push(`<colgroup>`);
       if (stub) out.push(`<col>`);
       for (let i = 0; i < cols.length; i++)
-        out.push(colWidths[i] ? `<col style="width:${colWidths[i]}">` : `<col>`);
+        out.push(`<col${attr("style", colWidths[i] ? "width:" + colWidths[i] : "")}>`);
       out.push(`</colgroup>`);
     }
 
-    // <caption>
-    const hasT = hdr.title != null && hdr.title !== "",
-          hasS = hdr.subtitle != null && hdr.subtitle !== "";
-    if (hasT || hasS) {
-      out.push(`<caption class="lt-caption">`);
-      if (hasT) out.push(`<div class="lt-title">${esc(hdr.title)}${mark("title", { group: "title" })}</div>`);
-      if (hasS) out.push(`<div class="lt-subtitle">${esc(hdr.subtitle)}${mark("title", { group: "subtitle" })}</div>`);
-      out.push(`</caption>`);
-    }
+    // <caption>: title + subtitle, each a <div> rendered only when non-empty.
+    const caption = [["title", "lt-title"], ["subtitle", "lt-subtitle"]]
+      .filter(([g]) => hdr[g] != null && hdr[g] !== "")
+      .map(([g, cls]) => `<div class="${cls}">${esc(hdr[g])}${mark("title", g)}</div>`);
+    if (caption.length)
+      out.push(`<caption class="lt-caption">`, ...caption, `</caption>`);
 
     // <thead>
     out.push(`<thead>`);
     if (spanners.length) {
+      const emptyTh = `<th class="lt-spanner-empty"></th>`;
       out.push(`<tr class="lt-spanner-row">`);
-      for (let k = 0; k < nGrp; k++) out.push(`<th class="lt-spanner-empty"></th>`);
-      if (stub) out.push(`<th class="lt-spanner-empty"></th>`);
+      out.push(emptyTh.repeat(nGrp + (stub ? 1 : 0)));
       for (let k = 0; k < cols.length;) {
         const sp = spanners.find(s => s.columns[0] === cols[k]);
         if (sp) {
-          out.push(`<th colspan="${sp.columns.length}" scope="colgroup" class="lt-spanner">${esc(sp.label)}${mark("column_spanners", { spanners: [sp.label] })}</th>`);
+          out.push(`<th colspan="${sp.columns.length}" scope="colgroup" class="lt-spanner">${esc(sp.label)}${mark("column_spanners", sp.label)}</th>`);
           k += sp.columns.length;
         } else {
-          out.push(`<th class="lt-spanner-empty"></th>`);
+          out.push(emptyTh);
           k++;
         }
       }
@@ -503,25 +480,17 @@
     }
     out.push(`<tr>`);
     for (const rs of rowSpans) out.push(`<th scope="col">${esc(rs.label)}</th>`);
-    if (stub) out.push(`<th scope="col"${groups.length ? ` class="lt-indent"` : ""}>${esc(stubLabel)}</th>`);
+    if (stub) out.push(`<th scope="col"${attr("class", groups.length ? "lt-indent" : "")}>${esc(stubLabel)}</th>`);
     for (let i = 0; i < cols.length; i++)
-      out.push(`<th scope="col"${colCls[i]}>${esc(colLabels[i])}${mark("column_labels", { columns: [cols[i]] })}</th>`);
+      out.push(`<th scope="col"${attr("class", colCls[i])}>${esc(colLabels[i])}${mark("column_labels", cols[i])}</th>`);
     out.push(`</tr></thead>`);
 
     // Body footnote markers
     const bodyMarks = {};
     for (const f of fns) {
       if (f.location.type !== "body") continue;
-      const fi = reg.idx[f.text],
-            fcols = f.location.columns || [],
-            frows = f.location.rows;
-      for (let r = 1; r <= nRow; r++) {
-        if (frows && frows.indexOf(r) < 0) continue;
-        for (const c of fcols) {
-          const ci = cols.indexOf(c);
-          if (ci >= 0) bodyMarks[`${r},${ci}`] = fi;
-        }
-      }
+      const fi = reg.idx[f.text];
+      eachLoc(f.location.rows, f.location.columns || [], key => { bodyMarks[key] = fi; });
     }
 
     // Row rendering
@@ -530,23 +499,18 @@
       // Rowspan group cells
       for (const rs of rowSpans) {
         const span = rs.spans[r - 1];
-        if (span > 0) out.push(`<th scope="row" class="lt-row-group"${span > 1 ? ` rowspan="${span}"` : ""}>${esc(display[rs.col] ? display[rs.col][r - 1] : "")}</th>`);
+        if (span > 0) out.push(`<th scope="row" class="lt-row-group"${attr("rowspan", span > 1 ? span : 0)}>${esc(cell(rs.col, r))}</th>`);
       }
       if (stub) {
         const ind = indent[r - 1] || 0,
-              cls = `lt-stub${groups.length ? " lt-indent" : ""}`,
-              style = ind ? ` style="padding-left:${ind + 1}em"` : "";
-        out.push(`<th scope="row" class="${cls}"${style}>${esc(stub[r - 1])}</th>`);
+              cls = `lt-stub${groups.length ? " lt-indent" : ""}`;
+        out.push(`<th scope="row" class="${cls}"${attr("style", ind ? `padding-left:${ind + 1}em` : "")}>${esc(stub[r - 1])}</th>`);
       }
       for (let ci = 0; ci < cols.length; ci++) {
-        const m = bodyMarks[`${r},${ci}`],
-              s = styleMap[`${r},${ci}`],
-              k = `${r},${ci}`, cc = classMap[k],
-              val = display[cols[ci]] ? display[cols[ci]][r - 1] : "",
-              cls = colCls[ci]
-                ? (cc ? colCls[ci].replace(/"$/, ` ${cc}"`) : colCls[ci])
-                : (cc ? ` class="${cc}"` : "");
-        out.push(`<td${cls}${s ? ` style="${s}"` : ""}>${esc(val)}${m ? sup(m) : ""}</td>`);
+        const k = `${r},${ci}`,
+              m = bodyMarks[k], s = styleMap[k], cc = classMap[k],
+              cls = [colCls[ci], cc].filter(Boolean).join(" ");
+        out.push(`<td${attr("class", cls)}${attr("style", s)}>${esc(cell(cols[ci], r))}${m ? sup(m) : ""}</td>`);
       }
       out.push(`</tr>`);
     };
@@ -556,7 +520,7 @@
     if (groups.length) {
       const seen = {};
       for (const g of groups) {
-        out.push(`<tr class="lt-row-group"><th colspan="${nCol}" scope="colgroup">${esc(g.label)}${mark("row_groups", { label: g.label })}</th></tr>`);
+        out.push(`<tr class="lt-row-group"><th colspan="${nCol}" scope="colgroup">${esc(g.label)}${mark("row_groups", g.label)}</th></tr>`);
         for (const r of g.rows) { seen[r] = 1; pushRow(r); }
       }
       for (let r = 1; r <= nRow; r++) if (!seen[r]) pushRow(r);
@@ -565,13 +529,12 @@
     }
     out.push(`</tbody>`);
 
-    // <tfoot>
+    // <tfoot>: footnotes then source notes, each a full-width row.
     if (reg.order.length || notes.length) {
+      const footRow = (cls, html) => `<tr class="${cls}"><td colspan="${nCol}">${html}</td></tr>`;
       out.push(`<tfoot class="lt-footer">`);
-      reg.order.forEach((txt, i) => out.push(
-        `<tr class="lt-footnote"><td colspan="${nCol}">${sup(i + 1)} ${esc(txt)}</td></tr>`));
-      for (const n of notes)
-        out.push(`<tr class="lt-source-note"><td colspan="${nCol}">${esc(n)}</td></tr>`);
+      reg.order.forEach((txt, i) => out.push(footRow("lt-footnote", `${sup(i + 1)} ${esc(txt)}`)));
+      for (const n of notes) out.push(footRow("lt-source-note", esc(n)));
       out.push(`</tfoot>`);
     }
 
@@ -580,9 +543,8 @@
   }
 
   const mount = (s, spec) => s.insertAdjacentHTML("afterend", buildHtml(spec));
-
-  const q = root.LT && root.LT.q || [];
-  while (q.length) { const e = q.shift(); mount(e.s, e.d); }
-  root.LT = { build(spec) { mount(document.currentScript, spec); }, buildHtml,
-    q: { push(e) { mount(e.s, e.d); } } };
+  // q.push renders immediately; replay any entries queued before we loaded.
+  const q = { push: e => mount(e.s, e.d) };
+  (root.LT?.q || []).forEach(q.push);
+  root.LT = { build: spec => mount(document.currentScript, spec), buildHtml, q };
 })(window);
