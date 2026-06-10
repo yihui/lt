@@ -183,11 +183,3 @@ assert("lt_css() handles absolute and URL paths", {
   (c2$css %==% "https://example.com/theme.css")
 })
 
-assert("lt_stub() sets row_label and stubhead op", {
-  s = lt_stub(x, ~ a)
-  (s$row_label %==% "a")
-  (length(s$ops) %==% 0L)
-  s2 = lt_stub(x, ~ a, label = "ID")
-  (s2$row_label %==% "a")
-  (s2$ops %==% list(list(type = "stubhead", label = "ID")))
-})

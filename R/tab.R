@@ -253,10 +253,9 @@ lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
     small = small, small_text = small_text)
 }
 
-#' Indent Stub Rows
+#' Indent Rows
 #'
-#' Add hierarchical indentation to row labels (stub cells). Requires that
-#' the table has a stub column (see [lt_stub()]).
+#' Add hierarchical indentation to the first column of specified rows.
 #'
 #' @inheritParams lt_align
 #' @param rows Integer vector of 1-based row indices to indent.
@@ -266,7 +265,7 @@ lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
 #' @export
 #' @examples
 #' d = data.frame(label = c("Overall", "Male", "Female"), n = c(100, 55, 45))
-#' lt(d) |> lt_stub(~ label) |> lt_indent(2:3)
+#' lt(d) |> lt_indent(2:3)
 lt_indent = function(x, rows, level = 1) {
   add_op(x, 'indent', rows = I(as.integer(rows)), level = as.integer(level))
 }
@@ -441,23 +440,3 @@ resolve_css = function(p) {
 
 is_url = function(x) grepl('^(https?:)?//', x)
 
-#' Designate a Stub Column
-#'
-#' Mark a column as the row-label stub. Its values become left-aligned row
-#' headers and the column is removed from the table body. When row groups
-#' exist and no stub is declared, the first visible column is automatically
-#' promoted; use this function to override that default.
-#'
-#' @inheritParams lt_align
-#' @param column A column name (character scalar or one-sided formula).
-#' @param label Optional header label for the stub column.
-#' @return `x` with the stub column recorded.
-#' @export
-#' @examples
-#' d = data.frame(endpoint = c("OS", "PFS"), result = c("0.72", "0.58"))
-#' lt(d) |> lt_stub(~ endpoint, label = "Endpoint")
-lt_stub = function(x, column, label = NULL) {
-  x$row_label = f_cols(column)
-  if (!is.null(label)) x = add_op(x, 'stubhead', label = label)
-  x
-}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_indent}
 \alias{lt_indent}
-\title{Indent Stub Rows}
+\title{Indent Rows}
 \usage{
 lt_indent(x, rows, level = 1)
 }
@@ -18,10 +18,9 @@ left padding.}
 \code{x} with the indentation recorded.
 }
 \description{
-Add hierarchical indentation to row labels (stub cells). Requires that
-the table has a stub column (see \code{\link[=lt_stub]{lt_stub()}}).
+Add hierarchical indentation to the first column of specified rows.
 }
 \examples{
 d = data.frame(label = c("Overall", "Male", "Female"), n = c(100, 55, 45))
-lt(d) |> lt_stub(~ label) |> lt_indent(2:3)
+lt(d) |> lt_indent(2:3)
 }

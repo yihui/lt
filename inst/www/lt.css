@@ -20,7 +20,7 @@ th, td{ padding: 5px; }
   tbody {
     :not(:last-child) :is(td, th) { border-bottom: 1px   solid #ddd; }
     .lt-row-group :is(td, th)     { border-bottom: 1.5px solid #ddd; }
-    .lt-stub, .lt-row-group { text-align: left; }
+    .lt-row-group { text-align: left; }
     .lt-row-group { vertical-align: top; }
   }
   thead th {

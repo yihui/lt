@@ -187,15 +187,13 @@
     // row_group: array → rowspan mode; string → separator-row mode
     let rowGroupSep = typeof spec.row_group === "string";
     const rowGroupCols = Array.isArray(spec.row_group) ? spec.row_group
-          : (spec.row_group ? [spec.row_group] : []),
-          rowLabelCol = spec.row_label || null;
+          : (spec.row_group ? [spec.row_group] : []);
     if (!rowGroupSep && rowGroupCols.length === 1 &&
         data[rowGroupCols[0]]?.some(v => (v + "").length > 20)) rowGroupSep = true;
 
-    // Hidden columns: row_group, row_label, merge sources
+    // Hidden columns: row_group, merge sources
     const hidden = new Set();
     for (const g of rowGroupCols) hidden.add(g);
-    if (rowLabelCol) hidden.add(rowLabelCol);
     onOp("merge", op => {
       if (op.hide !== false && op.columns)
         op.columns.slice(1).forEach(c => hidden.add(c));
@@ -244,10 +242,6 @@
       if (op.rows) for (const r of op.rows) indent[r - 1] = op.level ?? 1;
     });
 
-    // Stubhead
-    let stubLabel = "";
-    onOp("stubhead", op => { stubLabel = op.label; });
-
     // Runs of equal consecutive values in col → [{ label, rows (1-based) }].
     // Used for both separator-row groups and rowspan span sizes.
     const runs = col => {
@@ -294,20 +288,6 @@
     // Styles: the style ops are consumed directly (css/class/columns/rows/test).
     const styles = ops.filter(op => op.type === "style");
 
-    // Stub: explicit row_label, or auto-promote first visible non-numeric column when groups exist
-    const autoStub = groups.length && !rowLabelCol && visible.length
-      ? visible.find(c => !numCol(data[c]))
-      : null;
-    const stubCol = rowLabelCol || autoStub || null;
-    const stub = stubCol && data[stubCol]
-      ? data[stubCol].map(str)
-      : null;
-    if (stubCol && !rowLabelCol) {
-      align.shift(); colLabels.shift(); visible = visible.slice(1);
-      if (colWidths) colWidths.shift();
-    }
-    if (stubCol && !stubLabel) stubLabel = stubCol;
-
     // Auto-spanners: split column names on separator, group contiguous prefixes
     let spanners = spec.spanners || [];
     if (spec.auto_span) {
@@ -335,7 +315,7 @@
     }
 
     return {
-      visible, align, colLabels, colWidths, indent, stubLabel, stub,
+      visible, align, colLabels, colWidths, indent,
       groups, rowSpans, styles, spanners,
       footnotes: spec.footnotes || [],
       notes: spec.notes || [],
@@ -405,12 +385,12 @@
     sortByGroups(spec);
     const data = spec.data || {},
           { display, nRow } = applyOps(spec),
-          { visible: cols, align, colLabels, colWidths, indent, stubLabel,
-            stub, groups, rowSpans, styles, spanners, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+          { visible: cols, align, colLabels, colWidths, indent,
+            groups, rowSpans, styles, spanners, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
           reg = indexFootnotes(fns),
           fIdx = matcher(fns, reg.idx),
           nGrp = rowSpans.length,
-          nCol = cols.length + (stub ? 1 : 0) + nGrp,
+          nCol = cols.length + nGrp,
           out = [`<table class="lt-table">`];
     const mark = (type, val) => { const i = fIdx(type, val); return i ? sup(i) : ""; };
     const cell = (c, r) => display[c]?.[r - 1] ?? "";
@@ -418,7 +398,7 @@
     const attr = (n, v) => v ? ` ${n}="${v}"` : "";
     // Plain class names per column (alignment + leading-indent), "" if none.
     const colCls = cols.map((_, i) => (
-      (!stub && i === 0 && groups.length ? "lt-indent " : "") +
+      (i === 0 && groups.length ? "lt-indent " : "") +
       ({right: "al-r", center: "al-c"}[align[i]] || "")
     ).trimEnd());
 
@@ -447,7 +427,6 @@
     // <colgroup>
     if (colWidths && colWidths.some(w => w)) {
       out.push(`<colgroup>`);
-      if (stub) out.push(`<col>`);
       for (let i = 0; i < cols.length; i++)
         out.push(`<col${attr("style", colWidths[i] ? "width:" + colWidths[i] : "")}>`);
       out.push(`</colgroup>`);
@@ -465,7 +444,7 @@
     if (spanners.length) {
       const emptyTh = `<th class="lt-spanner-empty"></th>`;
       out.push(`<tr class="lt-spanner-row">`);
-      out.push(emptyTh.repeat(nGrp + (stub ? 1 : 0)));
+      out.push(emptyTh.repeat(nGrp));
       for (let k = 0; k < cols.length;) {
         const sp = spanners.find(s => s.columns[0] === cols[k]);
         if (sp) {
@@ -480,7 +459,6 @@
     }
     out.push(`<tr>`);
     for (const rs of rowSpans) out.push(`<th scope="col">${esc(rs.label)}</th>`);
-    if (stub) out.push(`<th scope="col"${attr("class", groups.length ? "lt-indent" : "")}>${esc(stubLabel)}</th>`);
     for (let i = 0; i < cols.length; i++)
       out.push(`<th scope="col"${attr("class", colCls[i])}>${esc(colLabels[i])}${mark("column_labels", cols[i])}</th>`);
     out.push(`</tr></thead>`);
@@ -501,15 +479,13 @@
         const span = rs.spans[r - 1];
         if (span > 0) out.push(`<th scope="row" class="lt-row-group"${attr("rowspan", span > 1 ? span : 0)}>${esc(cell(rs.col, r))}</th>`);
       }
-      if (stub) {
-        const ind = indent[r - 1] || 0,
-              cls = `lt-stub${groups.length ? " lt-indent" : ""}`;
-        out.push(`<th scope="row" class="${cls}"${attr("style", ind ? `padding-left:${ind + 1}em` : "")}>${esc(stub[r - 1])}</th>`);
-      }
+      const ind = indent[r - 1] || 0;
       for (let ci = 0; ci < cols.length; ci++) {
         const k = `${r},${ci}`,
-              m = bodyMarks[k], s = styleMap[k], cc = classMap[k],
+              m = bodyMarks[k], cc = classMap[k],
               cls = [colCls[ci], cc].filter(Boolean).join(" ");
+        let s = styleMap[k] || "";
+        if (ci === 0 && ind) s = (s ? s + ";" : "") + `padding-left:${ind + 1}em`;
         out.push(`<td${attr("class", cls)}${attr("style", s)}>${esc(cell(cols[ci], r))}${m ? sup(m) : ""}</td>`);
       }
       out.push(`</tr>`);
