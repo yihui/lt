@@ -201,7 +201,6 @@ LT.build({
     ci_lo: [0.40, 0.57, null],
     ci_hi: [0.82, 1.01, null]
   },
-  row_label: "Endpoint",
   ops: [
     { type: "fmt_number", columns: ["est", "ci_lo", "ci_hi"], decimals: 2 },
     { type: "merge", columns: ["est", "ci_lo", "ci_hi"], pattern: "{1}<< ({2}, {3})>>" },
@@ -246,8 +245,7 @@ LT.build({
     stat: ["n", "Mean", "n", "Mean"],
     value: [30, 4.2, 31, 6.8]
   },
-  row_group: "arm",
-  row_label: "stat"
+  row_group: "arm"
 });
 ```
 
@@ -279,7 +277,6 @@ LT.build({
     value: ["30", "4.2", "31", "6.8"]
   },
   row_group: "arm",
-  row_label: "stat",
   ops: [
     { type: "group_order", order: ["Treatment", "Placebo"] }
   ]
@@ -300,26 +297,9 @@ LT.build({
 });
 ```
 
-## Stub column
-
-Use `row_label` to designate a column as the row-label stub:
-
-```{js}
-LT.build({
-  data: {
-    endpoint: ["OS", "PFS", "ORR"],
-    result: ["0.72", "0.58", "42%"]
-  },
-  row_label: "endpoint",
-  ops: [
-    { type: "stubhead", label: "Endpoint" }
-  ]
-});
-```
-
 ## Row indentation
 
-Indent specific rows in the stub to show hierarchy:
+Indent specific rows to show hierarchy:
 
 ```{js}
 LT.build({
@@ -327,7 +307,6 @@ LT.build({
     label: ["Any AE", "SOC: Cardiac", "Tachycardia", "Bradycardia", "SOC: GI", "Nausea"],
     n_pct: ["45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)"]
   },
-  row_label: "label",
   ops: [
     { type: "indent", rows: [2, 5], level: 1 },
     { type: "indent", rows: [3, 4, 6], level: 2 }
@@ -370,7 +349,6 @@ LT.build({
     HR: [0.62, 0.79, 0.91],
     P: [0.001, 0.042, 0.38]
   },
-  row_label: "Endpoint",
   ops: [
     { type: "fmt_number", columns: ["HR"], decimals: 2 },
     { type: "fmt_number", columns: ["P"], decimals: 3 },
@@ -394,7 +372,6 @@ LT.build({
     HR: [0.62, 0.79, 1.05],
     P: [0.001, 0.042, 0.38]
   },
-  row_label: "Endpoint",
   ops: [
     { type: "fmt_number", columns: ["HR", "P"], decimals: 3 },
     { type: "style", columns: ["HR"], test: v => v < 1, class: "good" },

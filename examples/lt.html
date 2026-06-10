@@ -45,7 +45,7 @@
 <li><a href="#sec:row-groups"><span class="section-number main-number">8</span> Row groups</a>
 <ul>
 <li><a href="#sec:group-by-column"><span class="section-number">8.1</span> Group by column</a></li>
-<li><a href="#sec:row-groups-with-a-stub"><span class="section-number">8.2</span> Row groups with a stub</a></li>
+<li><a href="#sec:row-groups-with-data-columns"><span class="section-number">8.2</span> Row groups with data columns</a></li>
 <li><a href="#sec:group-by-multiple-columns-rowspan"><span class="section-number">8.3</span> Group by multiple columns (rowspan)</a></li>
 <li><a href="#sec:separator-row-style"><span class="section-number">8.4</span> Separator-row style</a></li>
 <li><a href="#sec:manual-row-groups"><span class="section-number">8.5</span> Manual row groups</a></li>
@@ -67,8 +67,7 @@
 <li><a href="#sec:column-widths"><span class="section-number main-number">14</span> Column widths</a></li>
 <li><a href="#sec:column-reordering"><span class="section-number main-number">15</span> Column reordering</a></li>
 <li><a href="#sec:row-group-ordering"><span class="section-number main-number">16</span> Row group ordering</a></li>
-<li><a href="#sec:stubhead-label"><span class="section-number main-number">17</span> Stubhead label</a></li>
-<li><a href="#sec:combining-formatting-and-structure"><span class="section-number main-number">18</span> Combining formatting and structure</a></li>
+<li><a href="#sec:combining-formatting-and-structure"><span class="section-number main-number">17</span> Combining formatting and structure</a></li>
 </ul>
 </div>
 <pre><code class="language-r">library(lt)
@@ -187,7 +186,6 @@ left-aligned. Override with <code>lt_align()</code>:</p>
   Q2 = c(1345678.912, 1012345.678, 333333.234)
 )
 lt(d) |&gt;
-  lt_stub(~ Metric) |&gt;
   lt_format(~ Q1 + Q2, decimals = 2)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -203,13 +201,11 @@ lt(d) |&gt;
       "columns": ["Q1", "Q2"],
       "decimals": 2
     }
-  ],
-  "row_label": "Metric"
+  ]
 }
 })</script>
 <h3 id="sec:big-mark-thousands-separator"><span class="section-number">4.2</span> Big mark (thousands separator)</h3>
 <pre><code class="language-r">lt(d) |&gt;
-  lt_stub(~ Metric) |&gt;
   lt_format(~ Q1 + Q2, decimals = 0, big_mark = &quot;,&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -226,8 +222,7 @@ lt(d) |&gt;
       "decimals": 0,
       "big_mark": ","
     }
-  ],
-  "row_label": "Metric"
+  ]
 }
 })</script>
 <h2 id="sec:footnotes"><span class="section-number main-number">5</span> Footnotes</h2>
@@ -413,10 +408,7 @@ lt(d) |&gt;
   }
 }
 })</script>
-<h3 id="sec:row-groups-with-a-stub"><span class="section-number">8.2</span> Row groups with a stub</h3>
-<p>When groups exist, the first visible column is automatically used as the
-row stub. Use <code>lt_stub()</code> only to override that default (e.g., to pick a
-non-first column):</p>
+<h3 id="sec:row-groups-with-data-columns"><span class="section-number">8.2</span> Row groups with data columns</h3>
 <pre><code class="language-r">d = data.frame(
   Category = c(&quot;Fruits&quot;, &quot;Fruits&quot;, &quot;Vegetables&quot;, &quot;Vegetables&quot;),
   Item = c(&quot;Apple&quot;, &quot;Banana&quot;, &quot;Carrot&quot;, &quot;Broccoli&quot;),
@@ -560,7 +552,6 @@ automatically:</p>
   pct = c(100, 97.0, 95.5)
 )
 lt(d) |&gt;
-  lt_stub(~ stat) |&gt;
   lt_format(~ pct, decimals = 1) |&gt;
   lt_merge(~ n + pct, pattern = &quot;{1} ({2}%)&quot;) |&gt;
   lt_label(n = &quot;n (%)&quot;)
@@ -590,8 +581,7 @@ lt(d) |&gt;
         "n": "n (%)"
       }
     }
-  ],
-  "row_label": "stat"
+  ]
 }
 })</script>
 <h3 id="sec:conditional-merge-with-lt-lt-gt-gt"><span class="section-number">9.1</span> Conditional merge with <code>&lt;&lt; &gt;&gt;</code></h3>
@@ -604,7 +594,6 @@ column is empty/NA:</p>
   ci_hi = c(0.82, 1.01, NA)
 )
 lt(d) |&gt;
-  lt_stub(~ endpoint) |&gt;
   lt_format(~ est + ci_lo + ci_hi, decimals = 2) |&gt;
   lt_merge(~ est + ci_lo + ci_hi, pattern = &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot;) |&gt;
   lt_label(est = &quot;Estimate (95% CI)&quot;)
@@ -635,19 +624,17 @@ lt(d) |&gt;
         "est": "Estimate (95% CI)"
       }
     }
-  ],
-  "row_label": "endpoint"
+  ]
 }
 })</script>
 <h2 id="sec:row-indentation"><span class="section-number main-number">10</span> Row indentation</h2>
-<p>Indent stub rows to show hierarchy:</p>
+<p>Indent the first column to show hierarchy:</p>
 <pre><code class="language-r">d = data.frame(
   label = c(&quot;Any AE&quot;, &quot;SOC: Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;,
             &quot;SOC: GI&quot;, &quot;Nausea&quot;),
   n_pct = c(&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;)
 )
 lt(d) |&gt;
-  lt_stub(~ label) |&gt;
   lt_header(&quot;Adverse Events&quot;, &quot;Safety Population&quot;) |&gt;
   lt_indent(c(2, 5), level = 1) |&gt;
   lt_indent(c(3, 4, 6), level = 2)
@@ -670,7 +657,6 @@ lt(d) |&gt;
       "level": 2
     }
   ],
-  "row_label": "label",
   "header": {
     "title": "Adverse Events",
     "subtitle": "Safety Population"
@@ -683,7 +669,6 @@ lt(d) |&gt;
   Value = c(0.62, 0.0003, 0, NA)
 )
 lt(d) |&gt;
-  lt_stub(~ Metric) |&gt;
   lt_format(~ Value, decimals = 2) |&gt;
   lt_sub(~ Value, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt; 0.001&quot;)
 </code></pre>
@@ -707,8 +692,7 @@ lt(d) |&gt;
       "small": 0.001,
       "small_text": "< 0.001"
     }
-  ],
-  "row_label": "Metric"
+  ]
 }
 })</script>
 <h2 id="sec:cell-styling"><span class="section-number main-number">12</span> Cell styling</h2>
@@ -720,7 +704,6 @@ property (camelCase or dash-case):</p>
   P = c(0.001, 0.042, 0.38)
 )
 lt(d) |&gt;
-  lt_stub(~ Endpoint) |&gt;
   lt_format(~ HR, decimals = 2) |&gt;
   lt_format(~ P, decimals = 3) |&gt;
   lt_style(&quot;P&quot;, rows = 1:2L, bold = TRUE, color = &quot;#06c&quot;) |&gt;
@@ -756,8 +739,7 @@ lt(d) |&gt;
       "rows": [1],
       "css": "background:#e8f4e8;border-bottom:2px solid #4a4"
     }
-  ],
-  "row_label": "Endpoint"
+  ]
 }
 })</script>
 <h2 id="sec:conditional-styling"><span class="section-number main-number">13</span> Conditional styling</h2>
@@ -769,7 +751,6 @@ lt(d) |&gt;
   P = c(0.001, 0.042, 0.38)
 )
 lt(d) |&gt;
-  lt_stub(~ Endpoint) |&gt;
   lt_format(~ HR + P, decimals = 3) |&gt;
   lt_style(&quot;HR&quot;, test = &quot;v =&gt; v &lt; 1&quot;, class = &quot;good&quot;) |&gt;
   lt_style(&quot;P&quot;, test = &quot;v =&gt; v &lt; 0.05&quot;, class = &quot;sig&quot;) |&gt;
@@ -804,8 +785,7 @@ lt(d) |&gt;
       "test": v => v < 0.05,
       "class": "sig"
     }
-  ],
-  "row_label": "Endpoint"
+  ]
 }
 })</script>
 <h3 id="sec:highlighting-na-cells"><span class="section-number">13.1</span> Highlighting NA cells</h3>
@@ -914,37 +894,7 @@ lt(d) |&gt;
   "row_group": "arm"
 }
 })</script>
-<h2 id="sec:stubhead-label"><span class="section-number main-number">17</span> Stubhead label</h2>
-<pre><code class="language-r">d = data.frame(
-  endpoint = c(&quot;OS&quot;, &quot;PFS&quot;, &quot;ORR&quot;),
-  result = c(&quot;0.72&quot;, &quot;0.58&quot;, &quot;42%&quot;)
-)
-lt(d) |&gt;
-  lt_stub(~ endpoint, label = &quot;Endpoint&quot;) |&gt;
-  lt_label(result = &quot;Result&quot;)
-</code></pre>
-<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
-{
-  "data": {
-    "endpoint": ["OS", "PFS", "ORR"],
-    "result": ["0.72", "0.58", "42%"]
-  },
-  "ops": [
-    {
-      "type": "stubhead",
-      "label": "Endpoint"
-    },
-    {
-      "type": "label",
-      "labels": {
-        "result": "Result"
-      }
-    }
-  ],
-  "row_label": "endpoint"
-}
-})</script>
-<h2 id="sec:combining-formatting-and-structure"><span class="section-number main-number">18</span> Combining formatting and structure</h2>
+<h2 id="sec:combining-formatting-and-structure"><span class="section-number main-number">17</span> Combining formatting and structure</h2>
 <pre><code class="language-r">d = data.frame(
   Group = c(&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;),
   Endpoint = c(&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Primary&quot;, &quot;Secondary&quot;),

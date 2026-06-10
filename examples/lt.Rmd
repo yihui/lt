@@ -49,7 +49,6 @@ d = data.frame(
   Q2 = c(1345678.912, 1012345.678, 333333.234)
 )
 lt(d) |>
-  lt_stub(~ Metric) |>
   lt_format(~ Q1 + Q2, decimals = 2)
 ```
 
@@ -57,7 +56,6 @@ lt(d) |>
 
 ```{r}
 lt(d) |>
-  lt_stub(~ Metric) |>
   lt_format(~ Q1 + Q2, decimals = 0, big_mark = ",")
 ```
 
@@ -127,11 +125,7 @@ lt(d) |>
   lt_format(~ Population, big_mark = ",")
 ```
 
-### Row groups with a stub
-
-When groups exist, the first visible column is automatically used as the
-row stub. Use `lt_stub()` only to override that default (e.g., to pick a
-non-first column):
+### Row groups with data columns
 
 ```{r}
 d = data.frame(
@@ -202,7 +196,6 @@ d = data.frame(
   pct = c(100, 97.0, 95.5)
 )
 lt(d) |>
-  lt_stub(~ stat) |>
   lt_format(~ pct, decimals = 1) |>
   lt_merge(~ n + pct, pattern = "{1} ({2}%)") |>
   lt_label(n = "n (%)")
@@ -221,7 +214,6 @@ d = data.frame(
   ci_hi = c(0.82, 1.01, NA)
 )
 lt(d) |>
-  lt_stub(~ endpoint) |>
   lt_format(~ est + ci_lo + ci_hi, decimals = 2) |>
   lt_merge(~ est + ci_lo + ci_hi, pattern = "{1}<< ({2}, {3})>>") |>
   lt_label(est = "Estimate (95% CI)")
@@ -229,7 +221,7 @@ lt(d) |>
 
 ## Row indentation
 
-Indent stub rows to show hierarchy:
+Indent the first column to show hierarchy:
 
 ```{r}
 d = data.frame(
@@ -238,7 +230,6 @@ d = data.frame(
   n_pct = c("45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)")
 )
 lt(d) |>
-  lt_stub(~ label) |>
   lt_header("Adverse Events", "Safety Population") |>
   lt_indent(c(2, 5), level = 1) |>
   lt_indent(c(3, 4, 6), level = 2)
@@ -252,7 +243,6 @@ d = data.frame(
   Value = c(0.62, 0.0003, 0, NA)
 )
 lt(d) |>
-  lt_stub(~ Metric) |>
   lt_format(~ Value, decimals = 2) |>
   lt_sub(~ Value, missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
 ```
@@ -269,7 +259,6 @@ d = data.frame(
   P = c(0.001, 0.042, 0.38)
 )
 lt(d) |>
-  lt_stub(~ Endpoint) |>
   lt_format(~ HR, decimals = 2) |>
   lt_format(~ P, decimals = 3) |>
   lt_style("P", rows = 1:2L, bold = TRUE, color = "#06c") |>
@@ -288,7 +277,6 @@ d = data.frame(
   P = c(0.001, 0.042, 0.38)
 )
 lt(d) |>
-  lt_stub(~ Endpoint) |>
   lt_format(~ HR + P, decimals = 3) |>
   lt_style("HR", test = "v => v < 1", class = "good") |>
   lt_style("P", test = "v => v < 0.05", class = "sig") |>
@@ -331,18 +319,6 @@ d = data.frame(
 lt(d) |>
   lt_group(~ arm, sep = TRUE) |>
   lt_group("Treatment", "Placebo")
-```
-
-## Stubhead label
-
-```{r}
-d = data.frame(
-  endpoint = c("OS", "PFS", "ORR"),
-  result = c("0.72", "0.58", "42%")
-)
-lt(d) |>
-  lt_stub(~ endpoint, label = "Endpoint") |>
-  lt_label(result = "Result")
 ```
 
 ## Combining formatting and structure

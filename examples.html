@@ -389,7 +389,6 @@ LT.build({
     ci_lo: [0.40, 0.57, null],
     ci_hi: [0.82, 1.01, null]
   },
-  row_label: &quot;Endpoint&quot;,
   ops: [
     { type: &quot;fmt_number&quot;, columns: [&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;], decimals: 2 },
     { type: &quot;merge&quot;, columns: [&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;], pattern: &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot; },
@@ -434,8 +433,7 @@ LT.build({
     stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
     value: [30, 4.2, 31, 6.8]
   },
-  row_group: &quot;arm&quot;,
-  row_label: &quot;stat&quot;
+  row_group: &quot;arm&quot;
 });
 ```
 
@@ -467,7 +465,6 @@ LT.build({
     value: [&quot;30&quot;, &quot;4.2&quot;, &quot;31&quot;, &quot;6.8&quot;]
   },
   row_group: &quot;arm&quot;,
-  row_label: &quot;stat&quot;,
   ops: [
     { type: &quot;group_order&quot;, order: [&quot;Treatment&quot;, &quot;Placebo&quot;] }
   ]
@@ -488,26 +485,9 @@ LT.build({
 });
 ```
 
-## Stub column
-
-Use `row_label` to designate a column as the row-label stub:
-
-```{js}
-LT.build({
-  data: {
-    endpoint: [&quot;OS&quot;, &quot;PFS&quot;, &quot;ORR&quot;],
-    result: [&quot;0.72&quot;, &quot;0.58&quot;, &quot;42%&quot;]
-  },
-  row_label: &quot;endpoint&quot;,
-  ops: [
-    { type: &quot;stubhead&quot;, label: &quot;Endpoint&quot; }
-  ]
-});
-```
-
 ## Row indentation
 
-Indent specific rows in the stub to show hierarchy:
+Indent specific rows to show hierarchy:
 
 ```{js}
 LT.build({
@@ -515,7 +495,6 @@ LT.build({
     label: [&quot;Any AE&quot;, &quot;SOC: Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;, &quot;SOC: GI&quot;, &quot;Nausea&quot;],
     n_pct: [&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;]
   },
-  row_label: &quot;label&quot;,
   ops: [
     { type: &quot;indent&quot;, rows: [2, 5], level: 1 },
     { type: &quot;indent&quot;, rows: [3, 4, 6], level: 2 }
@@ -558,7 +537,6 @@ LT.build({
     HR: [0.62, 0.79, 0.91],
     P: [0.001, 0.042, 0.38]
   },
-  row_label: &quot;Endpoint&quot;,
   ops: [
     { type: &quot;fmt_number&quot;, columns: [&quot;HR&quot;], decimals: 2 },
     { type: &quot;fmt_number&quot;, columns: [&quot;P&quot;], decimals: 3 },
@@ -582,7 +560,6 @@ LT.build({
     HR: [0.62, 0.79, 1.05],
     P: [0.001, 0.042, 0.38]
   },
-  row_label: &quot;Endpoint&quot;,
   ops: [
     { type: &quot;fmt_number&quot;, columns: [&quot;HR&quot;, &quot;P&quot;], decimals: 3 },
     { type: &quot;style&quot;, columns: [&quot;HR&quot;], test: v =&gt; v &lt; 1, class: &quot;good&quot; },
@@ -733,7 +710,6 @@ d = data.frame(
   Q2 = c(1345678.912, 1012345.678, 333333.234)
 )
 lt(d) |&gt;
-  lt_stub(~ Metric) |&gt;
   lt_format(~ Q1 + Q2, decimals = 2)
 ```
 
@@ -741,7 +717,6 @@ lt(d) |&gt;
 
 ```{r}
 lt(d) |&gt;
-  lt_stub(~ Metric) |&gt;
   lt_format(~ Q1 + Q2, decimals = 0, big_mark = &quot;,&quot;)
 ```
 
@@ -811,11 +786,7 @@ lt(d) |&gt;
   lt_format(~ Population, big_mark = &quot;,&quot;)
 ```
 
-### Row groups with a stub
-
-When groups exist, the first visible column is automatically used as the
-row stub. Use `lt_stub()` only to override that default (e.g., to pick a
-non-first column):
+### Row groups with data columns
 
 ```{r}
 d = data.frame(
@@ -886,7 +857,6 @@ d = data.frame(
   pct = c(100, 97.0, 95.5)
 )
 lt(d) |&gt;
-  lt_stub(~ stat) |&gt;
   lt_format(~ pct, decimals = 1) |&gt;
   lt_merge(~ n + pct, pattern = &quot;{1} ({2}%)&quot;) |&gt;
   lt_label(n = &quot;n (%)&quot;)
@@ -905,7 +875,6 @@ d = data.frame(
   ci_hi = c(0.82, 1.01, NA)
 )
 lt(d) |&gt;
-  lt_stub(~ endpoint) |&gt;
   lt_format(~ est + ci_lo + ci_hi, decimals = 2) |&gt;
   lt_merge(~ est + ci_lo + ci_hi, pattern = &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot;) |&gt;
   lt_label(est = &quot;Estimate (95% CI)&quot;)
@@ -913,7 +882,7 @@ lt(d) |&gt;
 
 ## Row indentation
 
-Indent stub rows to show hierarchy:
+Indent the first column to show hierarchy:
 
 ```{r}
 d = data.frame(
@@ -922,7 +891,6 @@ d = data.frame(
   n_pct = c(&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;)
 )
 lt(d) |&gt;
-  lt_stub(~ label) |&gt;
   lt_header(&quot;Adverse Events&quot;, &quot;Safety Population&quot;) |&gt;
   lt_indent(c(2, 5), level = 1) |&gt;
   lt_indent(c(3, 4, 6), level = 2)
@@ -936,7 +904,6 @@ d = data.frame(
   Value = c(0.62, 0.0003, 0, NA)
 )
 lt(d) |&gt;
-  lt_stub(~ Metric) |&gt;
   lt_format(~ Value, decimals = 2) |&gt;
   lt_sub(~ Value, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt; 0.001&quot;)
 ```
@@ -953,7 +920,6 @@ d = data.frame(
   P = c(0.001, 0.042, 0.38)
 )
 lt(d) |&gt;
-  lt_stub(~ Endpoint) |&gt;
   lt_format(~ HR, decimals = 2) |&gt;
   lt_format(~ P, decimals = 3) |&gt;
   lt_style(&quot;P&quot;, rows = 1:2L, bold = TRUE, color = &quot;#06c&quot;) |&gt;
@@ -972,7 +938,6 @@ d = data.frame(
   P = c(0.001, 0.042, 0.38)
 )
 lt(d) |&gt;
-  lt_stub(~ Endpoint) |&gt;
   lt_format(~ HR + P, decimals = 3) |&gt;
   lt_style(&quot;HR&quot;, test = &quot;v =&gt; v &lt; 1&quot;, class = &quot;good&quot;) |&gt;
   lt_style(&quot;P&quot;, test = &quot;v =&gt; v &lt; 0.05&quot;, class = &quot;sig&quot;) |&gt;
@@ -1015,18 +980,6 @@ d = data.frame(
 lt(d) |&gt;
   lt_group(~ arm, sep = TRUE) |&gt;
   lt_group(&quot;Treatment&quot;, &quot;Placebo&quot;)
-```
-
-## Stubhead label
-
-```{r}
-d = data.frame(
-  endpoint = c(&quot;OS&quot;, &quot;PFS&quot;, &quot;ORR&quot;),
-  result = c(&quot;0.72&quot;, &quot;0.58&quot;, &quot;42%&quot;)
-)
-lt(d) |&gt;
-  lt_stub(~ endpoint, label = &quot;Endpoint&quot;) |&gt;
-  lt_label(result = &quot;Result&quot;)
 ```
 
 ## Combining formatting and structure

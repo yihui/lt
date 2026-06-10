@@ -53,19 +53,18 @@
 <li><a href="#sec:row-groups-rowspan"><span class="section-number main-number">12</span> Row groups (rowspan)</a></li>
 <li><a href="#sec:row-group-ordering"><span class="section-number main-number">13</span> Row group ordering</a></li>
 <li><a href="#sec:manual-row-groups"><span class="section-number main-number">14</span> Manual row groups</a></li>
-<li><a href="#sec:stub-column"><span class="section-number main-number">15</span> Stub column</a></li>
-<li><a href="#sec:row-indentation"><span class="section-number main-number">16</span> Row indentation</a></li>
-<li><a href="#sec:column-widths"><span class="section-number main-number">17</span> Column widths</a></li>
-<li><a href="#sec:column-reordering-move"><span class="section-number main-number">18</span> Column reordering (<code>move</code>)</a></li>
-<li><a href="#sec:cell-styling"><span class="section-number main-number">19</span> Cell styling</a></li>
-<li><a href="#sec:conditional-styling"><span class="section-number main-number">20</span> Conditional styling</a>
+<li><a href="#sec:row-indentation"><span class="section-number main-number">15</span> Row indentation</a></li>
+<li><a href="#sec:column-widths"><span class="section-number main-number">16</span> Column widths</a></li>
+<li><a href="#sec:column-reordering-move"><span class="section-number main-number">17</span> Column reordering (<code>move</code>)</a></li>
+<li><a href="#sec:cell-styling"><span class="section-number main-number">18</span> Cell styling</a></li>
+<li><a href="#sec:conditional-styling"><span class="section-number main-number">19</span> Conditional styling</a>
 <ul>
-<li><a href="#sec:highlighting-missing-values"><span class="section-number">20.1</span> Highlighting missing values</a></li>
+<li><a href="#sec:highlighting-missing-values"><span class="section-number">19.1</span> Highlighting missing values</a></li>
 </ul>
 </li>
-<li><a href="#sec:footnotes"><span class="section-number main-number">21</span> Footnotes</a></li>
-<li><a href="#sec:source-notes"><span class="section-number main-number">22</span> Source notes</a></li>
-<li><a href="#sec:complete-example"><span class="section-number main-number">23</span> Complete example</a></li>
+<li><a href="#sec:footnotes"><span class="section-number main-number">20</span> Footnotes</a></li>
+<li><a href="#sec:source-notes"><span class="section-number main-number">21</span> Source notes</a></li>
+<li><a href="#sec:complete-example"><span class="section-number main-number">22</span> Complete example</a></li>
 </ul>
 </div>
 <p>This document demonstrates the lt.js runtime directly from JavaScript.
@@ -303,7 +302,6 @@ conditional NA handling.</p>
     ci_lo: [0.40, 0.57, null],
     ci_hi: [0.82, 1.01, null]
   },
-  row_label: &quot;Endpoint&quot;,
   ops: [
     { type: &quot;fmt_number&quot;, columns: [&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;], decimals: 2 },
     { type: &quot;merge&quot;, columns: [&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;], pattern: &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot; },
@@ -318,7 +316,6 @@ conditional NA handling.</p>
     ci_lo: [0.40, 0.57, null],
     ci_hi: [0.82, 1.01, null]
   },
-  row_label: "Endpoint",
   ops: [
     { type: "fmt_number", columns: ["est", "ci_lo", "ci_hi"], decimals: 2 },
     { type: "merge", columns: ["est", "ci_lo", "ci_hi"], pattern: "{1}<< ({2}, {3})>>" },
@@ -358,8 +355,7 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
     value: [30, 4.2, 31, 6.8]
   },
-  row_group: &quot;arm&quot;,
-  row_label: &quot;stat&quot;
+  row_group: &quot;arm&quot;
 });
 </code></pre>
 <script>LT.build({
@@ -368,8 +364,7 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     stat: ["n", "Mean", "n", "Mean"],
     value: [30, 4.2, 31, 6.8]
   },
-  row_group: "arm",
-  row_label: "stat"
+  row_group: "arm"
 });</script>
 <h2 id="sec:row-groups-rowspan"><span class="section-number main-number">12</span> Row groups (rowspan)</h2>
 <p>Pass <code>row_group</code> as an array to render as rowspan cells on the left:</p>
@@ -401,7 +396,6 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     value: [&quot;30&quot;, &quot;4.2&quot;, &quot;31&quot;, &quot;6.8&quot;]
   },
   row_group: &quot;arm&quot;,
-  row_label: &quot;stat&quot;,
   ops: [
     { type: &quot;group_order&quot;, order: [&quot;Treatment&quot;, &quot;Placebo&quot;] }
   ]
@@ -414,7 +408,6 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     value: ["30", "4.2", "31", "6.8"]
   },
   row_group: "arm",
-  row_label: "stat",
   ops: [
     { type: "group_order", order: ["Treatment", "Placebo"] }
   ]
@@ -436,37 +429,13 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     { type: "row_group", label: "Last three", rows: [4, 5, 6] }
   ]
 });</script>
-<h2 id="sec:stub-column"><span class="section-number main-number">15</span> Stub column</h2>
-<p>Use <code>row_label</code> to designate a column as the row-label stub:</p>
-<pre><code class="language-js">LT.build({
-  data: {
-    endpoint: [&quot;OS&quot;, &quot;PFS&quot;, &quot;ORR&quot;],
-    result: [&quot;0.72&quot;, &quot;0.58&quot;, &quot;42%&quot;]
-  },
-  row_label: &quot;endpoint&quot;,
-  ops: [
-    { type: &quot;stubhead&quot;, label: &quot;Endpoint&quot; }
-  ]
-});
-</code></pre>
-<script>LT.build({
-  data: {
-    endpoint: ["OS", "PFS", "ORR"],
-    result: ["0.72", "0.58", "42%"]
-  },
-  row_label: "endpoint",
-  ops: [
-    { type: "stubhead", label: "Endpoint" }
-  ]
-});</script>
-<h2 id="sec:row-indentation"><span class="section-number main-number">16</span> Row indentation</h2>
-<p>Indent specific rows in the stub to show hierarchy:</p>
+<h2 id="sec:row-indentation"><span class="section-number main-number">15</span> Row indentation</h2>
+<p>Indent specific rows to show hierarchy:</p>
 <pre><code class="language-js">LT.build({
   data: {
     label: [&quot;Any AE&quot;, &quot;SOC: Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;, &quot;SOC: GI&quot;, &quot;Nausea&quot;],
     n_pct: [&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;]
   },
-  row_label: &quot;label&quot;,
   ops: [
     { type: &quot;indent&quot;, rows: [2, 5], level: 1 },
     { type: &quot;indent&quot;, rows: [3, 4, 6], level: 2 }
@@ -478,13 +447,12 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     label: ["Any AE", "SOC: Cardiac", "Tachycardia", "Bradycardia", "SOC: GI", "Nausea"],
     n_pct: ["45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)"]
   },
-  row_label: "label",
   ops: [
     { type: "indent", rows: [2, 5], level: 1 },
     { type: "indent", rows: [3, 4, 6], level: 2 }
   ]
 });</script>
-<h2 id="sec:column-widths"><span class="section-number main-number">17</span> Column widths</h2>
+<h2 id="sec:column-widths"><span class="section-number main-number">16</span> Column widths</h2>
 <pre><code class="language-js">LT.build({
   data: mtcars,
   ops: [
@@ -498,7 +466,7 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
   ]
 });</script>
-<h2 id="sec:column-reordering-move"><span class="section-number main-number">18</span> Column reordering (<code>move</code>)</h2>
+<h2 id="sec:column-reordering-move"><span class="section-number main-number">17</span> Column reordering (<code>move</code>)</h2>
 <p>Move columns to the start or after a specific column:</p>
 <pre><code class="language-js">LT.build({
   data: iris,
@@ -513,7 +481,7 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
   ]
 });</script>
-<h2 id="sec:cell-styling"><span class="section-number main-number">19</span> Cell styling</h2>
+<h2 id="sec:cell-styling"><span class="section-number main-number">18</span> Cell styling</h2>
 <p>Apply CSS to specific cells by column and/or row:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -521,7 +489,6 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     HR: [0.62, 0.79, 0.91],
     P: [0.001, 0.042, 0.38]
   },
-  row_label: &quot;Endpoint&quot;,
   ops: [
     { type: &quot;fmt_number&quot;, columns: [&quot;HR&quot;], decimals: 2 },
     { type: &quot;fmt_number&quot;, columns: [&quot;P&quot;], decimals: 3 },
@@ -536,7 +503,6 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     HR: [0.62, 0.79, 0.91],
     P: [0.001, 0.042, 0.38]
   },
-  row_label: "Endpoint",
   ops: [
     { type: "fmt_number", columns: ["HR"], decimals: 2 },
     { type: "fmt_number", columns: ["P"], decimals: 3 },
@@ -544,7 +510,7 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     { type: "style", columns: ["HR"], rows: [1], css: "background:#e8f4e8;border-bottom:2px solid #4a4" }
   ]
 });</script>
-<h2 id="sec:conditional-styling"><span class="section-number main-number">20</span> Conditional styling</h2>
+<h2 id="sec:conditional-styling"><span class="section-number main-number">19</span> Conditional styling</h2>
 <p>Use <code>test</code> with a JavaScript function to apply styles based on cell
 values. The function receives the raw (pre-format) value and should
 return <code>true</code> to apply. Use <code>class</code> to assign CSS classes instead of
@@ -555,7 +521,6 @@ inline <code>css</code>:</p>
     HR: [0.62, 0.79, 1.05],
     P: [0.001, 0.042, 0.38]
   },
-  row_label: &quot;Endpoint&quot;,
   ops: [
     { type: &quot;fmt_number&quot;, columns: [&quot;HR&quot;, &quot;P&quot;], decimals: 3 },
     { type: &quot;style&quot;, columns: [&quot;HR&quot;], test: v =&gt; v &lt; 1, class: &quot;good&quot; },
@@ -569,7 +534,6 @@ inline <code>css</code>:</p>
     HR: [0.62, 0.79, 1.05],
     P: [0.001, 0.042, 0.38]
   },
-  row_label: "Endpoint",
   ops: [
     { type: "fmt_number", columns: ["HR", "P"], decimals: 3 },
     { type: "style", columns: ["HR"], test: v => v < 1, class: "good" },
@@ -581,7 +545,7 @@ inline <code>css</code>:</p>
 <style type="text/css">
 .lt-table .good { color: green; }
 </style>
-<h3 id="sec:highlighting-missing-values"><span class="section-number">20.1</span> Highlighting missing values</h3>
+<h3 id="sec:highlighting-missing-values"><span class="section-number">19.1</span> Highlighting missing values</h3>
 <p>Apply a class to all null cells across the table (omit <code>columns</code> to
 target all):</p>
 <pre><code class="language-js">LT.build({
@@ -610,7 +574,7 @@ target all):</p>
 <style type="text/css">
 .lt-table .na { background: #fee; }
 </style>
-<h2 id="sec:footnotes"><span class="section-number main-number">21</span> Footnotes</h2>
+<h2 id="sec:footnotes"><span class="section-number main-number">20</span> Footnotes</h2>
 <p>Footnotes are de-duplicated by text and numbered automatically. Supported
 locations: <code>title</code>, <code>column_labels</code>, <code>column_spanners</code>, <code>row_groups</code>, <code>body</code>.</p>
 <pre><code class="language-js">LT.build({
@@ -630,7 +594,7 @@ locations: <code>title</code>, <code>column_labels</code>, <code>column_spanners
     { text: "Miles per US gallon.", location: { type: "column_labels", columns: ["mpg"] } }
   ]
 });</script>
-<h2 id="sec:source-notes"><span class="section-number main-number">22</span> Source notes</h2>
+<h2 id="sec:source-notes"><span class="section-number main-number">21</span> Source notes</h2>
 <p>Notes appear below footnotes in the footer:</p>
 <pre><code class="language-js">LT.build({
   data: mtcars,
@@ -641,7 +605,7 @@ locations: <code>title</code>, <code>column_labels</code>, <code>column_spanners
   data: mtcars,
   notes: ["Data from the 1974 Motor Trend US magazine."]
 });</script>
-<h2 id="sec:complete-example"><span class="section-number main-number">23</span> Complete example</h2>
+<h2 id="sec:complete-example"><span class="section-number main-number">22</span> Complete example</h2>
 <p>Combining multiple features in a single spec:</p>
 <pre><code class="language-js">LT.build({
   data: {
