@@ -4,26 +4,24 @@ x = lt(d)
 assert("format() returns HTML with script tags", {
   html = format(x)
   (is.character(html))
-  (any(grepl("<script>", html)))
-  (any(grepl("</script>", html)))
+  (matches(html, ".*<script>.*</script>.*") %==% "")
 })
 
 assert("format(fragment = FALSE) wraps in DOCTYPE", {
   html = format(x, fragment = FALSE)
-  (any(grepl("<!DOCTYPE html>", html)))
-  (any(grepl("</html>", html)))
+  (matches(html, ".*<!DOCTYPE html>.*</html>.*") %==% "")
 })
 
 assert("format(assets = FALSE) omits runtime", {
   html = format(x, assets = FALSE)
-  (!any(grepl("<style>", html)))
-  (!any(grepl("LT.build", html)))
-  (any(grepl("<script>", html)))
+  (matches(html, ".*<style>.*") %==% html)
+  (matches(html, ".*LT\\.build.*") %==% html)
+  (matches(html, ".*<script>.*") %==% "")
 })
 
 assert("inline_safe() escapes </script in content", {
-  (grepl("<\\\\/script", inline_safe("x</script>y")))
-  (grepl("<\\\\/SCRIPT", inline_safe("x</SCRIPT>y")))
+  (matches(inline_safe("x</script>y"), ".*<\\\\/script.*") %==% "")
+  (matches(inline_safe("x</SCRIPT>y"), ".*<\\\\/SCRIPT.*") %==% "")
   # does not alter other tags
   (inline_safe("x</div>y") %==% "x</div>y")
 })
@@ -32,16 +30,14 @@ assert("asset_url() uses local file:// when lt.local = TRUE", {
   op = options(lt.local = TRUE)
   on.exit(options(op))
   url = asset_url("lt.js")
-  (grepl("^file://", url))
-  (grepl("lt\\.js$", url))
+  (matches(url, ".*file://.*lt\\.js.*") %==% "")
 })
 
 assert("asset_url() uses CDN by default", {
   op = options(lt.local = NULL, lt.assets_url = NULL)
   on.exit(options(op))
   url = asset_url("lt.js")
-  (grepl("cdn.jsdelivr.net", url))
-  (grepl("lt\\.min\\.js$", url))
+  (matches(url, ".*cdn\\.jsdelivr\\.net.*lt\\.min\\.js.*") %==% "")
 })
 
 assert("asset_url() respects lt.assets_url option", {
@@ -57,7 +53,7 @@ assert("spec_block() drops css and rules", {
   x2$rules = ".na { color: red }"
   sb = spec_block(x2)
   html = paste(sb, collapse = "")
-  (!grepl("some\\.css", html))
-  (!grepl("color: red", html))
-  (grepl("LT", html))
+  (matches(html, ".*some\\.css.*") %==% html)
+  (matches(html, ".*color: red.*") %==% html)
+  (matches(html, ".*window\\.LT.*") %==% "")
 })

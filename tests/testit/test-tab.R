@@ -110,7 +110,7 @@ assert("lt_indent() adds indent op", {
 
 assert("lt_merge() requires 2+ columns", {
   err = tryCatch(lt_merge(x, ~ a), error = conditionMessage)
-  (grepl("at least 2", err))
+  (matches(err, ".*at least 2.*") %==% "")
 })
 
 assert("lt_merge() adds merge op", {
@@ -123,15 +123,12 @@ assert("lt_merge() adds merge op", {
 assert("lt_style() builds CSS from arguments", {
   s = lt_style(x, "a", bold = TRUE, italic = TRUE, color = "red", bg = "#fff")
   css = s$ops[[1]]$css
-  (grepl("font-weight:bold", css))
-  (grepl("font-style:italic", css))
-  (grepl("color:red", css))
-  (grepl("background:#fff", css))
+  (matches(css, ".*font-weight:bold.*font-style:italic.*color:red.*background:#fff.*") %==% "")
 })
 
 assert("lt_style() with extra CSS properties", {
   s = lt_style(x, "a", borderLeft = "1px solid")
-  (grepl("border-left:1px solid", s$ops[[1]]$css))
+  (matches(s$ops[[1]]$css, ".*border-left:1px solid.*") %==% "")
 })
 
 assert("lt_style() with class and test", {
