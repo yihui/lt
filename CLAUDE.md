@@ -15,8 +15,12 @@ When asked to "publish lt to npm":
 1.  If `../lite.js/` doesn't exist, clone it from
     <https://github.com/yihui/lite.js>.
 2.  Copy `lt.js` and `lt.css` from this lt R package to `../lite.js/`.
-3.  In `../lite.js/`: commit `lt.js` and `lt.css`, bump the package version,
-    create a git tag, and push.
+3.  In `../lite.js/`: pull the latest (`git pull --rebase`), then check the
+    existing tags to determine the next version (`git tag | sort -V | tail
+    -1`). Bump `package.json` to a version that does not already exist.
+    Commit, create a git tag, and push. **Never delete or override an
+    existing remote tag.** If a tag already exists on the remote, bump to a
+    higher version instead.
 4.  In this lt package: update the lt.js version reference to match the newly
     published version.
 
