@@ -26,3 +26,4 @@ Suggests:
 Roxygen: list(markdown = TRUE)
 Config/lt.js: 1.14.56
 Config/roxygen2/version: 8.0.0
+Remotes: yihui/xfun

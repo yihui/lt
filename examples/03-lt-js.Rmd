@@ -187,6 +187,12 @@ Date objects or ISO strings. The default calls `toLocaleDateString()`;
 pass `method` to use a different Date method, or `locale`/`options` for
 `Intl.DateTimeFormat` control.
 
+**Note:** The formatted date may differ from the input depending on the
+viewer's timezone. `new Date("2024-01-15")` is parsed as UTC midnight,
+but `toLocaleDateString()` converts to local time — so `2024-01-15`
+displays as `2024-01-14` at GMT-6. Pass `options: { timeZone: "UTC" }`
+to avoid this.
+
 ```{js}
 LT.build({
   data: {
@@ -208,8 +214,9 @@ LT.build({
     Date: [new Date("2024-01-15"), new Date("2024-06-30")]
   },
   ops: [
-    { type: "fmt_date", columns: ["Date"], locale: "en-US",
-      options: { year: "numeric", month: "short", day: "numeric" } }
+    { type: "fmt_date", columns: ["Date"], locale: "zh-CN",
+      options: { year: "numeric", month: "long", day: "numeric",
+                 weekday: "long", timeZone: "UTC" } }
   ]
 });
 ```

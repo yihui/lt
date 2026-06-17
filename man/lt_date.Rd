@@ -39,6 +39,14 @@ Format date or datetime columns using JavaScript's native Date methods.
 The underlying data should be Date or POSIXt in R (serialized as
 \verb{new Date(...)} for the browser).
 }
+\note{
+The formatted date may differ from the input date depending on the
+viewer's local timezone. JavaScript's \verb{new Date("2024-01-15")} parses
+date-only strings as UTC midnight, but \code{toLocaleDateString()} converts to
+the local timezone. For example, \code{2024-01-15} will display as
+\code{2024-01-14} for a viewer at GMT-6. To avoid this, pass
+\code{options = list(timeZone = "UTC")}.
+}
 \examples{
 d = data.frame(
   event = c("Launch", "Update"),

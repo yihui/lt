@@ -251,6 +251,12 @@ lt_format = function(
 #'   (`"numeric"`, `"2-digit"`), `hour`, `minute`, `second` (`"numeric"`,
 #'   `"2-digit"`), `weekday` (`"long"`, `"short"`, `"narrow"`), and
 #'   `timeZoneName` (`"long"`, `"short"`). Only used when `method` is `NULL`.
+#' @note The formatted date may differ from the input date depending on the
+#'   viewer's local timezone. JavaScript's `new Date("2024-01-15")` parses
+#'   date-only strings as UTC midnight, but `toLocaleDateString()` converts to
+#'   the local timezone. For example, `2024-01-15` will display as
+#'   `2024-01-14` for a viewer at GMT-6. To avoid this, pass
+#'   `options = list(timeZone = "UTC")`.
 #' @return `x` with the date formatting recorded.
 #' @export
 #' @examples

@@ -98,7 +98,13 @@ lt(d2) |> lt_format(~ Weight, decimals = 1, suffix = " kg")
 ## Date formatting
 
 Format Date or POSIXt columns using JavaScript's native Date methods.
-The default uses `toLocaleDateString()`:
+The default uses `toLocaleDateString()`.
+
+**Note:** The formatted date may differ from the input depending on the
+viewer's timezone. `new Date("2024-01-15")` is parsed as UTC midnight,
+but `toLocaleDateString()` converts to local time — so `2024-01-15`
+displays as `2024-01-14` at GMT-6. Pass `options = list(timeZone =
+"UTC")` to avoid this.
 
 ```{r}
 d = data.frame(
@@ -113,8 +119,9 @@ lt(d) |> lt_date(~ Date)
 Pass `locale` and `options` for `Intl.DateTimeFormat` control:
 
 ```{r}
-lt(d) |> lt_date(~ Date, locale = "en-US",
-  options = list(year = "numeric", month = "short", day = "numeric"))
+lt(d) |> lt_date(~ Date, locale = "zh-CN",
+  options = list(year = "numeric", month = "long", day = "numeric",
+    weekday = "long", timeZone = "UTC"))
 ```
 
 ### Using a specific Date method
