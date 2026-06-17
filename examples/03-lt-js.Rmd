@@ -162,6 +162,24 @@ LT.build({
 });
 ```
 
+### Prefix and suffix (currency, units)
+
+Use `prefix` and `suffix` to prepend or append symbols:
+
+```{js}
+LT.build({
+  data: {
+    Item: ["Widget", "Gadget", "Doohickey"],
+    Price: [1234.5, 678.9, 42.0],
+    Weight: [1250, 340.5, 89.12]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Price"], decimals: 2, big_mark: ",", prefix: "$" },
+    { type: "fmt_number", columns: ["Weight"], decimals: 1, suffix: " kg" }
+  ]
+});
+```
+
 ## Value substitution (`sub`)
 
 Replace missing, zero, or small values with display text:

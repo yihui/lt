@@ -200,16 +200,26 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' @param percent If `TRUE`, multiply values by 100 and append `"%"`. If
 #'   `"%"`, only append `"%"` without multiplying (for values already in
 #'   percent scale).
+#' @param prefix String prepended to each formatted value (e.g., `"$"`).
+#' @param suffix String appended to each formatted value (e.g., `" kg"`).
 #' @return `x` with the formatting recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_format(~ mpg + wt, decimals = 1, big_mark = ",")
-lt_format = function(x, columns, decimals = NULL, big_mark = NULL, percent = NULL) {
+#' d = data.frame(Item = c("A", "B"), Price = c(1234.5, 678.9))
+#' lt(d) |> lt_format(~ Price, decimals = 2, big_mark = ",", prefix = "$")
+lt_format = function(
+  x, columns, decimals = NULL, big_mark = NULL, percent = NULL,
+  prefix = NULL, suffix = NULL
+) {
   columns = f_cols(columns)
   cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
   pct = if (identical(percent, "%")) "%" else if (isTRUE(percent)) TRUE
-  add_op(x, 'fmt_number', columns = I(cols), decimals = decimals,
-    big_mark = if (nzchar(big_mark %||% '')) big_mark, percent = pct)
+  add_op(
+    x, 'fmt_number', columns = I(cols), decimals = decimals,
+    big_mark = if (nzchar(big_mark %||% '')) big_mark, percent = pct,
+    prefix = prefix, suffix = suffix
+  )
 }
 
 #' Rename Column Labels

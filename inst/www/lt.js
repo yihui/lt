@@ -142,10 +142,11 @@
           eachCell(cols, (c, i, raw) => {
             if (!isNum(raw)) return;
             const v = op.percent === true ? raw * 100 : raw,
-                  sfx = op.percent ? "%" : "",
-                  f = fmtNumber(v, op.decimals, op.big_mark ?? "");
-            if (f != null) display[c][i] = f + sfx;
-            else if (sfx) display[c][i] = String(v) + sfx;
+                  psfx = op.percent ? "%" : "",
+                  f = fmtNumber(v, op.decimals, op.big_mark ?? ""),
+                  pfx = op.prefix || "", sfx = (op.suffix || "") + psfx;
+            if (f != null) display[c][i] = pfx + f + sfx;
+            else if (pfx || sfx) display[c][i] = pfx + String(v) + sfx;
           });
           break;
         case "sub":

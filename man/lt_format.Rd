@@ -4,7 +4,15 @@
 \alias{lt_format}
 \title{Format Numeric Columns}
 \usage{
-lt_format(x, columns, decimals = NULL, big_mark = NULL, percent = NULL)
+lt_format(
+  x,
+  columns,
+  decimals = NULL,
+  big_mark = NULL,
+  percent = NULL,
+  prefix = NULL,
+  suffix = NULL
+)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
@@ -20,6 +28,10 @@ none.}
 \item{percent}{If \code{TRUE}, multiply values by 100 and append \code{"\%"}. If
 \code{"\%"}, only append \code{"\%"} without multiplying (for values already in
 percent scale).}
+
+\item{prefix}{String prepended to each formatted value (e.g., \code{"$"}).}
+
+\item{suffix}{String appended to each formatted value (e.g., \code{" kg"}).}
 }
 \value{
 \code{x} with the formatting recorded.
@@ -32,4 +44,6 @@ for a column without otherwise changing its display, call \code{lt_format(x, ~co
 }
 \examples{
 lt(head(mtcars)) |> lt_format(~ mpg + wt, decimals = 1, big_mark = ",")
+d = data.frame(Item = c("A", "B"), Price = c(1234.5, 678.9))
+lt(d) |> lt_format(~ Price, decimals = 2, big_mark = ",", prefix = "$")
 }

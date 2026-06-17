@@ -91,6 +91,14 @@ assert("lt_format() percent option", {
   (f2$ops[[1]]$percent %==% "%")
 })
 
+assert("lt_format() prefix and suffix", {
+  f = lt_format(x, ~ a, decimals = 2, big_mark = ",", prefix = "$")
+  (f$ops[[1]]$prefix %==% "$")
+  (is.null(f$ops[[1]]$suffix))
+  f2 = lt_format(x, ~ b, suffix = " kg")
+  (f2$ops[[1]]$suffix %==% " kg")
+})
+
 assert("lt_label() adds label op", {
   l = lt_label(x, a = "Alpha", b = "Beta")
   (l$ops %==% list(list(type = "label", labels = list(a = "Alpha", b = "Beta"))))

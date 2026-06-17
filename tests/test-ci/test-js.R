@@ -130,6 +130,34 @@ assert("fmt_number with percent, big_mark, and minus sign", {
   (matches(html, ".*>−1,234,567</td>.*") %==% "")
 })
 
+assert("fmt_number prefix and suffix", {
+  html = build(list(
+    data = list(price = c(1234.5, 678.9)),
+    ops = list(list(
+      type = "fmt_number", columns = list("price"),
+      decimals = 2, big_mark = ",", prefix = "$"
+    ))
+  ))
+  (matches(html, '.*>\\$1,234\\.50</td>.*>\\$678\\.90</td>.*') %==% "")
+  # suffix
+  html = build(list(
+    data = list(weight = c(75, 80)),
+    ops = list(list(
+      type = "fmt_number", columns = list("weight"), suffix = " kg"
+    ))
+  ))
+  (matches(html, '.*>75 kg</td>.*>80 kg</td>.*') %==% "")
+  # prefix + percent
+  html = build(list(
+    data = list(rate = c(0.05, 0.12)),
+    ops = list(list(
+      type = "fmt_number", columns = list("rate"),
+      decimals = 1, percent = TRUE, prefix = "+"
+    ))
+  ))
+  (matches(html, '.*>\\+5\\.0%</td>.*>\\+12\\.0%</td>.*') %==% "")
+})
+
 assert("footnote on the title renders a marker in the caption", {
   html = build(list(
     data = list(x = 1),

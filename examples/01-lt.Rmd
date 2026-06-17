@@ -78,6 +78,23 @@ lt(d) |>
   lt_format(~ Q1 + Q2, decimals = 0, big_mark = ",")
 ```
 
+### Prefix and suffix (currency, units)
+
+Use `prefix` and `suffix` to prepend or append symbols to formatted values:
+
+```{r}
+lt(d) |>
+  lt_format(~ Q1 + Q2, decimals = 2, big_mark = ",", prefix = "$")
+```
+
+```{r}
+d2 = data.frame(
+  Material = c("Steel", "Aluminum", "Copper"),
+  Weight = c(1250, 340.5, 89.12)
+)
+lt(d2) |> lt_format(~ Weight, decimals = 1, suffix = " kg")
+```
+
 ## Footnotes
 
 ```{r}
