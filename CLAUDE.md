@@ -23,7 +23,7 @@ When asked to "publish lt to npm":
 ## Test Instructions
 
 ``` bash
-Rscript tests/*.R
+export CI=true; for f in tests/*.R; do Rscript "$f"; done
 ```
 
 Tests are typically in `tests/testit/test-*.R` (for each `R/foo.R`, there is a
