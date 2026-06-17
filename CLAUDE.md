@@ -27,7 +27,7 @@ When asked to "publish lt to npm":
 ## Test Instructions
 
 ``` bash
-export CI=true; for f in tests/*.R; do Rscript "$f"; done
+CI=true Rscript tests/*.R
 ```
 
 Tests are typically in `tests/testit/test-*.R` (for each `R/foo.R`, there is a
@@ -38,10 +38,10 @@ CRAN due to Internet connection or resource limits). The conditioning is done in
 top-level `*.R` under `tests/`, e.g.,
 
 ``` r
-# tests/test-cran.R
+# test everywhere
 testit::test_pkg(dir = 'test-cran')
 
-# tests/test-ci.R
+# test on CI only
 if (tolower(Sys.getenv('CI')) == 'true') testit::test_pkg(dir = 'test-ci')
 ```
 
