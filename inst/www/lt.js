@@ -149,6 +149,16 @@
             else if (pfx || sfx) display[c][i] = pfx + String(v) + sfx;
           });
           break;
+        case "fmt_date":
+          eachCell(cols, (c, i, raw) => {
+            if (raw == null) return;
+            const d = raw instanceof Date ? raw : new Date(raw);
+            if (isNaN(d)) return;
+            display[c][i] = op.method ? d[op.method]() :
+              op.options ? d.toLocaleDateString(op.locale, op.options) :
+              d.toLocaleDateString(op.locale);
+          });
+          break;
         case "sub":
           eachCell(cols, (c, i, raw) => {
             if (op.small != null && isNum(raw) && raw !== 0 &&

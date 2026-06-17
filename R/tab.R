@@ -208,6 +208,10 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' lt(head(mtcars)) |> lt_format(~ mpg + wt, decimals = 1, big_mark = ",")
 #' d = data.frame(Item = c("A", "B"), Price = c(1234.5, 678.9))
 #' lt(d) |> lt_format(~ Price, decimals = 2, big_mark = ",", prefix = "$")
+# TODO: potential future params:
+#   decimal_mark - swap "." for "," (European locales, pairs with big_mark = ".")
+#   scale - multiply by a factor before display (e.g., 1e-6 for millions)
+#   sign - force sign on positive values (e.g., "+1.5")
 lt_format = function(
   x, columns, decimals = NULL, big_mark = NULL, percent = NULL,
   prefix = NULL, suffix = NULL
@@ -219,6 +223,49 @@ lt_format = function(
     x, 'fmt_number', columns = I(cols), decimals = decimals,
     big_mark = if (nzchar(big_mark %||% '')) big_mark, percent = pct,
     prefix = prefix, suffix = suffix
+  )
+}
+
+#' Format Date/Time Columns
+#'
+#' Format date or datetime columns using JavaScript's native Date methods.
+#' The underlying data should be Date or POSIXt in R (serialized as
+#' `new Date(...)` for the browser).
+#'
+#' @inheritParams lt_align
+#' @param columns Column selection (formula, character, or numeric).
+#' @param method A JS Date method name to call (e.g., `"toLocaleDateString"`,
+#'   `"toISOString"`, `"toDateString"`, `"toLocaleString"`,
+#'   `"toLocaleTimeString"`). If `NULL` (the default),
+#'   `toLocaleDateString()` is used with `locale` and `options`. See
+#'   \url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#instance_methods}
+#'   for all available methods.
+#' @param locale A BCP 47 locale string (e.g., `"en-US"`, `"de-DE"`,
+#'   `"ja-JP"`). Only used when `method` is `NULL`. See
+#'   \url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl#locales_argument}
+#'   for details.
+#' @param options A named list of
+#'   [`Intl.DateTimeFormat`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#options)
+#'   options. Common fields include `year` (`"numeric"`, `"2-digit"`), `month`
+#'   (`"numeric"`, `"2-digit"`, `"long"`, `"short"`, `"narrow"`), `day`
+#'   (`"numeric"`, `"2-digit"`), `hour`, `minute`, `second` (`"numeric"`,
+#'   `"2-digit"`), `weekday` (`"long"`, `"short"`, `"narrow"`), and
+#'   `timeZoneName` (`"long"`, `"short"`). Only used when `method` is `NULL`.
+#' @return `x` with the date formatting recorded.
+#' @export
+#' @examples
+#' d = data.frame(
+#'   event = c("Launch", "Update"),
+#'   date = as.Date(c("2024-01-15", "2024-06-30"))
+#' )
+#' lt(d) |> lt_date(~ date)
+#' lt(d) |> lt_date(~ date, options = list(year = "numeric", month = "short"))
+lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
+  columns = f_cols(columns)
+  cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
+  add_op(
+    x, 'fmt_date', columns = I(cols), method = method,
+    locale = locale, options = options
   )
 }
 

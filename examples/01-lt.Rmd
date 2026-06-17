@@ -95,6 +95,49 @@ d2 = data.frame(
 lt(d2) |> lt_format(~ Weight, decimals = 1, suffix = " kg")
 ```
 
+## Date formatting
+
+Format Date or POSIXt columns using JavaScript's native Date methods.
+The default uses `toLocaleDateString()`:
+
+```{r}
+d = data.frame(
+  Event = c("Launch", "Update", "Release"),
+  Date = as.Date(c("2024-01-15", "2024-06-30", "2024-12-01"))
+)
+lt(d) |> lt_date(~ Date)
+```
+
+### With locale and options
+
+Pass `locale` and `options` for `Intl.DateTimeFormat` control:
+
+```{r}
+lt(d) |> lt_date(~ Date, locale = "en-US",
+  options = list(year = "numeric", month = "short", day = "numeric"))
+```
+
+### Using a specific Date method
+
+```{r}
+lt(d) |> lt_date(~ Date, method = "toDateString")
+```
+
+### Datetime (POSIXt) columns
+
+For datetime values, include time components in `options`:
+
+```{r}
+d = data.frame(
+  Event = c("Start", "End"),
+  Time = as.POSIXct(c("2024-01-15 09:30:00", "2024-01-15 17:45:00"), tz = "UTC")
+)
+lt(d) |> lt_date(~ Time, locale = "en-US", options = list(
+  year = "numeric", month = "short", day = "numeric",
+  hour = "2-digit", minute = "2-digit"
+))
+```
+
 ## Footnotes
 
 ```{r}

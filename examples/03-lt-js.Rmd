@@ -180,6 +180,72 @@ LT.build({
 });
 ```
 
+## Date formatting (`fmt_date`)
+
+Format date values using JavaScript's native Date methods. Values can be
+Date objects or ISO strings. The default calls `toLocaleDateString()`;
+pass `method` to use a different Date method, or `locale`/`options` for
+`Intl.DateTimeFormat` control.
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Launch", "Update", "Release"],
+    Date: [new Date("2024-01-15"), new Date("2024-06-30"), new Date("2024-12-01")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Date"] }
+  ]
+});
+```
+
+### With locale and options
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Launch", "Update"],
+    Date: [new Date("2024-01-15"), new Date("2024-06-30")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Date"], locale: "en-US",
+      options: { year: "numeric", month: "short", day: "numeric" } }
+  ]
+});
+```
+
+### Using a specific Date method
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Launch", "Update"],
+    Date: [new Date("2024-01-15"), new Date("2024-06-30")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Date"], method: "toDateString" }
+  ]
+});
+```
+
+### Datetime values
+
+For datetime values, include time components in `options`:
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Start", "End"],
+    Time: [new Date("2024-01-15T09:30:00Z"), new Date("2024-01-15T17:45:00Z")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Time"], locale: "en-US",
+      options: { year: "numeric", month: "short", day: "numeric",
+                 hour: "2-digit", minute: "2-digit" } }
+  ]
+});
+```
+
 ## Value substitution (`sub`)
 
 Replace missing, zero, or small values with display text:

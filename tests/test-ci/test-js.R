@@ -158,6 +158,26 @@ assert("fmt_number prefix and suffix", {
   (matches(html, '.*>\\+5\\.0%</td>.*>\\+12\\.0%</td>.*') %==% "")
 })
 
+assert("fmt_date formats ISO date strings", {
+  html = build(list(
+    data = list(event = c("A", "B"), date = c("2024-01-15", "2024-06-30")),
+    ops = list(list(type = "fmt_date", columns = list("date"), method = "toISOString"))
+  ))
+  (matches(html, '.*>2024-01-15T00:00:00\\.000Z</td>.*>2024-06-30T00:00:00\\.000Z</td>.*') %==% "")
+  # toUTCString
+  html = build(list(
+    data = list(date = "2024-01-15"),
+    ops = list(list(type = "fmt_date", columns = list("date"), method = "toUTCString"))
+  ))
+  (matches(html, '.*>Mon, 15 Jan 2024 00:00:00 GMT</td>.*') %==% "")
+  # null values are skipped
+  html = build(list(
+    data = list(date = list("2024-01-15", NULL)),
+    ops = list(list(type = "fmt_date", columns = list("date"), method = "toISOString"))
+  ))
+  (matches(html, '.*>2024-01-15T00:00:00\\.000Z</td>.*></td>.*') %==% "")
+})
+
 assert("footnote on the title renders a marker in the caption", {
   html = build(list(
     data = list(x = 1),

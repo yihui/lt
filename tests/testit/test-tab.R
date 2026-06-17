@@ -99,6 +99,19 @@ assert("lt_format() prefix and suffix", {
   (f2$ops[[1]]$suffix %==% " kg")
 })
 
+assert("lt_date() adds fmt_date op", {
+  d2 = data.frame(dt = as.Date('2024-01-15'), v = 1)
+  f = lt(d2) |> lt_date(~ dt)
+  (f$ops[[1]]$type %==% 'fmt_date')
+  (f$ops[[1]]$columns %==% I('dt'))
+  f2 = lt(d2) |> lt_date(~ dt, method = 'toISOString')
+  (f2$ops[[1]]$method %==% 'toISOString')
+  f3 = lt(d2) |> lt_date(~ dt, locale = 'de-DE',
+    options = list(year = 'numeric', month = 'short'))
+  (f3$ops[[1]]$locale %==% 'de-DE')
+  (f3$ops[[1]]$options %==% list(year = 'numeric', month = 'short'))
+})
+
 assert("lt_label() adds label op", {
   l = lt_label(x, a = "Alpha", b = "Beta")
   (l$ops %==% list(list(type = "label", labels = list(a = "Alpha", b = "Beta"))))
