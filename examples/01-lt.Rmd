@@ -32,6 +32,25 @@ left-aligned. Override with `lt_align()`:
 tbl_cars |> lt_align(~ mpg + cyl, "center") |> lt_width(mpg = "6em")
 ```
 
+## Auto-formatting
+
+By default, `lt()` automatically formats numeric columns: rounding to
+~4 significant digits (adapting decimal places to magnitude), adding a
+thin-space thousands separator, using a typographic minus (U+2212) for
+negatives, detecting percentage columns (names containing `%`, `_pct`,
+or `_percent`) and multiplying by 100 with a `%` suffix, and skipping
+year-like columns. Set `auto_fmt = FALSE` to display raw values:
+
+```{r}
+d = data.frame(
+  Year = c(2020, 2021, 2022),
+  Revenue = c(1234567.89, 2345678.12, -3456.789),
+  Margin_pct = c(0.1234, 0.0567, 0.2345)
+)
+lt(d)
+lt(d, auto_fmt = FALSE)
+```
+
 ## Number formatting
 
 ```{r}

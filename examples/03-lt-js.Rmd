@@ -54,15 +54,20 @@ LT.build({ data: mtcars });
 
 ## Auto-formatting
 
-Numeric columns are automatically formatted: decimal places are capped
-dynamically based on magnitude, large numbers get thousand separators
-(non-breaking space), and negative values use typographic minus (U+2212).
+Numeric columns are automatically formatted. The following example shows
+all behaviors at once: rounding to ~4 significant digits (adapting
+decimal places to magnitude), thin-space thousands separator,
+typographic minus (U+2212) for negatives, percentage detection (column
+names matching `/%|[ _](pct|percent)$/i` are multiplied by 100 and
+suffixed with "%"), and year-column skipping (columns matching
+`/year/i` with 4-digit integers are left untouched).
 
 ```{js}
 LT.build({
   data: {
-    Metric: ["Revenue", "Costs", "Profit", "Loss"],
-    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+    Year: [2020, 2021, 2022],
+    Revenue: [1234567.89, 2345678.12, -3456.789],
+    Margin_pct: [0.1234, 0.0567, 0.2345]
   }
 });
 ```
@@ -74,24 +79,11 @@ Set `auto_fmt: false` to show raw values. Compare with the table above:
 ```{js}
 LT.build({
   data: {
-    Metric: ["Revenue", "Costs", "Profit", "Loss"],
-    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+    Year: [2020, 2021, 2022],
+    Revenue: [1234567.89, 2345678.12, -3456.789],
+    Margin_pct: [0.1234, 0.0567, 0.2345]
   },
   auto_fmt: false
-});
-```
-
-### Percentage detection
-
-Columns whose label matches `/%|[ _](pct|percent)$/i` are auto-detected
-as percentages: values are multiplied by 100 and suffixed with "%".
-
-```{js}
-LT.build({
-  data: {
-    Endpoint: ["Primary", "Secondary"],
-    success_pct: [0.7823, 0.4512]
-  }
 });
 ```
 
