@@ -54,15 +54,20 @@ LT.build({ data: mtcars });
 
 ## Auto-formatting
 
-Numeric columns are automatically formatted: decimal places are capped
-dynamically based on magnitude, large numbers get thousand separators
-(non-breaking space), and negative values use typographic minus (U+2212).
+Numeric columns are automatically formatted. The following example shows
+all behaviors at once: rounding to ~4 significant digits (adapting
+decimal places to magnitude), thin-space thousands separator,
+typographic minus (U+2212) for negatives, percentage detection (column
+names matching `/%|[ _](pct|percent)$/i` are multiplied by 100 and
+suffixed with "%"), and year-column skipping (columns matching
+`/year/i` with 4-digit integers are left untouched).
 
 ```{js}
 LT.build({
   data: {
-    Metric: ["Revenue", "Costs", "Profit", "Loss"],
-    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+    Year: [2020, 2021, 2022],
+    Revenue: [1234567.89, 2345678.12, -3456.789],
+    Margin_pct: [0.1234, 0.0567, 0.2345]
   }
 });
 ```
@@ -74,24 +79,11 @@ Set `auto_fmt: false` to show raw values. Compare with the table above:
 ```{js}
 LT.build({
   data: {
-    Metric: ["Revenue", "Costs", "Profit", "Loss"],
-    Value: [1234567.891, 987654.321, 246913.57, -42.001]
+    Year: [2020, 2021, 2022],
+    Revenue: [1234567.89, 2345678.12, -3456.789],
+    Margin_pct: [0.1234, 0.0567, 0.2345]
   },
   auto_fmt: false
-});
-```
-
-### Percentage detection
-
-Columns whose label matches `/%|[ _](pct|percent)$/i` are auto-detected
-as percentages: values are multiplied by 100 and suffixed with "%".
-
-```{js}
-LT.build({
-  data: {
-    Endpoint: ["Primary", "Secondary"],
-    success_pct: [0.7823, 0.4512]
-  }
 });
 ```
 
@@ -166,6 +158,90 @@ LT.build({
   },
   ops: [
     { type: "fmt_number", columns: ["Rate"], decimals: 1, percent: "%" }
+  ]
+});
+```
+
+### Prefix and suffix (currency, units)
+
+Use `prefix` and `suffix` to prepend or append symbols:
+
+```{js}
+LT.build({
+  data: {
+    Item: ["Widget", "Gadget", "Doohickey"],
+    Price: [1234.5, 678.9, 42.0],
+    Weight: [1250, 340.5, 89.12]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Price"], decimals: 2, big_mark: ",", prefix: "$" },
+    { type: "fmt_number", columns: ["Weight"], decimals: 1, suffix: " kg" }
+  ]
+});
+```
+
+## Date formatting (`fmt_date`)
+
+Format date values using JavaScript's native Date methods. Values can be
+Date objects or ISO strings. The default calls `toLocaleDateString()`;
+pass `method` to use a different Date method, or `locale`/`options` for
+`Intl.DateTimeFormat` control.
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Launch", "Update", "Release"],
+    Date: [new Date("2024-01-15"), new Date("2024-06-30"), new Date("2024-12-01")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Date"] }
+  ]
+});
+```
+
+### With locale and options
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Launch", "Update"],
+    Date: [new Date("2024-01-15"), new Date("2024-06-30")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Date"], locale: "en-US",
+      options: { year: "numeric", month: "short", day: "numeric" } }
+  ]
+});
+```
+
+### Using a specific Date method
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Launch", "Update"],
+    Date: [new Date("2024-01-15"), new Date("2024-06-30")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Date"], method: "toDateString" }
+  ]
+});
+```
+
+### Datetime values
+
+For datetime values, include time components in `options`:
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Start", "End"],
+    Time: [new Date("2024-01-15T09:30:00Z"), new Date("2024-01-15T17:45:00Z")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Time"], locale: "en-US",
+      options: { year: "numeric", month: "short", day: "numeric",
+                 hour: "2-digit", minute: "2-digit" } }
   ]
 });
 ```

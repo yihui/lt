@@ -32,6 +32,25 @@ left-aligned. Override with `lt_align()`:
 tbl_cars |> lt_align(~ mpg + cyl, "center") |> lt_width(mpg = "6em")
 ```
 
+## Auto-formatting
+
+By default, `lt()` automatically formats numeric columns: rounding to
+~4 significant digits (adapting decimal places to magnitude), adding a
+thin-space thousands separator, using a typographic minus (U+2212) for
+negatives, detecting percentage columns (names containing `%`, `_pct`,
+or `_percent`) and multiplying by 100 with a `%` suffix, and skipping
+year-like columns. Set `auto_fmt = FALSE` to display raw values:
+
+```{r}
+d = data.frame(
+  Year = c(2020, 2021, 2022),
+  Revenue = c(1234567.89, 2345678.12, -3456.789),
+  Margin_pct = c(0.1234, 0.0567, 0.2345)
+)
+lt(d)
+lt(d, auto_fmt = FALSE)
+```
+
 ## Number formatting
 
 ```{r}
@@ -57,6 +76,66 @@ lt(d) |>
 ```{r}
 lt(d) |>
   lt_format(~ Q1 + Q2, decimals = 0, big_mark = ",")
+```
+
+### Prefix and suffix (currency, units)
+
+Use `prefix` and `suffix` to prepend or append symbols to formatted values:
+
+```{r}
+lt(d) |>
+  lt_format(~ Q1 + Q2, decimals = 2, big_mark = ",", prefix = "$")
+```
+
+```{r}
+d2 = data.frame(
+  Material = c("Steel", "Aluminum", "Copper"),
+  Weight = c(1250, 340.5, 89.12)
+)
+lt(d2) |> lt_format(~ Weight, decimals = 1, suffix = " kg")
+```
+
+## Date formatting
+
+Format Date or POSIXt columns using JavaScript's native Date methods.
+The default uses `toLocaleDateString()`:
+
+```{r}
+d = data.frame(
+  Event = c("Launch", "Update", "Release"),
+  Date = as.Date(c("2024-01-15", "2024-06-30", "2024-12-01"))
+)
+lt(d) |> lt_date(~ Date)
+```
+
+### With locale and options
+
+Pass `locale` and `options` for `Intl.DateTimeFormat` control:
+
+```{r}
+lt(d) |> lt_date(~ Date, locale = "en-US",
+  options = list(year = "numeric", month = "short", day = "numeric"))
+```
+
+### Using a specific Date method
+
+```{r}
+lt(d) |> lt_date(~ Date, method = "toDateString")
+```
+
+### Datetime (POSIXt) columns
+
+For datetime values, include time components in `options`:
+
+```{r}
+d = data.frame(
+  Event = c("Start", "End"),
+  Time = as.POSIXct(c("2024-01-15 09:30:00", "2024-01-15 17:45:00"), tz = "UTC")
+)
+lt(d) |> lt_date(~ Time, locale = "en-US", options = list(
+  year = "numeric", month = "short", day = "numeric",
+  hour = "2-digit", minute = "2-digit"
+))
 ```
 
 ## Footnotes
