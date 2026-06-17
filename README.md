@@ -2,15 +2,16 @@
 
 Lightweight tables for R, inspired by [gt](https://gt.rstudio.com).
 
-**lt** provides a small grammar of tables that covers the structure most
-reports need — titles, column spanners, row groups, footnotes, and number
-formatting — without the heavy dependency stack. It targets HTML only (no
-LaTeX or RTF), which keeps the implementation minimal: the entire runtime
-is a single vanilla-JS file ([under 10 KB minified](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)).
+**lt** provides a small grammar of tables that covers the structure most reports
+need — titles, column spanners, row groups, footnotes, and number formatting —
+without the heavy dependency stack. It targets HTML only (no LaTeX or RTF),
+which keeps the implementation minimal: the entire runtime is a single
+vanilla-JS file ([under 10 KB
+minified](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)).
 
 ## Example
 
-```r
+``` r
 library(lt)
 
 d = data.frame(
@@ -34,30 +35,14 @@ More examples at <https://pkg.yihui.org/lt/examples.html>.
 
 ## Installation
 
-```r
-remotes::install_github("yihui/lt")
+``` r
+install.packages("lt", repos = "https://yihui.r-universe.dev")
 ```
 
 ## Acknowledgements
 
-This package was written with the help of Claude Code. While I have verified
-that it does not directly copy code from other projects, I do not have a clear
-picture of whether it may have indirectly reused open-source code. If you
-discover any code in this package that appears to originate from another
-project, please [file an issue](https://github.com/yihui/lt/issues) and I will
-check whether the license is compatible and the original authors are properly
-attributed.
-
-**lt** is directly inspired by **gt** by Rich Iannone and the RStudio/Posit
-team. The grammar of tables that **gt** pioneered — layering titles, spanners,
-footnotes, and formatters onto a data frame — is a great idea; **lt** aims to
-provide a minimal re-implementation for contexts where a lighter footprint is
-preferred.
-
-## Status
-
-Alpha. The first goal — feature parity with what `gsDesign2::as_gt()`
-needs (HTML output only) — is reached. We now look to the
-[R Tables for Regulatory Submissions](https://rconsortium.github.io/rtrs-wg/)
-work to cover what clinical-trial TLFs typically need: column merging,
-row indentation, value substitution, and column hiding are in place.
+This package was written with the help of Claude Code. **lt** is directly
+inspired by **gt** by Rich Iannone and the RStudio/Posit team. The grammar of
+tables that **gt** pioneered — layering titles, spanners, footnotes, and
+formatters onto a data frame — is a great idea; **lt** aims to provide a minimal
+re-implementation for contexts where a lighter footprint is preferred.
