@@ -135,7 +135,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
 #' @examples
 #' print(lt(head(mtcars)))
 print.lt_tbl = function(x, ...) {
-  xfun::html_view(format(x, fragment = FALSE, ...))
+  xfun::html_view(format(x, fragment = FALSE, ...), name = 'lt')
   invisible(x)
 }
 
