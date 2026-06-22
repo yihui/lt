@@ -317,24 +317,59 @@ string (e.g., `"[.]"`) to change the separator.
 LT.build({ data: iris, auto_span: true });
 ```
 
-## Row groups (separator rows)
+## Row groups
 
-Pass `row_group` as a string to use separator-row style:
+### Group by column
+
+Pass `row_group` as a single-element array to group by that column's
+values (rendered as rowspan cells on the left by default):
 
 ```{js}
 LT.build({
   data: {
-    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
-    stat: ["n", "Mean", "n", "Mean"],
-    value: [30, 4.2, 31, 6.8]
+    Region: ["East", "East", "West", "West", "West"],
+    City: ["New York", "Boston", "Seattle", "Portland", "Denver"],
+    Population: [8336817, 675647, 737015, 652503, 715522]
   },
-  row_group: "arm"
+  row_group: ["Region"]
 });
 ```
 
-## Row groups (rowspan)
+### Auto separator rows for long labels
 
-Pass `row_group` as an array to render as rowspan cells on the left:
+When `row_group` is a single-element array and the column is character
+with any value longer than 20 characters, separator rows are used
+automatically. Set `sep_threshold: false` to force rowspan mode:
+
+```{js}
+LT.build({
+  data: {
+    Department: ["Cardiovascular Research", "Cardiovascular Research",
+                 "Biostatistics", "Biostatistics"],
+    Trial: ["ATLAS-2", "BEACON", "PRIME-1", "NEXUS"],
+    N: [450, 320, 280, 510]
+  },
+  row_group: ["Department"]
+});
+```
+
+```{js}
+// Force rowspan mode by disabling auto-detection
+LT.build({
+  data: {
+    Department: ["Cardiovascular Research", "Cardiovascular Research",
+                 "Biostatistics", "Biostatistics"],
+    Trial: ["ATLAS-2", "BEACON", "PRIME-1", "NEXUS"],
+    N: [450, 320, 280, 510]
+  },
+  row_group: ["Department"],
+  sep_threshold: false
+});
+```
+
+### Group by multiple columns (rowspan)
+
+Pass multiple columns to render hierarchical rowspan cells:
 
 ```{js}
 LT.build({
@@ -345,6 +380,21 @@ LT.build({
     Population: [8336817, 278349, 675647, 737015, 228989, 652503]
   },
   row_group: ["Region", "State"]
+});
+```
+
+### Separator-row style
+
+Pass `row_group` as a string to always use separator rows:
+
+```{js}
+LT.build({
+  data: {
+    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
+    stat: ["n", "Mean", "n", "Mean"],
+    value: [30, 4.2, 31, 6.8]
+  },
+  row_group: "arm"
 });
 ```
 

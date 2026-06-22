@@ -65,8 +65,9 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #'   groups. Unnamed character strings reorder previously defined groups.
 #' @param sep If `TRUE`, render groups as full-width separator rows instead
 #'   of the default rowspan style. Only supports a single grouping column. The
-#'   default `'auto'` uses separator rows when there is a single grouping
-#'   column with any value longer than 20 characters.
+#'   default `'auto'` uses separator rows when there is a single character
+#'   grouping column with any value longer than 20 characters (numeric columns
+#'   always use rowspan).
 #' @param sort If `TRUE` (default), sort rows by group columns so that
 #'   identical group values are contiguous. Set to `FALSE` to preserve the
 #'   original row order.
@@ -92,6 +93,7 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
     col = f_cols(args[[1]])
     if (all(col %in% names(x$data))) {
       x$row_group = if (identical(sep, TRUE)) col[1] else I(col)
+      if (identical(sep, FALSE)) x$sep_threshold = FALSE
       return(x)
     }
   }

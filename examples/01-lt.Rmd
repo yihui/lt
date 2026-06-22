@@ -211,6 +211,26 @@ lt(d) |>
   lt_format(~ Population, big_mark = ",")
 ```
 
+### Auto separator rows for long labels
+
+By default (`sep = 'auto'`), `lt_group()` switches from rowspan cells to
+full-width separator rows when any group label exceeds 20 characters:
+
+```{r}
+d = data.frame(
+  Department = c(
+    "Cardiovascular Research", "Cardiovascular Research",
+    "Biostatistics", "Biostatistics"
+  ),
+  Trial = c("ATLAS-2", "BEACON", "PRIME-1", "NEXUS"),
+  N = c(450, 320, 280, 510)
+)
+# "Cardiovascular Research" (23 chars) triggers separator mode automatically
+lt(d) |> lt_group(~ Department)
+# force rowspan mode with sep = FALSE
+lt(d) |> lt_group(~ Department, sep = FALSE)
+```
+
 ### Group by multiple columns (rowspan)
 
 Pass multiple columns to `lt_group()` to render hierarchical rowspan

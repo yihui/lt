@@ -199,7 +199,8 @@
     let rowGroupSep = typeof spec.row_group === "string";
     const rowGroupCols = Array.isArray(spec.row_group) ? spec.row_group
           : (spec.row_group ? [spec.row_group] : []);
-    if (!rowGroupSep && rowGroupCols.length === 1 &&
+    if (!rowGroupSep && rowGroupCols.length === 1 && spec.sep_threshold !== false &&
+        !numCol(data[rowGroupCols[0]]) &&
         data[rowGroupCols[0]]?.some(v => (v + "").length > 20)) rowGroupSep = true;
 
     // Hidden columns: row_group, merge sources

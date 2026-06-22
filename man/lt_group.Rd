@@ -16,8 +16,9 @@ groups. Unnamed character strings reorder previously defined groups.}
 
 \item{sep}{If \code{TRUE}, render groups as full-width separator rows instead
 of the default rowspan style. Only supports a single grouping column. The
-default \code{'auto'} uses separator rows when there is a single grouping
-column with any value longer than 20 characters.}
+default \code{'auto'} uses separator rows when there is a single character
+grouping column with any value longer than 20 characters (numeric columns
+always use rowspan).}
 
 \item{sort}{If \code{TRUE} (default), sort rows by group columns so that
 identical group values are contiguous. Set to \code{FALSE} to preserve the
