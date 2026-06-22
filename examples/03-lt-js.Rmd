@@ -132,7 +132,7 @@ LT.build({
 
 #### Disabling auto-format
 
-Set `auto_fmt: false` to show raw values. Compare with the table above:
+Set `auto_format: false` to show raw values. Compare with the table above:
 
 ```{js}
 LT.build({
@@ -141,7 +141,7 @@ LT.build({
     Revenue: [1234567.89, 2345678.12, -3456.789],
     Margin_pct: [0.1234, 0.0567, 0.2345]
   },
-  auto_fmt: false
+  auto_format: false
 });
 ```
 
@@ -382,7 +382,7 @@ LT.build({
 
 When `row_group` is a single-element array and the column is character
 with any value longer than 20 characters, separator rows are used
-automatically. Set `sep_threshold: false` to force rowspan mode:
+automatically. Set `auto_sep: false` to force rowspan mode:
 
 ```{js}
 LT.build({
@@ -406,7 +406,7 @@ LT.build({
     N: [450, 320, 280, 510]
   },
   row_group: ["Department"],
-  sep_threshold: false
+  auto_sep: false
 });
 ```
 

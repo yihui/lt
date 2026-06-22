@@ -98,8 +98,8 @@ assert("auto-format picks decimals from value width", {
   (matches(html, ".*>1 235</td>.*>10 000</td>.*") %==% "")
 })
 
-assert("auto_fmt = FALSE leaves numbers untouched", {
-  html = build(list(data = list(x = c(1.23456, 2.34567)), auto_fmt = FALSE))
+assert("auto_format = FALSE leaves numbers untouched", {
+  html = build(list(data = list(x = c(1.23456, 2.34567)), auto_format = FALSE))
   (matches(html, ".*>1\\.23456</td>.*>2\\.34567</td>.*") %==% "")
 })
 

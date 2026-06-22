@@ -6,11 +6,11 @@ assert("lt() returns object with data and ops", {
   (x$ops %==% list())
 })
 
-assert("lt(auto_fmt = FALSE) sets auto_fmt", {
-  x = lt(d, auto_fmt = FALSE)
-  (x$auto_fmt %==% FALSE)
-  # default does not include auto_fmt
-  (is.null(lt(d)$auto_fmt))
+assert("lt(auto_format = FALSE) sets auto_format", {
+  x = lt(d, auto_format = FALSE)
+  (x$auto_format %==% FALSE)
+  # default does not include auto_format
+  (is.null(lt(d)$auto_format))
 })
 
 assert("lt(auto_label = FALSE) sets auto_label", {

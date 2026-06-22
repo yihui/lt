@@ -39,7 +39,7 @@ percent scale).}
 \description{
 Control the number of decimal places and thousands separator for numeric
 columns. Columns passed to this function are excluded from automatic
-formatting (see the \code{auto_fmt} argument of \code{\link[=lt]{lt()}}). To disable auto-format
+formatting (see the \code{auto_format} argument of \code{\link[=lt]{lt()}}). To disable auto-format
 for a column without otherwise changing its display, call \code{lt_format(x, ~col)} with no other arguments.
 }
 \examples{

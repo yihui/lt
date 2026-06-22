@@ -18,7 +18,7 @@
 #'
 #' @param data A data frame (or anything coercible to one).
 #' @param ... Arguments passed to methods.
-#' @param auto_fmt Whether to automatically format numeric columns (rounding,
+#' @param auto_format Whether to automatically format numeric columns (rounding,
 #'   thousand separators, percentage detection). Set to `FALSE` to disable
 #'   for the whole table; use [lt_format()] on specific columns to disable
 #'   selectively.
@@ -33,14 +33,14 @@ lt = function(data, ...) UseMethod('lt')
 
 #' @rdname lt
 #' @export
-lt.default = function(data, auto_fmt = TRUE, auto_label = TRUE, ...) {
+lt.default = function(data, auto_format = TRUE, auto_label = TRUE, ...) {
   grp = if (inherits(data, 'grouped_df'))
     setdiff(names(attr(data, 'groups')), '.rows')
   data = as.data.frame(
     data, stringsAsFactors = FALSE, check.names = FALSE, optional = TRUE
   )
   x = structure(list(data = data, ops = list()), class = 'lt_tbl')
-  if (!auto_fmt) x$auto_fmt = FALSE
+  if (!auto_format) x$auto_format = FALSE
   if (!auto_label) x$auto_label = FALSE
   if (length(grp)) x$row_group = I(grp)
   x

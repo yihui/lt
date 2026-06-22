@@ -93,7 +93,7 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
     col = f_cols(args[[1]])
     if (all(col %in% names(x$data))) {
       x$row_group = if (identical(sep, TRUE)) col[1] else I(col)
-      if (identical(sep, FALSE)) x$sep_threshold = FALSE
+      if (identical(sep, FALSE)) x$auto_sep = FALSE
       return(x)
     }
   }
@@ -189,7 +189,7 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #'
 #' Control the number of decimal places and thousands separator for numeric
 #' columns. Columns passed to this function are excluded from automatic
-#' formatting (see the `auto_fmt` argument of [lt()]). To disable auto-format
+#' formatting (see the `auto_format` argument of [lt()]). To disable auto-format
 #' for a column without otherwise changing its display, call `lt_format(x,
 #' ~col)` with no other arguments.
 #'

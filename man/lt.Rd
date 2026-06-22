@@ -7,14 +7,14 @@
 \usage{
 lt(data, ...)
 
-\method{lt}{default}(data, auto_fmt = TRUE, auto_label = TRUE, ...)
+\method{lt}{default}(data, auto_format = TRUE, auto_label = TRUE, ...)
 }
 \arguments{
 \item{data}{A data frame (or anything coercible to one).}
 
 \item{...}{Arguments passed to methods.}
 
-\item{auto_fmt}{Whether to automatically format numeric columns (rounding,
+\item{auto_format}{Whether to automatically format numeric columns (rounding,
 thousand separators, percentage detection). Set to \code{FALSE} to disable
 for the whole table; use \code{\link[=lt_format]{lt_format()}} on specific columns to disable
 selectively.}

@@ -56,7 +56,7 @@
 
   // --- Auto-format numeric columns ---
   function autoFmt(spec, display, nRow) {
-    if (spec.auto_fmt === false) return;
+    if (spec.auto_format === false) return;
     const data = spec.data || {}, ops = spec.ops || [],
           colNames = Object.keys(data);
 
@@ -199,7 +199,7 @@
     let rowGroupSep = typeof spec.row_group === "string";
     const rowGroupCols = Array.isArray(spec.row_group) ? spec.row_group
           : (spec.row_group ? [spec.row_group] : []);
-    if (!rowGroupSep && rowGroupCols.length === 1 && spec.sep_threshold !== false &&
+    if (!rowGroupSep && rowGroupCols.length === 1 && spec.auto_sep !== false &&
         !numCol(data[rowGroupCols[0]]) &&
         data[rowGroupCols[0]]?.some(v => (v + "").length > 20)) rowGroupSep = true;
 

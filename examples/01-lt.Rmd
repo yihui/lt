@@ -55,7 +55,7 @@ By default, `lt()` automatically formats numeric columns: rounding to
 thin-space thousands separator, using a typographic minus (U+2212) for
 negatives, detecting percentage columns (names containing `%`, `_pct`,
 or `_percent`) and multiplying by 100 with a `%` suffix, and skipping
-year-like columns. Set `auto_fmt = FALSE` to display raw values:
+year-like columns. Set `auto_format = FALSE` to display raw values:
 
 ```{r}
 d = data.frame(
@@ -64,7 +64,7 @@ d = data.frame(
   Margin_pct = c(0.1234, 0.0567, 0.2345)
 )
 lt(d)
-lt(d, auto_fmt = FALSE)
+lt(d, auto_format = FALSE)
 ```
 
 ### Number formatting
