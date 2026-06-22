@@ -109,7 +109,7 @@ spec_block = function(x) {
 #' @examples
 #' tbl = lt(head(mtcars))
 #' html = format(tbl)
-#' format(tbl, fragment = FALSE)
+#' format(tbl, fragment = FALSE, inline_assets = FALSE)
 format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
   body = c(
     if (assets) css_block(inline_assets),

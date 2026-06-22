@@ -20,7 +20,7 @@ for the whole table; use \code{\link[=lt_format]{lt_format()}} on specific colum
 selectively.}
 
 \item{auto_label}{Whether to automatically clean column names for display
-by replacing separators (\code{.} and \code{_}) with spaces. Set to \code{FALSE} to
+by replacing separators (\code{.} and \verb{_}) with spaces. Set to \code{FALSE} to
 show raw column names.}
 }
 \value{

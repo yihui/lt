@@ -32,5 +32,5 @@ Multiple tables on the same page only need the runtime once.
 \examples{
 tbl = lt(head(mtcars))
 html = format(tbl)
-format(tbl, fragment = FALSE)
+format(tbl, fragment = FALSE, inline_assets = FALSE)
 }
