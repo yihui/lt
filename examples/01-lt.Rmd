@@ -211,21 +211,6 @@ lt(d) |>
   lt_format(~ Population, big_mark = ",")
 ```
 
-### Row groups with data columns
-
-```{r}
-d = data.frame(
-  Category = c("Fruits", "Fruits", "Vegetables", "Vegetables"),
-  Item = c("Apple", "Banana", "Carrot", "Broccoli"),
-  Calories = c(95, 105, 25, 55),
-  Fiber_g = c(4.4, 3.1, 2.8, 5.1)
-)
-lt(d) |>
-  lt_group(~ Category) |>
-  lt_header(title = "Nutritional Information") |>
-  lt_format(~ Fiber_g, decimals = 1)
-```
-
 ### Group by multiple columns (rowspan)
 
 Pass multiple columns to `lt_group()` to render hierarchical rowspan
