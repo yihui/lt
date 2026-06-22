@@ -17,10 +17,22 @@ tbl_cars = lt(head(mtcars))
 tbl_cars
 ```
 
-### Title and subtitle
+### Column labels
+
+By default, column names are cleaned for display by replacing `.` and
+`_` with spaces. Use `auto_label = FALSE` to show raw names, or
+`lt_label()` to override specific columns:
 
 ```{r}
 tbl_iris = lt(head(iris))
+tbl_iris
+lt(head(iris), auto_label = FALSE)
+tbl_iris |> lt_label(Sepal.Length = "Length (cm)", Sepal.Width = "Width (cm)")
+```
+
+### Title and subtitle
+
+```{r}
 tbl_iris |>
   lt_header(title = "Iris Measurements", subtitle = "First six observations")
 ```

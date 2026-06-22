@@ -203,6 +203,16 @@ assert("footnote on row groups matches by starts_with", {
   (matches(html, ".*Banana<sup.*") %==% html)
 })
 
+assert("auto_label replaces separators with spaces in column headers", {
+  html = build(list(data = list(Sepal.Length = c(5.1), Petal_Width = c(0.2))))
+  (matches(html, '.*>Sepal Length</th>.*>Petal Width</th>.*') %==% "")
+})
+
+assert("auto_label = FALSE preserves raw column names", {
+  html = build(list(data = list(Sepal.Length = c(5.1), Petal_Width = c(0.2)), auto_label = FALSE))
+  (matches(html, '.*>Sepal\\.Length</th>.*>Petal_Width</th>.*') %==% "")
+})
+
 assert("merge drops a conditional block when its references are empty", {
   # "<<...>>" blocks are emitted only if all {n} refs are non-empty.
   html = build(list(

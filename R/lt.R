@@ -22,6 +22,9 @@
 #'   thousand separators, percentage detection). Set to `FALSE` to disable
 #'   for the whole table; use [lt_format()] on specific columns to disable
 #'   selectively.
+#' @param auto_label Whether to automatically clean column names for display
+#'   by replacing separators (`.` and `_`) with spaces. Set to `FALSE` to
+#'   show raw column names.
 #' @return A table object that can be piped into `lt_*()` functions.
 #' @export
 #' @examples
@@ -30,7 +33,7 @@ lt = function(data, ...) UseMethod('lt')
 
 #' @rdname lt
 #' @export
-lt.default = function(data, auto_fmt = TRUE, ...) {
+lt.default = function(data, auto_fmt = TRUE, auto_label = TRUE, ...) {
   grp = if (inherits(data, 'grouped_df'))
     setdiff(names(attr(data, 'groups')), '.rows')
   data = as.data.frame(
@@ -38,6 +41,7 @@ lt.default = function(data, auto_fmt = TRUE, ...) {
   )
   x = structure(list(data = data, ops = list()), class = 'lt_tbl')
   if (!auto_fmt) x$auto_fmt = FALSE
+  if (!auto_label) x$auto_label = FALSE
   if (length(grp)) x$row_group = I(grp)
   x
 }

@@ -7,7 +7,7 @@
 \usage{
 lt(data, ...)
 
-\method{lt}{default}(data, auto_fmt = TRUE, ...)
+\method{lt}{default}(data, auto_fmt = TRUE, auto_label = TRUE, ...)
 }
 \arguments{
 \item{data}{A data frame (or anything coercible to one).}
@@ -18,6 +18,10 @@ lt(data, ...)
 thousand separators, percentage detection). Set to \code{FALSE} to disable
 for the whole table; use \code{\link[=lt_format]{lt_format()}} on specific columns to disable
 selectively.}
+
+\item{auto_label}{Whether to automatically clean column names for display
+by replacing separators (\code{.} and \code{_}) with spaces. Set to \code{FALSE} to
+show raw column names.}
 }
 \value{
 A table object that can be piped into \verb{lt_*()} functions.

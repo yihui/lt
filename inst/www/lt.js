@@ -235,7 +235,8 @@
     onOp("align", op => { for (const c of (op.columns || [])) setByCol(align, c, op.align); });
 
     // Column labels
-    const colLabels = [...visible];
+    const autoLbl = s => spec.auto_label === false ? s : s.replace(/[._]/g, " ");
+    const colLabels = visible.map(autoLbl);
     onOp("label", op => {
       for (const [c, lbl] of Object.entries(op.labels || {})) setByCol(colLabels, c, lbl);
     });
@@ -318,8 +319,8 @@
         if (j - i >= 2) {
           spanners.push({ label: prefix, columns: visible.slice(i, j) });
           for (let k = i; k < j; k++) {
-            const mk = colLabels[k].match(sep);
-            if (mk) colLabels[k] = colLabels[k].slice(mk.index + mk[0].length);
+            const mk = visible[k].match(sep);
+            if (mk) colLabels[k] = autoLbl(visible[k].slice(mk.index + mk[0].length));
           }
         }
         i = j;

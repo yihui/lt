@@ -68,9 +68,22 @@ LT.build({
 
 ### Column labels
 
-Rename column headers without modifying the data keys:
+By default, column names are cleaned for display by replacing `.` and
+`_` with spaces. Set `auto_label: false` to show raw names, or use a
+`label` op to override specific columns:
 
 ```{js}
+// auto_label on by default: "Sepal.Length" displays as "Sepal Length"
+LT.build({ data: iris });
+```
+
+```{js}
+// Disable auto-labeling
+LT.build({ data: iris, auto_label: false });
+```
+
+```{js}
+// Explicit label overrides
 LT.build({
   data: iris,
   ops: [
