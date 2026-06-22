@@ -44,7 +44,9 @@ const mtcars = `{ mtcars6 }`;
 const iris = `{ iris5 }`;
 ```
 
-## Basic table
+## Basics
+
+### Basic table
 
 The simplest spec: just `data` (a column-oriented object).
 
@@ -52,7 +54,50 @@ The simplest spec: just `data` (a column-oriented object).
 LT.build({ data: mtcars });
 ```
 
-## Auto-formatting
+### Title and subtitle
+
+```{js}
+LT.build({
+  data: iris,
+  header: {
+    title: "Iris Measurements",
+    subtitle: "First five observations"
+  }
+});
+```
+
+### Column labels
+
+Rename column headers without modifying the data keys:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "label", labels: {
+      "Sepal.Length": "Length (cm)", "Sepal.Width": "Width (cm)",
+      "Petal.Length": "Length (cm)", "Petal.Width": "Width (cm)"
+    }}
+  ]
+});
+```
+
+### Column alignment
+
+By default, numeric columns are right-aligned. Override with an `align` op:
+
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: "align", columns: ["mpg", "cyl"], align: "center" }
+  ]
+});
+```
+
+## Formatting
+
+### Auto-formatting
 
 Numeric columns are automatically formatted. The following example shows
 all behaviors at once: rounding to ~4 significant digits (adapting
@@ -72,7 +117,7 @@ LT.build({
 });
 ```
 
-### Disabling auto-format
+#### Disabling auto-format
 
 Set `auto_fmt: false` to show raw values. Compare with the table above:
 
@@ -87,48 +132,7 @@ LT.build({
 });
 ```
 
-## Title and subtitle
-
-```{js}
-LT.build({
-  data: iris,
-  header: {
-    title: "Iris Measurements",
-    subtitle: "First five observations"
-  }
-});
-```
-
-## Column labels
-
-Rename column headers without modifying the data keys:
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: "label", labels: {
-      "Sepal.Length": "Length (cm)", "Sepal.Width": "Width (cm)",
-      "Petal.Length": "Length (cm)", "Petal.Width": "Width (cm)"
-    }}
-  ]
-});
-```
-
-## Column alignment
-
-By default, numeric columns are right-aligned. Override with an `align` op:
-
-```{js}
-LT.build({
-  data: mtcars,
-  ops: [
-    { type: "align", columns: ["mpg", "cyl"], align: "center" }
-  ]
-});
-```
-
-## Number formatting (`fmt_number`)
+### Number formatting (`fmt_number`)
 
 Explicit control over decimals and thousands separators:
 
@@ -146,7 +150,7 @@ LT.build({
 });
 ```
 
-### Percent without multiplication
+#### Percent without multiplication
 
 Use `percent: "%"` when values are already in percent scale (no `*100`):
 
@@ -162,7 +166,7 @@ LT.build({
 });
 ```
 
-### Prefix and suffix (currency, units)
+#### Prefix and suffix (currency, units)
 
 Use `prefix` and `suffix` to prepend or append symbols:
 
@@ -180,7 +184,7 @@ LT.build({
 });
 ```
 
-## Date formatting (`fmt_date`)
+### Date formatting (`fmt_date`)
 
 Format date values using JavaScript's native Date methods. Values can be
 Date objects or ISO strings. The default calls `toLocaleDateString()`;
@@ -205,7 +209,7 @@ LT.build({
 });
 ```
 
-### With locale and options
+#### With locale and options
 
 ```{js}
 LT.build({
@@ -221,7 +225,7 @@ LT.build({
 });
 ```
 
-### Using a specific Date method
+#### Using a specific Date method
 
 ```{js}
 LT.build({
@@ -235,7 +239,7 @@ LT.build({
 });
 ```
 
-### Datetime values
+#### Datetime values
 
 For datetime values, include time components in `options`:
 
@@ -253,7 +257,7 @@ LT.build({
 });
 ```
 
-## Value substitution (`sub`)
+### Value substitution (`sub`)
 
 Replace missing, zero, or small values with display text:
 
@@ -270,7 +274,9 @@ LT.build({
 });
 ```
 
-## Column merging (`merge`)
+## Column structure
+
+### Column merging (`merge`)
 
 Combine multiple columns into one display column. The `pattern` uses
 `{1}`, `{2}`, etc. for column positions. Wrap sections in `<<` `>>` for
@@ -292,7 +298,7 @@ LT.build({
 });
 ```
 
-## Column spanners
+### Column spanners
 
 Group contiguous columns under a shared header:
 
@@ -306,7 +312,7 @@ LT.build({
 });
 ```
 
-### Auto-inferred spanners
+#### Auto-inferred spanners
 
 Set `auto_span: true` to infer spanners from column names. Names are
 split on the first `.` or `_`; contiguous columns sharing a prefix are
@@ -315,6 +321,30 @@ string (e.g., `"[.]"`) to change the separator.
 
 ```{js}
 LT.build({ data: iris, auto_span: true });
+```
+
+### Column widths
+
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
+  ]
+});
+```
+
+### Column reordering (`move`)
+
+Move columns to the start or after a specific column:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
+  ]
+});
 ```
 
 ## Row groups
@@ -398,7 +428,7 @@ LT.build({
 });
 ```
 
-## Row group ordering
+### Row group ordering
 
 Reorder separator-row groups with a `group_order` op:
 
@@ -416,7 +446,7 @@ LT.build({
 });
 ```
 
-## Manual row groups
+### Manual row groups
 
 Define groups explicitly by row index:
 
@@ -430,7 +460,7 @@ LT.build({
 });
 ```
 
-## Row indentation
+### Row indentation
 
 Indent specific rows to show hierarchy:
 
@@ -447,31 +477,9 @@ LT.build({
 });
 ```
 
-## Column widths
+## Styling
 
-```{js}
-LT.build({
-  data: mtcars,
-  ops: [
-    { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
-  ]
-});
-```
-
-## Column reordering (`move`)
-
-Move columns to the start or after a specific column:
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
-  ]
-});
-```
-
-## Cell styling
+### Cell styling
 
 Apply CSS to specific cells by column and/or row:
 
@@ -491,7 +499,7 @@ LT.build({
 });
 ```
 
-## Conditional styling
+### Conditional styling
 
 Use `test` with a JavaScript function to apply styles based on cell
 values. The function receives the raw (pre-format) value and should
@@ -517,7 +525,7 @@ LT.build({
 .lt-table .good { color: green; }
 ```
 
-### Highlighting missing values
+#### Highlighting missing values
 
 Apply a class to all null cells across the table (omit `columns` to
 target all):
@@ -539,7 +547,9 @@ LT.build({
 .lt-table .na { background: #fee; }
 ```
 
-## Footnotes
+## Footnotes and notes
+
+### Footnotes
 
 Footnotes are de-duplicated by text and numbered automatically. Supported
 locations: `title`, `column_labels`, `column_spanners`, `row_groups`, `body`.
@@ -555,7 +565,7 @@ LT.build({
 });
 ```
 
-## Source notes
+### Source notes
 
 Notes appear below footnotes in the footer:
 
