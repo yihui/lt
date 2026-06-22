@@ -55,11 +55,3 @@ camel2dash = function(x) gsub('([A-Z])', '-\\L\\1', x, perl = TRUE)
 
 # If x is a formula, extract variable names from its RHS; otherwise return as-is
 f_cols = function(x) if (inherits(x, 'formula')) all.vars(x[[length(x)]]) else x
-
-# Test helper: returns "" if pattern matches x, or x unchanged otherwise.
-# Use (matches(x, ".*foo.*") %==% "") to assert presence, or
-# (matches(x, ".*foo.*") %==% x) to assert absence; both show x on failure.
-matches = function(x, pattern) {
-  x = paste(x, collapse = "\n")
-  sub(paste0("(?s)", pattern), "", x, perl = TRUE)
-}
