@@ -27,51 +27,54 @@
 <div id="TOC">
 <ul class="numbered">
 <li><a href="#sec:including-lt-js"><span class="section-number main-number">1</span> Including lt.js</a></li>
-<li><a href="#sec:basic-table"><span class="section-number main-number">2</span> Basic table</a></li>
-<li><a href="#sec:auto-formatting"><span class="section-number main-number">3</span> Auto-formatting</a>
+<li><a href="#sec:basics"><span class="section-number main-number">2</span> Basics</a>
 <ul>
-<li><a href="#sec:disabling-auto-format"><span class="section-number">3.1</span> Disabling auto-format</a></li>
+<li><a href="#sec:basic-table"><span class="section-number">2.1</span> Basic table</a></li>
+<li><a href="#sec:title-and-subtitle"><span class="section-number">2.2</span> Title and subtitle</a></li>
+<li><a href="#sec:column-labels"><span class="section-number">2.3</span> Column labels</a></li>
+<li><a href="#sec:column-alignment"><span class="section-number">2.4</span> Column alignment</a></li>
 </ul>
 </li>
-<li><a href="#sec:title-and-subtitle"><span class="section-number main-number">4</span> Title and subtitle</a></li>
-<li><a href="#sec:column-labels"><span class="section-number main-number">5</span> Column labels</a></li>
-<li><a href="#sec:column-alignment"><span class="section-number main-number">6</span> Column alignment</a></li>
-<li><a href="#sec:number-formatting-fmt-number"><span class="section-number main-number">7</span> Number formatting (<code>fmt_number</code>)</a>
+<li><a href="#sec:formatting"><span class="section-number main-number">3</span> Formatting</a>
 <ul>
-<li><a href="#sec:percent-without-multiplication"><span class="section-number">7.1</span> Percent without multiplication</a></li>
-<li><a href="#sec:prefix-and-suffix-currency-units"><span class="section-number">7.2</span> Prefix and suffix (currency, units)</a></li>
+<li><a href="#sec:auto-formatting"><span class="section-number">3.1</span> Auto-formatting</a></li>
+<li><a href="#sec:number-formatting-fmt-number"><span class="section-number">3.2</span> Number formatting (<code>fmt_number</code>)</a></li>
+<li><a href="#sec:date-formatting-fmt-date"><span class="section-number">3.3</span> Date formatting (<code>fmt_date</code>)</a></li>
+<li><a href="#sec:value-substitution-sub"><span class="section-number">3.4</span> Value substitution (<code>sub</code>)</a></li>
 </ul>
 </li>
-<li><a href="#sec:date-formatting-fmt-date"><span class="section-number main-number">8</span> Date formatting (<code>fmt_date</code>)</a>
+<li><a href="#sec:column-structure"><span class="section-number main-number">4</span> Column structure</a>
 <ul>
-<li><a href="#sec:with-locale-and-options"><span class="section-number">8.1</span> With locale and options</a></li>
-<li><a href="#sec:using-a-specific-date-method"><span class="section-number">8.2</span> Using a specific Date method</a></li>
-<li><a href="#sec:datetime-values"><span class="section-number">8.3</span> Datetime values</a></li>
+<li><a href="#sec:column-merging-merge"><span class="section-number">4.1</span> Column merging (<code>merge</code>)</a></li>
+<li><a href="#sec:column-spanners"><span class="section-number">4.2</span> Column spanners</a></li>
+<li><a href="#sec:column-widths"><span class="section-number">4.3</span> Column widths</a></li>
+<li><a href="#sec:column-reordering-move"><span class="section-number">4.4</span> Column reordering (<code>move</code>)</a></li>
 </ul>
 </li>
-<li><a href="#sec:value-substitution-sub"><span class="section-number main-number">9</span> Value substitution (<code>sub</code>)</a></li>
-<li><a href="#sec:column-merging-merge"><span class="section-number main-number">10</span> Column merging (<code>merge</code>)</a></li>
-<li><a href="#sec:column-spanners"><span class="section-number main-number">11</span> Column spanners</a>
+<li><a href="#sec:row-groups"><span class="section-number main-number">5</span> Row groups</a>
 <ul>
-<li><a href="#sec:auto-inferred-spanners"><span class="section-number">11.1</span> Auto-inferred spanners</a></li>
+<li><a href="#sec:group-by-column"><span class="section-number">5.1</span> Group by column</a></li>
+<li><a href="#sec:auto-separator-rows-for-long-labels"><span class="section-number">5.2</span> Auto separator rows for long labels</a></li>
+<li><a href="#sec:group-by-multiple-columns-rowspan"><span class="section-number">5.3</span> Group by multiple columns (rowspan)</a></li>
+<li><a href="#sec:separator-row-style"><span class="section-number">5.4</span> Separator-row style</a></li>
+<li><a href="#sec:row-group-ordering"><span class="section-number">5.5</span> Row group ordering</a></li>
+<li><a href="#sec:manual-row-groups"><span class="section-number">5.6</span> Manual row groups</a></li>
+<li><a href="#sec:row-indentation"><span class="section-number">5.7</span> Row indentation</a></li>
 </ul>
 </li>
-<li><a href="#sec:row-groups-separator-rows"><span class="section-number main-number">12</span> Row groups (separator rows)</a></li>
-<li><a href="#sec:row-groups-rowspan"><span class="section-number main-number">13</span> Row groups (rowspan)</a></li>
-<li><a href="#sec:row-group-ordering"><span class="section-number main-number">14</span> Row group ordering</a></li>
-<li><a href="#sec:manual-row-groups"><span class="section-number main-number">15</span> Manual row groups</a></li>
-<li><a href="#sec:row-indentation"><span class="section-number main-number">16</span> Row indentation</a></li>
-<li><a href="#sec:column-widths"><span class="section-number main-number">17</span> Column widths</a></li>
-<li><a href="#sec:column-reordering-move"><span class="section-number main-number">18</span> Column reordering (<code>move</code>)</a></li>
-<li><a href="#sec:cell-styling"><span class="section-number main-number">19</span> Cell styling</a></li>
-<li><a href="#sec:conditional-styling"><span class="section-number main-number">20</span> Conditional styling</a>
+<li><a href="#sec:styling"><span class="section-number main-number">6</span> Styling</a>
 <ul>
-<li><a href="#sec:highlighting-missing-values"><span class="section-number">20.1</span> Highlighting missing values</a></li>
+<li><a href="#sec:cell-styling"><span class="section-number">6.1</span> Cell styling</a></li>
+<li><a href="#sec:conditional-styling"><span class="section-number">6.2</span> Conditional styling</a></li>
 </ul>
 </li>
-<li><a href="#sec:footnotes"><span class="section-number main-number">21</span> Footnotes</a></li>
-<li><a href="#sec:source-notes"><span class="section-number main-number">22</span> Source notes</a></li>
-<li><a href="#sec:complete-example"><span class="section-number main-number">23</span> Complete example</a></li>
+<li><a href="#sec:footnotes-and-notes"><span class="section-number main-number">7</span> Footnotes and notes</a>
+<ul>
+<li><a href="#sec:footnotes"><span class="section-number">7.1</span> Footnotes</a></li>
+<li><a href="#sec:source-notes"><span class="section-number">7.2</span> Source notes</a></li>
+</ul>
+</li>
+<li><a href="#sec:complete-example"><span class="section-number main-number">8</span> Complete example</a></li>
 </ul>
 </div>
 <p>This document demonstrates the lt.js runtime directly from JavaScript.
@@ -122,12 +125,80 @@ const iris = {
   "Petal.Width": [0.2, 0.2, 0.2, 0.2, 0.2],
   "Species": ["setosa", "setosa", "setosa", "setosa", "setosa"]
 };</script>
-<h2 id="sec:basic-table"><span class="section-number main-number">2</span> Basic table</h2>
+<h2 id="sec:basics"><span class="section-number main-number">2</span> Basics</h2>
+<h3 id="sec:basic-table"><span class="section-number">2.1</span> Basic table</h3>
 <p>The simplest spec: just <code>data</code> (a column-oriented object).</p>
 <pre><code class="language-js">LT.build({ data: mtcars });
 </code></pre>
 <script>LT.build({ data: mtcars });</script>
-<h2 id="sec:auto-formatting"><span class="section-number main-number">3</span> Auto-formatting</h2>
+<h3 id="sec:title-and-subtitle"><span class="section-number">2.2</span> Title and subtitle</h3>
+<pre><code class="language-js">LT.build({
+  data: iris,
+  header: {
+    title: &quot;Iris Measurements&quot;,
+    subtitle: &quot;First five observations&quot;
+  }
+});
+</code></pre>
+<script>LT.build({
+  data: iris,
+  header: {
+    title: "Iris Measurements",
+    subtitle: "First five observations"
+  }
+});</script>
+<h3 id="sec:column-labels"><span class="section-number">2.3</span> Column labels</h3>
+<p>By default, column names are cleaned for display by replacing <code>.</code> and
+<code>_</code> with spaces. Set <code>auto_label: false</code> to show raw names, or use a
+<code>label</code> op to override specific columns:</p>
+<pre><code class="language-js">// auto_label on by default: &quot;Sepal.Length&quot; displays as &quot;Sepal Length&quot;
+LT.build({ data: iris });
+</code></pre>
+<script>// auto_label on by default: "Sepal.Length" displays as "Sepal Length"
+LT.build({ data: iris });</script>
+<pre><code class="language-js">// Disable auto-labeling
+LT.build({ data: iris, auto_label: false });
+</code></pre>
+<script>// Disable auto-labeling
+LT.build({ data: iris, auto_label: false });</script>
+<pre><code class="language-js">// Explicit label overrides
+LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;label&quot;, labels: {
+      &quot;Sepal.Length&quot;: &quot;Length (cm)&quot;, &quot;Sepal.Width&quot;: &quot;Width (cm)&quot;,
+      &quot;Petal.Length&quot;: &quot;Length (cm)&quot;, &quot;Petal.Width&quot;: &quot;Width (cm)&quot;
+    }}
+  ]
+});
+</code></pre>
+<script>// Explicit label overrides
+LT.build({
+  data: iris,
+  ops: [
+    { type: "label", labels: {
+      "Sepal.Length": "Length (cm)", "Sepal.Width": "Width (cm)",
+      "Petal.Length": "Length (cm)", "Petal.Width": "Width (cm)"
+    }}
+  ]
+});</script>
+<h3 id="sec:column-alignment"><span class="section-number">2.4</span> Column alignment</h3>
+<p>By default, numeric columns are right-aligned. Override with an <code>align</code> op:</p>
+<pre><code class="language-js">LT.build({
+  data: mtcars,
+  ops: [
+    { type: &quot;align&quot;, columns: [&quot;mpg&quot;, &quot;cyl&quot;], align: &quot;center&quot; }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: mtcars,
+  ops: [
+    { type: "align", columns: ["mpg", "cyl"], align: "center" }
+  ]
+});</script>
+<h2 id="sec:formatting"><span class="section-number main-number">3</span> Formatting</h2>
+<h3 id="sec:auto-formatting"><span class="section-number">3.1</span> Auto-formatting</h3>
 <p>Numeric columns are automatically formatted. The following example shows
 all behaviors at once: rounding to ~4 significant digits (adapting
 decimal places to magnitude), thin-space thousands separator,
@@ -150,15 +221,15 @@ suffixed with “%”), and year-column skipping (columns matching
     Margin_pct: [0.1234, 0.0567, 0.2345]
   }
 });</script>
-<h3 id="sec:disabling-auto-format"><span class="section-number">3.1</span> Disabling auto-format</h3>
-<p>Set <code>auto_fmt: false</code> to show raw values. Compare with the table above:</p>
+<h4 id="sec:disabling-auto-format"><span class="section-number">3.1.1</span> Disabling auto-format</h4>
+<p>Set <code>auto_format: false</code> to show raw values. Compare with the table above:</p>
 <pre><code class="language-js">LT.build({
   data: {
     Year: [2020, 2021, 2022],
     Revenue: [1234567.89, 2345678.12, -3456.789],
     Margin_pct: [0.1234, 0.0567, 0.2345]
   },
-  auto_fmt: false
+  auto_format: false
 });
 </code></pre>
 <script>LT.build({
@@ -167,61 +238,9 @@ suffixed with “%”), and year-column skipping (columns matching
     Revenue: [1234567.89, 2345678.12, -3456.789],
     Margin_pct: [0.1234, 0.0567, 0.2345]
   },
-  auto_fmt: false
+  auto_format: false
 });</script>
-<h2 id="sec:title-and-subtitle"><span class="section-number main-number">4</span> Title and subtitle</h2>
-<pre><code class="language-js">LT.build({
-  data: iris,
-  header: {
-    title: &quot;Iris Measurements&quot;,
-    subtitle: &quot;First five observations&quot;
-  }
-});
-</code></pre>
-<script>LT.build({
-  data: iris,
-  header: {
-    title: "Iris Measurements",
-    subtitle: "First five observations"
-  }
-});</script>
-<h2 id="sec:column-labels"><span class="section-number main-number">5</span> Column labels</h2>
-<p>Rename column headers without modifying the data keys:</p>
-<pre><code class="language-js">LT.build({
-  data: iris,
-  ops: [
-    { type: &quot;label&quot;, labels: {
-      &quot;Sepal.Length&quot;: &quot;Length (cm)&quot;, &quot;Sepal.Width&quot;: &quot;Width (cm)&quot;,
-      &quot;Petal.Length&quot;: &quot;Length (cm)&quot;, &quot;Petal.Width&quot;: &quot;Width (cm)&quot;
-    }}
-  ]
-});
-</code></pre>
-<script>LT.build({
-  data: iris,
-  ops: [
-    { type: "label", labels: {
-      "Sepal.Length": "Length (cm)", "Sepal.Width": "Width (cm)",
-      "Petal.Length": "Length (cm)", "Petal.Width": "Width (cm)"
-    }}
-  ]
-});</script>
-<h2 id="sec:column-alignment"><span class="section-number main-number">6</span> Column alignment</h2>
-<p>By default, numeric columns are right-aligned. Override with an <code>align</code> op:</p>
-<pre><code class="language-js">LT.build({
-  data: mtcars,
-  ops: [
-    { type: &quot;align&quot;, columns: [&quot;mpg&quot;, &quot;cyl&quot;], align: &quot;center&quot; }
-  ]
-});
-</code></pre>
-<script>LT.build({
-  data: mtcars,
-  ops: [
-    { type: "align", columns: ["mpg", "cyl"], align: "center" }
-  ]
-});</script>
-<h2 id="sec:number-formatting-fmt-number"><span class="section-number main-number">7</span> Number formatting (<code>fmt_number</code>)</h2>
+<h3 id="sec:number-formatting-fmt-number"><span class="section-number">3.2</span> Number formatting (<code>fmt_number</code>)</h3>
 <p>Explicit control over decimals and thousands separators:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -246,7 +265,7 @@ suffixed with “%”), and year-column skipping (columns matching
     { type: "fmt_number", columns: ["Margin"], decimals: 2, percent: true }
   ]
 });</script>
-<h3 id="sec:percent-without-multiplication"><span class="section-number">7.1</span> Percent without multiplication</h3>
+<h4 id="sec:percent-without-multiplication"><span class="section-number">3.2.1</span> Percent without multiplication</h4>
 <p>Use <code>percent: &quot;%&quot;</code> when values are already in percent scale (no <code>*100</code>):</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -267,7 +286,7 @@ suffixed with “%”), and year-column skipping (columns matching
     { type: "fmt_number", columns: ["Rate"], decimals: 1, percent: "%" }
   ]
 });</script>
-<h3 id="sec:prefix-and-suffix-currency-units"><span class="section-number">7.2</span> Prefix and suffix (currency, units)</h3>
+<h4 id="sec:prefix-and-suffix-currency-units"><span class="section-number">3.2.2</span> Prefix and suffix (currency, units)</h4>
 <p>Use <code>prefix</code> and <code>suffix</code> to prepend or append symbols:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -292,7 +311,7 @@ suffixed with “%”), and year-column skipping (columns matching
     { type: "fmt_number", columns: ["Weight"], decimals: 1, suffix: " kg" }
   ]
 });</script>
-<h2 id="sec:date-formatting-fmt-date"><span class="section-number main-number">8</span> Date formatting (<code>fmt_date</code>)</h2>
+<h3 id="sec:date-formatting-fmt-date"><span class="section-number">3.3</span> Date formatting (<code>fmt_date</code>)</h3>
 <p>Format date values using JavaScript’s native Date methods. Values can be
 Date objects or ISO strings. The default calls <code>toLocaleDateString()</code>;
 pass <code>method</code> to use a different Date method, or <code>locale</code>/<code>options</code> for
@@ -321,7 +340,7 @@ to avoid this.</p>
     { type: "fmt_date", columns: ["Date"] }
   ]
 });</script>
-<h3 id="sec:with-locale-and-options"><span class="section-number">8.1</span> With locale and options</h3>
+<h4 id="sec:with-locale-and-options"><span class="section-number">3.3.1</span> With locale and options</h4>
 <pre><code class="language-js">LT.build({
   data: {
     Event: [&quot;Launch&quot;, &quot;Update&quot;],
@@ -345,7 +364,7 @@ to avoid this.</p>
                  weekday: "long", timeZone: "UTC" } }
   ]
 });</script>
-<h3 id="sec:using-a-specific-date-method"><span class="section-number">8.2</span> Using a specific Date method</h3>
+<h4 id="sec:using-a-specific-date-method"><span class="section-number">3.3.2</span> Using a specific Date method</h4>
 <pre><code class="language-js">LT.build({
   data: {
     Event: [&quot;Launch&quot;, &quot;Update&quot;],
@@ -365,7 +384,7 @@ to avoid this.</p>
     { type: "fmt_date", columns: ["Date"], method: "toDateString" }
   ]
 });</script>
-<h3 id="sec:datetime-values"><span class="section-number">8.3</span> Datetime values</h3>
+<h4 id="sec:datetime-values"><span class="section-number">3.3.3</span> Datetime values</h4>
 <p>For datetime values, include time components in <code>options</code>:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -390,7 +409,7 @@ to avoid this.</p>
                  hour: "2-digit", minute: "2-digit" } }
   ]
 });</script>
-<h2 id="sec:value-substitution-sub"><span class="section-number main-number">9</span> Value substitution (<code>sub</code>)</h2>
+<h3 id="sec:value-substitution-sub"><span class="section-number">3.4</span> Value substitution (<code>sub</code>)</h3>
 <p>Replace missing, zero, or small values with display text:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -413,7 +432,8 @@ to avoid this.</p>
     { type: "sub", columns: ["Value"], missing: "n/a", zero: "—", small: 0.001, small_text: "< 0.001" }
   ]
 });</script>
-<h2 id="sec:column-merging-merge"><span class="section-number main-number">10</span> Column merging (<code>merge</code>)</h2>
+<h2 id="sec:column-structure"><span class="section-number main-number">4</span> Column structure</h2>
+<h3 id="sec:column-merging-merge"><span class="section-number">4.1</span> Column merging (<code>merge</code>)</h3>
 <p>Combine multiple columns into one display column. The <code>pattern</code> uses
 <code>{1}</code>, <code>{2}</code>, etc. for column positions. Wrap sections in <code>&lt;&lt;</code> <code>&gt;&gt;</code> for
 conditional NA handling.</p>
@@ -444,7 +464,7 @@ conditional NA handling.</p>
     { type: "label", labels: { est: "Estimate (95% CI)" } }
   ]
 });</script>
-<h2 id="sec:column-spanners"><span class="section-number main-number">11</span> Column spanners</h2>
+<h3 id="sec:column-spanners"><span class="section-number">4.2</span> Column spanners</h3>
 <p>Group contiguous columns under a shared header:</p>
 <pre><code class="language-js">LT.build({
   data: iris,
@@ -461,7 +481,7 @@ conditional NA handling.</p>
     { label: "Petal", columns: ["Petal.Length", "Petal.Width"] }
   ]
 });</script>
-<h3 id="sec:auto-inferred-spanners"><span class="section-number">11.1</span> Auto-inferred spanners</h3>
+<h4 id="sec:auto-inferred-spanners"><span class="section-number">4.2.1</span> Auto-inferred spanners</h4>
 <p>Set <code>auto_span: true</code> to infer spanners from column names. Names are
 split on the first <code>.</code> or <code>_</code>; contiguous columns sharing a prefix are
 grouped, and labels are shortened to the suffix. Pass a custom regex
@@ -469,27 +489,104 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
 <pre><code class="language-js">LT.build({ data: iris, auto_span: true });
 </code></pre>
 <script>LT.build({ data: iris, auto_span: true });</script>
-<h2 id="sec:row-groups-separator-rows"><span class="section-number main-number">12</span> Row groups (separator rows)</h2>
-<p>Pass <code>row_group</code> as a string to use separator-row style:</p>
+<h3 id="sec:column-widths"><span class="section-number">4.3</span> Column widths</h3>
+<pre><code class="language-js">LT.build({
+  data: mtcars,
+  ops: [
+    { type: &quot;width&quot;, widths: { mpg: &quot;10em&quot;, cyl: &quot;5em&quot;, disp: &quot;10em&quot;, hp: &quot;8em&quot; } }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: mtcars,
+  ops: [
+    { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
+  ]
+});</script>
+<h3 id="sec:column-reordering-move"><span class="section-number">4.4</span> Column reordering (<code>move</code>)</h3>
+<p>Move columns to the start or after a specific column:</p>
+<pre><code class="language-js">LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;move&quot;, columns: [&quot;Petal.Length&quot;, &quot;Petal.Width&quot;], after: null }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: iris,
+  ops: [
+    { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
+  ]
+});</script>
+<h2 id="sec:row-groups"><span class="section-number main-number">5</span> Row groups</h2>
+<h3 id="sec:group-by-column"><span class="section-number">5.1</span> Group by column</h3>
+<p>Pass <code>row_group</code> as a single-element array to group by that column’s
+values (rendered as rowspan cells on the left by default):</p>
 <pre><code class="language-js">LT.build({
   data: {
-    arm: [&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;],
-    stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
-    value: [30, 4.2, 31, 6.8]
+    Region: [&quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;],
+    City: [&quot;New York&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Portland&quot;, &quot;Denver&quot;],
+    Population: [8336817, 675647, 737015, 652503, 715522]
   },
-  row_group: &quot;arm&quot;
+  row_group: [&quot;Region&quot;]
 });
 </code></pre>
 <script>LT.build({
   data: {
-    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
-    stat: ["n", "Mean", "n", "Mean"],
-    value: [30, 4.2, 31, 6.8]
+    Region: ["East", "East", "West", "West", "West"],
+    City: ["New York", "Boston", "Seattle", "Portland", "Denver"],
+    Population: [8336817, 675647, 737015, 652503, 715522]
   },
-  row_group: "arm"
+  row_group: ["Region"]
 });</script>
-<h2 id="sec:row-groups-rowspan"><span class="section-number main-number">13</span> Row groups (rowspan)</h2>
-<p>Pass <code>row_group</code> as an array to render as rowspan cells on the left:</p>
+<h3 id="sec:auto-separator-rows-for-long-labels"><span class="section-number">5.2</span> Auto separator rows for long labels</h3>
+<p>When <code>row_group</code> is a single-element array and the column is character
+with any value longer than 20 characters, separator rows are used
+automatically. Set <code>auto_sep: false</code> to force rowspan mode:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Department: [&quot;Cardiovascular Research&quot;, &quot;Cardiovascular Research&quot;,
+                 &quot;Biostatistics&quot;, &quot;Biostatistics&quot;],
+    Trial: [&quot;ATLAS-2&quot;, &quot;BEACON&quot;, &quot;PRIME-1&quot;, &quot;NEXUS&quot;],
+    N: [450, 320, 280, 510]
+  },
+  row_group: [&quot;Department&quot;]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Department: ["Cardiovascular Research", "Cardiovascular Research",
+                 "Biostatistics", "Biostatistics"],
+    Trial: ["ATLAS-2", "BEACON", "PRIME-1", "NEXUS"],
+    N: [450, 320, 280, 510]
+  },
+  row_group: ["Department"]
+});</script>
+<pre><code class="language-js">// Force rowspan mode by disabling auto-detection
+LT.build({
+  data: {
+    Department: [&quot;Cardiovascular Research&quot;, &quot;Cardiovascular Research&quot;,
+                 &quot;Biostatistics&quot;, &quot;Biostatistics&quot;],
+    Trial: [&quot;ATLAS-2&quot;, &quot;BEACON&quot;, &quot;PRIME-1&quot;, &quot;NEXUS&quot;],
+    N: [450, 320, 280, 510]
+  },
+  row_group: [&quot;Department&quot;],
+  auto_sep: false
+});
+</code></pre>
+<script>// Force rowspan mode by disabling auto-detection
+LT.build({
+  data: {
+    Department: ["Cardiovascular Research", "Cardiovascular Research",
+                 "Biostatistics", "Biostatistics"],
+    Trial: ["ATLAS-2", "BEACON", "PRIME-1", "NEXUS"],
+    N: [450, 320, 280, 510]
+  },
+  row_group: ["Department"],
+  auto_sep: false
+});</script>
+<h3 id="sec:group-by-multiple-columns-rowspan"><span class="section-number">5.3</span> Group by multiple columns (rowspan)</h3>
+<p>Pass multiple columns to render hierarchical rowspan cells:</p>
 <pre><code class="language-js">LT.build({
   data: {
     Region: [&quot;East&quot;, &quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;],
@@ -509,7 +606,26 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
   },
   row_group: ["Region", "State"]
 });</script>
-<h2 id="sec:row-group-ordering"><span class="section-number main-number">14</span> Row group ordering</h2>
+<h3 id="sec:separator-row-style"><span class="section-number">5.4</span> Separator-row style</h3>
+<p>Pass <code>row_group</code> as a string to always use separator rows:</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    arm: [&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;],
+    stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
+    value: [30, 4.2, 31, 6.8]
+  },
+  row_group: &quot;arm&quot;
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
+    stat: ["n", "Mean", "n", "Mean"],
+    value: [30, 4.2, 31, 6.8]
+  },
+  row_group: "arm"
+});</script>
+<h3 id="sec:row-group-ordering"><span class="section-number">5.5</span> Row group ordering</h3>
 <p>Reorder separator-row groups with a <code>group_order</code> op:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -534,7 +650,7 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     { type: "group_order", order: ["Treatment", "Placebo"] }
   ]
 });</script>
-<h2 id="sec:manual-row-groups"><span class="section-number main-number">15</span> Manual row groups</h2>
+<h3 id="sec:manual-row-groups"><span class="section-number">5.6</span> Manual row groups</h3>
 <p>Define groups explicitly by row index:</p>
 <pre><code class="language-js">LT.build({
   data: mtcars,
@@ -551,7 +667,7 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     { type: "row_group", label: "Last three", rows: [4, 5, 6] }
   ]
 });</script>
-<h2 id="sec:row-indentation"><span class="section-number main-number">16</span> Row indentation</h2>
+<h3 id="sec:row-indentation"><span class="section-number">5.7</span> Row indentation</h3>
 <p>Indent specific rows to show hierarchy:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -574,36 +690,8 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     { type: "indent", rows: [3, 4, 6], level: 2 }
   ]
 });</script>
-<h2 id="sec:column-widths"><span class="section-number main-number">17</span> Column widths</h2>
-<pre><code class="language-js">LT.build({
-  data: mtcars,
-  ops: [
-    { type: &quot;width&quot;, widths: { mpg: &quot;10em&quot;, cyl: &quot;5em&quot;, disp: &quot;10em&quot;, hp: &quot;8em&quot; } }
-  ]
-});
-</code></pre>
-<script>LT.build({
-  data: mtcars,
-  ops: [
-    { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
-  ]
-});</script>
-<h2 id="sec:column-reordering-move"><span class="section-number main-number">18</span> Column reordering (<code>move</code>)</h2>
-<p>Move columns to the start or after a specific column:</p>
-<pre><code class="language-js">LT.build({
-  data: iris,
-  ops: [
-    { type: &quot;move&quot;, columns: [&quot;Petal.Length&quot;, &quot;Petal.Width&quot;], after: null }
-  ]
-});
-</code></pre>
-<script>LT.build({
-  data: iris,
-  ops: [
-    { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
-  ]
-});</script>
-<h2 id="sec:cell-styling"><span class="section-number main-number">19</span> Cell styling</h2>
+<h2 id="sec:styling"><span class="section-number main-number">6</span> Styling</h2>
+<h3 id="sec:cell-styling"><span class="section-number">6.1</span> Cell styling</h3>
 <p>Apply CSS to specific cells by column and/or row:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -632,7 +720,7 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     { type: "style", columns: ["HR"], rows: [1], css: "background:#e8f4e8;border-bottom:2px solid #4a4" }
   ]
 });</script>
-<h2 id="sec:conditional-styling"><span class="section-number main-number">20</span> Conditional styling</h2>
+<h3 id="sec:conditional-styling"><span class="section-number">6.2</span> Conditional styling</h3>
 <p>Use <code>test</code> with a JavaScript function to apply styles based on cell
 values. The function receives the raw (pre-format) value and should
 return <code>true</code> to apply. Use <code>class</code> to assign CSS classes instead of
@@ -667,7 +755,7 @@ inline <code>css</code>:</p>
 <style type="text/css">
 .lt-table .good { color: green; }
 </style>
-<h3 id="sec:highlighting-missing-values"><span class="section-number">20.1</span> Highlighting missing values</h3>
+<h4 id="sec:highlighting-missing-values"><span class="section-number">6.2.1</span> Highlighting missing values</h4>
 <p>Apply a class to all null cells across the table (omit <code>columns</code> to
 target all):</p>
 <pre><code class="language-js">LT.build({
@@ -696,7 +784,8 @@ target all):</p>
 <style type="text/css">
 .lt-table .na { background: #fee; }
 </style>
-<h2 id="sec:footnotes"><span class="section-number main-number">21</span> Footnotes</h2>
+<h2 id="sec:footnotes-and-notes"><span class="section-number main-number">7</span> Footnotes and notes</h2>
+<h3 id="sec:footnotes"><span class="section-number">7.1</span> Footnotes</h3>
 <p>Footnotes are de-duplicated by text and numbered automatically. Supported
 locations: <code>title</code>, <code>column_labels</code>, <code>column_spanners</code>, <code>row_groups</code>, <code>body</code>.</p>
 <pre><code class="language-js">LT.build({
@@ -716,7 +805,7 @@ locations: <code>title</code>, <code>column_labels</code>, <code>column_spanners
     { text: "Miles per US gallon.", location: { type: "column_labels", columns: ["mpg"] } }
   ]
 });</script>
-<h2 id="sec:source-notes"><span class="section-number main-number">22</span> Source notes</h2>
+<h3 id="sec:source-notes"><span class="section-number">7.2</span> Source notes</h3>
 <p>Notes appear below footnotes in the footer:</p>
 <pre><code class="language-js">LT.build({
   data: mtcars,
@@ -727,7 +816,7 @@ locations: <code>title</code>, <code>column_labels</code>, <code>column_spanners
   data: mtcars,
   notes: ["Data from the 1974 Motor Trend US magazine."]
 });</script>
-<h2 id="sec:complete-example"><span class="section-number main-number">23</span> Complete example</h2>
+<h2 id="sec:complete-example"><span class="section-number main-number">8</span> Complete example</h2>
 <p>Combining multiple features in a single spec:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -784,7 +873,7 @@ locations: <code>title</code>, <code>column_labels</code>, <code>column_spanners
 });</script>
 </div>
 <footer><div class="flex-col">
-<p>Developed by Yihui Xie</p>
+<p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
 <p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.9.10</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.56/js/sidenotes.min.js" defer></script>

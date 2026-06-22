@@ -44,7 +44,9 @@ const mtcars = `{ mtcars6 }`;
 const iris = `{ iris5 }`;
 ```
 
-## Basic table
+## Basics
+
+### Basic table
 
 The simplest spec: just `data` (a column-oriented object).
 
@@ -52,7 +54,63 @@ The simplest spec: just `data` (a column-oriented object).
 LT.build({ data: mtcars });
 ```
 
-## Auto-formatting
+### Title and subtitle
+
+```{js}
+LT.build({
+  data: iris,
+  header: {
+    title: "Iris Measurements",
+    subtitle: "First five observations"
+  }
+});
+```
+
+### Column labels
+
+By default, column names are cleaned for display by replacing `.` and
+`_` with spaces. Set `auto_label: false` to show raw names, or use a
+`label` op to override specific columns:
+
+```{js}
+// auto_label on by default: "Sepal.Length" displays as "Sepal Length"
+LT.build({ data: iris });
+```
+
+```{js}
+// Disable auto-labeling
+LT.build({ data: iris, auto_label: false });
+```
+
+```{js}
+// Explicit label overrides
+LT.build({
+  data: iris,
+  ops: [
+    { type: "label", labels: {
+      "Sepal.Length": "Length (cm)", "Sepal.Width": "Width (cm)",
+      "Petal.Length": "Length (cm)", "Petal.Width": "Width (cm)"
+    }}
+  ]
+});
+```
+
+### Column alignment
+
+By default, numeric columns are right-aligned. Override with an `align` op:
+
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: "align", columns: ["mpg", "cyl"], align: "center" }
+  ]
+});
+```
+
+## Formatting
+
+### Auto-formatting
 
 Numeric columns are automatically formatted. The following example shows
 all behaviors at once: rounding to ~4 significant digits (adapting
@@ -72,9 +130,9 @@ LT.build({
 });
 ```
 
-### Disabling auto-format
+#### Disabling auto-format
 
-Set `auto_fmt: false` to show raw values. Compare with the table above:
+Set `auto_format: false` to show raw values. Compare with the table above:
 
 ```{js}
 LT.build({
@@ -83,52 +141,11 @@ LT.build({
     Revenue: [1234567.89, 2345678.12, -3456.789],
     Margin_pct: [0.1234, 0.0567, 0.2345]
   },
-  auto_fmt: false
+  auto_format: false
 });
 ```
 
-## Title and subtitle
-
-```{js}
-LT.build({
-  data: iris,
-  header: {
-    title: "Iris Measurements",
-    subtitle: "First five observations"
-  }
-});
-```
-
-## Column labels
-
-Rename column headers without modifying the data keys:
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: "label", labels: {
-      "Sepal.Length": "Length (cm)", "Sepal.Width": "Width (cm)",
-      "Petal.Length": "Length (cm)", "Petal.Width": "Width (cm)"
-    }}
-  ]
-});
-```
-
-## Column alignment
-
-By default, numeric columns are right-aligned. Override with an `align` op:
-
-```{js}
-LT.build({
-  data: mtcars,
-  ops: [
-    { type: "align", columns: ["mpg", "cyl"], align: "center" }
-  ]
-});
-```
-
-## Number formatting (`fmt_number`)
+### Number formatting (`fmt_number`)
 
 Explicit control over decimals and thousands separators:
 
@@ -146,7 +163,7 @@ LT.build({
 });
 ```
 
-### Percent without multiplication
+#### Percent without multiplication
 
 Use `percent: "%"` when values are already in percent scale (no `*100`):
 
@@ -162,7 +179,7 @@ LT.build({
 });
 ```
 
-### Prefix and suffix (currency, units)
+#### Prefix and suffix (currency, units)
 
 Use `prefix` and `suffix` to prepend or append symbols:
 
@@ -180,7 +197,7 @@ LT.build({
 });
 ```
 
-## Date formatting (`fmt_date`)
+### Date formatting (`fmt_date`)
 
 Format date values using JavaScript's native Date methods. Values can be
 Date objects or ISO strings. The default calls `toLocaleDateString()`;
@@ -205,7 +222,7 @@ LT.build({
 });
 ```
 
-### With locale and options
+#### With locale and options
 
 ```{js}
 LT.build({
@@ -221,7 +238,7 @@ LT.build({
 });
 ```
 
-### Using a specific Date method
+#### Using a specific Date method
 
 ```{js}
 LT.build({
@@ -235,7 +252,7 @@ LT.build({
 });
 ```
 
-### Datetime values
+#### Datetime values
 
 For datetime values, include time components in `options`:
 
@@ -253,7 +270,7 @@ LT.build({
 });
 ```
 
-## Value substitution (`sub`)
+### Value substitution (`sub`)
 
 Replace missing, zero, or small values with display text:
 
@@ -270,7 +287,9 @@ LT.build({
 });
 ```
 
-## Column merging (`merge`)
+## Column structure
+
+### Column merging (`merge`)
 
 Combine multiple columns into one display column. The `pattern` uses
 `{1}`, `{2}`, etc. for column positions. Wrap sections in `<<` `>>` for
@@ -292,7 +311,7 @@ LT.build({
 });
 ```
 
-## Column spanners
+### Column spanners
 
 Group contiguous columns under a shared header:
 
@@ -306,7 +325,7 @@ LT.build({
 });
 ```
 
-### Auto-inferred spanners
+#### Auto-inferred spanners
 
 Set `auto_span: true` to infer spanners from column names. Names are
 split on the first `.` or `_`; contiguous columns sharing a prefix are
@@ -317,24 +336,83 @@ string (e.g., `"[.]"`) to change the separator.
 LT.build({ data: iris, auto_span: true });
 ```
 
-## Row groups (separator rows)
+### Column widths
 
-Pass `row_group` as a string to use separator-row style:
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
+  ]
+});
+```
+
+### Column reordering (`move`)
+
+Move columns to the start or after a specific column:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
+  ]
+});
+```
+
+## Row groups
+
+### Group by column
+
+Pass `row_group` as a single-element array to group by that column's
+values (rendered as rowspan cells on the left by default):
 
 ```{js}
 LT.build({
   data: {
-    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
-    stat: ["n", "Mean", "n", "Mean"],
-    value: [30, 4.2, 31, 6.8]
+    Region: ["East", "East", "West", "West", "West"],
+    City: ["New York", "Boston", "Seattle", "Portland", "Denver"],
+    Population: [8336817, 675647, 737015, 652503, 715522]
   },
-  row_group: "arm"
+  row_group: ["Region"]
 });
 ```
 
-## Row groups (rowspan)
+### Auto separator rows for long labels
 
-Pass `row_group` as an array to render as rowspan cells on the left:
+When `row_group` is a single-element array and the column is character
+with any value longer than 20 characters, separator rows are used
+automatically. Set `auto_sep: false` to force rowspan mode:
+
+```{js}
+LT.build({
+  data: {
+    Department: ["Cardiovascular Research", "Cardiovascular Research",
+                 "Biostatistics", "Biostatistics"],
+    Trial: ["ATLAS-2", "BEACON", "PRIME-1", "NEXUS"],
+    N: [450, 320, 280, 510]
+  },
+  row_group: ["Department"]
+});
+```
+
+```{js}
+// Force rowspan mode by disabling auto-detection
+LT.build({
+  data: {
+    Department: ["Cardiovascular Research", "Cardiovascular Research",
+                 "Biostatistics", "Biostatistics"],
+    Trial: ["ATLAS-2", "BEACON", "PRIME-1", "NEXUS"],
+    N: [450, 320, 280, 510]
+  },
+  row_group: ["Department"],
+  auto_sep: false
+});
+```
+
+### Group by multiple columns (rowspan)
+
+Pass multiple columns to render hierarchical rowspan cells:
 
 ```{js}
 LT.build({
@@ -348,7 +426,22 @@ LT.build({
 });
 ```
 
-## Row group ordering
+### Separator-row style
+
+Pass `row_group` as a string to always use separator rows:
+
+```{js}
+LT.build({
+  data: {
+    arm: ["Placebo", "Placebo", "Treatment", "Treatment"],
+    stat: ["n", "Mean", "n", "Mean"],
+    value: [30, 4.2, 31, 6.8]
+  },
+  row_group: "arm"
+});
+```
+
+### Row group ordering
 
 Reorder separator-row groups with a `group_order` op:
 
@@ -366,7 +459,7 @@ LT.build({
 });
 ```
 
-## Manual row groups
+### Manual row groups
 
 Define groups explicitly by row index:
 
@@ -380,7 +473,7 @@ LT.build({
 });
 ```
 
-## Row indentation
+### Row indentation
 
 Indent specific rows to show hierarchy:
 
@@ -397,31 +490,9 @@ LT.build({
 });
 ```
 
-## Column widths
+## Styling
 
-```{js}
-LT.build({
-  data: mtcars,
-  ops: [
-    { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
-  ]
-});
-```
-
-## Column reordering (`move`)
-
-Move columns to the start or after a specific column:
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
-  ]
-});
-```
-
-## Cell styling
+### Cell styling
 
 Apply CSS to specific cells by column and/or row:
 
@@ -441,7 +512,7 @@ LT.build({
 });
 ```
 
-## Conditional styling
+### Conditional styling
 
 Use `test` with a JavaScript function to apply styles based on cell
 values. The function receives the raw (pre-format) value and should
@@ -467,7 +538,7 @@ LT.build({
 .lt-table .good { color: green; }
 ```
 
-### Highlighting missing values
+#### Highlighting missing values
 
 Apply a class to all null cells across the table (omit `columns` to
 target all):
@@ -489,7 +560,9 @@ LT.build({
 .lt-table .na { background: #fee; }
 ```
 
-## Footnotes
+## Footnotes and notes
+
+### Footnotes
 
 Footnotes are de-duplicated by text and numbered automatically. Supported
 locations: `title`, `column_labels`, `column_spanners`, `row_groups`, `body`.
@@ -505,7 +578,7 @@ LT.build({
 });
 ```
 
-## Source notes
+### Source notes
 
 Notes appear below footnotes in the footer:
 

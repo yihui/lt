@@ -6,7 +6,9 @@ title: Examples
 library(lt)
 ```
 
-## A simple table
+## Basics
+
+### A simple table
 
 Pass any data frame to `lt()`:
 
@@ -15,15 +17,27 @@ tbl_cars = lt(head(mtcars))
 tbl_cars
 ```
 
-## Title and subtitle
+### Column labels
+
+By default, column names are cleaned for display by replacing `.` and
+`_` with spaces. Use `auto_label = FALSE` to show raw names, or
+`lt_label()` to override specific columns:
 
 ```{r}
 tbl_iris = lt(head(iris))
+tbl_iris
+lt(head(iris), auto_label = FALSE)
+tbl_iris |> lt_label(Sepal.Length = "Length (cm)", Sepal.Width = "Width (cm)")
+```
+
+### Title and subtitle
+
+```{r}
 tbl_iris |>
   lt_header(title = "Iris Measurements", subtitle = "First six observations")
 ```
 
-## Column alignment
+### Column alignment
 
 By default, numeric columns are right-aligned and character columns are
 left-aligned. Override with `lt_align()`:
@@ -32,14 +46,16 @@ left-aligned. Override with `lt_align()`:
 tbl_cars |> lt_align(~ mpg + cyl, "center") |> lt_width(mpg = "6em")
 ```
 
-## Auto-formatting
+## Formatting
+
+### Auto-formatting
 
 By default, `lt()` automatically formats numeric columns: rounding to
 ~4 significant digits (adapting decimal places to magnitude), adding a
 thin-space thousands separator, using a typographic minus (U+2212) for
 negatives, detecting percentage columns (names containing `%`, `_pct`,
 or `_percent`) and multiplying by 100 with a `%` suffix, and skipping
-year-like columns. Set `auto_fmt = FALSE` to display raw values:
+year-like columns. Set `auto_format = FALSE` to display raw values:
 
 ```{r}
 d = data.frame(
@@ -48,16 +64,16 @@ d = data.frame(
   Margin_pct = c(0.1234, 0.0567, 0.2345)
 )
 lt(d)
-lt(d, auto_fmt = FALSE)
+lt(d, auto_format = FALSE)
 ```
 
-## Number formatting
+### Number formatting
 
 ```{r}
 tbl_cars |> lt_format(~ mpg + disp, decimals = 1)
 ```
 
-### Decimal places
+#### Decimal places
 
 Control the number of decimal places with `decimals`:
 
@@ -71,14 +87,14 @@ lt(d) |>
   lt_format(~ Q1 + Q2, decimals = 2)
 ```
 
-### Big mark (thousands separator)
+#### Big mark (thousands separator)
 
 ```{r}
 lt(d) |>
   lt_format(~ Q1 + Q2, decimals = 0, big_mark = ",")
 ```
 
-### Prefix and suffix (currency, units)
+#### Prefix and suffix (currency, units)
 
 Use `prefix` and `suffix` to prepend or append symbols to formatted values:
 
@@ -95,7 +111,7 @@ d2 = data.frame(
 lt(d2) |> lt_format(~ Weight, decimals = 1, suffix = " kg")
 ```
 
-## Date formatting
+### Date formatting
 
 Format Date or POSIXt columns using JavaScript's native Date methods.
 The default uses `toLocaleDateString()`.
@@ -114,7 +130,7 @@ d = data.frame(
 lt(d) |> lt_date(~ Date)
 ```
 
-### With locale and options
+#### With locale and options
 
 Pass `locale` and `options` for `Intl.DateTimeFormat` control:
 
@@ -124,13 +140,13 @@ lt(d) |> lt_date(~ Date, locale = "zh-CN",
     weekday = "long", timeZone = "UTC"))
 ```
 
-### Using a specific Date method
+#### Using a specific Date method
 
 ```{r}
 lt(d) |> lt_date(~ Date, method = "toDateString")
 ```
 
-### Datetime (POSIXt) columns
+#### Datetime (POSIXt) columns
 
 For datetime values, include time components in `options`:
 
@@ -145,7 +161,21 @@ lt(d) |> lt_date(~ Time, locale = "en-US", options = list(
 ))
 ```
 
-## Footnotes
+### Substituting missing/small values
+
+```{r}
+d = data.frame(
+  Metric = c("HR", "p-value", "Events", "Rate"),
+  Value = c(0.62, 0.0003, 0, NA)
+)
+lt(d) |>
+  lt_format(~ Value, decimals = 2) |>
+  lt_sub(~ Value, missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
+```
+
+## Footnotes and notes
+
+### Footnotes
 
 ```{r}
 tbl_cars |>
@@ -154,41 +184,12 @@ tbl_cars |>
   lt_footnote("Miles per US gallon.", "column", "mpg")
 ```
 
-## Notes
+### Notes
 
 Notes appear in the footer below numbered footnotes:
 
 ```{r}
 tbl_cars |> lt_note("Data from the 1974 Motor Trend US magazine.")
-```
-
-## Column spanners
-
-A spanner groups contiguous columns under a shared label:
-
-```{r}
-tbl_iris |>
-  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |>
-  lt_spanner(Petal ~ Petal.Length + Petal.Width)
-```
-
-### Auto-inferred spanners
-
-When column names share a common prefix separated by `.` or `_`, call
-`lt_spanner()` with no arguments to infer spanners automatically:
-
-```{r}
-tbl_iris |> lt_spanner()
-```
-
-### Spanner with formatting
-
-```{r}
-tbl_iris |>
-  lt_header(title = "Iris Dataset") |>
-  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |>
-  lt_spanner(Petal ~ Petal.Length + Petal.Width) |>
-  lt_format(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, decimals = 1)
 ```
 
 ## Row groups
@@ -211,19 +212,24 @@ lt(d) |>
   lt_format(~ Population, big_mark = ",")
 ```
 
-### Row groups with data columns
+### Auto separator rows for long labels
+
+By default (`sep = 'auto'`), `lt_group()` switches from rowspan cells to
+full-width separator rows when any group label exceeds 20 characters:
 
 ```{r}
 d = data.frame(
-  Category = c("Fruits", "Fruits", "Vegetables", "Vegetables"),
-  Item = c("Apple", "Banana", "Carrot", "Broccoli"),
-  Calories = c(95, 105, 25, 55),
-  Fiber_g = c(4.4, 3.1, 2.8, 5.1)
+  Department = c(
+    "Cardiovascular Research", "Cardiovascular Research",
+    "Biostatistics", "Biostatistics"
+  ),
+  Trial = c("ATLAS-2", "BEACON", "PRIME-1", "NEXUS"),
+  N = c(450, 320, 280, 510)
 )
-lt(d) |>
-  lt_group(~ Category) |>
-  lt_header(title = "Nutritional Information") |>
-  lt_format(~ Fiber_g, decimals = 1)
+# "Cardiovascular Research" (23 chars) triggers separator mode automatically
+lt(d) |> lt_group(~ Department)
+# force rowspan mode with sep = FALSE
+lt(d) |> lt_group(~ Department, sep = FALSE)
 ```
 
 ### Group by multiple columns (rowspan)
@@ -270,7 +276,67 @@ belong to each group:
 tbl_cars |> lt_group("First three" = 1:3, "Last three" = 4:6)
 ```
 
-## Column merging
+### Row group ordering
+
+```{r}
+d = data.frame(
+  arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+  stat = c("n", "Mean", "n", "Mean"),
+  value = c("30", "4.2", "31", "6.8")
+)
+lt(d) |>
+  lt_group(~ arm, sep = TRUE) |>
+  lt_group("Treatment", "Placebo")
+```
+
+### Row indentation
+
+Indent the first column to show hierarchy:
+
+```{r}
+d = data.frame(
+  label = c("Any AE", "SOC: Cardiac", "Tachycardia", "Bradycardia",
+            "SOC: GI", "Nausea"),
+  n_pct = c("45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)")
+)
+lt(d) |>
+  lt_header("Adverse Events", "Safety Population") |>
+  lt_indent(c(2, 5), level = 1) |>
+  lt_indent(c(3, 4, 6), level = 2)
+```
+
+## Column structure
+
+### Column spanners
+
+A spanner groups contiguous columns under a shared label:
+
+```{r}
+tbl_iris |>
+  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |>
+  lt_spanner(Petal ~ Petal.Length + Petal.Width)
+```
+
+#### Auto-inferred spanners
+
+When column names share a common prefix separated by `.` or `_`, call
+`lt_spanner()` with no arguments to infer spanners automatically:
+
+```{r}
+tbl_iris |> lt_spanner()
+```
+
+#### Spanner with formatting
+
+```{r}
+tbl_iris |>
+  lt_header(title = "Iris Dataset") |>
+  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |>
+  lt_spanner(Petal ~ Petal.Length + Petal.Width) |>
+  lt_format(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, decimals = 1)
+```
+
+### Column merging
 
 Combine columns into one using a pattern. Source columns are hidden
 automatically:
@@ -287,7 +353,7 @@ lt(d) |>
   lt_label(n = "n (%)")
 ```
 
-### Conditional merge with `<< >>`
+#### Conditional merge with `<< >>`
 
 Wrap pattern sections in `<<` and `>>` to drop them when any referenced
 column is empty/NA:
@@ -305,35 +371,21 @@ lt(d) |>
   lt_label(est = "Estimate (95% CI)")
 ```
 
-## Row indentation
-
-Indent the first column to show hierarchy:
+### Column widths
 
 ```{r}
-d = data.frame(
-  label = c("Any AE", "SOC: Cardiac", "Tachycardia", "Bradycardia",
-            "SOC: GI", "Nausea"),
-  n_pct = c("45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)")
-)
-lt(d) |>
-  lt_header("Adverse Events", "Safety Population") |>
-  lt_indent(c(2, 5), level = 1) |>
-  lt_indent(c(3, 4, 6), level = 2)
+tbl_cars |> lt_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
 ```
 
-## Substituting missing/small values
+### Column reordering
 
 ```{r}
-d = data.frame(
-  Metric = c("HR", "p-value", "Events", "Rate"),
-  Value = c(0.62, 0.0003, 0, NA)
-)
-lt(d) |>
-  lt_format(~ Value, decimals = 2) |>
-  lt_sub(~ Value, missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
+tbl_iris |> lt_move(~ Petal.Length + Petal.Width, after = NULL)
 ```
 
-## Cell styling
+## Styling
+
+### Cell styling
 
 Highlight specific cells with bold, color, background, or any CSS
 property (camelCase or dash-case):
@@ -351,7 +403,7 @@ lt(d) |>
   lt_style("HR", rows = 1L, bg = "#e8f4e8", borderBottom = "2px solid #4a4")
 ```
 
-## Conditional styling
+### Conditional styling
 
 Apply styles based on cell values using a JavaScript test function. Use
 `class` to assign CSS classes, then define the rules with `lt_css()`:
@@ -382,32 +434,7 @@ lt(d) |>
   lt_css(.na = list(background = "#fee"))
 ```
 
-## Column widths
-
-```{r}
-tbl_cars |> lt_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
-```
-
-## Column reordering
-
-```{r}
-tbl_iris |> lt_move(~ Petal.Length + Petal.Width, after = NULL)
-```
-
-## Row group ordering
-
-```{r}
-d = data.frame(
-  arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
-  stat = c("n", "Mean", "n", "Mean"),
-  value = c("30", "4.2", "31", "6.8")
-)
-lt(d) |>
-  lt_group(~ arm, sep = TRUE) |>
-  lt_group("Treatment", "Placebo")
-```
-
-## Combining formatting and structure
+## Complete example
 
 ```{r}
 d = data.frame(

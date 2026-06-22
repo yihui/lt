@@ -57,7 +57,9 @@ title: Examples
 library(lt)
 ```
 
-## A simple table
+## Basics
+
+### A simple table
 
 Pass any data frame to `lt()`:
 
@@ -66,15 +68,27 @@ tbl_cars = lt(head(mtcars))
 tbl_cars
 ```
 
-## Title and subtitle
+### Column labels
+
+By default, column names are cleaned for display by replacing `.` and
+`_` with spaces. Use `auto_label = FALSE` to show raw names, or
+`lt_label()` to override specific columns:
 
 ```{r}
 tbl_iris = lt(head(iris))
+tbl_iris
+lt(head(iris), auto_label = FALSE)
+tbl_iris |&gt; lt_label(Sepal.Length = &quot;Length (cm)&quot;, Sepal.Width = &quot;Width (cm)&quot;)
+```
+
+### Title and subtitle
+
+```{r}
 tbl_iris |&gt;
   lt_header(title = &quot;Iris Measurements&quot;, subtitle = &quot;First six observations&quot;)
 ```
 
-## Column alignment
+### Column alignment
 
 By default, numeric columns are right-aligned and character columns are
 left-aligned. Override with `lt_align()`:
@@ -83,14 +97,16 @@ left-aligned. Override with `lt_align()`:
 tbl_cars |&gt; lt_align(~ mpg + cyl, &quot;center&quot;) |&gt; lt_width(mpg = &quot;6em&quot;)
 ```
 
-## Auto-formatting
+## Formatting
+
+### Auto-formatting
 
 By default, `lt()` automatically formats numeric columns: rounding to
 ~4 significant digits (adapting decimal places to magnitude), adding a
 thin-space thousands separator, using a typographic minus (U+2212) for
 negatives, detecting percentage columns (names containing `%`, `_pct`,
 or `_percent`) and multiplying by 100 with a `%` suffix, and skipping
-year-like columns. Set `auto_fmt = FALSE` to display raw values:
+year-like columns. Set `auto_format = FALSE` to display raw values:
 
 ```{r}
 d = data.frame(
@@ -99,16 +115,16 @@ d = data.frame(
   Margin_pct = c(0.1234, 0.0567, 0.2345)
 )
 lt(d)
-lt(d, auto_fmt = FALSE)
+lt(d, auto_format = FALSE)
 ```
 
-## Number formatting
+### Number formatting
 
 ```{r}
 tbl_cars |&gt; lt_format(~ mpg + disp, decimals = 1)
 ```
 
-### Decimal places
+#### Decimal places
 
 Control the number of decimal places with `decimals`:
 
@@ -122,14 +138,14 @@ lt(d) |&gt;
   lt_format(~ Q1 + Q2, decimals = 2)
 ```
 
-### Big mark (thousands separator)
+#### Big mark (thousands separator)
 
 ```{r}
 lt(d) |&gt;
   lt_format(~ Q1 + Q2, decimals = 0, big_mark = &quot;,&quot;)
 ```
 
-### Prefix and suffix (currency, units)
+#### Prefix and suffix (currency, units)
 
 Use `prefix` and `suffix` to prepend or append symbols to formatted values:
 
@@ -146,7 +162,7 @@ d2 = data.frame(
 lt(d2) |&gt; lt_format(~ Weight, decimals = 1, suffix = &quot; kg&quot;)
 ```
 
-## Date formatting
+### Date formatting
 
 Format Date or POSIXt columns using JavaScript's native Date methods.
 The default uses `toLocaleDateString()`.
@@ -165,7 +181,7 @@ d = data.frame(
 lt(d) |&gt; lt_date(~ Date)
 ```
 
-### With locale and options
+#### With locale and options
 
 Pass `locale` and `options` for `Intl.DateTimeFormat` control:
 
@@ -175,13 +191,13 @@ lt(d) |&gt; lt_date(~ Date, locale = &quot;zh-CN&quot;,
     weekday = &quot;long&quot;, timeZone = &quot;UTC&quot;))
 ```
 
-### Using a specific Date method
+#### Using a specific Date method
 
 ```{r}
 lt(d) |&gt; lt_date(~ Date, method = &quot;toDateString&quot;)
 ```
 
-### Datetime (POSIXt) columns
+#### Datetime (POSIXt) columns
 
 For datetime values, include time components in `options`:
 
@@ -196,7 +212,21 @@ lt(d) |&gt; lt_date(~ Time, locale = &quot;en-US&quot;, options = list(
 ))
 ```
 
-## Footnotes
+### Substituting missing/small values
+
+```{r}
+d = data.frame(
+  Metric = c(&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;),
+  Value = c(0.62, 0.0003, 0, NA)
+)
+lt(d) |&gt;
+  lt_format(~ Value, decimals = 2) |&gt;
+  lt_sub(~ Value, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt; 0.001&quot;)
+```
+
+## Footnotes and notes
+
+### Footnotes
 
 ```{r}
 tbl_cars |&gt;
@@ -205,41 +235,12 @@ tbl_cars |&gt;
   lt_footnote(&quot;Miles per US gallon.&quot;, &quot;column&quot;, &quot;mpg&quot;)
 ```
 
-## Notes
+### Notes
 
 Notes appear in the footer below numbered footnotes:
 
 ```{r}
 tbl_cars |&gt; lt_note(&quot;Data from the 1974 Motor Trend US magazine.&quot;)
-```
-
-## Column spanners
-
-A spanner groups contiguous columns under a shared label:
-
-```{r}
-tbl_iris |&gt;
-  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |&gt;
-  lt_spanner(Petal ~ Petal.Length + Petal.Width)
-```
-
-### Auto-inferred spanners
-
-When column names share a common prefix separated by `.` or `_`, call
-`lt_spanner()` with no arguments to infer spanners automatically:
-
-```{r}
-tbl_iris |&gt; lt_spanner()
-```
-
-### Spanner with formatting
-
-```{r}
-tbl_iris |&gt;
-  lt_header(title = &quot;Iris Dataset&quot;) |&gt;
-  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |&gt;
-  lt_spanner(Petal ~ Petal.Length + Petal.Width) |&gt;
-  lt_format(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, decimals = 1)
 ```
 
 ## Row groups
@@ -262,19 +263,24 @@ lt(d) |&gt;
   lt_format(~ Population, big_mark = &quot;,&quot;)
 ```
 
-### Row groups with data columns
+### Auto separator rows for long labels
+
+By default (`sep = 'auto'`), `lt_group()` switches from rowspan cells to
+full-width separator rows when any group label exceeds 20 characters:
 
 ```{r}
 d = data.frame(
-  Category = c(&quot;Fruits&quot;, &quot;Fruits&quot;, &quot;Vegetables&quot;, &quot;Vegetables&quot;),
-  Item = c(&quot;Apple&quot;, &quot;Banana&quot;, &quot;Carrot&quot;, &quot;Broccoli&quot;),
-  Calories = c(95, 105, 25, 55),
-  Fiber_g = c(4.4, 3.1, 2.8, 5.1)
+  Department = c(
+    &quot;Cardiovascular Research&quot;, &quot;Cardiovascular Research&quot;,
+    &quot;Biostatistics&quot;, &quot;Biostatistics&quot;
+  ),
+  Trial = c(&quot;ATLAS-2&quot;, &quot;BEACON&quot;, &quot;PRIME-1&quot;, &quot;NEXUS&quot;),
+  N = c(450, 320, 280, 510)
 )
-lt(d) |&gt;
-  lt_group(~ Category) |&gt;
-  lt_header(title = &quot;Nutritional Information&quot;) |&gt;
-  lt_format(~ Fiber_g, decimals = 1)
+# &quot;Cardiovascular Research&quot; (23 chars) triggers separator mode automatically
+lt(d) |&gt; lt_group(~ Department)
+# force rowspan mode with sep = FALSE
+lt(d) |&gt; lt_group(~ Department, sep = FALSE)
 ```
 
 ### Group by multiple columns (rowspan)
@@ -321,7 +327,67 @@ belong to each group:
 tbl_cars |&gt; lt_group(&quot;First three&quot; = 1:3, &quot;Last three&quot; = 4:6)
 ```
 
-## Column merging
+### Row group ordering
+
+```{r}
+d = data.frame(
+  arm = c(&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;),
+  stat = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
+  value = c(&quot;30&quot;, &quot;4.2&quot;, &quot;31&quot;, &quot;6.8&quot;)
+)
+lt(d) |&gt;
+  lt_group(~ arm, sep = TRUE) |&gt;
+  lt_group(&quot;Treatment&quot;, &quot;Placebo&quot;)
+```
+
+### Row indentation
+
+Indent the first column to show hierarchy:
+
+```{r}
+d = data.frame(
+  label = c(&quot;Any AE&quot;, &quot;SOC: Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;,
+            &quot;SOC: GI&quot;, &quot;Nausea&quot;),
+  n_pct = c(&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;)
+)
+lt(d) |&gt;
+  lt_header(&quot;Adverse Events&quot;, &quot;Safety Population&quot;) |&gt;
+  lt_indent(c(2, 5), level = 1) |&gt;
+  lt_indent(c(3, 4, 6), level = 2)
+```
+
+## Column structure
+
+### Column spanners
+
+A spanner groups contiguous columns under a shared label:
+
+```{r}
+tbl_iris |&gt;
+  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |&gt;
+  lt_spanner(Petal ~ Petal.Length + Petal.Width)
+```
+
+#### Auto-inferred spanners
+
+When column names share a common prefix separated by `.` or `_`, call
+`lt_spanner()` with no arguments to infer spanners automatically:
+
+```{r}
+tbl_iris |&gt; lt_spanner()
+```
+
+#### Spanner with formatting
+
+```{r}
+tbl_iris |&gt;
+  lt_header(title = &quot;Iris Dataset&quot;) |&gt;
+  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |&gt;
+  lt_spanner(Petal ~ Petal.Length + Petal.Width) |&gt;
+  lt_format(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, decimals = 1)
+```
+
+### Column merging
 
 Combine columns into one using a pattern. Source columns are hidden
 automatically:
@@ -338,7 +404,7 @@ lt(d) |&gt;
   lt_label(n = &quot;n (%)&quot;)
 ```
 
-### Conditional merge with `&lt;&lt; &gt;&gt;`
+#### Conditional merge with `&lt;&lt; &gt;&gt;`
 
 Wrap pattern sections in `&lt;&lt;` and `&gt;&gt;` to drop them when any referenced
 column is empty/NA:
@@ -356,35 +422,21 @@ lt(d) |&gt;
   lt_label(est = &quot;Estimate (95% CI)&quot;)
 ```
 
-## Row indentation
-
-Indent the first column to show hierarchy:
+### Column widths
 
 ```{r}
-d = data.frame(
-  label = c(&quot;Any AE&quot;, &quot;SOC: Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;,
-            &quot;SOC: GI&quot;, &quot;Nausea&quot;),
-  n_pct = c(&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;)
-)
-lt(d) |&gt;
-  lt_header(&quot;Adverse Events&quot;, &quot;Safety Population&quot;) |&gt;
-  lt_indent(c(2, 5), level = 1) |&gt;
-  lt_indent(c(3, 4, 6), level = 2)
+tbl_cars |&gt; lt_width(mpg = &quot;8em&quot;, cyl = &quot;5em&quot;, disp = &quot;8em&quot;, hp = &quot;6em&quot;)
 ```
 
-## Substituting missing/small values
+### Column reordering
 
 ```{r}
-d = data.frame(
-  Metric = c(&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;),
-  Value = c(0.62, 0.0003, 0, NA)
-)
-lt(d) |&gt;
-  lt_format(~ Value, decimals = 2) |&gt;
-  lt_sub(~ Value, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt; 0.001&quot;)
+tbl_iris |&gt; lt_move(~ Petal.Length + Petal.Width, after = NULL)
 ```
 
-## Cell styling
+## Styling
+
+### Cell styling
 
 Highlight specific cells with bold, color, background, or any CSS
 property (camelCase or dash-case):
@@ -402,7 +454,7 @@ lt(d) |&gt;
   lt_style(&quot;HR&quot;, rows = 1L, bg = &quot;#e8f4e8&quot;, borderBottom = &quot;2px solid #4a4&quot;)
 ```
 
-## Conditional styling
+### Conditional styling
 
 Apply styles based on cell values using a JavaScript test function. Use
 `class` to assign CSS classes, then define the rules with `lt_css()`:
@@ -433,32 +485,7 @@ lt(d) |&gt;
   lt_css(.na = list(background = &quot;#fee&quot;))
 ```
 
-## Column widths
-
-```{r}
-tbl_cars |&gt; lt_width(mpg = &quot;8em&quot;, cyl = &quot;5em&quot;, disp = &quot;8em&quot;, hp = &quot;6em&quot;)
-```
-
-## Column reordering
-
-```{r}
-tbl_iris |&gt; lt_move(~ Petal.Length + Petal.Width, after = NULL)
-```
-
-## Row group ordering
-
-```{r}
-d = data.frame(
-  arm = c(&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;),
-  stat = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
-  value = c(&quot;30&quot;, &quot;4.2&quot;, &quot;31&quot;, &quot;6.8&quot;)
-)
-lt(d) |&gt;
-  lt_group(~ arm, sep = TRUE) |&gt;
-  lt_group(&quot;Treatment&quot;, &quot;Placebo&quot;)
-```
-
-## Combining formatting and structure
+## Complete example
 
 ```{r}
 d = data.frame(
@@ -669,7 +696,9 @@ const mtcars = `{ mtcars6 }`;
 const iris = `{ iris5 }`;
 ```
 
-## Basic table
+## Basics
+
+### Basic table
 
 The simplest spec: just `data` (a column-oriented object).
 
@@ -677,7 +706,63 @@ The simplest spec: just `data` (a column-oriented object).
 LT.build({ data: mtcars });
 ```
 
-## Auto-formatting
+### Title and subtitle
+
+```{js}
+LT.build({
+  data: iris,
+  header: {
+    title: &quot;Iris Measurements&quot;,
+    subtitle: &quot;First five observations&quot;
+  }
+});
+```
+
+### Column labels
+
+By default, column names are cleaned for display by replacing `.` and
+`_` with spaces. Set `auto_label: false` to show raw names, or use a
+`label` op to override specific columns:
+
+```{js}
+// auto_label on by default: &quot;Sepal.Length&quot; displays as &quot;Sepal Length&quot;
+LT.build({ data: iris });
+```
+
+```{js}
+// Disable auto-labeling
+LT.build({ data: iris, auto_label: false });
+```
+
+```{js}
+// Explicit label overrides
+LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;label&quot;, labels: {
+      &quot;Sepal.Length&quot;: &quot;Length (cm)&quot;, &quot;Sepal.Width&quot;: &quot;Width (cm)&quot;,
+      &quot;Petal.Length&quot;: &quot;Length (cm)&quot;, &quot;Petal.Width&quot;: &quot;Width (cm)&quot;
+    }}
+  ]
+});
+```
+
+### Column alignment
+
+By default, numeric columns are right-aligned. Override with an `align` op:
+
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: &quot;align&quot;, columns: [&quot;mpg&quot;, &quot;cyl&quot;], align: &quot;center&quot; }
+  ]
+});
+```
+
+## Formatting
+
+### Auto-formatting
 
 Numeric columns are automatically formatted. The following example shows
 all behaviors at once: rounding to ~4 significant digits (adapting
@@ -697,9 +782,9 @@ LT.build({
 });
 ```
 
-### Disabling auto-format
+#### Disabling auto-format
 
-Set `auto_fmt: false` to show raw values. Compare with the table above:
+Set `auto_format: false` to show raw values. Compare with the table above:
 
 ```{js}
 LT.build({
@@ -708,52 +793,11 @@ LT.build({
     Revenue: [1234567.89, 2345678.12, -3456.789],
     Margin_pct: [0.1234, 0.0567, 0.2345]
   },
-  auto_fmt: false
+  auto_format: false
 });
 ```
 
-## Title and subtitle
-
-```{js}
-LT.build({
-  data: iris,
-  header: {
-    title: &quot;Iris Measurements&quot;,
-    subtitle: &quot;First five observations&quot;
-  }
-});
-```
-
-## Column labels
-
-Rename column headers without modifying the data keys:
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: &quot;label&quot;, labels: {
-      &quot;Sepal.Length&quot;: &quot;Length (cm)&quot;, &quot;Sepal.Width&quot;: &quot;Width (cm)&quot;,
-      &quot;Petal.Length&quot;: &quot;Length (cm)&quot;, &quot;Petal.Width&quot;: &quot;Width (cm)&quot;
-    }}
-  ]
-});
-```
-
-## Column alignment
-
-By default, numeric columns are right-aligned. Override with an `align` op:
-
-```{js}
-LT.build({
-  data: mtcars,
-  ops: [
-    { type: &quot;align&quot;, columns: [&quot;mpg&quot;, &quot;cyl&quot;], align: &quot;center&quot; }
-  ]
-});
-```
-
-## Number formatting (`fmt_number`)
+### Number formatting (`fmt_number`)
 
 Explicit control over decimals and thousands separators:
 
@@ -771,7 +815,7 @@ LT.build({
 });
 ```
 
-### Percent without multiplication
+#### Percent without multiplication
 
 Use `percent: &quot;%&quot;` when values are already in percent scale (no `*100`):
 
@@ -787,7 +831,7 @@ LT.build({
 });
 ```
 
-### Prefix and suffix (currency, units)
+#### Prefix and suffix (currency, units)
 
 Use `prefix` and `suffix` to prepend or append symbols:
 
@@ -805,7 +849,7 @@ LT.build({
 });
 ```
 
-## Date formatting (`fmt_date`)
+### Date formatting (`fmt_date`)
 
 Format date values using JavaScript's native Date methods. Values can be
 Date objects or ISO strings. The default calls `toLocaleDateString()`;
@@ -830,7 +874,7 @@ LT.build({
 });
 ```
 
-### With locale and options
+#### With locale and options
 
 ```{js}
 LT.build({
@@ -846,7 +890,7 @@ LT.build({
 });
 ```
 
-### Using a specific Date method
+#### Using a specific Date method
 
 ```{js}
 LT.build({
@@ -860,7 +904,7 @@ LT.build({
 });
 ```
 
-### Datetime values
+#### Datetime values
 
 For datetime values, include time components in `options`:
 
@@ -878,7 +922,7 @@ LT.build({
 });
 ```
 
-## Value substitution (`sub`)
+### Value substitution (`sub`)
 
 Replace missing, zero, or small values with display text:
 
@@ -895,7 +939,9 @@ LT.build({
 });
 ```
 
-## Column merging (`merge`)
+## Column structure
+
+### Column merging (`merge`)
 
 Combine multiple columns into one display column. The `pattern` uses
 `{1}`, `{2}`, etc. for column positions. Wrap sections in `&lt;&lt;` `&gt;&gt;` for
@@ -917,7 +963,7 @@ LT.build({
 });
 ```
 
-## Column spanners
+### Column spanners
 
 Group contiguous columns under a shared header:
 
@@ -931,7 +977,7 @@ LT.build({
 });
 ```
 
-### Auto-inferred spanners
+#### Auto-inferred spanners
 
 Set `auto_span: true` to infer spanners from column names. Names are
 split on the first `.` or `_`; contiguous columns sharing a prefix are
@@ -942,24 +988,83 @@ string (e.g., `&quot;[.]&quot;`) to change the separator.
 LT.build({ data: iris, auto_span: true });
 ```
 
-## Row groups (separator rows)
+### Column widths
 
-Pass `row_group` as a string to use separator-row style:
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: &quot;width&quot;, widths: { mpg: &quot;10em&quot;, cyl: &quot;5em&quot;, disp: &quot;10em&quot;, hp: &quot;8em&quot; } }
+  ]
+});
+```
+
+### Column reordering (`move`)
+
+Move columns to the start or after a specific column:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;move&quot;, columns: [&quot;Petal.Length&quot;, &quot;Petal.Width&quot;], after: null }
+  ]
+});
+```
+
+## Row groups
+
+### Group by column
+
+Pass `row_group` as a single-element array to group by that column's
+values (rendered as rowspan cells on the left by default):
 
 ```{js}
 LT.build({
   data: {
-    arm: [&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;],
-    stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
-    value: [30, 4.2, 31, 6.8]
+    Region: [&quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;],
+    City: [&quot;New York&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Portland&quot;, &quot;Denver&quot;],
+    Population: [8336817, 675647, 737015, 652503, 715522]
   },
-  row_group: &quot;arm&quot;
+  row_group: [&quot;Region&quot;]
 });
 ```
 
-## Row groups (rowspan)
+### Auto separator rows for long labels
 
-Pass `row_group` as an array to render as rowspan cells on the left:
+When `row_group` is a single-element array and the column is character
+with any value longer than 20 characters, separator rows are used
+automatically. Set `auto_sep: false` to force rowspan mode:
+
+```{js}
+LT.build({
+  data: {
+    Department: [&quot;Cardiovascular Research&quot;, &quot;Cardiovascular Research&quot;,
+                 &quot;Biostatistics&quot;, &quot;Biostatistics&quot;],
+    Trial: [&quot;ATLAS-2&quot;, &quot;BEACON&quot;, &quot;PRIME-1&quot;, &quot;NEXUS&quot;],
+    N: [450, 320, 280, 510]
+  },
+  row_group: [&quot;Department&quot;]
+});
+```
+
+```{js}
+// Force rowspan mode by disabling auto-detection
+LT.build({
+  data: {
+    Department: [&quot;Cardiovascular Research&quot;, &quot;Cardiovascular Research&quot;,
+                 &quot;Biostatistics&quot;, &quot;Biostatistics&quot;],
+    Trial: [&quot;ATLAS-2&quot;, &quot;BEACON&quot;, &quot;PRIME-1&quot;, &quot;NEXUS&quot;],
+    N: [450, 320, 280, 510]
+  },
+  row_group: [&quot;Department&quot;],
+  auto_sep: false
+});
+```
+
+### Group by multiple columns (rowspan)
+
+Pass multiple columns to render hierarchical rowspan cells:
 
 ```{js}
 LT.build({
@@ -973,7 +1078,22 @@ LT.build({
 });
 ```
 
-## Row group ordering
+### Separator-row style
+
+Pass `row_group` as a string to always use separator rows:
+
+```{js}
+LT.build({
+  data: {
+    arm: [&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;],
+    stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
+    value: [30, 4.2, 31, 6.8]
+  },
+  row_group: &quot;arm&quot;
+});
+```
+
+### Row group ordering
 
 Reorder separator-row groups with a `group_order` op:
 
@@ -991,7 +1111,7 @@ LT.build({
 });
 ```
 
-## Manual row groups
+### Manual row groups
 
 Define groups explicitly by row index:
 
@@ -1005,7 +1125,7 @@ LT.build({
 });
 ```
 
-## Row indentation
+### Row indentation
 
 Indent specific rows to show hierarchy:
 
@@ -1022,31 +1142,9 @@ LT.build({
 });
 ```
 
-## Column widths
+## Styling
 
-```{js}
-LT.build({
-  data: mtcars,
-  ops: [
-    { type: &quot;width&quot;, widths: { mpg: &quot;10em&quot;, cyl: &quot;5em&quot;, disp: &quot;10em&quot;, hp: &quot;8em&quot; } }
-  ]
-});
-```
-
-## Column reordering (`move`)
-
-Move columns to the start or after a specific column:
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: &quot;move&quot;, columns: [&quot;Petal.Length&quot;, &quot;Petal.Width&quot;], after: null }
-  ]
-});
-```
-
-## Cell styling
+### Cell styling
 
 Apply CSS to specific cells by column and/or row:
 
@@ -1066,7 +1164,7 @@ LT.build({
 });
 ```
 
-## Conditional styling
+### Conditional styling
 
 Use `test` with a JavaScript function to apply styles based on cell
 values. The function receives the raw (pre-format) value and should
@@ -1092,7 +1190,7 @@ LT.build({
 .lt-table .good { color: green; }
 ```
 
-### Highlighting missing values
+#### Highlighting missing values
 
 Apply a class to all null cells across the table (omit `columns` to
 target all):
@@ -1114,7 +1212,9 @@ LT.build({
 .lt-table .na { background: #fee; }
 ```
 
-## Footnotes
+## Footnotes and notes
+
+### Footnotes
 
 Footnotes are de-duplicated by text and numbered automatically. Supported
 locations: `title`, `column_labels`, `column_spanners`, `row_groups`, `body`.
@@ -1130,7 +1230,7 @@ LT.build({
 });
 ```
 
-## Source notes
+### Source notes
 
 Notes appear below footnotes in the footer:
 
@@ -1177,7 +1277,7 @@ LT.build({
 </div>
 </div>
 <footer><div class="flex-col">
-<p>Developed by Yihui Xie</p>
+<p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
 <p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.9.10</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.56/js/sidenotes.min.js" defer></script>
