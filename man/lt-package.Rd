@@ -6,7 +6,7 @@
 \title{lt: Lightweight Tables via JSON Specs and JavaScript}
 \description{
 A small grammar of tables. A table is a data frame plus a list of
-operations (title, spanner, footnote, ...); the operations are serialised to
+operations (title, spanner, footnote, ...); the operations are serialized to
 a JSON spec and applied to a plain semantic HTML table by a tiny vanilla
 JavaScript runtime at render time.
 }
