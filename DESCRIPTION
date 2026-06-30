@@ -1,7 +1,7 @@
 Package: lt
 Type: Package
 Title: Lightweight Tables via JSON Specs and JavaScript
-Version: 0.0.15
+Version: 0.1
 Authors@R: person('Yihui', 'Xie', email = 'xie@yihui.name', role = c('aut', 'cre', 'cph'),
     comment = c(ORCID = '0000-0003-0645-5666', URL = 'https://yihui.org'))
 Description: A lightweight grammar of tables. Build a table by declaring a JSON
