@@ -26,9 +26,10 @@
 <div class="body">
 <div id="TOC">
 <ul class="numbered">
-<li><a href="#sec:example"><span class="section-number main-number">1</span> Example</a></li>
-<li><a href="#sec:installation"><span class="section-number main-number">2</span> Installation</a></li>
-<li><a href="#sec:acknowledgements"><span class="section-number main-number">3</span> Acknowledgements</a></li>
+<li><a href="#sec:installation"><span class="section-number main-number">1</span> Installation</a></li>
+<li><a href="#sec:functions"><span class="section-number main-number">2</span> Functions</a></li>
+<li><a href="#sec:examples"><span class="section-number main-number">3</span> Examples</a></li>
+<li><a href="#sec:acknowledgements"><span class="section-number main-number">4</span> Acknowledgements</a></li>
 <li><a href="#sec:appendix">Appendix</a></li>
 </ul>
 </div>
@@ -44,7 +45,7 @@
 <tr>
 <td>Description</td>
 <td>A lightweight grammar of tables. Build a table by declaring a JSON
-spec (titles, spanners, row groups, footnotes, formatters, etc.); a tiny
+spec (titles, spanners, row groups, footnotes, formatting functions, etc.); a tiny
 vanilla JavaScript runtime builds the HTML table from the spec on page
 load. No sass, no V8, no htmlwidgets — just base R and xfun
 (htmltools is used only for the optional Shiny binding).</td>
@@ -91,7 +92,61 @@ without the heavy dependency stack. It targets HTML only (no LaTeX or RTF),
 which keeps the implementation minimal: the entire runtime is a single
 vanilla-JS file (<a href="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js">under 10 KB
 minified</a>).</p>
-<h2 id="sec:example"><span class="section-number main-number">1</span> Example</h2>
+<h2 id="sec:installation"><span class="section-number main-number">1</span> Installation</h2>
+<pre><code class="language-r"># CRAN version
+install.packages(&quot;lt&quot;)
+
+# development version
+install.packages(&quot;lt&quot;, repos = &quot;https://yihui.r-universe.dev&quot;)
+</code></pre>
+<h2 id="sec:functions"><span class="section-number main-number">2</span> Functions</h2>
+<p><code>lt()</code> creates a table object from a data frame. The <code>lt_*()</code> functions build
+on it via the pipe:</p>
+<p><strong>Structure</strong></p>
+<ul>
+<li><code>lt_header()</code> — title and optional subtitle above the table.</li>
+<li><code>lt_spanner()</code> — column-spanner label spanning a group of columns; or
+auto-infer spanners from column name prefixes.</li>
+<li><code>lt_group()</code> — partition rows into labeled groups (rowspan or full-width
+separator style), either by column values or manual row indices.</li>
+</ul>
+<p><strong>Content &amp; labels</strong></p>
+<ul>
+<li><code>lt_label()</code> — override column header labels.</li>
+<li><code>lt_footnote()</code> — attach a numbered footnote to any region (title, subtitle,
+column, spanner, group, or body cells).</li>
+<li><code>lt_note()</code> — append a plain unnumbered note below the table.</li>
+</ul>
+<p><strong>Formatting</strong></p>
+<ul>
+<li><code>lt_format()</code> — numeric formatting: decimal places, thousand separators,
+prefix/suffix, percentage, scientific notation, etc.</li>
+<li><code>lt_date()</code> — date/datetime formatting using the browser locale.</li>
+<li><code>lt_sub()</code> — substitute specific values (e.g., replace <code>0</code> with <code>&quot;—&quot;</code> or
+<code>NA</code> with <code>&quot;n/a&quot;</code>).</li>
+<li><code>lt_merge()</code> — merge several columns into one using a sprintf-style pattern.</li>
+<li><code>lt_indent()</code> — indent selected rows (useful for hierarchical row labels).</li>
+</ul>
+<p><strong>Appearance</strong></p>
+<ul>
+<li><code>lt_align()</code> — set column alignment (left / center / right).</li>
+<li><code>lt_width()</code> — set column widths.</li>
+<li><code>lt_style()</code> — apply CSS classes or inline styles to cells, conditionally or
+unconditionally.</li>
+<li><code>lt_css()</code> — attach an external CSS file or URL to the table.</li>
+</ul>
+<p><strong>Column order</strong></p>
+<ul>
+<li><code>lt_move()</code> — reorder columns.</li>
+</ul>
+<p><strong>Shiny</strong></p>
+<ul>
+<li><code>lt_output()</code> / <code>render_lt()</code> — Shiny UI and server bindings.</li>
+</ul>
+<h2 id="sec:examples"><span class="section-number main-number">3</span> Examples</h2>
+<p>The R code below builds a table spec. Under the hood <strong>lt</strong> serializes it to a
+compact JSON object and ships it to the browser, where a tiny vanilla-JS runtime
+renders the <code>&lt;table&gt;</code>.</p>
 <pre><code class="language-r">library(lt)
 
 d = data.frame(
@@ -100,21 +155,49 @@ d = data.frame(
   Estimate = c(0.6123, 0.7891, 0.4567, 0.5432),
   CI_Lower = c(0.4012, 0.5678, 0.2345, 0.3210),
   CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
-  P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
+  P_Value = c(0.0012, NA, 0.1234, NA)
 )
 lt(d) |&gt;
   lt_group(~ Group) |&gt;
   lt_header(&quot;Study Results&quot;, &quot;Primary and secondary endpoints&quot;) |&gt;
   lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |&gt;
   lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |&gt;
-  lt_format(~ P_Value, decimals = 4) |&gt;
+  lt_sub(~ P_Value, missing = &quot;—&quot;) |&gt;
   lt_footnote(&quot;Two-sided p-value from log-rank test.&quot;, &quot;column&quot;, ~ P_Value)
 </code></pre>
-<p>More examples at <a href="https://pkg.yihui.org/lt/examples.html">https://pkg.yihui.org/lt/examples.html</a>.</p>
-<h2 id="sec:installation"><span class="section-number main-number">2</span> Installation</h2>
-<pre><code class="language-r">install.packages(&quot;lt&quot;, repos = &quot;https://yihui.r-universe.dev&quot;)
+<p>The same table can be built directly in JavaScript. Load <code>lt.js</code> once on the
+page, then call <code>LT.build()</code> from an inline <code>&lt;script&gt;</code> with the JSON spec:</p>
+<pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css&quot;&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js&quot;&gt;&lt;/script&gt;
 </code></pre>
-<h2 id="sec:acknowledgements"><span class="section-number main-number">3</span> Acknowledgements</h2>
+<pre><code class="language-js">&lt;script&gt;
+LT.build({
+  &quot;data&quot;: {
+    &quot;Group&quot;:    [&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;],
+    &quot;Endpoint&quot;: [&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Primary&quot;, &quot;Secondary&quot;],
+    &quot;Estimate&quot;: [0.6123, 0.7891, 0.4567, 0.5432],
+    &quot;CI_Lower&quot;: [0.4012, 0.5678, 0.2345, 0.3210],
+    &quot;CI_Upper&quot;: [0.8234, 1.0104, 0.6789, 0.7654],
+    &quot;P_Value&quot;:  [0.0012, null, 0.1234, null]
+  },
+  &quot;ops&quot;: [
+    { &quot;type&quot;: &quot;fmt_number&quot;, &quot;columns&quot;: [&quot;Estimate&quot;, &quot;CI_Lower&quot;, &quot;CI_Upper&quot;], &quot;decimals&quot;: 3 },
+    { &quot;type&quot;: &quot;sub&quot;, &quot;columns&quot;: [&quot;P_Value&quot;], &quot;missing&quot;: &quot;—&quot; }
+  ],
+  &quot;row_group&quot;: [&quot;Group&quot;],
+  &quot;header&quot;: { &quot;title&quot;: &quot;Study Results&quot;, &quot;subtitle&quot;: &quot;Primary and secondary endpoints&quot; },
+  &quot;spanners&quot;: [{ &quot;label&quot;: &quot;95% CI&quot;, &quot;columns&quot;: [&quot;CI_Lower&quot;, &quot;CI_Upper&quot;] }],
+  &quot;footnotes&quot;: [{
+    &quot;text&quot;: &quot;Two-sided p-value from log-rank test.&quot;,
+    &quot;location&quot;: { &quot;type&quot;: &quot;column_labels&quot;, &quot;columns&quot;: [&quot;P_Value&quot;] }
+  }]
+});
+&lt;/script&gt;
+</code></pre>
+<p><code>LT.build()</code> renders the table in place of the calling <code>&lt;script&gt;</code> tag. One
+<code>lt.js</code> inclusion handles any number of tables on the page.</p>
+<p>You can find more examples at <a href="https://pkg.yihui.org/lt/examples.html">https://pkg.yihui.org/lt/examples.html</a>.</p>
+<h2 id="sec:acknowledgements"><span class="section-number main-number">4</span> Acknowledgements</h2>
 <p>This package was written with the help of Claude Code. <strong>lt</strong> is directly
 inspired by <strong>gt</strong> by Rich Iannone and the RStudio/Posit team. The grammar of
 tables that <strong>gt</strong> pioneered — layering titles, spanners, footnotes, and
