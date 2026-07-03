@@ -3,7 +3,8 @@ const fs = require('fs'), vm = require('vm');
 const src = fs.readFileSync(process.argv[2], 'utf8');
 const root = {};
 vm.runInNewContext(src.replace('(window)', '(root)'), { root });
-const spec = JSON.parse(fs.readFileSync(0, 'utf8'));
+const raw = fs.readFileSync(0, 'utf8');
+const spec = eval('(' + raw + ')');
 if (spec.data) for (const k of Object.keys(spec.data)) {
   if (!Array.isArray(spec.data[k])) spec.data[k] = [spec.data[k]];
 }

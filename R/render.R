@@ -257,6 +257,7 @@ lt_html_node = function(x, css = TRUE) {
   js = pkg_file('www', 'lt.js')
   runner = pkg_file('js', 'run-lt.js')
   spec = x; spec$css = spec$rules = NULL
+  if (!length(spec$ops)) spec$ops = NULL
   json = xfun::tojson(spec)
   out = system2('node', c(shQuote(runner), shQuote(js)), input = json, stdout = TRUE)
   if (!is.null(attr(out, 'status'))) stop('Node.js failed to render the lt table.')

@@ -12,10 +12,10 @@
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const sup = i => `<sup class="lt-fnref">${i}</sup>`;
   // Stringify, mapping null/undefined to "" (0 and false stringify normally).
-  const str = v => String(v ?? "");
+  const str = v => v === Infinity ? "Inf" : v === -Infinity ? "-Inf" : String(v ?? "");
 
   // --- Number formatting ---
-  const isNum = v => typeof v === "number" && !isNaN(v);
+  const isNum = v => typeof v === "number" && isFinite(v);
   // A column is "numeric" if its first non-null value is a number.
   const numCol = col => col?.length && typeof col.find(v => v != null) === "number";
 

@@ -32,6 +32,21 @@ list) that records the data plus a list of table-modifying operations. The
 object is rendered to HTML by \code{\link[=format]{format()}} (called automatically by the
 print method).
 }
+\section{Interactivity}{
+
+When a cell value has been formatted (e.g., by auto-formatting or
+\code{\link[=lt_format]{lt_format()}}), the original value is stored in the cell's \code{title}
+attribute and shown as a tooltip on hover. Additionally:
+\itemize{
+\item \code{Alt + Click} on a table toggles display of all raw values in that table.
+\item \code{Alt + Double-Click} on a table toggles raw values globally (all tables
+on the page).
+}
+
+Raw values are shown as \code{(value)} after the formatted text, highlighted
+with a light yellow background.
+}
+
 \examples{
 lt(head(mtcars[, 1:4]))
 }
