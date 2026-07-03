@@ -41,7 +41,7 @@ th, td{ padding: 5px; }
     .lt-source-note td { font-style: italic; }
   }
 
-  .al-r { text-align: right; white-space: nowrap; }
+  .al-r { text-align: right; }
   .al-c { text-align: center; }
 
   .lt-fnref {
