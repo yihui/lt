@@ -27,7 +27,13 @@ When asked to "publish lt to npm":
 ## Test Instructions
 
 ``` bash
-CI=true Rscript tests/*.R
+CI=true Rscript tests/test-all.R
+```
+
+Run a subset of tests by passing a regex filter:
+
+```bash
+CI=true Rscript tests/test-all.R --filter=test-render
 ```
 
 Tests are typically in `tests/testit/test-*.R` (for each `R/foo.R`, there is a

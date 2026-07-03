@@ -7,7 +7,7 @@
 
 lt_dependency = function() htmltools::htmlDependency(
   'lt', as.character(utils::packageVersion('lt')),
-  src = system.file('www', package = 'lt'),
+  src = pkg_file('www'),
   stylesheet = 'lt.css',
   script = c('lt.js', 'lt-binding.js')
 )

@@ -5,6 +5,10 @@
 # (format, sub, merge, etc.) to the raw data and renders the <table>.
 # One runtime per page renders any number of tables.
 
+pkg_file = function(...) {
+  system.file(..., package = 'lt', mustWork = TRUE)
+}
+
 asset_path = function(file) {
   p = system.file('www', file, package = 'lt')
   if (!nzchar(p)) p = file.path('inst', 'www', file)
@@ -24,7 +28,7 @@ asset_url = function(file) {
   sub = if (grepl('\\.js$', file)) 'js' else 'css'
   sprintf(
     'https://cdn.jsdelivr.net/npm/@xiee/utils@%s/%s/%s',
-    read.dcf(system.file('DESCRIPTION', package = 'lt'))[, 'Config/lt.js'],
+    read.dcf(pkg_file('DESCRIPTION'))[, 'Config/lt.js'],
     sub, sub('\\.(js|css)$', '.min.\\1', file)
   )
 }
@@ -89,6 +93,12 @@ spec_block = function(x) {
   )
 }
 
+html_doc = function(body) c(
+  '<!DOCTYPE html><html><head><meta charset="utf-8"><title>lt</title>',
+  '<style>body{font-family:system-ui,sans-serif;padding:1em}</style></head>',
+  '<body>', body, '</body></html>'
+)
+
 #' Render an `lt_tbl` to HTML
 #'
 #' Emits the CSS+JS runtime and a script block carrying the table's JSON spec.
@@ -100,9 +110,9 @@ spec_block = function(x) {
 #' @param inline_assets If `TRUE` (default), inline the CSS/JS as text. If
 #'   `FALSE`, emit `<link>` / `<script src=...>` tags (assets must be served
 #'   alongside the HTML).
-#' @param assets If `TRUE` (default), include the CSS+JS runtime. Pass
-#'   `FALSE` to emit only the spec block when the runtime is already on the
-#'   page.
+#' @param assets Which runtime assets to include: `TRUE` (default) for both
+#'   CSS and JS, `FALSE` for neither, or a character vector subset of
+#'   `c("css", "js")` for selective inclusion.
 #' @param ... Reserved for future use.
 #' @return A character scalar containing HTML.
 #' @export
@@ -111,18 +121,16 @@ spec_block = function(x) {
 #' html = format(tbl)
 #' format(tbl, fragment = FALSE, inline_assets = FALSE)
 format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
+  if (isTRUE(assets)) assets = c('css', 'js')
+  if (isFALSE(assets)) assets = character()
   body = c(
-    if (assets) css_block(inline_assets),
+    if ('css' %in% assets) css_block(inline_assets),
     user_css_block(x$css),
     rules_block(x$rules),
     spec_block(x),
-    if (assets) js_block(inline_assets)
+    if ('js' %in% assets) js_block(inline_assets)
   )
-  if (!fragment) body = c(
-    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>lt</title>',
-    '<style>body{font-family:system-ui,sans-serif;padding:1em}</style></head>',
-    '<body>', body, '</body></html>'
-  )
+  if (!fragment) body = html_doc(body)
   paste(body, collapse = '\n')
 }
 
@@ -146,6 +154,9 @@ print.lt_tbl = function(x, ...) {
 .css_flag = 'lt.css_added'
 
 knit_print.lt_tbl = function(x, ...) {
+  if (is.list(opts <- getOption('lt.lt_html'))) return(structure(
+    do.call(lt_html, c(list(x), opts)), class = 'knit_asis'
+  ))
   first = !isTRUE(knitr::opts_knit$get(.knit_flag))
   if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), .knit_flag))
   # Dedup user CSS (from lt_css()) across the document: a stylesheet shared
@@ -159,14 +170,19 @@ knit_print.lt_tbl = function(x, ...) {
   structure(format(x, assets = first), class = c('knit_asis', 'html'))
 }
 
-# record_print (litedown / xfun::record): we always emit the assets block.
+# record_print (litedown / xfun::record): for HTML output emit assets + spec;
+# for non-HTML output (markdown), render to static HTML via lt_html().
 
 #' @importFrom xfun record_print
 #' @export
-record_print.lt_tbl = function(x, ...) xfun::new_record(c(
-  css_block(inline = FALSE), user_css_block(x$css, local = TRUE),
-  rules_block(x$rules), spec_block(x), js_block(inline = FALSE), ''
-), 'asis')
+record_print.lt_tbl = function(x, ...) {
+  if (is.list(opts <- getOption('lt.lt_html')))
+    return(xfun::new_record(c(do.call(lt_html, c(list(x), opts)), ''), 'asis'))
+  xfun::new_record(c(
+    css_block(inline = FALSE), user_css_block(x$css, local = TRUE),
+    rules_block(x$rules), spec_block(x), js_block(inline = FALSE), ''
+  ), 'asis')
+}
 
 # Each Jupyter cell is rendered as a sandboxed document, so we always emit
 # a complete page with assets — no cross-cell dedup possible.
@@ -190,6 +206,69 @@ register_s3 = function(pkgs, generics) {
     setHook(packageEvent(pkg, 'onLoad'), hook)
   })
 }
+
+
+#' Render an lt table to a static HTML table
+#'
+#' Execute the JavaScript runtime to produce a rendered `<table>` element. Two
+#' methods are available: `"node"` uses Node.js; `"browser"` uses a headless
+#' Chromium browser (via [xfun::browser_dom()]). The default `"auto"` tries
+#' Node first (faster), then falls back to the browser.
+#'
+#' @param x An `lt_tbl` object.
+#' @param method One of `"auto"`, `"browser"`, or `"node"`.
+#' @param css Whether to include the lt.css runtime stylesheet in the output.
+#'   User CSS from [lt_css()] is always included.
+#' @param fragment If `FALSE` (default), wrap in a full HTML document. If
+#'   `TRUE`, return only the rendered fragment.
+#' @return A character vector of the rendered HTML.
+#' @section Global option:
+#' When the option `lt.lt_html` is set to a list of arguments (e.g.,
+#' `options(lt.lt_html = list(fragment = TRUE, css = FALSE))`), the
+#' [knit_print][knitr::knit_print] and [record_print][xfun::record_print]
+#' methods will call `lt_html()` with these arguments instead of emitting the
+#' default JavaScript-based spec. This is useful for output formats that
+#' support raw HTML but cannot run JavaScript (e.g., GitHub Flavored
+#' Markdown).
+#' @export
+#' @examples
+#' if (interactive()) lt_html(lt(head(mtcars)))
+lt_html = function(
+  x, method = c('auto', 'node', 'browser'), css = TRUE, fragment = FALSE
+) {
+  method = match.arg(method)
+  if (method == 'auto') method = if (has_node()) 'node' else if (has_browser()) 'browser'
+  if (is.null(method)) stop(
+    'No rendering method available. Install a Chromium-based browser or Node.js.'
+  )
+  html = switch(method, browser = lt_html_browser(x, css), node = lt_html_node(x, css))
+  if (!fragment) html = html_doc(html)
+  xfun::raw_string(html)
+}
+
+lt_html_browser = function(x, css = TRUE) {
+  f = tempfile(fileext = '.html')
+  on.exit(unlink(f), add = TRUE)
+  xfun::write_utf8(format(x, fragment = FALSE, assets = c(if (css) 'css', 'js')), f)
+  xfun::browser_dom(f, fragment = TRUE)
+}
+
+lt_html_node = function(x, css = TRUE) {
+  js = pkg_file('www', 'lt.js')
+  runner = pkg_file('js', 'run-lt.js')
+  spec = x; spec$css = spec$rules = NULL
+  json = xfun::tojson(spec)
+  out = system2('node', c(shQuote(runner), shQuote(js)), input = json, stdout = TRUE)
+  if (!is.null(attr(out, 'status'))) stop('Node.js failed to render the lt table.')
+  Encoding(out) = 'UTF-8'
+  c(if (css) css_block(TRUE), user_css_block(x$css), rules_block(x$rules), out)
+}
+
+has_browser = function() {
+  tryCatch({xfun:::check_browser(NULL); TRUE}, error = function(e) FALSE)
+}
+
+has_node = function() nzchar(Sys.which('node'))
 
 .onLoad = function(...) {
   register_s3(

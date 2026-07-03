@@ -1,8 +1,6 @@
-js_path = system.file("www", "lt.js", package = "lt")
-
 build = function(spec) {
-  json = xfun::tojson(spec)
-  paste(system2("node", c("run-js.js", shQuote(js_path)), input = json, stdout = TRUE), collapse = "\n")
+  x = structure(spec, class = 'lt_tbl')
+  as.character(lt_html(x, method = 'node', css = FALSE, fragment = TRUE))
 }
 
 assert("basic table renders correct cells", {

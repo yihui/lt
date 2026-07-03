@@ -16,9 +16,9 @@ embedding. If \code{FALSE}, wrap in a minimal \verb{<html><body>} document.}
 \code{FALSE}, emit \verb{<link>} / \verb{<script src=...>} tags (assets must be served
 alongside the HTML).}
 
-\item{assets}{If \code{TRUE} (default), include the CSS+JS runtime. Pass
-\code{FALSE} to emit only the spec block when the runtime is already on the
-page.}
+\item{assets}{Which runtime assets to include: \code{TRUE} (default) for both
+CSS and JS, \code{FALSE} for neither, or a character vector subset of
+\code{c("css", "js")} for selective inclusion.}
 
 \item{...}{Reserved for future use.}
 }
