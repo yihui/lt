@@ -14,7 +14,7 @@ When asked to "publish lt to npm":
 
 1.  If `../lite.js/` doesn't exist, clone it from
     <https://github.com/yihui/lite.js>.
-2.  Copy `lt.js` and `lt.css` from this lt R package to `../lite.js/`.
+2.  Copy `lt.js` to `../lite.js/js/` and `lt.css` to `../lite.js/css/`.
 3.  In `../lite.js/`: pull the latest (`git pull --rebase`), then check the
     existing tags to determine the next version (`git tag | sort -V | tail
     -1`). Bump `package.json` to a version that does not already exist.

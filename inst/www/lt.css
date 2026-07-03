@@ -1,17 +1,17 @@
 th, td{ padding: 5px; }
 .lt-table {
   --bg: 4px solid transparent;
+  --bd: 1.5px solid #888;
 
   border-collapse: separate;
   caption-side: top;
   margin: 1em auto;
   border-spacing: 0;
-  border-top: 1.5px solid #888;
-  border-bottom: 1.5px solid #888;
+  border-top: var(--bd);
+  border-bottom: var(--bd);
 
   caption {
-    padding: .5em;
-    text-align: center;
+    padding: .5em; text-align: center; border-top: var(--bd);
     .lt-title    { font-size: 1.2em; }
     .lt-subtitle { font-size: 0.9em; }
   }
