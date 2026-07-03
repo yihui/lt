@@ -1,5 +1,10 @@
 ---
 title: Examples
+output:
+  html:
+    meta:
+      css: ["@default", "@key-buttons"]
+      js: ["@key-buttons"]
 ---
 
 ```{r}
@@ -456,3 +461,10 @@ lt(d) |>
   lt_format(~ P_Value, decimals = 4) |>
   lt_footnote("Two-sided p-value from log-rank test.", "column", "P_Value")
 ```
+
+## Interactivity
+
+When cell values are formatted, the original values are available in
+tooltips (hover over a cell to see). You can also `Alt + Click` on a
+table to reveal all raw values at once, or `Alt + Double-Click` to
+toggle raw values for all tables on the page.

@@ -494,12 +494,14 @@
       }
       const ind = indent[r - 1] || 0;
       for (let ci = 0; ci < cols.length; ci++) {
-        const k = `${r},${ci}`,
+        const k = `${r},${ci}`, c = cols[ci],
               m = bodyMarks[k], cc = classMap[k],
               cls = [colCls[ci], cc].filter(Boolean).join(" ");
         let s = styleMap[k] || "";
         if (ci === 0 && ind) s = (s ? s + ";" : "") + `padding-left:${ind + 1}em`;
-        out.push(`<td${attr("class", cls)}${attr("style", s)}>${esc(cell(cols[ci], r))}${m ? sup(m) : ""}</td>`);
+        const raw = str(data[c][r - 1]), disp = display[c][r - 1],
+              tip = raw !== disp ? ` title="${esc(raw)}"` : "";
+        out.push(`<td${attr("class", cls)}${attr("style", s)}${tip}>${esc(disp)}${m ? sup(m) : ""}</td>`);
       }
       out.push(`</tr>`);
     };
@@ -531,7 +533,13 @@
     return out.join("");
   }
 
-  const mount = (s, spec) => s.insertAdjacentHTML("afterend", buildHtml(spec));
+  const mount = (s, spec) => {
+    s.insertAdjacentHTML("afterend", buildHtml(spec));
+    const tbl = s.nextElementSibling,
+          raw = (e, el) => e.altKey && el.classList.toggle("lt-raw");
+    tbl.onclick = e => e.detail === 1 && raw(e, tbl);
+    tbl.ondblclick = e => raw(e, tbl.ownerDocument.documentElement);
+  };
   // q.push renders immediately; replay any entries queued before we loaded.
   const q = { push: e => mount(e.s, e.d) };
   (root.LT?.q || []).forEach(q.push);

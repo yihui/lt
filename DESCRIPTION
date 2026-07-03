@@ -1,7 +1,7 @@
 Package: lt
 Type: Package
 Title: Lightweight Tables via JSON Specs and JavaScript
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: person('Yihui', 'Xie', email = 'xie@yihui.name', role = c('aut', 'cre', 'cph'),
     comment = c(ORCID = '0000-0003-0645-5666', URL = 'https://yihui.org'))
 Description: A lightweight grammar of tables. Build a table by declaring a JSON
@@ -24,6 +24,6 @@ Suggests:
     shiny,
     testit
 Roxygen: list(markdown = TRUE)
-Config/lt.js: 1.14.57
+Config/lt.js: 1.14.61
 Config/roxygen2/version: 8.0.0
 Remotes: yihui/xfun

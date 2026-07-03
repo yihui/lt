@@ -50,3 +50,8 @@ th, td{ padding: 5px; }
     &::after  { content: "]"; }
   }
 }
+.lt-raw [title]::after {
+  content: " (" attr(title) ")";
+  background: lightyellow;
+  font-size: 0.85em;
+}

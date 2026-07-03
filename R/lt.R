@@ -25,6 +25,17 @@
 #' @param auto_label Whether to automatically clean column names for display
 #'   by replacing separators (`.` and `_`) with spaces. Set to `FALSE` to
 #'   show raw column names.
+#' @section Interactivity:
+#' When a cell value has been formatted (e.g., by auto-formatting or
+#' [lt_format()]), the original value is stored in the cell's `title`
+#' attribute and shown as a tooltip on hover. Additionally:
+#'
+#' - `Alt + Click` on a table toggles display of all raw values in that table.
+#' - `Alt + Double-Click` on a table toggles raw values globally (all tables
+#'   on the page).
+#'
+#' Raw values are shown as `(value)` after the formatted text, highlighted
+#' with a light yellow background.
 #' @return A table object that can be piped into `lt_*()` functions.
 #' @export
 #' @examples

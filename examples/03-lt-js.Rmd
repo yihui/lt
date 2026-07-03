@@ -3,8 +3,8 @@ title: "lt.js — JavaScript API Reference"
 output:
   html:
     meta:
-      css: ["@default", "@lt"]
-      js: ["@lt"]
+      css: ["@default", "@lt", "@key-buttons"]
+      js: ["@lt", "@key-buttons"]
 ---
 
 This document demonstrates the lt.js runtime directly from JavaScript.
@@ -621,3 +621,10 @@ LT.build({
   ]
 });
 ```
+
+## Interactivity
+
+When cell values are formatted, the original values are available in
+tooltips (hover over a cell to see). You can also `Alt + Click` on a
+table to reveal all raw values at once, or `Alt + Double-Click` to
+toggle raw values for all tables on the page.
