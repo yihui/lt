@@ -202,6 +202,22 @@ show raw column names.</p>
 <h3 id="sec:value_2" class="unnumbered unlisted">Value</h3>
 <p>A table object that can be piped into <code>lt_*()</code> functions.
 </p>
+<h3 id="sec:interactivity" class="unnumbered unlisted">Interactivity</h3>
+<p>When a cell value has been formatted (e.g., by auto-formatting or
+<code><a href="#sec:man-lt-format">lt_format()</a></code>), the original value is stored in the cell's <code>title</code>
+attribute and shown as a tooltip on hover. Additionally:
+</p>
+<ul>
+<li> <p><code>Alt + Click</code> on a table toggles display of all raw values in that table.
+</p>
+</li>
+<li> <p><code>Alt + Double-Click</code> on a table toggles raw values globally (all tables
+on the page).
+</p>
+</li></ul>
+<p>Raw values are shown as <code>(value)</code> after the formatted text, highlighted
+with a light yellow background.
+</p>
 <h3 id="sec:examples_2" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">lt(head(mtcars[, 1:4]))
 </code></pre>
