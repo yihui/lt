@@ -241,3 +241,55 @@ assert("merge drops a conditional block when its references are empty", {
   (matches(html, ".*>x</td>.*") %==% "")
   (matches(html, ".*\\(/\\).*") %==% html)
 })
+
+# Count the pages in a PDF file (each page object is "/Type /Page" not
+# followed by "s", which would be "/Pages").
+pdf_pages = function(f) {
+  raw = readChar(f, file.info(f)$size, useBytes = TRUE)
+  length(gregexpr("/Type\\s*/Page[^s]", raw)[[1]])
+}
+
+if (has_browser()) assert("lt_export() writes PDF and PNG by extension", {
+  x = lt(data.frame(a = 1:2, b = c("x", "y")))
+  pdf = tempfile(fileext = ".pdf")
+  png = tempfile(fileext = ".png")
+  on.exit(unlink(c(pdf, png)), add = TRUE)
+
+  out = lt_export(x, pdf)
+  (out %==% pdf)
+  (file.exists(pdf))
+  # PDF magic bytes: "%PDF"
+  (rawToChar(readBin(pdf, "raw", 4L)) %==% "%PDF")
+  # A cropped table fits on a single page.
+  (pdf_pages(pdf) %==% 1L)
+
+  lt_export(x, png)
+  (file.exists(png))
+  # PNG magic bytes: 0x89 "PNG"
+  (readBin(png, "raw", 4L) %==% as.raw(c(0x89, 0x50, 0x4e, 0x47)))
+})
+
+# A taller/wider table (more rows than the PDF measurement used to account
+# for) must still crop to one page: the table's caption border and footer
+# spacing extend past the table's own border-box, so we measure the body's
+# scroll size, not the table box.
+if (has_browser()) assert("lt_export() crops a large table to one PDF page", {
+  x = lt(head(iris, 20))
+  pdf = tempfile(fileext = ".pdf")
+  on.exit(unlink(pdf), add = TRUE)
+  lt_export(x, pdf)
+  (pdf_pages(pdf) %==% 1L)
+})
+
+if (has_browser() && requireNamespace("magick", quietly = TRUE))
+  assert("lt_export() crops PNG tightly to the table size", {
+    x = lt(head(mtcars))
+    d = lt_measure(format(x, fragment = FALSE), c(8L, 8L))
+    png = tempfile(fileext = ".png")
+    on.exit(unlink(png), add = TRUE)
+    lt_export(x, png, padding = 8)
+    info = magick::image_info(magick::image_read(png))
+    # The cropped image matches the measured content box exactly.
+    (info$width %==% d[1L])
+    (info$height %==% d[2L])
+  })

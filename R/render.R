@@ -265,6 +265,122 @@ lt_html_node = function(x, css = TRUE) {
   c(if (css) css_block(TRUE), user_css_block(x$css), rules_block(x$rules), out)
 }
 
+# Write `html` to a temp file, run it through headless Chromium via
+# `fun`, and clean up. Shared by the measure pass (browser_dom) and the
+# render pass (browser_print).
+with_temp_html = function(html, fun) {
+  f = tempfile(fileext = '.html')
+  on.exit(unlink(f), add = TRUE)
+  xfun::write_utf8(html, f)
+  fun(f)
+}
+
+# Layout CSS shared by the measure and render passes: zero the page margins
+# so the table sits flush at the top-left, shrink the body to the table's
+# width, and add the crop padding. Both passes MUST use identical layout so
+# the size measured in pass 1 matches what pass 2 renders. `pad` is
+# c(vertical, horizontal) in CSS pixels.
+crop_layout = function(pad) sprintf(paste0(
+  'html,body{margin:0!important}',
+  'body{padding:%dpx %dpx!important;width:max-content}'
+), pad[1L], pad[2L])
+
+# Measure the rendered table's full pixel size (including the crop padding).
+# Chromium runs lt.js, so the box is only known after the JS builds the
+# table; inject a load handler that stamps body.scrollWidth/scrollHeight onto
+# <body> as data attributes, dump the DOM, and parse them back. We measure
+# the body's scroll size rather than the table's bounding box because parts
+# of the table (caption border, footer spacing) extend beyond the table's
+# own border-box; using the table box alone undercounts the height and makes
+# the PDF spill onto a second page. Returns integer c(width, height).
+lt_measure = function(html, pad, browser = NULL) {
+  inject = paste0(
+    '<style>', crop_layout(pad), '</style>',
+    '<script>addEventListener("load",function(){',
+    'var b=document.body;',
+    'b.dataset.ltw=b.scrollWidth;b.dataset.lth=b.scrollHeight})</script>'
+  )
+  html = sub('</head>', paste0(inject, '</head>'), html, fixed = TRUE)
+  dom = with_temp_html(html, function(f) xfun::browser_dom(f, browser = browser))
+  m = regmatches(dom, regexec('data-ltw="([0-9]+)" data-lth="([0-9]+)"', dom))[[1]]
+  if (length(m) != 3L) stop('Failed to measure the table dimensions.')
+  as.integer(m[-1L])
+}
+
+#' Export an lt table to PDF or PNG
+#'
+#' Render the table in a headless Chromium browser and save the result as a
+#' file. The output format is determined by the file extension of `output`:
+#' `.pdf` produces a vector PDF (via Chromium's print-to-PDF); any other
+#' extension produces a raster PNG screenshot. SVG is not supported because
+#' Chromium cannot export a rendered page as SVG; use `.pdf` for a vector
+#' format.
+#'
+#' @param x An `lt_tbl` object.
+#' @param output Output file path. Its extension selects the format: `.pdf`
+#'   for vector PDF, otherwise PNG.
+#' @param crop Whether to crop the output tightly to the table, removing the
+#'   surrounding page whitespace. This adds a preliminary browser pass to
+#'   measure the rendered table. Set to `FALSE` for the default full page.
+#'   Cropping PNG output requires the \pkg{magick} package; without it, PNG
+#'   falls back to the full page (with a warning).
+#' @param padding Padding in CSS pixels to keep around the table when
+#'   cropping. A single value (all sides) or a length-two vector
+#'   `c(vertical, horizontal)`.
+#' @param browser Path to the Chromium-based browser; passed to
+#'   [xfun::browser_print()]. `NULL` (default) auto-detects.
+#' @param ... Passed to [xfun::browser_print()] (e.g., `window_size` when
+#'   `crop = FALSE`).
+#' @return The `output` path, invisibly.
+#' @export
+#' @examples
+#' if (interactive()) lt_export(lt(head(mtcars)), 'mtcars.png')
+lt_export = function(
+  x, output = 'lt.pdf', crop = TRUE, padding = 8, browser = NULL, ...
+) {
+  html = format(x, fragment = FALSE)
+  is_pdf = tolower(xfun::file_ext(output)) == 'pdf'
+  # PNG cropping needs magick to trim Chromium's screenshot (its --screenshot
+  # size is the window size, which we can't shrink below Chromium's minimums).
+  # PDF cropping needs no extra package: an @page rule sets the page box.
+  if (crop && !is_pdf && !requireNamespace('magick', quietly = TRUE)) {
+    warning('Cropping PNG output requires the magick package; ',
+            'exporting the full page instead.')
+    crop = FALSE
+  }
+  if (crop) {
+    pad = rep_len(padding, 2L)  # c(vertical, horizontal)
+    d = lt_measure(html, pad, browser)
+    w = d[1L]; h = d[2L]  # full content size, padding already included
+    layout = crop_layout(pad)
+    if (is_pdf) {
+      # @page size drives the PDF page box exactly; no image post-processing.
+      style = sprintf('<style>@page{size:%dpx %dpx;margin:0}%s</style>', w, h, layout)
+      html = sub('</head>', paste0(style, '</head>'), html, fixed = TRUE)
+      with_temp_html(html, function(f)
+        xfun::browser_print(f, output, browser = browser, ...))
+      return(invisible(output))
+    }
+    # PNG: render onto a window large enough that the table is drawn
+    # unscaled at the top-left (Chromium clamps the window to a minimum size
+    # and reserves some height, and scales content that overflows the
+    # viewport), then crop the screenshot to the exact table box with magick.
+    html = sub('</head>', paste0('<style>', layout, '</style></head>'), html, fixed = TRUE)
+    png = tempfile(fileext = '.png')
+    on.exit(unlink(png), add = TRUE)
+    with_temp_html(html, function(f) xfun::browser_print(
+      f, png, browser = browser, window_size = c(max(500L, w), h + 120L)
+    ))
+    img = magick::image_read(png)
+    img = magick::image_crop(img, sprintf('%dx%d+0+0', w, h))
+    magick::image_write(img, output, format = 'png')
+    return(invisible(output))
+  }
+  with_temp_html(html, function(f)
+    xfun::browser_print(f, output, browser = browser, ...))
+  invisible(output)
+}
+
 has_browser = function() {
   tryCatch({xfun:::check_browser(NULL); TRUE}, error = function(e) FALSE)
 }
