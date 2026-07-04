@@ -128,6 +128,21 @@ assert("fmt_number with percent, big_mark, and minus sign", {
   (matches(html, ".*>−1,234,567</td>.*") %==% "")
 })
 
+assert("infinity renders as ∞, with minus sign depending on formatting", {
+  # Raw (unformatted, non-numeric column) infinities use an ASCII hyphen.
+  html = build(list(data = list(x = c(Inf, -Inf)), auto_format = FALSE))
+  (matches(html, ".*>∞</td>.*>-∞</td>.*") %==% "")
+  # Auto-formatted numeric column: minus becomes the typographic minus (U+2212).
+  html = build(list(data = list(x = c(1.5, Inf, -Inf))))
+  (matches(html, ".*>∞</td>.*>−∞</td>.*") %==% "")
+  # Explicit fmt_number keeps ±∞ and uses the typographic minus.
+  html = build(list(
+    data = list(x = c(Inf, -Inf)),
+    ops = list(list(type = "fmt_number", columns = list("x"), decimals = 2))
+  ))
+  (matches(html, ".*>∞</td>.*>−∞</td>.*") %==% "")
+})
+
 assert("fmt_number prefix and suffix", {
   html = build(list(
     data = list(price = c(1234.5, 678.9)),
