@@ -1,4 +1,5 @@
 th, td{ padding: 5px; }
+.lt-wrap { overflow-x: auto; }
 .lt-table {
   --bg: 4px solid transparent;
   --bd: 1.5px solid #888;

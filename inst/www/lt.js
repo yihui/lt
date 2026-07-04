@@ -536,12 +536,14 @@
     }
 
     out.push(`</table>`);
-    return out.join("");
+    // Wrap in a div so a wide table can scroll horizontally (`overflow-x`)
+    // instead of overflowing the page.
+    return `<div class="lt-wrap">${out.join("")}</div>`;
   }
 
   const mount = (s, spec) => {
     s.insertAdjacentHTML("afterend", buildHtml(spec));
-    const tbl = s.nextElementSibling,
+    const tbl = s.nextElementSibling.querySelector("table"),
           raw = (e, el) => e.altKey && el.classList.toggle("lt-raw");
     tbl.onclick = e => e.detail === 1 && raw(e, tbl);
     tbl.ondblclick = e => raw(e, tbl.ownerDocument.documentElement);

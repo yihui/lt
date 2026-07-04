@@ -8,6 +8,11 @@ assert("basic table renders correct cells", {
   (matches(html, ".*<table.*>x</th>.*>1</td>.*>b</td>.*") %==% "")
 })
 
+assert("table is wrapped in a div for horizontal scroll", {
+  html = build(list(data = list(x = 1:2)))
+  (matches(html, '.*<div class="lt-wrap"><table.*</table></div>.*') %==% "")
+})
+
 assert("fmt_number formats decimals", {
   html = build(list(
     data = list(x = c(1.1, 2.346)),
