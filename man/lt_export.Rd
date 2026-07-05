@@ -84,5 +84,21 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 }
 
 \examples{
-if (interactive()) lt_export(lt(head(mtcars)), 'mtcars.png')
+tbl = lt(head(mtcars))
+
+# HTML with the JavaScript spec (table built by lt.js when viewed): this
+# needs neither Node.js nor a browser, so it always runs. Return the HTML
+# as a string with output = NA, or write it to a file.
+lt_export(tbl, NA, method = 'raw')
+lt_export(tbl, tempfile(fileext = '.html'), method = 'raw')
+
+# Bake a static <table> (needs Node.js or a headless browser).
+if (lt:::has_node() || lt:::has_browser())
+  lt_export(tbl, NA, method = 'auto')
+
+# PDF / PNG are rendered in a headless browser and cropped to the table.
+if (lt:::has_browser()) {
+  lt_export(tbl, tempfile(fileext = '.pdf'))
+  lt_export(tbl, tempfile(fileext = '.png'), width = 400)
+}
 }
