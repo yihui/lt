@@ -1,6 +1,6 @@
 build = function(spec) {
   x = structure(spec, class = 'lt_tbl')
-  as.character(render_html(x, method = 'node', css = FALSE, fragment = TRUE))
+  as.character(lt_html(x, method = 'node', css = FALSE, fragment = TRUE))
 }
 
 assert("basic table renders correct cells", {
@@ -305,7 +305,7 @@ if (has_browser() && requireNamespace("magick", quietly = TRUE))
     (magick::image_info(magick::image_read(png))$width %==% 400L)
   })
 
-# .html output bakes a static table via render_html().
+# .html output bakes a static table via lt_html().
 if (has_node() || has_browser())
   assert("lt_export() writes a static HTML file", {
     html = tempfile(fileext = ".html")

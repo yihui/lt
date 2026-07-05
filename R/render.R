@@ -155,7 +155,7 @@ print.lt_tbl = function(x, ...) {
 
 knit_print.lt_tbl = function(x, ...) {
   if (is.list(opts <- getOption('lt.lt_html'))) return(structure(
-    do.call(render_html, c(list(x), opts)), class = 'knit_asis'
+    do.call(lt_html, c(list(x), opts)), class = 'knit_asis'
   ))
   first = !isTRUE(knitr::opts_knit$get(.knit_flag))
   if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), .knit_flag))
@@ -171,13 +171,13 @@ knit_print.lt_tbl = function(x, ...) {
 }
 
 # record_print (litedown / xfun::record): for HTML output emit assets + spec;
-# for non-HTML output (markdown), render to static HTML via render_html().
+# for non-HTML output (markdown), render to static HTML via lt_html().
 
 #' @importFrom xfun record_print
 #' @export
 record_print.lt_tbl = function(x, ...) {
   if (is.list(opts <- getOption('lt.lt_html')))
-    return(xfun::new_record(c(do.call(render_html, c(list(x), opts)), ''), 'asis'))
+    return(xfun::new_record(c(do.call(lt_html, c(list(x), opts)), ''), 'asis'))
   xfun::new_record(c(
     css_block(inline = FALSE), user_css_block(x$css, local = TRUE),
     rules_block(x$rules), spec_block(x), js_block(inline = FALSE), ''
@@ -216,7 +216,7 @@ register_s3 = function(pkgs, generics) {
 #   "auto"    -> node if available, else browser.
 # `css` includes the lt.css runtime stylesheet (user CSS from lt_css() always
 # is); `fragment = FALSE` wraps the result in a full HTML document.
-render_html = function(
+lt_html = function(
   x, method = c('auto', 'node', 'browser', 'raw'), css = TRUE, fragment = FALSE
 ) {
   method = match.arg(method)
@@ -227,19 +227,19 @@ render_html = function(
   if (is.null(method)) stop(
     'No rendering method available. Install a Chromium-based browser or Node.js.'
   )
-  html = switch(method, browser = render_html_browser(x, css), node = render_html_node(x, css))
+  html = switch(method, browser = lt_html_browser(x, css), node = lt_html_node(x, css))
   if (!fragment) html = html_doc(html)
   xfun::raw_string(html)
 }
 
-render_html_browser = function(x, css = TRUE) {
+lt_html_browser = function(x, css = TRUE) {
   f = tempfile(fileext = '.html')
   on.exit(unlink(f), add = TRUE)
   xfun::write_utf8(format(x, fragment = FALSE, assets = c(if (css) 'css', 'js')), f)
   xfun::browser_dom(f, fragment = TRUE)
 }
 
-render_html_node = function(x, css = TRUE) {
+lt_html_node = function(x, css = TRUE) {
   js = pkg_file('www', 'lt.js')
   runner = pkg_file('js', 'run-lt.js')
   spec = x; spec$css = spec$rules = NULL
@@ -355,7 +355,7 @@ lt_export = function(
   # HTML output (also the target when `output` is NA, since there's no
   # extension to infer a format from): no browser needed at view time.
   if (is.na(output) || tolower(xfun::file_ext(output)) == 'html') {
-    html = render_html(x, method, css, fragment)
+    html = lt_html(x, method, css, fragment)
     if (is.na(output)) return(html)
     xfun::write_utf8(html, output)
     return(output)
