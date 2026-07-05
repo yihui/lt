@@ -2,21 +2,36 @@
 % Please edit documentation in R/render.R
 \name{lt_export}
 \alias{lt_export}
-\title{Export an lt table to PDF or PNG}
+\title{Export an lt table to a file}
 \usage{
-lt_export(x, output = "lt.pdf", crop = TRUE, padding = 8, browser = NULL, ...)
+lt_export(
+  x,
+  output = "lt.pdf",
+  crop = TRUE,
+  width = NULL,
+  height = NULL,
+  padding = 8,
+  browser = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{An \code{lt_tbl} object.}
 
-\item{output}{Output file path. Its extension selects the format: \code{.pdf}
-for vector PDF, otherwise PNG.}
+\item{output}{Output file path. Its extension selects the format: \code{.html},
+\code{.pdf}, or (otherwise) PNG.}
 
-\item{crop}{Whether to crop the output tightly to the table, removing the
+\item{crop}{Whether to crop the PDF/PNG tightly to the table, removing the
 surrounding page whitespace. This adds a preliminary browser pass to
 measure the rendered table. Set to \code{FALSE} for the default full page.
 Cropping PNG output requires the \pkg{magick} package; without it, PNG
-falls back to the full page (with a warning).}
+falls back to the full page (with a warning). Ignored for \code{.html}.}
+
+\item{width, height}{The width and height of the table in CSS pixels. By
+default (\code{NULL}) the width shrinks to the table's natural width and the
+height is measured; specify either to override. Setting \code{width} smaller
+than the natural width wraps cell content; a larger \code{width} pads the
+table. Ignored for \code{.html}.}
 
 \item{padding}{Padding in CSS pixels to keep around the table when
 cropping. A single value (all sides) or a length-two vector
@@ -25,19 +40,18 @@ cropping. A single value (all sides) or a length-two vector
 \item{browser}{Path to the Chromium-based browser; passed to
 \code{\link[xfun:browser_print]{xfun::browser_print()}}. \code{NULL} (default) auto-detects.}
 
-\item{...}{Passed to \code{\link[xfun:browser_print]{xfun::browser_print()}} (e.g., \code{window_size} when
-\code{crop = FALSE}).}
+\item{...}{For PDF/PNG, passed to \code{\link[xfun:browser_print]{xfun::browser_print()}}; for \code{.html},
+passed to \code{\link[=lt_html]{lt_html()}}.}
 }
 \value{
-The \code{output} path, invisibly.
+The \code{output} path.
 }
 \description{
-Render the table in a headless Chromium browser and save the result as a
-file. The output format is determined by the file extension of \code{output}:
-\code{.pdf} produces a vector PDF (via Chromium's print-to-PDF); any other
-extension produces a raster PNG screenshot. SVG is not supported because
-Chromium cannot export a rendered page as SVG; use \code{.pdf} for a vector
-format.
+Save a table to disk. The output format is chosen from the file extension
+of \code{output}: \code{.html} writes a static HTML table (via \code{\link[=lt_html]{lt_html()}}, no
+JavaScript needed to view it), \code{.pdf} writes a vector PDF, and any other
+extension writes a PNG. PDF and PNG are produced by rendering the table in
+a headless Chromium browser (via \code{\link[xfun:browser_print]{xfun::browser_print()}}).
 }
 \examples{
 if (interactive()) lt_export(lt(head(mtcars)), 'mtcars.png')

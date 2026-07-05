@@ -284,7 +284,7 @@ if (has_browser()) assert("lt_export() crops a large table to one PDF page", {
 if (has_browser() && requireNamespace("magick", quietly = TRUE))
   assert("lt_export() crops PNG tightly to the table size", {
     x = lt(head(mtcars))
-    d = lt_measure(format(x, fragment = FALSE), c(8L, 8L))
+    d = lt_measure(format(x, fragment = FALSE), c(8L, 8L), NULL)
     png = tempfile(fileext = ".png")
     on.exit(unlink(png), add = TRUE)
     lt_export(x, png, padding = 8)
@@ -292,4 +292,26 @@ if (has_browser() && requireNamespace("magick", quietly = TRUE))
     # The cropped image matches the measured content box exactly.
     (info$width %==% d[1L])
     (info$height %==% d[2L])
+  })
+
+# An explicit width overrides the measured width for both PDF and PNG,
+# regardless of crop.
+if (has_browser() && requireNamespace("magick", quietly = TRUE))
+  assert("lt_export() honors an explicit width", {
+    x = lt(head(mtcars))
+    png = tempfile(fileext = ".png")
+    on.exit(unlink(png), add = TRUE)
+    lt_export(x, png, width = 400)
+    (magick::image_info(magick::image_read(png))$width %==% 400L)
+  })
+
+# .html output writes a static table (no browser) via lt_html().
+if (has_node() || has_browser())
+  assert("lt_export() writes a static HTML file", {
+    html = tempfile(fileext = ".html")
+    on.exit(unlink(html), add = TRUE)
+    out = lt_export(lt(data.frame(a = 1:2, b = c("x", "y"))), html)
+    (out %==% html)
+    txt = paste(readLines(html), collapse = "")
+    (matches(txt, ".*<table.*>b</th>.*>1</td>.*>x</td>.*") %==% "")
   })
