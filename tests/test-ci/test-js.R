@@ -281,7 +281,7 @@ if (has_browser()) assert("lt_export() crops a large table to one PDF page", {
   (pdf_pages(pdf) %==% 1L)
 })
 
-if (has_browser() && requireNamespace("magick", quietly = TRUE))
+if (has_browser() && xfun::loadable("magick"))
   assert("lt_export() crops PNG tightly to the table size", {
     x = lt(head(mtcars))
     d = lt_measure(format(x, fragment = FALSE), c(8L, 8L), NULL)
@@ -296,7 +296,7 @@ if (has_browser() && requireNamespace("magick", quietly = TRUE))
 
 # An explicit width overrides the measured width for both PDF and PNG,
 # regardless of crop.
-if (has_browser() && requireNamespace("magick", quietly = TRUE))
+if (has_browser() && xfun::loadable("magick"))
   assert("lt_export() honors an explicit width", {
     x = lt(head(mtcars))
     png = tempfile(fileext = ".png")
@@ -312,7 +312,7 @@ if (has_node() || has_browser())
     on.exit(unlink(html), add = TRUE)
     out = lt_export(lt(data.frame(a = 1:2, b = c("x", "y"))), html)
     (out %==% html)
-    txt = paste(readLines(html), collapse = "")
+    txt = readLines(html)
     (matches(txt, ".*<table.*>b</th>.*>1</td>.*>x</td>.*") %==% "")
   })
 
@@ -321,12 +321,12 @@ if (has_node() || has_browser())
   assert("lt_export(output = NA) returns the HTML string", {
     html = lt_export(lt(data.frame(a = 1:2, b = c("x", "y"))), NA)
     (is.character(html))
-    (matches(paste(html, collapse = ""), ".*<table.*>1</td>.*>x</td>.*") %==% "")
+    (matches(html, ".*<table.*>1</td>.*>x</td>.*") %==% "")
   })
 
 # method = "raw" writes the JavaScript-spec HTML (table built client-side),
 # so the file carries the lt.js runtime and the spec, not a baked <table>.
 assert('lt_export(method = "raw") emits the JS spec, no external tool', {
   html = lt_export(lt(data.frame(a = 1:2)), NA, method = "raw")
-  (matches(paste(html, collapse = ""), ".*<script>.*LT.*</script>.*") %==% "")
+  (matches(html, ".*<script>.*LT.*</script>.*") %==% "")
 })
