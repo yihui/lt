@@ -1,8 +1,6 @@
 # CHANGES IN lt VERSION 0.2
 
-- Added `lt_html()` to render an lt table to a static HTML `<table>` via
-  Node.js or a headless browser. This is useful for output formats that support
-  raw HTML but cannot run JavaScript (e.g., GFM).
+- Added `lt_export()` to save an lt table to a file: `.html` (an HTML table, optionally baked to a static `<table>` via Node.js or a headless browser so it needs no JavaScript to view), `.pdf` (a vector PDF), or `.png` (a raster image). PDF and PNG are rendered in a headless Chromium browser and cropped tightly to the table by default.
 
 # CHANGES IN lt VERSION 0.1
 
