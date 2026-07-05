@@ -131,7 +131,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
     if ('js' %in% assets) js_block(inline_assets)
   )
   if (!fragment) body = html_doc(body)
-  paste(body, collapse = '\n')
+  xfun::raw_string(paste(body, collapse = '\n'))
 }
 
 #' Print an `lt_tbl` (Opens in the Viewer or Browser)
@@ -220,9 +220,9 @@ lt_html = function(
   x, method = c('auto', 'node', 'browser', 'raw'), css = TRUE, fragment = FALSE
 ) {
   method = match.arg(method)
-  if (method == 'raw') return(xfun::raw_string(format(
+  if (method == 'raw') return(format(
     x, fragment = fragment, assets = c(if (css) 'css', 'js')
-  )))
+  ))
   if (method == 'auto') method = if (has_node()) 'node' else if (has_browser()) 'browser'
   if (is.null(method)) stop(
     'No rendering method available. Install a Chromium-based browser or Node.js.'

@@ -13,7 +13,7 @@ assert("format(fragment = FALSE) wraps in DOCTYPE", {
 })
 
 assert("format(assets = FALSE) omits runtime", {
-  html = format(x, assets = FALSE)
+  html = unclass(format(x, assets = FALSE))
   (matches(html, ".*<style>.*") %==% html)
   (matches(html, ".*LT\\.build.*") %==% html)
   (matches(html, ".*<script>.*") %==% "")
