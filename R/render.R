@@ -208,31 +208,14 @@ register_s3 = function(pkgs, generics) {
 }
 
 
-#' Render an lt table to a static HTML table
-#'
-#' Execute the JavaScript runtime to produce a rendered `<table>` element. Two
-#' methods are available: `"node"` uses Node.js; `"browser"` uses a headless
-#' Chromium browser (via [xfun::browser_dom()]). The default `"auto"` tries
-#' Node first (faster), then falls back to the browser.
-#'
-#' @param x An `lt_tbl` object.
-#' @param method One of `"auto"`, `"browser"`, or `"node"`.
-#' @param css Whether to include the lt.css runtime stylesheet in the output.
-#'   User CSS from [lt_css()] is always included.
-#' @param fragment If `FALSE` (default), wrap in a full HTML document. If
-#'   `TRUE`, return only the rendered fragment.
-#' @return A character vector of the rendered HTML.
-#' @section Global option:
-#' When the option `lt.lt_html` is set to a list of arguments (e.g.,
-#' `options(lt.lt_html = list(fragment = TRUE, css = FALSE))`), the
-#' [knit_print][knitr::knit_print] and [record_print][xfun::record_print]
-#' methods will call `lt_html()` with these arguments instead of emitting the
-#' default JavaScript-based spec. This is useful for output formats that
-#' support raw HTML but cannot run JavaScript (e.g., GitHub Flavored
-#' Markdown).
-#' @export
-#' @examples
-#' if (interactive()) lt_html(lt(head(mtcars)))
+# Render an lt table to a static HTML table by executing the JavaScript
+# runtime, producing a rendered <table> element. Two methods: "node" uses
+# Node.js; "browser" uses a headless Chromium browser (via browser_dom()).
+# "auto" tries Node first (faster), then falls back to the browser. `css`
+# controls whether the lt.css runtime stylesheet is included (user CSS from
+# lt_css() always is); `fragment = FALSE` wraps the result in a full HTML
+# document. Not exported: reach it via lt_export(x, 'file.html'). Also used
+# by the `lt.lt_html` option path (see knit_print/record_print above).
 lt_html = function(
   x, method = c('auto', 'node', 'browser'), css = TRUE, fragment = FALSE
 ) {
@@ -311,10 +294,16 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' Export an lt table to a file
 #'
 #' Save a table to disk. The output format is chosen from the file extension
-#' of `output`: `.html` writes a static HTML table (via [lt_html()], no
-#' JavaScript needed to view it), `.pdf` writes a vector PDF, and any other
-#' extension writes a PNG. PDF and PNG are produced by rendering the table in
-#' a headless Chromium browser (via [xfun::browser_print()]).
+#' of `output`: `.html` writes a static HTML table (no JavaScript needed to
+#' view it), `.pdf` writes a vector PDF, and any other extension writes a PNG.
+#' PDF and PNG are produced by rendering the table in a headless Chromium
+#' browser (via [xfun::browser_print()]).
+#'
+#' The `.html` output runs the JavaScript runtime once (using Node.js or a
+#' headless browser) to produce a plain static `<table>`, so the file needs no
+#' JavaScript to view. Extra arguments in `...` are forwarded to the internal
+#' renderer, which accepts `method` (one of `"auto"`, `"node"`, `"browser"`)
+#' and `css` (whether to inline the lt.css runtime stylesheet).
 #'
 #' @param x An `lt_tbl` object.
 #' @param output Output file path. Its extension selects the format: `.html`,
@@ -324,28 +313,35 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #'   measure the rendered table. Set to `FALSE` for the default full page.
 #'   Cropping PNG output requires the \pkg{magick} package; without it, PNG
 #'   falls back to the full page (with a warning). Ignored for `.html`.
-#' @param width,height The width and height of the table in CSS pixels. By
-#'   default (`NULL`) the width shrinks to the table's natural width and the
-#'   height is measured; specify either to override. Setting `width` smaller
-#'   than the natural width wraps cell content; a larger `width` pads the
-#'   table. Ignored for `.html`.
+#' @param width The width of the table in CSS pixels. By default (`NULL`) it
+#'   shrinks to the table's natural width. A smaller `width` wraps cell
+#'   content; a larger one pads the table. Honored whether `crop` is `TRUE` or
+#'   `FALSE`. Ignored for `.html`.
 #' @param padding Padding in CSS pixels to keep around the table when
 #'   cropping. A single value (all sides) or a length-two vector
 #'   `c(vertical, horizontal)`.
 #' @param browser Path to the Chromium-based browser; passed to
 #'   [xfun::browser_print()]. `NULL` (default) auto-detects.
 #' @param ... For PDF/PNG, passed to [xfun::browser_print()]; for `.html`,
-#'   passed to [lt_html()].
+#'   `method` and `css` (see Details).
 #' @return The `output` path.
+#' @section Global option:
+#' When the option `lt.lt_html` is set to a list of arguments (e.g.,
+#' `options(lt.lt_html = list(css = FALSE))`), the
+#' [knit_print][knitr::knit_print] and [record_print][xfun::record_print]
+#' methods emit the same static HTML table as `lt_export(x, "*.html")` (using
+#' those arguments) instead of the default JavaScript-based spec. This is
+#' useful for output formats that support raw HTML but cannot run JavaScript
+#' (e.g., GitHub Flavored Markdown).
 #' @export
 #' @examples
 #' if (interactive()) lt_export(lt(head(mtcars)), 'mtcars.png')
 lt_export = function(
-  x, output = 'lt.pdf', crop = TRUE, width = NULL, height = NULL,
-  padding = 8, browser = NULL, ...
+  x, output = 'lt.pdf', crop = TRUE, width = NULL, padding = 8,
+  browser = NULL, ...
 ) {
   ext = tolower(xfun::file_ext(output))
-  # .html: a static table needs no browser; delegate to the HTML exporter.
+  # .html: a static table needs no browser at view time; render it once now.
   if (ext == 'html') {
     xfun::write_utf8(lt_html(x, ...), output)
     return(output)
@@ -361,11 +357,11 @@ lt_export = function(
     crop = FALSE
   }
   pad = rep_len(padding, 2L)  # c(vertical, horizontal)
-  # When the user fixes a width (or we need to crop), measure the rendered
-  # size at that width; `w`/`h` are the outer box including padding.
-  if (crop || !is.null(width) || !is.null(height)) {
+  # When cropping or when the user fixes a width, measure the rendered size
+  # (at that width); `w`/`h` are the outer box including padding.
+  if (crop || !is.null(width)) {
     d = lt_measure(html, pad, width, browser)
-    w = width %||% d[1L]; h = height %||% d[2L]
+    w = width %||% d[1L]; h = d[2L]
     layout = crop_layout(pad, w)
   }
   if (crop && is_pdf) {
@@ -391,10 +387,10 @@ lt_export = function(
     magick::image_write(img, output, format = 'png')
     return(output)
   }
-  # No crop: honor an explicit width/height via window_size (and body layout
-  # for width), else fall back to browser_print's default full page.
+  # No crop: honor an explicit width via body layout + window_size, else fall
+  # back to browser_print's default full page.
   args = list(browser = browser, ...)
-  if (!is.null(width) || !is.null(height)) {
+  if (!is.null(width)) {
     html = sub('</head>', paste0('<style>', layout, '</style></head>'), html, fixed = TRUE)
     args$window_size = c(w, h)
   }

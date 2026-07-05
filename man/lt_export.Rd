@@ -9,7 +9,6 @@ lt_export(
   output = "lt.pdf",
   crop = TRUE,
   width = NULL,
-  height = NULL,
   padding = 8,
   browser = NULL,
   ...
@@ -27,11 +26,10 @@ measure the rendered table. Set to \code{FALSE} for the default full page.
 Cropping PNG output requires the \pkg{magick} package; without it, PNG
 falls back to the full page (with a warning). Ignored for \code{.html}.}
 
-\item{width, height}{The width and height of the table in CSS pixels. By
-default (\code{NULL}) the width shrinks to the table's natural width and the
-height is measured; specify either to override. Setting \code{width} smaller
-than the natural width wraps cell content; a larger \code{width} pads the
-table. Ignored for \code{.html}.}
+\item{width}{The width of the table in CSS pixels. By default (\code{NULL}) it
+shrinks to the table's natural width. A smaller \code{width} wraps cell
+content; a larger one pads the table. Honored whether \code{crop} is \code{TRUE} or
+\code{FALSE}. Ignored for \code{.html}.}
 
 \item{padding}{Padding in CSS pixels to keep around the table when
 cropping. A single value (all sides) or a length-two vector
@@ -41,18 +39,36 @@ cropping. A single value (all sides) or a length-two vector
 \code{\link[xfun:browser_print]{xfun::browser_print()}}. \code{NULL} (default) auto-detects.}
 
 \item{...}{For PDF/PNG, passed to \code{\link[xfun:browser_print]{xfun::browser_print()}}; for \code{.html},
-passed to \code{\link[=lt_html]{lt_html()}}.}
+\code{method} and \code{css} (see Details).}
 }
 \value{
 The \code{output} path.
 }
 \description{
 Save a table to disk. The output format is chosen from the file extension
-of \code{output}: \code{.html} writes a static HTML table (via \code{\link[=lt_html]{lt_html()}}, no
-JavaScript needed to view it), \code{.pdf} writes a vector PDF, and any other
-extension writes a PNG. PDF and PNG are produced by rendering the table in
-a headless Chromium browser (via \code{\link[xfun:browser_print]{xfun::browser_print()}}).
+of \code{output}: \code{.html} writes a static HTML table (no JavaScript needed to
+view it), \code{.pdf} writes a vector PDF, and any other extension writes a PNG.
+PDF and PNG are produced by rendering the table in a headless Chromium
+browser (via \code{\link[xfun:browser_print]{xfun::browser_print()}}).
 }
+\details{
+The \code{.html} output runs the JavaScript runtime once (using Node.js or a
+headless browser) to produce a plain static \verb{<table>}, so the file needs no
+JavaScript to view. Extra arguments in \code{...} are forwarded to the internal
+renderer, which accepts \code{method} (one of \code{"auto"}, \code{"node"}, \code{"browser"})
+and \code{css} (whether to inline the lt.css runtime stylesheet).
+}
+\section{Global option}{
+
+When the option \code{lt.lt_html} is set to a list of arguments (e.g.,
+\code{options(lt.lt_html = list(css = FALSE))}), the
+\link[knitr:knit_print]{knit_print} and \link[xfun:record_print]{record_print}
+methods emit the same static HTML table as \code{lt_export(x, "*.html")} (using
+those arguments) instead of the default JavaScript-based spec. This is
+useful for output formats that support raw HTML but cannot run JavaScript
+(e.g., GitHub Flavored Markdown).
+}
+
 \examples{
 if (interactive()) lt_export(lt(head(mtcars)), 'mtcars.png')
 }
