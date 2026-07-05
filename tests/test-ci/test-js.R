@@ -1,6 +1,6 @@
 build = function(spec) {
   x = structure(spec, class = 'lt_tbl')
-  as.character(lt_html(x, method = 'node', css = FALSE, fragment = TRUE))
+  as.character(render_html(x, method = 'node', css = FALSE, fragment = TRUE))
 }
 
 assert("basic table renders correct cells", {
@@ -305,7 +305,7 @@ if (has_browser() && requireNamespace("magick", quietly = TRUE))
     (magick::image_info(magick::image_read(png))$width %==% 400L)
   })
 
-# .html output writes a static table (no browser) via lt_html().
+# .html output bakes a static table via render_html().
 if (has_node() || has_browser())
   assert("lt_export() writes a static HTML file", {
     html = tempfile(fileext = ".html")
@@ -315,3 +315,18 @@ if (has_node() || has_browser())
     txt = paste(readLines(html), collapse = "")
     (matches(txt, ".*<table.*>b</th>.*>1</td>.*>x</td>.*") %==% "")
   })
+
+# output = NA returns the HTML string instead of writing a file.
+if (has_node() || has_browser())
+  assert("lt_export(output = NA) returns the HTML string", {
+    html = lt_export(lt(data.frame(a = 1:2, b = c("x", "y"))), NA)
+    (is.character(html))
+    (matches(paste(html, collapse = ""), ".*<table.*>1</td>.*>x</td>.*") %==% "")
+  })
+
+# method = "raw" writes the JavaScript-spec HTML (table built client-side),
+# so the file carries the lt.js runtime and the spec, not a baked <table>.
+assert('lt_export(method = "raw") emits the JS spec, no external tool', {
+  html = lt_export(lt(data.frame(a = 1:2)), NA, method = "raw")
+  (matches(paste(html, collapse = ""), ".*<script>.*LT.*</script>.*") %==% "")
+})
