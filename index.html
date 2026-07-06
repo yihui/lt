@@ -21,7 +21,7 @@
 <a href="playground/">Playground</a></p></nav>
 <div class="frontmatter">
 <div class="title"><h1>lt: Lightweight Tables via JSON Specs and JavaScript</h1></div>
-<div class="date"><h3>2026-07-05</h3></div>
+<div class="date"><h3>2026-07-06</h3></div>
 </div>
 <div class="body">
 <div id="TOC">
@@ -40,7 +40,7 @@
 </tr>
 <tr>
 <td>Version</td>
-<td>0.1.5</td>
+<td>0.1.6</td>
 </tr>
 <tr>
 <td>Description</td>
@@ -147,6 +147,12 @@ unconditionally.</li>
 <ul>
 <li><code>lt_move()</code> — reorder columns.</li>
 </ul>
+<p><strong>Export</strong></p>
+<ul>
+<li><code>lt_export()</code> — save a table to a file: <code>.html</code> (optionally baking a static
+<code>&lt;table&gt;</code> that needs no JavaScript to view), <code>.pdf</code>, or <code>.png</code> (rendered via a
+headless Chromium browser).</li>
+</ul>
 <p><strong>Shiny</strong></p>
 <ul>
 <li><code>lt_output()</code> / <code>render_lt()</code> — Shiny UI and server bindings.</li>
@@ -214,12 +220,12 @@ re-implementation for contexts where a lighter footprint is preferred.</p>
 <h2 id="sec:appendix" class="appendix">Appendix</h2>
 <p>To cite the package <strong>lt</strong> in publications, please use:</p>
 <p>Xie Y (2026). <em>lt: Lightweight Tables via JSON Specs and JavaScript</em>. R
-package version 0.1.5, <a href="https://github.com/yihui/lt">https://github.com/yihui/lt</a>.</p>
+package version 0.1.6, <a href="https://github.com/yihui/lt">https://github.com/yihui/lt</a>.</p>
 <pre><code class="language-latex">@Manual{,
   title = {lt: Lightweight Tables via JSON Specs and JavaScript},
   author = {Yihui Xie},
   year = {2026},
-  note = {R package version 0.1.5},
+  note = {R package version 0.1.6},
   url = {https://github.com/yihui/lt},
 }
 </code></pre>

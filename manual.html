@@ -385,6 +385,7 @@ table in a headless Chromium browser (via <code><a href="https://rdrr.io/cran/xf
   method = c("auto", "node", "browser", "raw"),
   css = TRUE,
   fragment = FALSE,
+  tidy = FALSE,
   crop = TRUE,
   width = NULL,
   padding = 8,
@@ -419,6 +420,12 @@ output. User CSS from <code><a href="#sec:man-lt-css">lt_css()</a></code> is alw
 <p>If <code>FALSE</code> (default), wrap the HTML in a full HTML document;
 if <code>TRUE</code>, return only the table fragment. Applies only to <code>.html</code>
 output.</p>
+</td></tr>
+<tr><td><code>tidy</code></td>
+<td>
+<p>Whether to pretty-print the baked <code>&lt;table&gt;</code> with line breaks and
+indentation. Applies only to <code>.html</code> output baked by <code>"node"</code> or
+<code>"browser"</code> (ignored for <code>method = "raw"</code>, which is a JavaScript spec).</p>
 </td></tr>
 <tr><td><code>crop</code></td>
 <td>
@@ -457,7 +464,7 @@ browser by the lt.js runtime when the file is viewed; the other methods
 bake a static <code>&lt;table&gt;</code> up front by running lt.js once (via <code>"node"</code> in
 Node.js or <code>"browser"</code> in a headless Chromium browser; <code>"auto"</code> picks Node
 if available, else the browser), so the saved file needs no JavaScript to
-view. <code>method</code>, <code>css</code>, and <code>fragment</code> apply only to <code>.html</code> output.
+view. <code>method</code>, <code>css</code>, <code>fragment</code>, and <code>tidy</code> apply only to <code>.html</code> output.
 </p>
 <h3 id="sec:value_6" class="unnumbered unlisted">Value</h3>
 <p>The <code>output</code> path, or (when <code>output</code> is <code>NA</code>) the HTML as a string.
@@ -504,8 +511,7 @@ th, td{ padding: 5px; }
   tbody {
     :not(:last-child) :is(td, th) { border-bottom: 1px   solid #ddd; }
     .lt-row-group :is(td, th)     { border-bottom: 1.5px solid #ddd; }
-    .lt-row-group { text-align: left; }
-    .lt-row-group { vertical-align: top; }
+    .lt-row-group { text-align: left; vertical-align: top; }
   }
   thead th {
     border-bottom: 1px solid #888;
@@ -1119,7 +1125,7 @@ th, td{ padding: 5px; }
 <pre><code class="language-r">f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//Rtmp3fZLcT/file2b4210cca788.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//Rtmpj5Ax1D/file1778112f7593.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::has_node() || lt:::has_browser())
@@ -1135,7 +1141,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//Rtmp3fZLcT/file2b42cf2fb35.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//Rtmpj5Ax1D/file17782d4aaed8.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>

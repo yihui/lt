@@ -75,7 +75,8 @@
 </ul>
 </li>
 <li><a href="#sec:complete-example"><span class="section-number main-number">7</span> Complete example</a></li>
-<li><a href="#sec:interactivity"><span class="section-number main-number">8</span> Interactivity</a></li>
+<li><a href="#sec:exporting"><span class="section-number main-number">8</span> Exporting</a></li>
+<li><a href="#sec:interactivity"><span class="section-number main-number">9</span> Interactivity</a></li>
 </ul>
 </div>
 <pre><code class="language-r">library(lt)
@@ -1215,7 +1216,116 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h2 id="sec:interactivity"><span class="section-number main-number">8</span> Interactivity</h2>
+<h2 id="sec:exporting"><span class="section-number main-number">8</span> Exporting</h2>
+<p><code>lt_export()</code> saves a table to a file. The format is chosen from the file
+extension: <code>.html</code>, <code>.pdf</code>, or (otherwise) <code>.png</code>. PDF and PNG are rendered in
+a headless Chromium browser.</p>
+<pre><code class="language-r">tbl = lt(head(penguins))
+lt_export(tbl, &quot;01-lt.png&quot;)
+</code></pre>
+<pre><code>#&gt; [1] &quot;01-lt.png&quot;
+</code></pre>
+<div id="fig:lt-png" class="figure">
+<p><img src="01-lt.png" alt="table in png" /></p>
+<div class="caption">
+<p><span class="ref-number-fig">1</span> A table exported to PNG.</p>
+</div>
+</div>
+<pre><code class="language-r">lt_export(tbl, &quot;01-lt.pdf&quot;)
+</code></pre>
+<pre><code>#&gt; [1] &quot;01-lt.pdf&quot;
+</code></pre>
+<div id="fig:lt-pdf" class="figure">
+<embed src="01-lt.pdf" type="application/pdf" width="100%" height="400">
+<div class="caption">
+<p><span class="ref-number-fig">2</span> A table exported to PDF.</p>
+</div>
+</div>
+<p>For <code>.html</code> output, the table can be baked into a static <code>&lt;table&gt;</code> (built once
+by running the lt.js runtime, so the saved file needs no JavaScript to view).
+Set <code>tidy = TRUE</code> to pretty-print it with line breaks and indentation:</p>
+<pre><code class="language-r">lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
+</code></pre>
+<pre><code class="language-html">&lt;div class=&quot;lt-wrap&quot;&gt;
+  &lt;table class=&quot;lt-table&quot;&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th scope=&quot;col&quot;&gt;species&lt;/th&gt;
+        &lt;th scope=&quot;col&quot;&gt;island&lt;/th&gt;
+        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;bill len&lt;/th&gt;
+        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;bill dep&lt;/th&gt;
+        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;flipper len&lt;/th&gt;
+        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;body mass&lt;/th&gt;
+        &lt;th scope=&quot;col&quot;&gt;sex&lt;/th&gt;
+        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;year&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Adelie&lt;/td&gt;
+        &lt;td&gt;Torgersen&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;39.1&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;18.7&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;181&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot; title=&quot;3750&quot;&gt;3 750&lt;/td&gt;
+        &lt;td&gt;male&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;2007&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Adelie&lt;/td&gt;
+        &lt;td&gt;Torgersen&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;39.5&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;17.4&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;186&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot; title=&quot;3800&quot;&gt;3 800&lt;/td&gt;
+        &lt;td&gt;female&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;2007&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Adelie&lt;/td&gt;
+        &lt;td&gt;Torgersen&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;40.3&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot; title=&quot;18&quot;&gt;18.0&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;195&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot; title=&quot;3250&quot;&gt;3 250&lt;/td&gt;
+        &lt;td&gt;female&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;2007&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Adelie&lt;/td&gt;
+        &lt;td&gt;Torgersen&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;2007&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Adelie&lt;/td&gt;
+        &lt;td&gt;Torgersen&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;36.7&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;19.3&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;193&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot; title=&quot;3450&quot;&gt;3 450&lt;/td&gt;
+        &lt;td&gt;female&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;2007&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Adelie&lt;/td&gt;
+        &lt;td&gt;Torgersen&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;39.3&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;20.6&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;190&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot; title=&quot;3650&quot;&gt;3 650&lt;/td&gt;
+        &lt;td&gt;male&lt;/td&gt;
+        &lt;td class=&quot;al-r&quot;&gt;2007&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/div&gt;
+</code></pre>
+<h2 id="sec:interactivity"><span class="section-number main-number">9</span> Interactivity</h2>
 <p>When cell values are formatted, the original values are available in
 tooltips (hover over a cell to see). You can also <code>Alt + Click</code> on a
 table to reveal all raw values at once, or <code>Alt + Double-Click</code> to
