@@ -431,7 +431,9 @@ lt_export = function(
   }
   if (crop && is_pdf) {
     # @page size drives the PDF page box exactly; no image post-processing.
-    style = sprintf('<style>@page{size:%dpx %dpx;margin:0}%s</style>', w, h, layout)
+    # scrollHeight is integer-floored; add 1px to absorb sub-pixel font
+    # metrics that differ by platform (e.g. macOS San Francisco vs Linux).
+    style = sprintf('<style>@page{size:%dpx %dpx;margin:0}%s</style>', w, h + 1L, layout)
     html = sub('</head>', paste0(style, '</head>'), html, fixed = TRUE)
     with_temp_html(html, function(f)
       xfun::browser_print(f, output, browser = browser, ...))
