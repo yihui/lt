@@ -462,6 +462,45 @@ lt(d) |>
   lt_footnote("Two-sided p-value from log-rank test.", "column", "P_Value")
 ```
 
+## Exporting
+
+`lt_export()` saves a table to a file. The format is chosen from the file
+extension: `.html`, `.pdf`, or (otherwise) `.png`. PDF and PNG are rendered in
+a headless Chromium browser.
+
+```{r}
+tbl = lt(head(penguins))
+lt_export(tbl, "01-lt.png")
+```
+
+:::: {#fig:lt-png .figure}
+![table in png](01-lt.png)
+
+::: caption
+[ ](#@fig:lt-png) A table exported to PNG.
+:::
+::::
+
+```{r}
+lt_export(tbl, "01-lt.pdf")
+```
+
+:::: {#fig:lt-pdf .figure}
+<embed src="01-lt.pdf" type="application/pdf" width="100%" height="400">
+
+::: caption
+[ ](#@fig:lt-pdf) A table exported to PDF.
+:::
+::::
+
+For `.html` output, the table can be baked into a static `<table>` (built once
+by running the lt.js runtime, so the saved file needs no JavaScript to view).
+Set `tidy = TRUE` to pretty-print it with line breaks and indentation:
+
+```{r, attr.output = '.html'}
+lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
+```
+
 ## Interactivity
 
 When cell values are formatted, the original values are available in

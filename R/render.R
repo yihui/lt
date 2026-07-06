@@ -215,9 +215,12 @@ register_s3 = function(pkgs, generics) {
 #   "browser" -> run lt.js in a headless Chromium browser (via browser_dom).
 #   "auto"    -> node if available, else browser.
 # `css` includes the lt.css runtime stylesheet (user CSS from lt_css() always
-# is); `fragment = FALSE` wraps the result in a full HTML document.
+# is); `fragment = FALSE` wraps the result in a full HTML document. `tidy`
+# pretty-prints the baked <table> with line breaks and indentation (ignored
+# for method = "raw", which is a JS spec, not a static table).
 lt_html = function(
-  x, method = c('auto', 'node', 'browser', 'raw'), css = TRUE, fragment = FALSE
+  x, method = c('auto', 'node', 'browser', 'raw'), css = TRUE, fragment = FALSE,
+  tidy = FALSE
 ) {
   method = match.arg(method)
   if (method == 'raw') return(format(
@@ -228,8 +231,34 @@ lt_html = function(
     'No rendering method available. Install a Chromium-based browser or Node.js.'
   )
   html = switch(method, browser = lt_html_browser(x, css), node = lt_html_node(x, css))
+  if (tidy) html = tidy_html(html)
   if (!fragment) html = html_doc(html)
   xfun::raw_string(html)
+}
+
+# Pretty-print lt's baked <table> HTML: break before each structural tag and
+# indent by nesting depth. lt controls the exact markup (a fixed set of `lt-*`
+# tags, no arbitrary user HTML), so a targeted tag-based indenter is enough;
+# this is not a general HTML tidier.
+tidy_html = function(html) {
+  # Containers get their own line for both open and close tags; cells (th/td)
+  # break before the opening tag only, so a leaf like <td>1</td> stays on one
+  # line with its content inline.
+  box = 'div|table|thead|tbody|tfoot|caption|colgroup|tr'
+  html = gsub(sprintf('(</?(?:%s)\\b|<t[hd]\\b)', box), '\n\\1', html, perl = TRUE)
+  lines = unlist(strsplit(html, '\n'))
+  lines = lines[nzchar(lines)]
+  depth = 0L; out = character(length(lines))
+  for (i in seq_along(lines)) {
+    ln = lines[i]
+    if (grepl('^</', ln)) depth = max(0L, depth - 1L)
+    out[i] = paste0(strrep('  ', depth), ln)
+    # An opening tag whose matching close isn't on the same line opens a deeper
+    # level for the following lines; a leaf tag (e.g. <td>1</td>) does not.
+    if (grepl('^<[^/]', ln) && !grepl('^<(\\w+)\\b[^>]*>.*</\\1>\\s*$', ln, perl = TRUE))
+      depth = depth + 1L
+  }
+  out
 }
 
 lt_html_browser = function(x, css = TRUE) {
@@ -307,7 +336,7 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' bake a static `<table>` up front by running lt.js once (via `"node"` in
 #' Node.js or `"browser"` in a headless Chromium browser; `"auto"` picks Node
 #' if available, else the browser), so the saved file needs no JavaScript to
-#' view. `method`, `css`, and `fragment` apply only to `.html` output.
+#' view. `method`, `css`, `fragment`, and `tidy` apply only to `.html` output.
 #'
 #' @param x An `lt_tbl` object.
 #' @param output Output file path. Its extension selects the format: `.html`,
@@ -321,6 +350,9 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' @param fragment If `FALSE` (default), wrap the HTML in a full HTML document;
 #'   if `TRUE`, return only the table fragment. Applies only to `.html`
 #'   output.
+#' @param tidy Whether to pretty-print the baked `<table>` with line breaks and
+#'   indentation. Applies only to `.html` output baked by `"node"` or
+#'   `"browser"` (ignored for `method = "raw"`, which is a JavaScript spec).
 #' @param crop Whether to crop the PDF/PNG tightly to the table, removing the
 #'   surrounding page whitespace. This adds a preliminary browser pass to
 #'   measure the rendered table. Set to `FALSE` for the default full page.
@@ -368,13 +400,13 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' unlink(c(f1, f2, f3))
 lt_export = function(
   x, output = 'lt.html', method = c('auto', 'node', 'browser', 'raw'),
-  css = TRUE, fragment = FALSE, crop = TRUE, width = NULL, padding = 8,
-  browser = NULL, ...
+  css = TRUE, fragment = FALSE, tidy = FALSE, crop = TRUE, width = NULL,
+  padding = 8, browser = NULL, ...
 ) {
   # HTML output (also the target when `output` is NA, since there's no
   # extension to infer a format from): no browser needed at view time.
   if (is.na(output) || tolower(xfun::file_ext(output)) == 'html') {
-    html = lt_html(x, method, css, fragment)
+    html = lt_html(x, method, css, fragment, tidy)
     if (is.na(output)) return(html)
     xfun::write_utf8(html, output)
     return(output)

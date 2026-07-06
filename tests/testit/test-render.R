@@ -57,3 +57,25 @@ assert("spec_block() drops css and rules", {
   (matches(html, ".*color: red.*") %==% html)
   (matches(html, ".*window\\.LT.*") %==% "")
 })
+
+assert("tidy_html() indents block tags and keeps rows on one line", {
+  html = c(
+    '<div class="lt-wrap"><table class="lt-table"><thead>',
+    '<tr><th>a</th><th>b</th></tr></thead>',
+    '<tbody><tr><td>1</td><td>2</td></tr></tbody></table></div>'
+  )
+  lines = tidy_html(html)
+  # one line per structural tag, indented by nesting depth
+  (lines[1] %==% '<div class="lt-wrap">')
+  (lines[2] %==% '  <table class="lt-table">')
+  (lines[3] %==% '    <thead>')
+  (lines[4] %==% '      <tr>')
+  # each cell stays on its own single line with its content inline
+  (lines[5] %==% '        <th>a</th>')
+  (lines[6] %==% '        <th>b</th>')
+  (lines[7] %==% '      </tr>')
+  (lines[8] %==% '    </thead>')
+  # closing tags dedent back to their opening level
+  (lines[length(lines) - 1] %==% '  </table>')
+  (lines[length(lines)] %==% '</div>')
+})

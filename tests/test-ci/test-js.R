@@ -330,3 +330,19 @@ assert('lt_export(method = "raw") emits the JS spec, no external tool', {
   html = lt_export(lt(data.frame(a = 1:2)), NA, method = "raw")
   (matches(html, ".*<script>.*LT.*</script>.*") %==% "")
 })
+
+# tidy = TRUE pretty-prints the baked <table>: multi-line, indented, with each
+# structural tag and cell on its own line.
+if (has_node() || has_browser())
+  assert("lt_export(tidy = TRUE) pretty-prints the baked table", {
+    html = lt_export(
+      lt(data.frame(a = 1:2, b = c("x", "y"))), NA, fragment = TRUE,
+      css = FALSE, tidy = TRUE
+    )
+    # the baked HTML comes back split across lines (joined at write time)
+    lines = unlist(strsplit(html, "\n"))
+    (length(lines) > 1L)
+    (any(grepl("^  <table", lines)))         # table indented under the wrap
+    (any(grepl("^      <tr>$", lines)))       # rows on their own line
+    (any(grepl("^        <td[ >].*</td>$", lines)))  # each cell a single line
+  })

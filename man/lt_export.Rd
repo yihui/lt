@@ -10,6 +10,7 @@ lt_export(
   method = c("auto", "node", "browser", "raw"),
   css = TRUE,
   fragment = FALSE,
+  tidy = FALSE,
   crop = TRUE,
   width = NULL,
   padding = 8,
@@ -34,6 +35,10 @@ output. User CSS from \code{\link[=lt_css]{lt_css()}} is always included. Applie
 \item{fragment}{If \code{FALSE} (default), wrap the HTML in a full HTML document;
 if \code{TRUE}, return only the table fragment. Applies only to \code{.html}
 output.}
+
+\item{tidy}{Whether to pretty-print the baked \verb{<table>} with line breaks and
+indentation. Applies only to \code{.html} output baked by \code{"node"} or
+\code{"browser"} (ignored for \code{method = "raw"}, which is a JavaScript spec).}
 
 \item{crop}{Whether to crop the PDF/PNG tightly to the table, removing the
 surrounding page whitespace. This adds a preliminary browser pass to
@@ -70,7 +75,7 @@ browser by the lt.js runtime when the file is viewed; the other methods
 bake a static \verb{<table>} up front by running lt.js once (via \code{"node"} in
 Node.js or \code{"browser"} in a headless Chromium browser; \code{"auto"} picks Node
 if available, else the browser), so the saved file needs no JavaScript to
-view. \code{method}, \code{css}, and \code{fragment} apply only to \code{.html} output.
+view. \code{method}, \code{css}, \code{fragment}, and \code{tidy} apply only to \code{.html} output.
 }
 \section{Global option}{
 

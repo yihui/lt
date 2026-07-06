@@ -72,6 +72,12 @@ on it via the pipe:
 
 - `lt_move()` — reorder columns.
 
+**Export**
+
+- `lt_export()` — save a table to a file: `.html` (optionally baking a static
+  `<table>` that needs no JavaScript to view), `.pdf`, or `.png` (rendered via a
+  headless Chromium browser).
+
 **Shiny**
 
 - `lt_output()` / `render_lt()` — Shiny UI and server bindings.
