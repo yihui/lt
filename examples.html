@@ -229,6 +229,19 @@ lt(d) |&gt;
   lt_sub(~ Value, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt; 0.001&quot;)
 ```
 
+### Infinity values
+
+`Inf` and `-Inf` render as ∞ and −∞. Auto-formatting uses a typographic minus
+(U+2212) for −∞; raw (unformatted) columns use an ASCII hyphen:
+
+```{r}
+d = data.frame(
+  Metric = c(&quot;Lower bound&quot;, &quot;Upper bound&quot;, &quot;Rate&quot;, &quot;Missing&quot;),
+  Value = c(-Inf, Inf, 1.5, NA)
+)
+lt(d) |&gt; lt_format(~ Value, decimals = 2)
+```
+
 ## Footnotes and notes
 
 ### Footnotes
@@ -986,6 +999,23 @@ LT.build({
   ops: [
     { type: &quot;fmt_number&quot;, columns: [&quot;Value&quot;], decimals: 2 },
     { type: &quot;sub&quot;, columns: [&quot;Value&quot;], missing: &quot;n/a&quot;, zero: &quot;—&quot;, small: 0.001, small_text: &quot;&lt; 0.001&quot; }
+  ]
+});
+```
+
+### Infinity values
+
+`Inf` and `-Inf` (JSON: use `Infinity`/`-Infinity` — but since JSON doesn't
+support `Infinity`, pass them as a JS expression):
+
+```{js}
+LT.build({
+  data: {
+    Metric: [&quot;Lower bound&quot;, &quot;Upper bound&quot;, &quot;Rate&quot;, &quot;Missing&quot;],
+    Value: [-Infinity, Infinity, 1.5, null]
+  },
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;Value&quot;], decimals: 2 }
   ]
 });
 ```

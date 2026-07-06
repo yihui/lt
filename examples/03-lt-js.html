@@ -42,6 +42,7 @@
 <li><a href="#sec:number-formatting-fmt-number"><span class="section-number">3.2</span> Number formatting (<code>fmt_number</code>)</a></li>
 <li><a href="#sec:date-formatting-fmt-date"><span class="section-number">3.3</span> Date formatting (<code>fmt_date</code>)</a></li>
 <li><a href="#sec:value-substitution-sub"><span class="section-number">3.4</span> Value substitution (<code>sub</code>)</a></li>
+<li><a href="#sec:infinity-values"><span class="section-number">3.5</span> Infinity values</a></li>
 </ul>
 </li>
 <li><a href="#sec:column-structure"><span class="section-number main-number">4</span> Column structure</a>
@@ -432,6 +433,28 @@ to avoid this.</p>
   ops: [
     { type: "fmt_number", columns: ["Value"], decimals: 2 },
     { type: "sub", columns: ["Value"], missing: "n/a", zero: "—", small: 0.001, small_text: "< 0.001" }
+  ]
+});</script>
+<h3 id="sec:infinity-values"><span class="section-number">3.5</span> Infinity values</h3>
+<p><code>Inf</code> and <code>-Inf</code> (JSON: use <code>Infinity</code>/<code>-Infinity</code> — but since JSON doesn’t
+support <code>Infinity</code>, pass them as a JS expression):</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    Metric: [&quot;Lower bound&quot;, &quot;Upper bound&quot;, &quot;Rate&quot;, &quot;Missing&quot;],
+    Value: [-Infinity, Infinity, 1.5, null]
+  },
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;Value&quot;], decimals: 2 }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    Metric: ["Lower bound", "Upper bound", "Rate", "Missing"],
+    Value: [-Infinity, Infinity, 1.5, null]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Value"], decimals: 2 }
   ]
 });</script>
 <h2 id="sec:column-structure"><span class="section-number main-number">4</span> Column structure</h2>

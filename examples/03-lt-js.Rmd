@@ -287,6 +287,23 @@ LT.build({
 });
 ```
 
+### Infinity values
+
+`Inf` and `-Inf` (JSON: use `Infinity`/`-Infinity` — but since JSON doesn't
+support `Infinity`, pass them as a JS expression):
+
+```{js}
+LT.build({
+  data: {
+    Metric: ["Lower bound", "Upper bound", "Rate", "Missing"],
+    Value: [-Infinity, Infinity, 1.5, null]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Value"], decimals: 2 }
+  ]
+});
+```
+
 ## Column structure
 
 ### Column merging (`merge`)

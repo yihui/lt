@@ -40,6 +40,7 @@
 <li><a href="#sec:number-formatting"><span class="section-number">2.2</span> Number formatting</a></li>
 <li><a href="#sec:date-formatting"><span class="section-number">2.3</span> Date formatting</a></li>
 <li><a href="#sec:substituting-missing-small-values"><span class="section-number">2.4</span> Substituting missing/small values</a></li>
+<li><a href="#sec:infinity-values"><span class="section-number">2.5</span> Infinity values</a></li>
 </ul>
 </li>
 <li><a href="#sec:footnotes-and-notes"><span class="section-number main-number">3</span> Footnotes and notes</a>
@@ -503,6 +504,30 @@ lt(d) |&gt;
       "zero": "—",
       "small": 0.001,
       "small_text": "< 0.001"
+    }
+  ]
+}
+})</script>
+<h3 id="sec:infinity-values"><span class="section-number">2.5</span> Infinity values</h3>
+<p><code>Inf</code> and <code>-Inf</code> render as ∞ and −∞. Auto-formatting uses a typographic minus
+(U+2212) for −∞; raw (unformatted) columns use an ASCII hyphen:</p>
+<pre><code class="language-r">d = data.frame(
+  Metric = c(&quot;Lower bound&quot;, &quot;Upper bound&quot;, &quot;Rate&quot;, &quot;Missing&quot;),
+  Value = c(-Inf, Inf, 1.5, NA)
+)
+lt(d) |&gt; lt_format(~ Value, decimals = 2)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "Metric": ["Lower bound", "Upper bound", "Rate", "Missing"],
+    "Value": [-Infinity, Infinity, 1.5, null]
+  },
+  "ops": [
+    {
+      "type": "fmt_number",
+      "columns": ["Value"],
+      "decimals": 2
     }
   ]
 }
