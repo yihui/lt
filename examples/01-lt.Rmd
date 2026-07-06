@@ -178,6 +178,19 @@ lt(d) |>
   lt_sub(~ Value, missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
 ```
 
+### Infinity values
+
+`Inf` and `-Inf` render as ∞ and −∞. Auto-formatting uses a typographic minus
+(U+2212) for −∞; raw (unformatted) columns use an ASCII hyphen:
+
+```{r}
+d = data.frame(
+  Metric = c("Lower bound", "Upper bound", "Rate", "Missing"),
+  Value = c(-Inf, Inf, 1.5, NA)
+)
+lt(d) |> lt_format(~ Value, decimals = 2)
+```
+
 ## Footnotes and notes
 
 ### Footnotes
