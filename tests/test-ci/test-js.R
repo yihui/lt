@@ -281,6 +281,22 @@ if (has_browser()) assert("lt_export() crops a large table to one PDF page", {
   (pdf_pages(pdf) %==% 1L)
 })
 
+# A wide table must crop to one page too. scrollWidth is the floor of the
+# table's fractional natural width; pinning the body to that floored width
+# used to leave it a sub-pixel too narrow, wrapping a cell and growing the
+# table past the measured height, so the PDF spilled onto a second page
+# (seen on macOS, not Linux). lt_measure() now rounds the width up by 1px.
+if (has_browser()) assert("lt_export() crops a wide table to one PDF page", {
+  # Many columns with long labels give the table a fractional natural width.
+  x = lt(as.data.frame(matrix(
+    1:32, 4, 8, dimnames = list(NULL, paste0("a_long_column_label_", 1:8))
+  )))
+  pdf = tempfile(fileext = ".pdf")
+  on.exit(unlink(pdf), add = TRUE)
+  lt_export(x, pdf)
+  (pdf_pages(pdf) %==% 1L)
+})
+
 if (has_browser() && xfun::loadable("magick"))
   assert("lt_export() crops PNG tightly to the table size", {
     x = lt(head(mtcars))
