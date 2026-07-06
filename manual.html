@@ -1125,7 +1125,7 @@ th, td{ padding: 5px; }
 <pre><code class="language-r">f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/k8/j7r3p6cx43xdqhzy2rmp6tqr0000gn/T//RtmpUTEqTf/file15a46b254fcc.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//RtmpbjBMzs/file4dbc28e51ad.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::has_node() || lt:::has_browser())
@@ -1141,7 +1141,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/k8/j7r3p6cx43xdqhzy2rmp6tqr0000gn/T//RtmpUTEqTf/file15a440076fcd.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//RtmpbjBMzs/file4dbce1cdfd3.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
