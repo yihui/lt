@@ -320,7 +320,14 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
   dom = with_temp_html(html, function(f) xfun::browser_dom(f, browser = browser))
   m = regmatches(dom, regexec('data-ltw="([0-9]+)" data-lth="([0-9]+)"', dom))[[1]]
   if (length(m) != 3L) stop('Failed to measure the table dimensions.')
-  as.integer(m[-1L])
+  d = as.integer(m[-1L])
+  # scrollWidth is the floor of the table's fractional natural width. Pinning
+  # the body to that floored width leaves it a sub-pixel too narrow, so a cell
+  # wraps and the table grows taller than the measured height, spilling the
+  # PDF onto a second page (platform-dependent: seen on macOS, not Linux). Add
+  # 1px so the body is never narrower than the content and never re-wraps.
+  d[1L] = d[1L] + 1L
+  d
 }
 
 #' Export an lt table to a file
@@ -431,9 +438,7 @@ lt_export = function(
   }
   if (crop && is_pdf) {
     # @page size drives the PDF page box exactly; no image post-processing.
-    # scrollHeight is integer-floored; add 1px to absorb sub-pixel font
-    # metrics that differ by platform (e.g. macOS San Francisco vs Linux).
-    style = sprintf('<style>@page{size:%dpx %dpx;margin:0}%s</style>', w, h + 1L, layout)
+    style = sprintf('<style>@page{size:%dpx %dpx;margin:0}%s</style>', w, h, layout)
     html = sub('</head>', paste0(style, '</head>'), html, fixed = TRUE)
     with_temp_html(html, function(f)
       xfun::browser_print(f, output, browser = browser, ...))
