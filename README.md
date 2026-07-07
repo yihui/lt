@@ -14,7 +14,7 @@ Lightweight tables for R, inspired by [gt](https://gt.rstudio.com).
 need — titles, column spanners, row groups, footnotes, and number formatting —
 without the heavy dependency stack. It targets HTML only (no LaTeX or RTF),
 which keeps the implementation minimal: the entire runtime is a single
-vanilla-JS file ([under 10 KB
+vanilla-JS file ([about 10 KB
 minified](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)).
 
 ## Installation
@@ -33,7 +33,8 @@ without installing it.
 ## Functions
 
 `lt()` creates a table object from a data frame. The `lt_*()` functions build
-on it via the pipe:
+on it via the pipe. See <https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet>
+for a "cheat table" as an overview of these functions.
 
 **Structure**
 
