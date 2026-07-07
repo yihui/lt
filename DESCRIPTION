@@ -25,6 +25,6 @@ Suggests:
     shiny,
     testit
 Roxygen: list(markdown = TRUE)
-Config/lt.js: 1.14.64
+Config/lt.js: 1.14.66
 Config/roxygen2/version: 8.0.0
 Remotes: yihui/xfun
