@@ -34,4 +34,7 @@ automatically in the order they are added (de-duplicated by text).
 \examples{
 lt(head(mtcars)) |>
   lt_footnote("Source: 1974 Motor Trend US magazine.", "title")
+# raw HTML footnote (wrap in I())
+lt(head(mtcars)) |>
+  lt_footnote(I("See <a href='#'>docs</a>."), "title")
 }

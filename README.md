@@ -50,6 +50,9 @@ for a "cheat table" as an overview of these functions.
 - `lt_footnote()` — attach a numbered footnote to any region (title, subtitle,
   column, spanner, group, or body cells).
 - `lt_note()` — append a plain unnumbered note below the table.
+- `lt_html()` — render selected columns' cells as raw HTML instead of escaping
+  them. For raw HTML in text (title, labels, footnotes, ...), wrap the text in
+  `I()` in the corresponding function.
 
 **Formatting**
 

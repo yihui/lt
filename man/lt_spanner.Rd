@@ -39,4 +39,6 @@ tbl = lt(head(iris))
 tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
 # Auto-infer from column names
 tbl |> lt_spanner()
+# raw HTML label (wrap in I())
+tbl |> lt_spanner(I("<em>Sepal</em>"), ~ Sepal.Length + Sepal.Width)
 }

@@ -10,6 +10,16 @@
   const esc = s => String(s)
     .replace(/&/g, "&amp;").replace(/[<]/g, "&lt;")
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  // Text fields (title, labels, footnotes, ...) arrive as a plain string
+  // (escape it) or, when the R side wrapped them in I(), a one-element array
+  // (emit verbatim as raw HTML). `txt` renders either form.
+  const txt = v => Array.isArray(v) ? String(v[0] ?? "") : esc(v);
+  // Raw (verbatim) if `raw`, else escaped — for values already stringified
+  // (e.g. body cells whose column is flagged raw via spec.html_cols).
+  const escIf = (raw, s) => raw ? String(s ?? "") : esc(s);
+  // Is column `c` flagged raw HTML? `hc` is spec.html_cols: true (all columns)
+  // or an array of column names.
+  const rawCol = (hc, c) => hc === true || (Array.isArray(hc) && hc.includes(c));
   const sup = i => `<sup class="lt-fnref">${i}</sup>`;
   // Stringify, mapping null/undefined to "" (0 and false stringify normally).
   // ±Infinity render as ∞/-∞ (ASCII minus, as raw values); formatted columns get
@@ -273,11 +283,15 @@
       return out;
     };
 
-    // Row groups from data column (separator-row mode only)
+    // Row groups from data column (separator-row mode only). A group label is
+    // raw HTML when its source column is flagged raw via html_cols.
     let groups = [];
-    if (rowGroupSep && rowGroupCols.length && data[rowGroupCols[0]])
-      groups.push(...runs(data[rowGroupCols[0]]));
-    // Manual groups
+    if (rowGroupSep && rowGroupCols.length && data[rowGroupCols[0]]) {
+      const raw = rawCol(spec.html_cols, rowGroupCols[0]);
+      groups.push(...runs(data[rowGroupCols[0]]).map(g => ({ ...g, raw })));
+    }
+    // Manual groups (labels always escaped; the label comes from an R argument
+    // name, which cannot carry an I() raw-HTML marker)
     onOp("row_group", op => groups.push({ label: op.label, rows: op.rows }));
     // Group ordering
     onOp("group_order", op => {
@@ -407,6 +421,9 @@
           fIdx = matcher(fns, reg.idx),
           nGrp = rowSpans.length,
           nCol = cols.length + nGrp,
+          // Whether column `c`'s body cells are raw HTML (see lt_html() on the
+          // R side); spec.html_cols is true (all columns) or a name array.
+          isRaw = c => rawCol(spec.html_cols, c),
           out = [`<table class="lt-table">`];
     const mark = (type, val) => { const i = fIdx(type, val); return i ? sup(i) : ""; };
     const cell = (c, r) => display[c]?.[r - 1] ?? "";
@@ -453,7 +470,7 @@
     // <caption>: title + subtitle, each a <div> rendered only when non-empty.
     const caption = [["title", "lt-title"], ["subtitle", "lt-subtitle"]]
       .filter(([g]) => hdr[g] != null && hdr[g] !== "")
-      .map(([g, cls]) => `<div class="${cls}">${esc(hdr[g])}${mark("title", g)}</div>`);
+      .map(([g, cls]) => `<div class="${cls}">${txt(hdr[g])}${mark("title", g)}</div>`);
     if (caption.length)
       out.push(`<caption class="lt-caption">`, ...caption, `</caption>`);
 
@@ -466,7 +483,7 @@
       for (let k = 0; k < cols.length;) {
         const sp = spanners.find(s => s.columns[0] === cols[k]);
         if (sp) {
-          out.push(`<th colspan="${sp.columns.length}" scope="colgroup" class="lt-spanner">${esc(sp.label)}${mark("column_spanners", sp.label)}</th>`);
+          out.push(`<th colspan="${sp.columns.length}" scope="colgroup" class="lt-spanner">${txt(sp.label)}${mark("column_spanners", sp.label)}</th>`);
           k += sp.columns.length;
         } else {
           out.push(emptyTh);
@@ -476,9 +493,9 @@
       out.push(`</tr>`);
     }
     out.push(`<tr>`);
-    for (const rs of rowSpans) out.push(`<th scope="col">${esc(rs.label)}</th>`);
+    for (const rs of rowSpans) out.push(`<th scope="col">${txt(rs.label)}</th>`);
     for (let i = 0; i < cols.length; i++)
-      out.push(`<th scope="col"${attr("class", colCls[i])}>${esc(colLabels[i])}${mark("column_labels", cols[i])}</th>`);
+      out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", cols[i])}</th>`);
     out.push(`</tr></thead>`);
 
     // Body footnote markers
@@ -500,7 +517,7 @@
       for (const rs of rowSpans) {
         const span = rs.spans[r - 1], fill = (rs.spans[r - 2] || 0) - 1;
         if (span > 0)
-          out.push(`<th scope="row" class="lt-row-group${span > 1 ? " lt-row-open" : ""}">${esc(cell(rs.col, r))}</th>`);
+          out.push(`<th scope="row" class="lt-row-group${span > 1 ? " lt-row-open" : ""}">${escIf(isRaw(rs.col), cell(rs.col, r))}</th>`);
         else if (fill > 0)
           out.push(`<th class="lt-row-group"${attr("rowspan", fill > 1 ? fill : 0)}></th>`);
       }
@@ -513,7 +530,7 @@
         if (ci === 0 && ind) s = (s ? s + ";" : "") + `padding-left:${ind + 1}em`;
         const raw = str(data[c][r - 1]), disp = display[c][r - 1],
               tip = raw !== disp ? ` title="${esc(raw)}"` : "";
-        out.push(`<td${attr("class", cls)}${attr("style", s)}${tip}>${esc(disp)}${m ? sup(m) : ""}</td>`);
+        out.push(`<td${attr("class", cls)}${attr("style", s)}${tip}>${escIf(isRaw(c), disp)}${m ? sup(m) : ""}</td>`);
       }
       out.push(`</tr>`);
     };
@@ -523,7 +540,7 @@
     if (groups.length) {
       const seen = {};
       for (const g of groups) {
-        out.push(`<tr class="lt-row-group"><th colspan="${nCol}" scope="colgroup">${esc(g.label)}${mark("row_groups", g.label)}</th></tr>`);
+        out.push(`<tr class="lt-row-group"><th colspan="${nCol}" scope="colgroup">${escIf(g.raw, g.label)}${mark("row_groups", g.label)}</th></tr>`);
         for (const r of g.rows) { seen[r] = 1; pushRow(r); }
       }
       for (let r = 1; r <= nRow; r++) if (!seen[r]) pushRow(r);
@@ -536,8 +553,8 @@
     if (reg.order.length || notes.length) {
       const footRow = (cls, html) => `<tr class="${cls}"><td colspan="${nCol}">${html}</td></tr>`;
       out.push(`<tfoot class="lt-footer">`);
-      reg.order.forEach((txt, i) => out.push(footRow("lt-footnote", `${sup(i + 1)} ${esc(txt)}`)));
-      for (const n of notes) out.push(footRow("lt-source-note", esc(n)));
+      reg.order.forEach((t, i) => out.push(footRow("lt-footnote", `${sup(i + 1)} ${txt(t)}`)));
+      for (const n of notes) out.push(footRow("lt-source-note", txt(n)));
       out.push(`</tfoot>`);
     }
 

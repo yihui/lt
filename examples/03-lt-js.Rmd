@@ -577,6 +577,37 @@ LT.build({
 .lt-table .na { background: #fee; }
 ```
 
+## HTML content
+
+By default every cell value and text field is HTML-escaped, so characters
+like `<`, `>`, and `&` render as literal text. Two mechanisms opt into raw
+HTML:
+
+- **Body cells:** set `html_cols` to `true` (all columns) or an array of
+  column names. Cells in those columns are emitted verbatim.
+- **Text fields** (title, subtitle, column labels, spanner labels, footnote
+  and note text): pass a **one-element array** instead of a string. A plain
+  string is escaped; `["<b>x</b>"]` is emitted as raw HTML. (This is what the
+  R side's `I()` wrapper serializes to.)
+
+```{js}
+LT.build({
+  data: {
+    Package: [
+      "<a href='https://cran.r-project.org/package=lt'>lt</a>",
+      "<a href='https://cran.r-project.org/package=xfun'>xfun</a>"
+    ],
+    Status: ["<b style='color:#090'>stable</b>", "<i>active</i>"]
+  },
+  html_cols: ["Package", "Status"],
+  header: { title: ["Packages <sup>&#9733;</sup>"] },
+  ops: [
+    { type: "label", labels: { Package: ["Name<sup>*</sup>"] } }
+  ],
+  notes: [["See <a href='https://yihui.org/'>the author</a>."]]
+});
+```
+
 ## Footnotes and notes
 
 ### Footnotes

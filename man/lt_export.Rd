@@ -79,8 +79,8 @@ view. \code{method}, \code{css}, \code{fragment}, and \code{tidy} apply only to 
 }
 \section{Global option}{
 
-When the option \code{lt.lt_html} is set to a list of arguments (e.g.,
-\code{options(lt.lt_html = list(css = FALSE))}), the
+When the option \code{lt.lt_static} is set to a list of arguments (e.g.,
+\code{options(lt.lt_static = list(css = FALSE))}), the
 \link[knitr:knit_print]{knit_print} and \link[xfun:record_print]{record_print}
 methods emit the same static HTML table as \code{lt_export(x, "*.html")} (using
 those arguments as \code{method}/\code{css}/\code{fragment}) instead of the default

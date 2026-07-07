@@ -28,7 +28,8 @@ the table and look at what it is doing to the cell around it.
 ```{r}
 d = data.frame(
   Grp   = paste("Group", c("A", "A", "B", "B")),
-  Label = c("lt(): make a table", "lt_indent(): child A",
+  Label = c("<a href='#sec:cheatsheet'>lt(): make a table</a>",
+            "lt_indent(): child A",
             "lt_indent(): child B", "lt_style() + lt_css()"),
   Fmt   = c(1234567.89, -0.51234, Inf, -Inf),
   Sub   = c(0, NA, 3.14, 0.0002),
@@ -54,10 +55,12 @@ lt(d, auto_format = FALSE) |>
   lt_spanner(`lt_spanner()` ~ Fmt + Sub) |>
   # lt_label(): every column header is renamed to the function acting on it
   lt_label(
-    Grp = "lt_group()", Width = "lt_width()", Label = "lt_label()",
+    Grp = "lt_group()", Width = "lt_width()", Label = "lt_label(old = new, ...)",
     Fmt = "lt_format()", Sub = "lt_sub()", Date = "lt_date()",
     Align = "lt_align()", Est = "lt_merge()"
   ) |>
+  # lt_html(): render the "Label" column as raw HTML (note the link in row 1)
+  lt_html(~ Label) |>
   # lt_align(): center the "lt_align()" column
   lt_align(~ Align, "center") |>
   # lt_width(): the "lt_width()" column is where widths are set
@@ -78,12 +81,11 @@ lt(d, auto_format = FALSE) |>
   lt_css(.hl = list(fontWeight = "bold", color = "#06c")) |>
   # lt_footnote(): provide the footnote text
   lt_footnote("lt_footnote() can add a footnote anywhere.", "title") |>
-  lt_footnote("Alt + Click a table to toggle raw values.", "subtitle") |>
+  lt_footnote(I("<code>Alt + Click</code> a table to toggle raw values."), "subtitle") |>
+  # I(): wrapping text in I() marks it as raw HTML (here, a bold tag)
+  lt_footnote(I("Wrap text in <code>I()</code> for raw HTML."), "column", "Label") |>
   # lt_move(): explain it via a footnote, since it has no column of its own here
-  lt_footnote(
-    "lt_move() can reorder columns as desired.",
-    "column", "Label"
-  ) |>
+  lt_footnote("lt_move() can reorder columns as desired.", "column", "Est") |>
   # lt_note(): the footer note names itself and lt_export()
   lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG.")
 ```
@@ -527,6 +529,29 @@ d = data.frame(
 lt(d) |>
   lt_style(test = "v => v == null", class = "na") |>
   lt_css(.na = list(background = "#fee"))
+```
+
+### HTML content
+
+By default, every cell value and text label is HTML-escaped, so characters
+like `<`, `>`, and `&` render as literal text. To emit raw HTML instead —
+links, emphasis, images, and so on — use `lt_html()` to mark whole body
+columns, and wrap any other text (titles, labels, footnotes, notes,
+spanners) in `I()`:
+
+```{r}
+d = data.frame(
+  Package = c(
+    "<a href='https://cran.r-project.org/package=lt'>lt</a>",
+    "<a href='https://cran.r-project.org/package=xfun'>xfun</a>"
+  ),
+  Status = c("<b style='color:#090'>stable</b>", "<i>active</i>")
+)
+lt(d) |>
+  lt_html(~ Package + Status) |>
+  lt_header(I("Packages <sup>&#9733;</sup>")) |>
+  lt_label(Package = I("Name<sup>*</sup>")) |>
+  lt_note(I("See <a href='https://yihui.org/'>the author</a>."))
 ```
 
 ## Complete example

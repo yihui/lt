@@ -9,7 +9,7 @@ lt_note(x, text)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{text}{Note text.}
+\item{text}{Note text. Wrap in \code{\link[=I]{I()}} to treat as raw HTML.}
 }
 \value{
 \code{x} with the note recorded.
@@ -19,4 +19,6 @@ Notes are rendered in the table footer below numbered footnotes.
 }
 \examples{
 lt(head(mtcars)) |> lt_note("CI = confidence interval.")
+# raw HTML note (wrap in I())
+lt(head(mtcars)) |> lt_note(I("CI = <em>confidence interval</em>."))
 }

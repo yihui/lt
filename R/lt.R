@@ -25,6 +25,16 @@
 #' @param auto_label Whether to automatically clean column names for display
 #'   by replacing separators (`.` and `_`) with spaces. Set to `FALSE` to
 #'   show raw column names.
+#' @section HTML in cells:
+#' By default all cell values and text (titles, labels, footnotes, ...) are
+#' HTML-escaped, so special characters like `<`, `>`, and `&` render as
+#' literal text. To emit content as raw HTML instead:
+#'
+#' - For body cells, mark whole columns with [lt_html()].
+#' - For a title, subtitle, column label, spanner, footnote, or note, wrap the
+#'   text in [I()]. For example, `lt_header(x, I("<b>Report</b>"))` renders the
+#'   title as raw HTML, while `lt_header(x, "<b>Report</b>")` shows the literal
+#'   `<b>` tags.
 #' @section Interactivity:
 #' When a cell value has been formatted (e.g., by auto-formatting or
 #' [lt_format()]), the original value is stored in the cell's `title`

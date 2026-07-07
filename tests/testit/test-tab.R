@@ -9,6 +9,11 @@ assert("lt_header() sets header", {
   (h2$header %==% list(title = "Title"))
 })
 
+assert("lt_header() preserves I() to mark raw HTML", {
+  h = lt_header(x, I("<b>T</b>"))
+  (inherits(h$header$title, "AsIs"))
+})
+
 assert("lt_spanner() with formula", {
   s = lt_spanner(x, Grp ~ b + c)
   (s$spanners %==% list(list(label = "Grp", columns = I(c("b", "c")))))
@@ -115,6 +120,13 @@ assert("lt_date() adds fmt_date op", {
 assert("lt_label() adds label op", {
   l = lt_label(x, a = "Alpha", b = "Beta")
   (l$ops %==% list(list(type = "label", labels = list(a = "Alpha", b = "Beta"))))
+})
+
+assert("lt_html() marks columns as raw HTML", {
+  h = lt_html(x, ~ a + b)
+  (h$html_cols %==% I(c("a", "b")))
+  # no columns → whole table
+  (lt_html(x)$html_cols %==% TRUE)
 })
 
 assert("lt_sub() adds sub op", {

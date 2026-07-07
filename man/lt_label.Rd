@@ -9,7 +9,8 @@ lt_label(x, ...)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{...}{Named arguments of the form \code{col_name = "Display Label"}.}
+\item{...}{Named arguments of the form \code{col_name = "Display Label"}. Wrap a
+label in \code{\link[=I]{I()}} to treat it as raw HTML.}
 }
 \value{
 \code{x} with the column label overrides recorded.
@@ -19,4 +20,6 @@ Override column headers without modifying the underlying data frame.
 }
 \examples{
 lt(head(mtcars)) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
+# raw HTML label (wrap in I())
+lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
 }

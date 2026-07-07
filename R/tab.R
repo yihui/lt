@@ -1,12 +1,14 @@
 #' Add a Title and Subtitle
 #'
 #' @inheritParams lt_align
-#' @param title A character scalar.
-#' @param subtitle A character scalar.
+#' @param title A character scalar. Wrap in [I()] to treat as raw HTML.
+#' @param subtitle A character scalar. Wrap in [I()] to treat as raw HTML.
 #' @return `x` with the header recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_header("Motor Trend Cars", "First 6 rows")
+#' # raw HTML title
+#' lt(head(mtcars)) |> lt_header(I("<em>Motor Trend</em> Cars"))
 lt_header = function(x, title = NULL, subtitle = NULL) {
   x$header = drop_null(list(title = title, subtitle = subtitle))
   x
@@ -37,6 +39,8 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
 #' tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
 #' # Auto-infer from column names
 #' tbl |> lt_spanner()
+#' # raw HTML label (wrap in I())
+#' tbl |> lt_spanner(I("<em>Sepal</em>"), ~ Sepal.Length + Sepal.Width)
 lt_spanner = function(x, label, columns, sep = '[._]') {
   if (missing(label) && missing(columns)) {
     x$auto_span = if (identical(sep, '[._]')) TRUE else sep
@@ -127,6 +131,9 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
 #' @examples
 #' lt(head(mtcars)) |>
 #'   lt_footnote("Source: 1974 Motor Trend US magazine.", "title")
+#' # raw HTML footnote (wrap in I())
+#' lt(head(mtcars)) |>
+#'   lt_footnote(I("See <a href='#'>docs</a>."), "title")
 lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL) {
   columns = f_cols(columns)
   loc = switch(where,
@@ -157,11 +164,13 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
 #' Notes are rendered in the table footer below numbered footnotes.
 #'
 #' @inheritParams lt_align
-#' @param text Note text.
+#' @param text Note text. Wrap in [I()] to treat as raw HTML.
 #' @return `x` with the note recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_note("CI = confidence interval.")
+#' # raw HTML note (wrap in I())
+#' lt(head(mtcars)) |> lt_note(I("CI = <em>confidence interval</em>."))
 lt_note = function(x, text) {
   x$notes = c(x$notes, list(text))
   x
@@ -282,13 +291,43 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #' Override column headers without modifying the underlying data frame.
 #'
 #' @inheritParams lt_align
-#' @param ... Named arguments of the form `col_name = "Display Label"`.
+#' @param ... Named arguments of the form `col_name = "Display Label"`. Wrap a
+#'   label in [I()] to treat it as raw HTML.
 #' @return `x` with the column label overrides recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
+#' # raw HTML label (wrap in I())
+#' lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
 lt_label = function(x, ...) {
   add_op(x, 'label', labels = list(...))
+}
+
+
+#' Render Column Cells as Raw HTML
+#'
+#' Mark whole columns so their body cells are emitted as raw HTML instead of
+#' being escaped. By default every cell is HTML-escaped (so `<`, `>`, and `&`
+#' render as literal text); use this to embed links, emphasis, or other markup
+#' in a column's cells.
+#'
+#' To emit raw HTML in other regions (title, column labels, footnotes, ...),
+#' wrap the text in [I()] in the corresponding `lt_*()` function instead.
+#'
+#' @inheritParams lt_align
+#' @param columns Column names (character or one-sided formula) whose cells are
+#'   raw HTML. If missing, all columns are treated as raw HTML.
+#' @return `x` with the raw-HTML columns recorded.
+#' @export
+#' @examples
+#' d = data.frame(
+#'   name = c("<a href='#a'>A</a>", "<a href='#b'>B</a>"), n = 1:2
+#' )
+#' lt(d) |> lt_html(~ name)
+lt_html = function(x, columns) {
+  x$html_cols = if (missing(columns)) TRUE else
+    I(as.character(f_cols(columns)))
+  x
 }
 
 

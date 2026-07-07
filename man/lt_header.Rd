@@ -9,9 +9,9 @@ lt_header(x, title = NULL, subtitle = NULL)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{title}{A character scalar.}
+\item{title}{A character scalar. Wrap in \code{\link[=I]{I()}} to treat as raw HTML.}
 
-\item{subtitle}{A character scalar.}
+\item{subtitle}{A character scalar. Wrap in \code{\link[=I]{I()}} to treat as raw HTML.}
 }
 \value{
 \code{x} with the header recorded.
@@ -21,4 +21,6 @@ Add a Title and Subtitle
 }
 \examples{
 lt(head(mtcars)) |> lt_header("Motor Trend Cars", "First 6 rows")
+# raw HTML title
+lt(head(mtcars)) |> lt_header(I("<em>Motor Trend</em> Cars"))
 }

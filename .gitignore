@@ -1,2 +1,4 @@
 .Rproj.user
 examples/*.html
+examples/*.png
+examples/*.pdf

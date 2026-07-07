@@ -32,6 +32,20 @@ list) that records the data plus a list of table-modifying operations. The
 object is rendered to HTML by \code{\link[=format]{format()}} (called automatically by the
 print method).
 }
+\section{HTML in cells}{
+
+By default all cell values and text (titles, labels, footnotes, ...) are
+HTML-escaped, so special characters like \code{<}, \code{>}, and \code{&} render as
+literal text. To emit content as raw HTML instead:
+\itemize{
+\item For body cells, mark whole columns with \code{\link[=lt_html]{lt_html()}}.
+\item For a title, subtitle, column label, spanner, footnote, or note, wrap the
+text in \code{\link[=I]{I()}}. For example, \code{lt_header(x, I("<b>Report</b>"))} renders the
+title as raw HTML, while \code{lt_header(x, "<b>Report</b>")} shows the literal
+\verb{<b>} tags.
+}
+}
+
 \section{Interactivity}{
 
 When a cell value has been formatted (e.g., by auto-formatting or
