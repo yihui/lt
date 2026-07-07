@@ -443,9 +443,11 @@
         if (s.class) addTo(classMap, key, s.class, " ");
       });
 
-    // <colgroup>
+    // <colgroup>: leading empty <col>s for rowspan group columns, so widths
+    // align with the body columns (which are offset by nGrp on the left).
     if (colWidths && colWidths.some(w => w)) {
       out.push(`<colgroup>`);
+      for (let i = 0; i < nGrp; i++) out.push(`<col>`);
       for (let i = 0; i < cols.length; i++)
         out.push(`<col${attr("style", colWidths[i] ? "width:" + colWidths[i] : "")}>`);
       out.push(`</colgroup>`);

@@ -45,6 +45,18 @@ assert("rowspan row groups render correctly", {
   (matches(html, '.*" rowspan="2">A</th>.*') %==% "")
 })
 
+assert("column widths align past rowspan group columns", {
+  # A width set on a body column must apply to that column, not shift onto the
+  # leading rowspan group column. The colgroup gets an empty <col> per group
+  # column, so the width lands on the correct <col>.
+  html = build(list(
+    data = list(g = c("A", "A"), v = 1:2),
+    row_group = list("g"),
+    ops = list(list(type = "width", widths = list(v = "9em")))
+  ))
+  (matches(html, '.*<colgroup><col><col style="width:9em"></colgroup>.*') %==% "")
+})
+
 assert("column spanner renders colspan", {
   html = build(list(
     data = list(a = 1, b = 2, c = 3),
