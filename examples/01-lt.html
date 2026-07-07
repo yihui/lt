@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="generator" content="litedown 0.9.14">
 <title>Examples</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/key-buttons.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/key-buttons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/prism-xcode.min.css">
 </head>
 <body>
 <nav><p><a href="../index.html">Home</a>
@@ -26,69 +26,262 @@
 <div class="body">
 <div id="TOC">
 <ul class="numbered">
-<li><a href="#sec:basics"><span class="section-number main-number">1</span> Basics</a>
+<li><a href="#sec:cheatsheet"><span class="section-number main-number">1</span> The cheat sheet (table)</a></li>
+<li><a href="#sec:basics"><span class="section-number main-number">2</span> Basics</a>
 <ul>
-<li><a href="#sec:a-simple-table"><span class="section-number">1.1</span> A simple table</a></li>
-<li><a href="#sec:column-labels"><span class="section-number">1.2</span> Column labels</a></li>
-<li><a href="#sec:title-and-subtitle"><span class="section-number">1.3</span> Title and subtitle</a></li>
-<li><a href="#sec:column-alignment"><span class="section-number">1.4</span> Column alignment</a></li>
+<li><a href="#sec:a-simple-table"><span class="section-number">2.1</span> A simple table</a></li>
+<li><a href="#sec:column-labels"><span class="section-number">2.2</span> Column labels</a></li>
+<li><a href="#sec:title-and-subtitle"><span class="section-number">2.3</span> Title and subtitle</a></li>
+<li><a href="#sec:column-alignment"><span class="section-number">2.4</span> Column alignment</a></li>
 </ul>
 </li>
-<li><a href="#sec:formatting"><span class="section-number main-number">2</span> Formatting</a>
+<li><a href="#sec:formatting"><span class="section-number main-number">3</span> Formatting</a>
 <ul>
-<li><a href="#sec:auto-formatting"><span class="section-number">2.1</span> Auto-formatting</a></li>
-<li><a href="#sec:number-formatting"><span class="section-number">2.2</span> Number formatting</a></li>
-<li><a href="#sec:date-formatting"><span class="section-number">2.3</span> Date formatting</a></li>
-<li><a href="#sec:substituting-missing-small-values"><span class="section-number">2.4</span> Substituting missing/small values</a></li>
-<li><a href="#sec:infinity-values"><span class="section-number">2.5</span> Infinity values</a></li>
+<li><a href="#sec:auto-formatting"><span class="section-number">3.1</span> Auto-formatting</a></li>
+<li><a href="#sec:number-formatting"><span class="section-number">3.2</span> Number formatting</a></li>
+<li><a href="#sec:date-formatting"><span class="section-number">3.3</span> Date formatting</a></li>
+<li><a href="#sec:substituting-missing-small-values"><span class="section-number">3.4</span> Substituting missing/small values</a></li>
+<li><a href="#sec:infinity-values"><span class="section-number">3.5</span> Infinity values</a></li>
 </ul>
 </li>
-<li><a href="#sec:footnotes-and-notes"><span class="section-number main-number">3</span> Footnotes and notes</a>
+<li><a href="#sec:footnotes-and-notes"><span class="section-number main-number">4</span> Footnotes and notes</a>
 <ul>
-<li><a href="#sec:footnotes"><span class="section-number">3.1</span> Footnotes</a></li>
-<li><a href="#sec:notes"><span class="section-number">3.2</span> Notes</a></li>
+<li><a href="#sec:footnotes"><span class="section-number">4.1</span> Footnotes</a></li>
+<li><a href="#sec:notes"><span class="section-number">4.2</span> Notes</a></li>
 </ul>
 </li>
-<li><a href="#sec:row-groups"><span class="section-number main-number">4</span> Row groups</a>
+<li><a href="#sec:row-groups"><span class="section-number main-number">5</span> Row groups</a>
 <ul>
-<li><a href="#sec:group-by-column"><span class="section-number">4.1</span> Group by column</a></li>
-<li><a href="#sec:auto-separator-rows-for-long-labels"><span class="section-number">4.2</span> Auto separator rows for long labels</a></li>
-<li><a href="#sec:group-by-multiple-columns-rowspan"><span class="section-number">4.3</span> Group by multiple columns (rowspan)</a></li>
-<li><a href="#sec:separator-row-style"><span class="section-number">4.4</span> Separator-row style</a></li>
-<li><a href="#sec:manual-row-groups"><span class="section-number">4.5</span> Manual row groups</a></li>
-<li><a href="#sec:row-group-ordering"><span class="section-number">4.6</span> Row group ordering</a></li>
-<li><a href="#sec:row-indentation"><span class="section-number">4.7</span> Row indentation</a></li>
+<li><a href="#sec:group-by-column"><span class="section-number">5.1</span> Group by column</a></li>
+<li><a href="#sec:auto-separator-rows-for-long-labels"><span class="section-number">5.2</span> Auto separator rows for long labels</a></li>
+<li><a href="#sec:group-by-multiple-columns-rowspan"><span class="section-number">5.3</span> Group by multiple columns (rowspan)</a></li>
+<li><a href="#sec:separator-row-style"><span class="section-number">5.4</span> Separator-row style</a></li>
+<li><a href="#sec:manual-row-groups"><span class="section-number">5.5</span> Manual row groups</a></li>
+<li><a href="#sec:row-group-ordering"><span class="section-number">5.6</span> Row group ordering</a></li>
+<li><a href="#sec:row-indentation"><span class="section-number">5.7</span> Row indentation</a></li>
 </ul>
 </li>
-<li><a href="#sec:column-structure"><span class="section-number main-number">5</span> Column structure</a>
+<li><a href="#sec:column-structure"><span class="section-number main-number">6</span> Column structure</a>
 <ul>
-<li><a href="#sec:column-spanners"><span class="section-number">5.1</span> Column spanners</a></li>
-<li><a href="#sec:column-merging"><span class="section-number">5.2</span> Column merging</a></li>
-<li><a href="#sec:column-widths"><span class="section-number">5.3</span> Column widths</a></li>
-<li><a href="#sec:column-reordering"><span class="section-number">5.4</span> Column reordering</a></li>
+<li><a href="#sec:column-spanners"><span class="section-number">6.1</span> Column spanners</a></li>
+<li><a href="#sec:column-merging"><span class="section-number">6.2</span> Column merging</a></li>
+<li><a href="#sec:column-widths"><span class="section-number">6.3</span> Column widths</a></li>
+<li><a href="#sec:column-reordering"><span class="section-number">6.4</span> Column reordering</a></li>
 </ul>
 </li>
-<li><a href="#sec:styling"><span class="section-number main-number">6</span> Styling</a>
+<li><a href="#sec:styling"><span class="section-number main-number">7</span> Styling</a>
 <ul>
-<li><a href="#sec:cell-styling"><span class="section-number">6.1</span> Cell styling</a></li>
-<li><a href="#sec:conditional-styling"><span class="section-number">6.2</span> Conditional styling</a></li>
-<li><a href="#sec:highlighting-na-cells"><span class="section-number">6.3</span> Highlighting NA cells</a></li>
+<li><a href="#sec:cell-styling"><span class="section-number">7.1</span> Cell styling</a></li>
+<li><a href="#sec:conditional-styling"><span class="section-number">7.2</span> Conditional styling</a></li>
+<li><a href="#sec:highlighting-na-cells"><span class="section-number">7.3</span> Highlighting NA cells</a></li>
 </ul>
 </li>
-<li><a href="#sec:complete-example"><span class="section-number main-number">7</span> Complete example</a></li>
-<li><a href="#sec:exporting"><span class="section-number main-number">8</span> Exporting</a></li>
-<li><a href="#sec:interactivity"><span class="section-number main-number">9</span> Interactivity</a></li>
+<li><a href="#sec:complete-example"><span class="section-number main-number">8</span> Complete example</a></li>
+<li><a href="#sec:exporting"><span class="section-number main-number">9</span> Exporting</a></li>
+<li><a href="#sec:interactivity"><span class="section-number main-number">10</span> Interactivity</a></li>
 </ul>
 </div>
-<pre><code class="language-r">library(lt)
+<h2 id="sec:cheatsheet"><span class="section-number main-number">1</span> The cheat sheet (table)</h2>
+<p>The table below is a self-documenting cheat sheet: every function in this
+package is used to build it, and each function’s name is placed <em>exactly where
+that function acts</em>. The title reads <code>lt_header(title = ...)</code> because
+<code>lt_header()</code> put it there; every column header is the name of the function
+that shaped that column; the row-group label is <code>lt_group()</code>; the footnote text
+is <code>lt_footnote()</code>; and so on. To learn what a function does, find its name in
+the table and look at what it is doing to the cell around it.</p>
+<pre><code class="language-r">d = data.frame(
+  Grp   = paste(&quot;Group&quot;, c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;)),
+  Label = c(&quot;lt(): make a table&quot;, &quot;lt_indent(): child A&quot;,
+            &quot;lt_indent(): child B&quot;, &quot;lt_style() + lt_css()&quot;),
+  Fmt   = c(1234567.89, -0.51234, Inf, -Inf),
+  Sub   = c(0, NA, 3.14, 0.0002),
+  Date  = as.Date(c(&quot;2024-01-15&quot;, &quot;2024-02-20&quot;, &quot;2024-03-25&quot;, &quot;2024-04-30&quot;)),
+  Align = c(1, 22, 333, 4),
+  Width = c(&quot;lt_width()&quot;, &quot;sets&quot;, &quot;column&quot;, &quot;widths&quot;),
+  Est   = c(&quot;0.61&quot;, &quot;0.79&quot;, &quot;0.45&quot;, &quot;0.90&quot;),
+  CI    = c(&quot;(0.40, 0.82)&quot;, &quot;(0.57, 1.01)&quot;, &quot;(0.20, 0.70)&quot;, &quot;(0.71, 1.14)&quot;)
+)
+
+library(lt)
+lt(d, auto_format = FALSE) |&gt;
+  # lt_group(): the &quot;lt_group()&quot; row-group header on the left
+  lt_group(~ Grp) |&gt;
+  # lt_header(): the title and subtitle at the top literally name themselves
+  lt_header(
+    title    = &quot;lt_header(title = ...)&quot;,
+    subtitle = &quot;lt_header(subtitle = ...)&quot;
+  ) |&gt;
+  # lt_merge(): fold CI into Est to make the &quot;lt_merge()&quot; column
+  lt_merge(~ Est + CI, pattern = &quot;{1} {2}&quot;) |&gt;
+  # lt_spanner(): the &quot;lt_spanner()&quot; label above two columns
+  lt_spanner(`lt_spanner()` ~ Fmt + Sub) |&gt;
+  # lt_label(): every column header is renamed to the function acting on it
+  lt_label(
+    Grp = &quot;lt_group()&quot;, Width = &quot;lt_width()&quot;, Label = &quot;lt_label()&quot;,
+    Fmt = &quot;lt_format()&quot;, Sub = &quot;lt_sub()&quot;, Date = &quot;lt_date()&quot;,
+    Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;
+  ) |&gt;
+  # lt_align(): center the &quot;lt_align()&quot; column
+  lt_align(~ Align, &quot;center&quot;) |&gt;
+  # lt_width(): the &quot;lt_width()&quot; column is where widths are set
+  lt_width(Width = &quot;9em&quot;, Label = &quot;16em&quot;) |&gt;
+  # lt_format(): round and add a thousands separator
+  lt_format(~ Fmt, decimals = 1, big_mark = &quot;,&quot;) |&gt;
+  # lt_date(): format the &quot;lt_date()&quot; column
+  lt_date(~ Date, options = list(
+    year = &quot;numeric&quot;, month = &quot;short&quot;, day = &quot;numeric&quot;, timeZone = &quot;UTC&quot;
+  )) |&gt;
+  # lt_sub(): NA/zero/small are replaced with self-naming placeholders
+  lt_sub(~ Sub, missing = &quot;n/a&quot;, zero = &quot;—&quot;,
+    small = 0.01, small_text = &quot;&lt; 0.01&quot;) |&gt;
+  # lt_indent(): indent the two &quot;lt_indent()&quot; child rows
+  lt_indent(c(2, 3), level = 1) |&gt;
+  # lt_style() + lt_css(): style the cell that names them
+  lt_style(&quot;Label&quot;, rows = 4L, class = &quot;hl&quot;) |&gt;
+  lt_css(.hl = list(fontWeight = &quot;bold&quot;, color = &quot;#06c&quot;)) |&gt;
+  # lt_footnote(): provide the footnote text
+  lt_footnote(&quot;lt_footnote() can add a footnote anywhere.&quot;, &quot;title&quot;) |&gt;
+  lt_footnote(&quot;Alt + Click a table to toggle raw values.&quot;, &quot;subtitle&quot;) |&gt;
+  # lt_move(): explain it via a footnote, since it has no column of its own here
+  lt_footnote(
+    &quot;lt_move() can reorder columns as desired.&quot;,
+    &quot;column&quot;, &quot;Label&quot;
+  ) |&gt;
+  # lt_note(): the footer note names itself and lt_export()
+  lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
 </code></pre>
-<h2 id="sec:basics"><span class="section-number main-number">1</span> Basics</h2>
-<h3 id="sec:a-simple-table"><span class="section-number">1.1</span> A simple table</h3>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/lt.min.css">
+<style>.lt-table {
+  .hl { font-weight: bold; color: #06c; }
+}</style>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "Grp": ["Group A", "Group A", "Group B", "Group B"],
+    "Label": ["lt(): make a table", "lt_indent(): child A", "lt_indent(): child B", "lt_style() + lt_css()"],
+    "Fmt": [1234567.89, -0.51234, Infinity, -Infinity],
+    "Sub": [0, null, 3.14, 2e-04],
+    "Date": [new Date("2024-01-15"), new Date("2024-02-20"), new Date("2024-03-25"), new Date("2024-04-30")],
+    "Align": [1, 22, 333, 4],
+    "Width": ["lt_width()", "sets", "column", "widths"],
+    "Est": ["0.61", "0.79", "0.45", "0.90"],
+    "CI": ["(0.40, 0.82)", "(0.57, 1.01)", "(0.20, 0.70)", "(0.71, 1.14)"]
+  },
+  "ops": [
+    {
+      "type": "merge",
+      "columns": ["Est", "CI"],
+      "pattern": "{1} {2}",
+      "hide": true
+    },
+    {
+      "type": "label",
+      "labels": {
+        "Grp": "lt_group()",
+        "Width": "lt_width()",
+        "Label": "lt_label()",
+        "Fmt": "lt_format()",
+        "Sub": "lt_sub()",
+        "Date": "lt_date()",
+        "Align": "lt_align()",
+        "Est": "lt_merge()"
+      }
+    },
+    {
+      "type": "align",
+      "columns": ["Align"],
+      "align": "center"
+    },
+    {
+      "type": "width",
+      "widths": {
+        "Width": "9em",
+        "Label": "16em"
+      }
+    },
+    {
+      "type": "fmt_number",
+      "columns": ["Fmt"],
+      "decimals": 1,
+      "big_mark": ","
+    },
+    {
+      "type": "fmt_date",
+      "columns": ["Date"],
+      "options": {
+        "year": "numeric",
+        "month": "short",
+        "day": "numeric",
+        "timeZone": "UTC"
+      }
+    },
+    {
+      "type": "sub",
+      "columns": ["Sub"],
+      "missing": "n/a",
+      "zero": "—",
+      "small": 0.01,
+      "small_text": "< 0.01"
+    },
+    {
+      "type": "indent",
+      "rows": [2, 3],
+      "level": 1
+    },
+    {
+      "type": "style",
+      "columns": ["Label"],
+      "rows": [4],
+      "class": "hl"
+    }
+  ],
+  "auto_format": false,
+  "row_group": ["Grp"],
+  "header": {
+    "title": "lt_header(title = ...)",
+    "subtitle": "lt_header(subtitle = ...)"
+  },
+  "spanners": [
+    {
+      "label": "lt_spanner()",
+      "columns": ["Fmt", "Sub"]
+    }
+  ],
+  "footnotes": [
+    {
+      "text": "lt_footnote() can add a footnote anywhere.",
+      "location": {
+        "type": "title",
+        "group": "title"
+      }
+    },
+    {
+      "text": "Alt + Click a table to toggle raw values.",
+      "location": {
+        "type": "title",
+        "group": "subtitle"
+      }
+    },
+    {
+      "text": "lt_move() can reorder columns as desired.",
+      "location": {
+        "type": "column_labels",
+        "columns": ["Label"]
+      }
+    }
+  ],
+  "notes": [
+    "lt_note() — and lt_export() saves this table to HTML/PDF/PNG."
+  ]
+}
+})</script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/lt.min.js" defer></script>
+<h2 id="sec:basics"><span class="section-number main-number">2</span> Basics</h2>
+<h3 id="sec:a-simple-table"><span class="section-number">2.1</span> A simple table</h3>
 <p>Pass any data frame to <code>lt()</code>:</p>
 <pre><code class="language-r">tbl_cars = lt(head(mtcars))
 tbl_cars
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/lt.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -106,8 +299,7 @@ tbl_cars
   }
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/lt.min.js" defer></script>
-<h3 id="sec:column-labels"><span class="section-number">1.2</span> Column labels</h3>
+<h3 id="sec:column-labels"><span class="section-number">2.2</span> Column labels</h3>
 <p>By default, column names are cleaned for display by replacing <code>.</code> and
 <code>_</code> with spaces. Use <code>auto_label = FALSE</code> to show raw names, or
 <code>lt_label()</code> to override specific columns:</p>
@@ -161,7 +353,7 @@ tbl_iris
   ]
 }
 })</script>
-<h3 id="sec:title-and-subtitle"><span class="section-number">1.3</span> Title and subtitle</h3>
+<h3 id="sec:title-and-subtitle"><span class="section-number">2.3</span> Title and subtitle</h3>
 <pre><code class="language-r">tbl_iris |&gt;
   lt_header(title = &quot;Iris Measurements&quot;, subtitle = &quot;First six observations&quot;)
 </code></pre>
@@ -180,7 +372,7 @@ tbl_iris
   }
 }
 })</script>
-<h3 id="sec:column-alignment"><span class="section-number">1.4</span> Column alignment</h3>
+<h3 id="sec:column-alignment"><span class="section-number">2.4</span> Column alignment</h3>
 <p>By default, numeric columns are right-aligned and character columns are
 left-aligned. Override with <code>lt_align()</code>:</p>
 <pre><code class="language-r">tbl_cars |&gt; lt_align(~ mpg + cyl, &quot;center&quot;) |&gt; lt_width(mpg = &quot;6em&quot;)
@@ -215,8 +407,8 @@ left-aligned. Override with <code>lt_align()</code>:</p>
   ]
 }
 })</script>
-<h2 id="sec:formatting"><span class="section-number main-number">2</span> Formatting</h2>
-<h3 id="sec:auto-formatting"><span class="section-number">2.1</span> Auto-formatting</h3>
+<h2 id="sec:formatting"><span class="section-number main-number">3</span> Formatting</h2>
+<h3 id="sec:auto-formatting"><span class="section-number">3.1</span> Auto-formatting</h3>
 <p>By default, <code>lt()</code> automatically formats numeric columns: rounding to
 ~4 significant digits (adapting decimal places to magnitude), adding a
 thin-space thousands separator, using a typographic minus (U+2212) for
@@ -251,7 +443,7 @@ lt(d)
   "auto_format": false
 }
 })</script>
-<h3 id="sec:number-formatting"><span class="section-number">2.2</span> Number formatting</h3>
+<h3 id="sec:number-formatting"><span class="section-number">3.2</span> Number formatting</h3>
 <pre><code class="language-r">tbl_cars |&gt; lt_format(~ mpg + disp, decimals = 1)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -278,7 +470,7 @@ lt(d)
   ]
 }
 })</script>
-<h4 id="sec:decimal-places"><span class="section-number">2.2.1</span> Decimal places</h4>
+<h4 id="sec:decimal-places"><span class="section-number">3.2.1</span> Decimal places</h4>
 <p>Control the number of decimal places with <code>decimals</code>:</p>
 <pre><code class="language-r">d = data.frame(
   Metric = c(&quot;Revenue&quot;, &quot;Costs&quot;, &quot;Profit&quot;),
@@ -304,7 +496,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h4 id="sec:big-mark-thousands-separator"><span class="section-number">2.2.2</span> Big mark (thousands separator)</h4>
+<h4 id="sec:big-mark-thousands-separator"><span class="section-number">3.2.2</span> Big mark (thousands separator)</h4>
 <pre><code class="language-r">lt(d) |&gt;
   lt_format(~ Q1 + Q2, decimals = 0, big_mark = &quot;,&quot;)
 </code></pre>
@@ -325,7 +517,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h4 id="sec:prefix-and-suffix-currency-units"><span class="section-number">2.2.3</span> Prefix and suffix (currency, units)</h4>
+<h4 id="sec:prefix-and-suffix-currency-units"><span class="section-number">3.2.3</span> Prefix and suffix (currency, units)</h4>
 <p>Use <code>prefix</code> and <code>suffix</code> to prepend or append symbols to formatted values:</p>
 <pre><code class="language-r">lt(d) |&gt;
   lt_format(~ Q1 + Q2, decimals = 2, big_mark = &quot;,&quot;, prefix = &quot;$&quot;)
@@ -370,7 +562,7 @@ lt(d2) |&gt; lt_format(~ Weight, decimals = 1, suffix = &quot; kg&quot;)
   ]
 }
 })</script>
-<h3 id="sec:date-formatting"><span class="section-number">2.3</span> Date formatting</h3>
+<h3 id="sec:date-formatting"><span class="section-number">3.3</span> Date formatting</h3>
 <p>Format Date or POSIXt columns using JavaScript’s native Date methods.
 The default uses <code>toLocaleDateString()</code>.</p>
 <p><strong>Note:</strong> The formatted date may differ from the input depending on the
@@ -397,7 +589,7 @@ lt(d) |&gt; lt_date(~ Date)
   ]
 }
 })</script>
-<h4 id="sec:with-locale-and-options"><span class="section-number">2.3.1</span> With locale and options</h4>
+<h4 id="sec:with-locale-and-options"><span class="section-number">3.3.1</span> With locale and options</h4>
 <p>Pass <code>locale</code> and <code>options</code> for <code>Intl.DateTimeFormat</code> control:</p>
 <pre><code class="language-r">lt(d) |&gt; lt_date(~ Date, locale = &quot;zh-CN&quot;,
   options = list(year = &quot;numeric&quot;, month = &quot;long&quot;, day = &quot;numeric&quot;,
@@ -425,7 +617,7 @@ lt(d) |&gt; lt_date(~ Date)
   ]
 }
 })</script>
-<h4 id="sec:using-a-specific-date-method"><span class="section-number">2.3.2</span> Using a specific Date method</h4>
+<h4 id="sec:using-a-specific-date-method"><span class="section-number">3.3.2</span> Using a specific Date method</h4>
 <pre><code class="language-r">lt(d) |&gt; lt_date(~ Date, method = &quot;toDateString&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -443,7 +635,7 @@ lt(d) |&gt; lt_date(~ Date)
   ]
 }
 })</script>
-<h4 id="sec:datetime-posixt-columns"><span class="section-number">2.3.3</span> Datetime (POSIXt) columns</h4>
+<h4 id="sec:datetime-posixt-columns"><span class="section-number">3.3.3</span> Datetime (POSIXt) columns</h4>
 <p>For datetime values, include time components in <code>options</code>:</p>
 <pre><code class="language-r">d = data.frame(
   Event = c(&quot;Start&quot;, &quot;End&quot;),
@@ -476,7 +668,7 @@ lt(d) |&gt; lt_date(~ Time, locale = &quot;en-US&quot;, options = list(
   ]
 }
 })</script>
-<h3 id="sec:substituting-missing-small-values"><span class="section-number">2.4</span> Substituting missing/small values</h3>
+<h3 id="sec:substituting-missing-small-values"><span class="section-number">3.4</span> Substituting missing/small values</h3>
 <pre><code class="language-r">d = data.frame(
   Metric = c(&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;),
   Value = c(0.62, 0.0003, 0, NA)
@@ -508,7 +700,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h3 id="sec:infinity-values"><span class="section-number">2.5</span> Infinity values</h3>
+<h3 id="sec:infinity-values"><span class="section-number">3.5</span> Infinity values</h3>
 <p><code>Inf</code> and <code>-Inf</code> render as ∞ and −∞. Auto-formatting uses a typographic minus
 (U+2212) for −∞; raw (unformatted) columns use an ASCII hyphen:</p>
 <pre><code class="language-r">d = data.frame(
@@ -532,8 +724,8 @@ lt(d) |&gt; lt_format(~ Value, decimals = 2)
   ]
 }
 })</script>
-<h2 id="sec:footnotes-and-notes"><span class="section-number main-number">3</span> Footnotes and notes</h2>
-<h3 id="sec:footnotes"><span class="section-number">3.1</span> Footnotes</h3>
+<h2 id="sec:footnotes-and-notes"><span class="section-number main-number">4</span> Footnotes and notes</h2>
+<h3 id="sec:footnotes"><span class="section-number">4.1</span> Footnotes</h3>
 <pre><code class="language-r">tbl_cars |&gt;
   lt_header(title = &quot;Motor Trend Cars&quot;) |&gt;
   lt_footnote(&quot;Source: 1974 Motor Trend US magazine.&quot;, &quot;title&quot;) |&gt;
@@ -575,7 +767,7 @@ lt(d) |&gt; lt_format(~ Value, decimals = 2)
   ]
 }
 })</script>
-<h3 id="sec:notes"><span class="section-number">3.2</span> Notes</h3>
+<h3 id="sec:notes"><span class="section-number">4.2</span> Notes</h3>
 <p>Notes appear in the footer below numbered footnotes:</p>
 <pre><code class="language-r">tbl_cars |&gt; lt_note(&quot;Data from the 1974 Motor Trend US magazine.&quot;)
 </code></pre>
@@ -599,8 +791,8 @@ lt(d) |&gt; lt_format(~ Value, decimals = 2)
   ]
 }
 })</script>
-<h2 id="sec:row-groups"><span class="section-number main-number">4</span> Row groups</h2>
-<h3 id="sec:group-by-column"><span class="section-number">4.1</span> Group by column</h3>
+<h2 id="sec:row-groups"><span class="section-number main-number">5</span> Row groups</h2>
+<h3 id="sec:group-by-column"><span class="section-number">5.1</span> Group by column</h3>
 <p>Pass a column name to <code>lt_group()</code> to partition rows by that column’s
 values. The column is removed from the body and its values become group
 headers:</p>
@@ -634,7 +826,7 @@ lt(d) |&gt;
   }
 }
 })</script>
-<h3 id="sec:auto-separator-rows-for-long-labels"><span class="section-number">4.2</span> Auto separator rows for long labels</h3>
+<h3 id="sec:auto-separator-rows-for-long-labels"><span class="section-number">5.2</span> Auto separator rows for long labels</h3>
 <p>By default (<code>sep = 'auto'</code>), <code>lt_group()</code> switches from rowspan cells to
 full-width separator rows when any group label exceeds 20 characters:</p>
 <pre><code class="language-r">d = data.frame(
@@ -672,7 +864,7 @@ lt(d) |&gt; lt_group(~ Department, sep = FALSE)
   "auto_sep": false
 }
 })</script>
-<h3 id="sec:group-by-multiple-columns-rowspan"><span class="section-number">4.3</span> Group by multiple columns (rowspan)</h3>
+<h3 id="sec:group-by-multiple-columns-rowspan"><span class="section-number">5.3</span> Group by multiple columns (rowspan)</h3>
 <p>Pass multiple columns to <code>lt_group()</code> to render hierarchical rowspan
 cells on the left side of the table:</p>
 <pre><code class="language-r">d = data.frame(
@@ -707,7 +899,7 @@ lt(d) |&gt;
   }
 }
 })</script>
-<h3 id="sec:separator-row-style"><span class="section-number">4.4</span> Separator-row style</h3>
+<h3 id="sec:separator-row-style"><span class="section-number">5.4</span> Separator-row style</h3>
 <p>Use <code>sep = TRUE</code> to render groups as full-width separator rows instead of
 rowspan cells:</p>
 <pre><code class="language-r">d = data.frame(
@@ -740,7 +932,7 @@ lt(d) |&gt;
   }
 }
 })</script>
-<h3 id="sec:manual-row-groups"><span class="section-number">4.5</span> Manual row groups</h3>
+<h3 id="sec:manual-row-groups"><span class="section-number">5.5</span> Manual row groups</h3>
 <p>Use named arguments in <code>lt_group()</code> for explicit control over which rows
 belong to each group:</p>
 <pre><code class="language-r">tbl_cars |&gt; lt_group(&quot;First three&quot; = 1:3, &quot;Last three&quot; = 4:6)
@@ -774,7 +966,7 @@ belong to each group:</p>
   ]
 }
 })</script>
-<h3 id="sec:row-group-ordering"><span class="section-number">4.6</span> Row group ordering</h3>
+<h3 id="sec:row-group-ordering"><span class="section-number">5.6</span> Row group ordering</h3>
 <pre><code class="language-r">d = data.frame(
   arm = c(&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;),
   stat = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
@@ -800,7 +992,7 @@ lt(d) |&gt;
   "row_group": "arm"
 }
 })</script>
-<h3 id="sec:row-indentation"><span class="section-number">4.7</span> Row indentation</h3>
+<h3 id="sec:row-indentation"><span class="section-number">5.7</span> Row indentation</h3>
 <p>Indent the first column to show hierarchy:</p>
 <pre><code class="language-r">d = data.frame(
   label = c(&quot;Any AE&quot;, &quot;SOC: Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;,
@@ -836,8 +1028,8 @@ lt(d) |&gt;
   }
 }
 })</script>
-<h2 id="sec:column-structure"><span class="section-number main-number">5</span> Column structure</h2>
-<h3 id="sec:column-spanners"><span class="section-number">5.1</span> Column spanners</h3>
+<h2 id="sec:column-structure"><span class="section-number main-number">6</span> Column structure</h2>
+<h3 id="sec:column-spanners"><span class="section-number">6.1</span> Column spanners</h3>
 <p>A spanner groups contiguous columns under a shared label:</p>
 <pre><code class="language-r">tbl_iris |&gt;
   lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |&gt;
@@ -864,7 +1056,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h4 id="sec:auto-inferred-spanners"><span class="section-number">5.1.1</span> Auto-inferred spanners</h4>
+<h4 id="sec:auto-inferred-spanners"><span class="section-number">6.1.1</span> Auto-inferred spanners</h4>
 <p>When column names share a common prefix separated by <code>.</code> or <code>_</code>, call
 <code>lt_spanner()</code> with no arguments to infer spanners automatically:</p>
 <pre><code class="language-r">tbl_iris |&gt; lt_spanner()
@@ -881,7 +1073,7 @@ lt(d) |&gt;
   "auto_span": true
 }
 })</script>
-<h4 id="sec:spanner-with-formatting"><span class="section-number">5.1.2</span> Spanner with formatting</h4>
+<h4 id="sec:spanner-with-formatting"><span class="section-number">6.1.2</span> Spanner with formatting</h4>
 <pre><code class="language-r">tbl_iris |&gt;
   lt_header(title = &quot;Iris Dataset&quot;) |&gt;
   lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |&gt;
@@ -919,7 +1111,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h3 id="sec:column-merging"><span class="section-number">5.2</span> Column merging</h3>
+<h3 id="sec:column-merging"><span class="section-number">6.2</span> Column merging</h3>
 <p>Combine columns into one using a pattern. Source columns are hidden
 automatically:</p>
 <pre><code class="language-r">d = data.frame(
@@ -960,7 +1152,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h4 id="sec:conditional-merge-with-lt-lt-gt-gt"><span class="section-number">5.2.1</span> Conditional merge with <code>&lt;&lt; &gt;&gt;</code></h4>
+<h4 id="sec:conditional-merge-with-lt-lt-gt-gt"><span class="section-number">6.2.1</span> Conditional merge with <code>&lt;&lt; &gt;&gt;</code></h4>
 <p>Wrap pattern sections in <code>&lt;&lt;</code> and <code>&gt;&gt;</code> to drop them when any referenced
 column is empty/NA:</p>
 <pre><code class="language-r">d = data.frame(
@@ -1003,7 +1195,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h3 id="sec:column-widths"><span class="section-number">5.3</span> Column widths</h3>
+<h3 id="sec:column-widths"><span class="section-number">6.3</span> Column widths</h3>
 <pre><code class="language-r">tbl_cars |&gt; lt_width(mpg = &quot;8em&quot;, cyl = &quot;5em&quot;, disp = &quot;8em&quot;, hp = &quot;6em&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -1034,7 +1226,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h3 id="sec:column-reordering"><span class="section-number">5.4</span> Column reordering</h3>
+<h3 id="sec:column-reordering"><span class="section-number">6.4</span> Column reordering</h3>
 <pre><code class="language-r">tbl_iris |&gt; lt_move(~ Petal.Length + Petal.Width, after = NULL)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -1054,8 +1246,8 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h2 id="sec:styling"><span class="section-number main-number">6</span> Styling</h2>
-<h3 id="sec:cell-styling"><span class="section-number">6.1</span> Cell styling</h3>
+<h2 id="sec:styling"><span class="section-number main-number">7</span> Styling</h2>
+<h3 id="sec:cell-styling"><span class="section-number">7.1</span> Cell styling</h3>
 <p>Highlight specific cells with bold, color, background, or any CSS
 property (camelCase or dash-case):</p>
 <pre><code class="language-r">d = data.frame(
@@ -1102,7 +1294,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h3 id="sec:conditional-styling"><span class="section-number">6.2</span> Conditional styling</h3>
+<h3 id="sec:conditional-styling"><span class="section-number">7.2</span> Conditional styling</h3>
 <p>Apply styles based on cell values using a JavaScript test function. Use
 <code>class</code> to assign CSS classes, then define the rules with <code>lt_css()</code>:</p>
 <pre><code class="language-r">d = data.frame(
@@ -1148,7 +1340,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h3 id="sec:highlighting-na-cells"><span class="section-number">6.3</span> Highlighting NA cells</h3>
+<h3 id="sec:highlighting-na-cells"><span class="section-number">7.3</span> Highlighting NA cells</h3>
 <pre><code class="language-r">d = data.frame(
   arm = c(&quot;Treatment&quot;, &quot;Control&quot;, &quot;Treatment&quot;),
   n = c(30, NA, 28),
@@ -1177,7 +1369,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h2 id="sec:complete-example"><span class="section-number main-number">7</span> Complete example</h2>
+<h2 id="sec:complete-example"><span class="section-number main-number">8</span> Complete example</h2>
 <pre><code class="language-r">d = data.frame(
   Group = c(&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;),
   Endpoint = c(&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Primary&quot;, &quot;Secondary&quot;),
@@ -1241,7 +1433,7 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h2 id="sec:exporting"><span class="section-number main-number">8</span> Exporting</h2>
+<h2 id="sec:exporting"><span class="section-number main-number">9</span> Exporting</h2>
 <p><code>lt_export()</code> saves a table to a file. The format is chosen from the file
 extension: <code>.html</code>, <code>.pdf</code>, or (otherwise) <code>.png</code>. PDF and PNG are rendered in
 a headless Chromium browser.</p>
@@ -1350,7 +1542,7 @@ Set <code>tidy = TRUE</code> to pretty-print it with line breaks and indentation
   &lt;/table&gt;
 &lt;/div&gt;
 </code></pre>
-<h2 id="sec:interactivity"><span class="section-number main-number">9</span> Interactivity</h2>
+<h2 id="sec:interactivity"><span class="section-number main-number">10</span> Interactivity</h2>
 <p>When cell values are formatted, the original values are available in
 tooltips (hover over a cell to see). You can also <code>Alt + Click</code> on a
 table to reveal all raw values at once, or <code>Alt + Double-Click</code> to
@@ -1360,13 +1552,13 @@ toggle raw values for all tables on the page.</p>
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
 <p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.9.14</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/appendix.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/key-buttons.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/appendix.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/key-buttons.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
 </body>

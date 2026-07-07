@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="generator" content="litedown 0.9.14">
 <title>Help pages</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/prism-xcode.min.css">
 </head>
 <body>
 <nav><p><a href="index.html">Home</a>
@@ -164,7 +164,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
 <pre><code>&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;lt&lt;/title&gt;
 &lt;style&gt;body{font-family:system-ui,sans-serif;padding:1em}&lt;/style&gt;&lt;/head&gt;
 &lt;body&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/lt.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/lt.min.css&quot;&gt;
 &lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   &quot;data&quot;: {
@@ -182,7 +182,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
   }
 }
 })&lt;/script&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;
 </code></pre>
 <h2 id="sec:man-lt"><span class="section-number main-number">3</span> Create a Table Specification</h2>
@@ -511,7 +511,10 @@ th, td{ padding: 5px; }
   tbody {
     :not(:last-child) :is(td, th) { border-bottom: 1px   solid #ddd; }
     .lt-row-group :is(td, th)     { border-bottom: 1.5px solid #ddd; }
-    .lt-row-group { text-align: left; vertical-align: top; }
+    .lt-row-group {
+      text-align: left;
+      &amp;.lt-row-open { border-bottom-color: transparent; }
+    }
   }
   thead th {
     border-bottom: 1px solid #888;
@@ -536,7 +539,7 @@ th, td{ padding: 5px; }
 
   .lt-fnref {
     color: #06c;
-    &amp;::before { content: &quot; [&quot;; }
+    &amp;::before { content: &quot;\00a0[&quot;; }
     &amp;::after  { content: &quot;]&quot;; }
   }
 }
@@ -589,6 +592,13 @@ th, td{ padding: 5px; }
   // A column is &quot;numeric&quot; if its first non-null value is a number.
   const numCol = col =&gt; col?.length &amp;&amp; typeof col.find(v =&gt; v != null) === &quot;number&quot;;
 
+  // Display label for a column: the last &quot;label&quot; op that names it, else `c`.
+  const colLabel = (ops, c) =&gt; {
+    let lbl = c;
+    for (const op of ops) if (op.type === &quot;label&quot; &amp;&amp; op.labels?.[c] != null) lbl = op.labels[c];
+    return lbl;
+  };
+
   function fmtNumber(v, decimals, bigMark) {
     if (v === Infinity) return &quot;∞&quot;;
     if (v === -Infinity) return &quot;−∞&quot;;
@@ -637,19 +647,12 @@ th, td{ padding: 5px; }
       if (op.type === &quot;fmt_number&quot;) for (const c of (op.columns || colNames)) fmtCols.add(c);
     }
 
-    const getLabel = c =&gt; {
-      for (const op of ops) {
-        if (op.type === &quot;label&quot; &amp;&amp; op.labels?.[c] != null) return op.labels[c];
-      }
-      return c;
-    };
-
     for (const c of colNames) {
       if (fmtCols.has(c)) continue;
       const col = data[c];
       if (!numCol(col)) continue;
 
-      const lbl = getLabel(c),
+      const lbl = colLabel(ops, c),
             pct = /%|[ _](pct|percent)$/i.test(lbl);
 
       if (/year/i.test(lbl) &amp;&amp; col.every(v =&gt; v == null || /^\d{4}$/.test(String(v)))) continue;
@@ -863,10 +866,7 @@ th, td{ padding: 5px; }
       for (const gc of rowGroupCols) {
         const spans = new Array(nRow).fill(0);
         for (const r of runs(data[gc] || [])) spans[r.rows[0] - 1] = r.rows.length;
-        // Resolve display label from label ops (last wins)
-        let hdr = gc;
-        onOp(&quot;label&quot;, op =&gt; { if (op.labels?.[gc] != null) hdr = op.labels[gc]; });
-        rowSpans.push({ col: gc, label: hdr, spans });
+        rowSpans.push({ col: gc, label: colLabel(ops, gc), spans });
       }
     }
 
@@ -1009,9 +1009,11 @@ th, td{ padding: 5px; }
         if (s.class) addTo(classMap, key, s.class, &quot; &quot;);
       });
 
-    // &lt;colgroup&gt;
+    // &lt;colgroup&gt;: leading empty &lt;col&gt;s for rowspan group columns, so widths
+    // align with the body columns (which are offset by nGrp on the left).
     if (colWidths &amp;&amp; colWidths.some(w =&gt; w)) {
       out.push(`&lt;colgroup&gt;`);
+      for (let i = 0; i &lt; nGrp; i++) out.push(`&lt;col&gt;`);
       for (let i = 0; i &lt; cols.length; i++)
         out.push(`&lt;col${attr(&quot;style&quot;, colWidths[i] ? &quot;width:&quot; + colWidths[i] : &quot;&quot;)}&gt;`);
       out.push(`&lt;/colgroup&gt;`);
@@ -1059,10 +1061,17 @@ th, td{ padding: 5px; }
     // Row rendering
     const pushRow = r =&gt; {
       out.push(`&lt;tr&gt;`);
-      // Rowspan group cells
+      // Row-group cells. For a group spanning n &gt; 1 rows, the label goes in a
+      // non-spanning cell on the first row — so vertical-align centers it
+      // within that row's height (matching the body cells) instead of across
+      // the whole span — followed by an empty filler cell spanning the
+      // remaining n - 1 rows. A single-row group is just the label cell.
       for (const rs of rowSpans) {
-        const span = rs.spans[r - 1];
-        if (span &gt; 0) out.push(`&lt;th scope=&quot;row&quot; class=&quot;lt-row-group&quot;${attr(&quot;rowspan&quot;, span &gt; 1 ? span : 0)}&gt;${esc(cell(rs.col, r))}&lt;/th&gt;`);
+        const span = rs.spans[r - 1], fill = (rs.spans[r - 2] || 0) - 1;
+        if (span &gt; 0)
+          out.push(`&lt;th scope=&quot;row&quot; class=&quot;lt-row-group${span &gt; 1 ? &quot; lt-row-open&quot; : &quot;&quot;}&quot;&gt;${esc(cell(rs.col, r))}&lt;/th&gt;`);
+        else if (fill &gt; 0)
+          out.push(`&lt;th class=&quot;lt-row-group&quot;${attr(&quot;rowspan&quot;, fill &gt; 1 ? fill : 0)}&gt;&lt;/th&gt;`);
       }
       const ind = indent[r - 1] || 0;
       for (let ci = 0; ci &lt; cols.length; ci++) {
@@ -1125,7 +1134,7 @@ th, td{ padding: 5px; }
 <pre><code class="language-r">f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//RtmpbjBMzs/file4dbc28e51ad.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//RtmpJVmVsB/file26f57d524f9a.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::has_node() || lt:::has_browser())
@@ -1141,7 +1150,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//RtmpbjBMzs/file4dbce1cdfd3.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//RtmpJVmVsB/file26f5e088227.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -1745,18 +1754,18 @@ print(x, ...)</code></pre>
 <h3 id="sec:examples_21" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">print(lt(head(mtcars)))
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/css/manual.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/css/manual.min.css">
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
 <p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.9.14</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/appendix.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.64/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/appendix.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.66/js/pages.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
 </body>
