@@ -7,8 +7,77 @@ output:
       js: ["@key-buttons"]
 ---
 
+## The cheat sheet (table) {#sec:cheatsheet}
+
+The table below is a self-documenting cheat sheet: every function in this
+package is used to build it, and each function's name is placed *exactly where
+that function acts*. The title reads `lt_header(title = ...)` because
+`lt_header()` put it there; every column header is the name of the function
+that shaped that column; the row-group label is `lt_group()`; the footnote text
+is `lt_footnote()`; and so on. To learn what a function does, find its name in
+the table and look at what it is doing to the cell around it.
+
 ```{r}
+d = data.frame(
+  Grp   = paste("Group", c("A", "A", "B", "B")),
+  Label = c("lt(): make a table", "lt_indent(): child A",
+            "lt_indent(): child B", "lt_style() + lt_css()"),
+  Fmt   = c(1234567.89, -0.51234, Inf, -Inf),
+  Sub   = c(0, NA, 3.14, 0.0002),
+  Date  = as.Date(c("2024-01-15", "2024-02-20", "2024-03-25", "2024-04-30")),
+  Align = c(1, 22, 333, 4),
+  Width = c("lt_width()", "sets", "column", "widths"),
+  Est   = c("0.61", "0.79", "0.45", "0.90"),
+  CI    = c("(0.40, 0.82)", "(0.57, 1.01)", "(0.20, 0.70)", "(0.71, 1.14)")
+)
+
 library(lt)
+lt(d, auto_format = FALSE) |>
+  # lt_group(): the "lt_group()" row-group header on the left
+  lt_group(~ Grp) |>
+  # lt_header(): the title and subtitle at the top literally name themselves
+  lt_header(
+    title    = "lt_header(title = ...)",
+    subtitle = "lt_header(subtitle = ...)"
+  ) |>
+  # lt_merge(): fold CI into Est to make the "lt_merge()" column
+  lt_merge(~ Est + CI, pattern = "{1} {2}") |>
+  # lt_spanner(): the "lt_spanner()" label above two columns
+  lt_spanner(`lt_spanner()` ~ Fmt + Sub) |>
+  # lt_label(): every column header is renamed to the function acting on it
+  lt_label(
+    Grp = "lt_group()", Width = "lt_width()", Label = "lt_label()",
+    Fmt = "lt_format()", Sub = "lt_sub()", Date = "lt_date()",
+    Align = "lt_align()", Est = "lt_merge()"
+  ) |>
+  # lt_align(): center the "lt_align()" column
+  lt_align(~ Align, "center") |>
+  # lt_width(): the "lt_width()" column is where widths are set
+  lt_width(Width = "9em", Label = "16em") |>
+  # lt_format(): round and add a thousands separator
+  lt_format(~ Fmt, decimals = 1, big_mark = ",") |>
+  # lt_date(): format the "lt_date()" column
+  lt_date(~ Date, options = list(
+    year = "numeric", month = "short", day = "numeric", timeZone = "UTC"
+  )) |>
+  # lt_sub(): NA/zero/small are replaced with self-naming placeholders
+  lt_sub(~ Sub, missing = "n/a", zero = "—",
+    small = 0.01, small_text = "< 0.01") |>
+  # lt_indent(): indent the two "lt_indent()" child rows
+  lt_indent(c(2, 3), level = 1) |>
+  # lt_style() + lt_css(): style the cell that names them
+  lt_style("Label", rows = 4L, class = "hl") |>
+  lt_css(.hl = list(fontWeight = "bold", color = "#06c")) |>
+  # lt_footnote(): provide the footnote text
+  lt_footnote("lt_footnote() can add a footnote anywhere.", "title") |>
+  lt_footnote("Alt + Click a table to toggle raw values.", "subtitle") |>
+  # lt_move(): explain it via a footnote, since it has no column of its own here
+  lt_footnote(
+    "lt_move() can reorder columns as desired.",
+    "column", "Label"
+  ) |>
+  # lt_note(): the footer note names itself and lt_export()
+  lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG.")
 ```
 
 ## Basics
