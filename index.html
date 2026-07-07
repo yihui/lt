@@ -96,7 +96,7 @@ testit</td>
 need — titles, column spanners, row groups, footnotes, and number formatting —
 without the heavy dependency stack. It targets HTML only (no LaTeX or RTF),
 which keeps the implementation minimal: the entire runtime is a single
-vanilla-JS file (<a href="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js">under 10 KB
+vanilla-JS file (<a href="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js">about 10 KB
 minified</a>).</p>
 <h2 id="sec:installation"><span class="section-number main-number">1</span> Installation</h2>
 <pre><code class="language-r"># CRAN version
@@ -109,7 +109,8 @@ install.packages(&quot;lt&quot;, repos = &quot;https://yihui.r-universe.dev&quot
 without installing it.</p>
 <h2 id="sec:functions"><span class="section-number main-number">2</span> Functions</h2>
 <p><code>lt()</code> creates a table object from a data frame. The <code>lt_*()</code> functions build
-on it via the pipe:</p>
+on it via the pipe. See <a href="https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet">https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet</a>
+for a “cheat table” as an overview of these functions.</p>
 <p><strong>Structure</strong></p>
 <ul>
 <li><code>lt_header()</code> — title and optional subtitle above the table.</li>
