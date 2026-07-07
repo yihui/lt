@@ -46,7 +46,7 @@ th, td{ padding: 5px; }
 
   .lt-fnref {
     color: #06c;
-    &::before { content: " ["; }
+    &::before { content: "\00a0["; }
     &::after  { content: "]"; }
   }
 }
