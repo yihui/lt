@@ -23,6 +23,13 @@
   // A column is "numeric" if its first non-null value is a number.
   const numCol = col => col?.length && typeof col.find(v => v != null) === "number";
 
+  // Display label for a column: the last "label" op that names it, else `c`.
+  const colLabel = (ops, c) => {
+    let lbl = c;
+    for (const op of ops) if (op.type === "label" && op.labels?.[c] != null) lbl = op.labels[c];
+    return lbl;
+  };
+
   function fmtNumber(v, decimals, bigMark) {
     if (v === Infinity) return "∞";
     if (v === -Infinity) return "−∞";
@@ -71,19 +78,12 @@
       if (op.type === "fmt_number") for (const c of (op.columns || colNames)) fmtCols.add(c);
     }
 
-    const getLabel = c => {
-      for (const op of ops) {
-        if (op.type === "label" && op.labels?.[c] != null) return op.labels[c];
-      }
-      return c;
-    };
-
     for (const c of colNames) {
       if (fmtCols.has(c)) continue;
       const col = data[c];
       if (!numCol(col)) continue;
 
-      const lbl = getLabel(c),
+      const lbl = colLabel(ops, c),
             pct = /%|[ _](pct|percent)$/i.test(lbl);
 
       if (/year/i.test(lbl) && col.every(v => v == null || /^\d{4}$/.test(String(v)))) continue;
@@ -297,10 +297,7 @@
       for (const gc of rowGroupCols) {
         const spans = new Array(nRow).fill(0);
         for (const r of runs(data[gc] || [])) spans[r.rows[0] - 1] = r.rows.length;
-        // Resolve display label from label ops (last wins)
-        let hdr = gc;
-        onOp("label", op => { if (op.labels?.[gc] != null) hdr = op.labels[gc]; });
-        rowSpans.push({ col: gc, label: hdr, spans });
+        rowSpans.push({ col: gc, label: colLabel(ops, gc), spans });
       }
     }
 
@@ -501,14 +498,11 @@
       // the whole span — followed by an empty filler cell spanning the
       // remaining n - 1 rows. A single-row group is just the label cell.
       for (const rs of rowSpans) {
-        const span = rs.spans[r - 1];
-        if (span > 0) {
-          const open = span > 1 ? " lt-row-open" : "";
-          out.push(`<th scope="row" class="lt-row-group${open}">${esc(cell(rs.col, r))}</th>`);
-        } else if (rs.spans[r - 2] > 1) {
-          const n = rs.spans[r - 2] - 1;
-          out.push(`<th class="lt-row-group"${attr("rowspan", n > 1 ? n : 0)}></th>`);
-        }
+        const span = rs.spans[r - 1], fill = (rs.spans[r - 2] || 0) - 1;
+        if (span > 0)
+          out.push(`<th scope="row" class="lt-row-group${span > 1 ? " lt-row-open" : ""}">${esc(cell(rs.col, r))}</th>`);
+        else if (fill > 0)
+          out.push(`<th class="lt-row-group"${attr("rowspan", fill > 1 ? fill : 0)}></th>`);
       }
       const ind = indent[r - 1] || 0;
       for (let ci = 0; ci < cols.length; ci++) {
