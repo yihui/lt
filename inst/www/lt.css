@@ -21,7 +21,10 @@ th, td{ padding: 5px; }
   tbody {
     :not(:last-child) :is(td, th) { border-bottom: 1px   solid #ddd; }
     .lt-row-group :is(td, th)     { border-bottom: 1.5px solid #ddd; }
-    .lt-row-group { text-align: left; vertical-align: top; }
+    .lt-row-group {
+      text-align: left;
+      &.lt-row-open { border-bottom-color: transparent; }
+    }
   }
   thead th {
     border-bottom: 1px solid #888;

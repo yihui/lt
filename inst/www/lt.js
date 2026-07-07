@@ -495,10 +495,20 @@
     // Row rendering
     const pushRow = r => {
       out.push(`<tr>`);
-      // Rowspan group cells
+      // Row-group cells. For a group spanning n > 1 rows, the label goes in a
+      // non-spanning cell on the first row — so vertical-align centers it
+      // within that row's height (matching the body cells) instead of across
+      // the whole span — followed by an empty filler cell spanning the
+      // remaining n - 1 rows. A single-row group is just the label cell.
       for (const rs of rowSpans) {
         const span = rs.spans[r - 1];
-        if (span > 0) out.push(`<th scope="row" class="lt-row-group"${attr("rowspan", span > 1 ? span : 0)}>${esc(cell(rs.col, r))}</th>`);
+        if (span > 0) {
+          const open = span > 1 ? " lt-row-open" : "";
+          out.push(`<th scope="row" class="lt-row-group${open}">${esc(cell(rs.col, r))}</th>`);
+        } else if (rs.spans[r - 2] > 1) {
+          const n = rs.spans[r - 2] - 1;
+          out.push(`<th class="lt-row-group"${attr("rowspan", n > 1 ? n : 0)}></th>`);
+        }
       }
       const ind = indent[r - 1] || 0;
       for (let ci = 0; ci < cols.length; ci++) {
