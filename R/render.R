@@ -393,7 +393,7 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' lt_export(tbl, f1, method = 'raw')  # file output
 #'
 #' # Bake a static <table> (needs Node.js or a headless browser).
-#' if (lt:::has_node() || lt:::has_browser())
+#' if (lt:::can_bake())
 #'   lt_export(tbl, NA, method = 'auto', fragment = TRUE, css = FALSE)
 #'
 #' # PDF / PNG are rendered in a headless browser and cropped to the table.
@@ -476,6 +476,12 @@ has_browser = function() {
 }
 
 has_node = function() nzchar(Sys.which('node'))
+
+# Whether a static <table> can be baked (method = 'node'/'browser'), i.e. an
+# external renderer is available. FALSE in environments without one, e.g. webR
+# (which has neither Node.js nor a launchable headless browser), where
+# lt_export()'s baking/PDF/PNG paths would error.
+can_bake = function() has_node() || has_browser()
 
 .onLoad = function(...) {
   register_s3(

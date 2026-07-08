@@ -417,7 +417,7 @@ if (has_browser() && xfun::loadable("magick"))
   })
 
 # .html output bakes a static table via lt_static().
-if (has_node() || has_browser())
+if (can_bake())
   assert("lt_export() writes a static HTML file", {
     html = tempfile(fileext = ".html")
     on.exit(unlink(html), add = TRUE)
@@ -428,7 +428,7 @@ if (has_node() || has_browser())
   })
 
 # output = NA returns the HTML string instead of writing a file.
-if (has_node() || has_browser())
+if (can_bake())
   assert("lt_export(output = NA) returns the HTML string", {
     html = lt_export(lt(data.frame(a = 1:2, b = c("x", "y"))), NA)
     (is.character(html))
@@ -444,7 +444,7 @@ assert('lt_export(method = "raw") emits the JS spec, no external tool', {
 
 # tidy = TRUE pretty-prints the baked <table>: multi-line, indented, with each
 # structural tag and cell on its own line.
-if (has_node() || has_browser())
+if (can_bake())
   assert("lt_export(tidy = TRUE) pretty-prints the baked table", {
     html = lt_export(
       lt(data.frame(a = 1:2, b = c("x", "y"))), NA, fragment = TRUE,

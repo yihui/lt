@@ -97,7 +97,7 @@ f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 
 # Bake a static <table> (needs Node.js or a headless browser).
-if (lt:::has_node() || lt:::has_browser())
+if (lt:::can_bake())
   lt_export(tbl, NA, method = 'auto', fragment = TRUE, css = FALSE)
 
 # PDF / PNG are rendered in a headless browser and cropped to the table.
