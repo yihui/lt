@@ -47,10 +47,10 @@ pre, pre:hover {
 </style>
 <div class="box">
 <div class="caption name">
-<p>01. <a href="examples/01-lt.html">Examples</a> <em>(source: <a href="examples/01-lt.Rmd">01-lt.Rmd</a>)</em> <a href="examples/01-lt.html" class="run">⏵</a></p>
+<p>01. <a href="examples/01-lt.html">An Introduction to lt</a> <em>(source: <a href="examples/01-lt.Rmd">01-lt.Rmd</a>)</em> <a href="examples/01-lt.html" class="run">⏵</a></p>
 </div>
 <pre><code class="language-md">---
-title: Examples
+title: An Introduction to lt
 output:
   html:
     meta:
@@ -64,6 +64,14 @@ output:
     max-height: 30em;
   }
 }
+```
+
+```{r, include = FALSE}
+# lt_export() to PDF/PNG (and baking a static &lt;table&gt;) needs an external
+# renderer (Node.js or a headless browser), which is unavailable in some
+# environments such as webR. Gate those chunks so the document still renders
+# there.
+can_export = lt:::can_bake()
 ```
 
 ## The cheat sheet (table) {#sec:cheatsheet}
@@ -636,6 +644,9 @@ a headless Chromium browser.
 
 ```{r}
 tbl = lt(head(penguins))
+```
+
+```{r, eval = can_export}
 lt_export(tbl, &quot;01-lt.png&quot;)
 ```
 
@@ -647,7 +658,7 @@ lt_export(tbl, &quot;01-lt.png&quot;)
 :::
 ::::
 
-```{r}
+```{r, eval = can_export}
 lt_export(tbl, &quot;01-lt.pdf&quot;)
 ```
 
@@ -663,7 +674,7 @@ For `.html` output, the table can be baked into a static `&lt;table&gt;` (built 
 by running the lt.js runtime, so the saved file needs no JavaScript to view).
 Set `tidy = TRUE` to pretty-print it with line breaks and indentation:
 
-```{r, attr.output = '.html'}
+```{r, attr.output = '.html', eval = can_export}
 lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 ```
 
@@ -677,144 +688,7 @@ toggle raw values for all tables on the page.
 </div>
 <div class="box">
 <div class="caption name">
-<p>02. <a href="examples/02-gsDesign2.html">lt vs gt — gsDesign2 examples</a> <em>(source: <a href="examples/02-gsDesign2.Rmd">02-gsDesign2.Rmd</a>)</em> <a href="examples/02-gsDesign2.html" class="run">⏵</a></p>
-</div>
-<pre><code class="language-md">---
-title: &quot;lt vs gt — gsDesign2 examples&quot;
----
-
-This document re-runs a few of the `as_gt()` examples from
-[gsDesign2](https://github.com/Merck/gsDesign2)'s documentation, but builds
-the tables with `lt` instead of `gt`. The first goal of `lt` is to be a
-drop-in lightweight replacement for `gt` in gsDesign2 outputs.
-
-Because `lt()` is an S3 generic, we define methods for gsDesign2's summary
-classes. In practice these methods would live in gsDesign2 (or a bridge
-package); here they're defined inline for demonstration.
-
-```{r setup, message=FALSE}
-library(lt)
-library(gsDesign2)
-
-enroll_rate = define_enroll_rate(duration = 18, rate = 20)
-fail_rate = define_fail_rate(
-  duration = c(4, 100), fail_rate = log(2) / 12,
-  dropout_rate = .001, hr = c(1, .6)
-)
-study_duration = 36
-alpha = 0.025
-beta = 0.1
-
-lt.fixed_design_summary = function(data, ...) {
-  x = lt(as.data.frame(data), ...)
-  if (!is.null(attr(data, &quot;title&quot;)))
-    x = lt_header(x, title = attr(data, &quot;title&quot;))
-  if (!is.null(attr(data, &quot;footnote&quot;)))
-    x = lt_footnote(x, attr(data, &quot;footnote&quot;), &quot;title&quot;)
-  x
-}
-
-lt.gs_design_summary = function(data, ...) {
-  x = lt(as.data.frame(data), ...) |&gt;
-    lt_group(~ Analysis, sep = TRUE) |&gt;
-    lt_spanner(
-      label = &quot;Cumulative boundary crossing probability&quot;,
-      columns = c(&quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;)
-    ) |&gt;
-    lt_format(
-      c(&quot;Z&quot;, &quot;~HR at bound&quot;, &quot;Nominal p&quot;,
-        &quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;),
-      decimals = 4
-    )
-  x
-}
-
-registerS3method(&quot;lt&quot;, &quot;fixed_design_summary&quot;, lt.fixed_design_summary, asNamespace(&quot;lt&quot;))
-registerS3method(&quot;lt&quot;, &quot;gs_design_summary&quot;, lt.gs_design_summary, asNamespace(&quot;lt&quot;))
-```
-
-## Fixed design — AHR method
-
-Equivalent of `fixed_design_ahr() |&gt; summary() |&gt; as_gt()`.
-
-```{r fixed-ahr}
-fixed_design_ahr(
-  alpha = alpha, power = 1 - beta,
-  enroll_rate = enroll_rate, fail_rate = fail_rate,
-  study_duration = study_duration, ratio = 1
-) |&gt; summary() |&gt; lt()
-```
-
-## Fixed design — Fleming-Harrington
-
-Equivalent of `fixed_design_fh() |&gt; summary() |&gt; as_gt()`.
-
-```{r fixed-fh}
-fixed_design_fh(
-  alpha = alpha, power = 1 - beta,
-  enroll_rate = enroll_rate, fail_rate = fail_rate,
-  study_duration = study_duration, ratio = 1
-) |&gt; summary() |&gt; lt()
-```
-
-## Group sequential — `gs_power_ahr`
-
-Equivalent of `gs_power_ahr(lpar = ...) |&gt; summary() |&gt; as_gt()`. The long
-&quot;Analysis: N Time: ... AHR: ...&quot; label is a natural row-group header.
-The `lt.gs_design_summary` method handles grouping, spanner, and
-formatting automatically.
-
-```{r gs-power-ahr}
-gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) |&gt;
-  summary() |&gt;
-  lt() |&gt;
-  lt_header(
-    title = &quot;Bound summary for AHR design&quot;,
-    subtitle = &quot;AHR approximations of ~HR at bound&quot;
-  ) |&gt;
-  lt_footnote(
-    &quot;Approximate hazard ratio to cross bound.&quot;,
-    &quot;column&quot;, &quot;~HR at bound&quot;
-  ) |&gt;
-  lt_footnote(
-    &quot;One-sided p-value for experimental vs control treatment.&quot;,
-    &quot;column&quot;, &quot;Nominal p&quot;
-  )
-```
-
-## Group sequential — `gs_design_ahr`
-
-Equivalent of `gs_design_ahr() |&gt; summary() |&gt; as_gt()`.
-
-```{r gs-design-ahr}
-gs_design_ahr() |&gt;
-  summary() |&gt;
-  lt() |&gt;
-  lt_header(
-    title = &quot;Bound summary for AHR design&quot;,
-    subtitle = &quot;AHR approximations of ~HR at bound&quot;
-  )
-```
-
-## What's missing vs `as_gt()`
-
-With `lt()` as an S3 generic, gsDesign2 can ship its own `lt.gs_design_summary`
-and `lt.fixed_design_summary` methods (similar to the ones defined above),
-making `summary() |&gt; lt()` work out of the box. The mapping from gt to lt is:
-
-| gt                                | lt                                  |
-|-----------------------------------|-------------------------------------|
-| `gt::gt(groupname_col=, rowname_col=)` | `lt_group(~ col)` (first column auto-becomes stub) |
-| `gt::tab_header(title=, subtitle=)`    | `lt_header(title=, subtitle=)` |
-| `gt::tab_spanner(label=, columns=)`    | `lt_spanner(label=, columns=)` |
-| `gt::tab_footnote(footnote=, locations=cells_*())` | `lt_footnote(text, where, columns)` |
-| `gt::tab_source_note(source_note=)`    | `lt_note(text)`                |
-| `gt::fmt_number(columns=, decimals=)`  | `lt_format(columns, decimals)`    |
-</code></pre>
-</div>
-<div class="box">
-<div class="caption name">
-<p>03. <a href="examples/03-lt-js.html">lt.js — JavaScript API Reference</a> <em>(source: <a href="examples/03-lt-js.Rmd">03-lt-js.Rmd</a>)</em> <a href="examples/03-lt-js.html" class="run">⏵</a></p>
+<p>02. <a href="examples/02-lt-js.html">lt.js — JavaScript API Reference</a> <em>(source: <a href="examples/02-lt-js.Rmd">02-lt-js.Rmd</a>)</em> <a href="examples/02-lt-js.html" class="run">⏵</a></p>
 </div>
 <pre><code class="language-md">---
 title: &quot;lt.js — JavaScript API Reference&quot;
@@ -1494,6 +1368,143 @@ When cell values are formatted, the original values are available in
 tooltips (hover over a cell to see). You can also `Alt + Click` on a
 table to reveal all raw values at once, or `Alt + Double-Click` to
 toggle raw values for all tables on the page.
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>03. <a href="examples/03-gsDesign2.html">gsDesign2 examples</a> <em>(source: <a href="examples/03-gsDesign2.Rmd">03-gsDesign2.Rmd</a>)</em> <a href="examples/03-gsDesign2.html" class="run">⏵</a></p>
+</div>
+<pre><code class="language-md">---
+title: &quot;gsDesign2 examples&quot;
+---
+
+This document re-runs a few of the `as_gt()` examples from
+[gsDesign2](https://github.com/Merck/gsDesign2)'s documentation, but builds
+the tables with `lt` instead of `gt`. The first goal of `lt` is to be a
+drop-in lightweight replacement for `gt` in gsDesign2 outputs.
+
+Because `lt()` is an S3 generic, we define methods for gsDesign2's summary
+classes. In practice these methods would live in gsDesign2 (or a bridge
+package); here they're defined inline for demonstration.
+
+```{r setup, message=FALSE}
+library(lt)
+library(gsDesign2)
+
+enroll_rate = define_enroll_rate(duration = 18, rate = 20)
+fail_rate = define_fail_rate(
+  duration = c(4, 100), fail_rate = log(2) / 12,
+  dropout_rate = .001, hr = c(1, .6)
+)
+study_duration = 36
+alpha = 0.025
+beta = 0.1
+
+lt.fixed_design_summary = function(data, ...) {
+  x = lt(as.data.frame(data), ...)
+  if (!is.null(attr(data, &quot;title&quot;)))
+    x = lt_header(x, title = attr(data, &quot;title&quot;))
+  if (!is.null(attr(data, &quot;footnote&quot;)))
+    x = lt_footnote(x, attr(data, &quot;footnote&quot;), &quot;title&quot;)
+  x
+}
+
+lt.gs_design_summary = function(data, ...) {
+  x = lt(as.data.frame(data), ...) |&gt;
+    lt_group(~ Analysis, sep = TRUE) |&gt;
+    lt_spanner(
+      label = &quot;Cumulative boundary crossing probability&quot;,
+      columns = c(&quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;)
+    ) |&gt;
+    lt_format(
+      c(&quot;Z&quot;, &quot;~HR at bound&quot;, &quot;Nominal p&quot;,
+        &quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;),
+      decimals = 4
+    )
+  x
+}
+
+registerS3method(&quot;lt&quot;, &quot;fixed_design_summary&quot;, lt.fixed_design_summary, asNamespace(&quot;lt&quot;))
+registerS3method(&quot;lt&quot;, &quot;gs_design_summary&quot;, lt.gs_design_summary, asNamespace(&quot;lt&quot;))
+```
+
+## Fixed design — AHR method
+
+Equivalent of `fixed_design_ahr() |&gt; summary() |&gt; as_gt()`.
+
+```{r fixed-ahr}
+fixed_design_ahr(
+  alpha = alpha, power = 1 - beta,
+  enroll_rate = enroll_rate, fail_rate = fail_rate,
+  study_duration = study_duration, ratio = 1
+) |&gt; summary() |&gt; lt()
+```
+
+## Fixed design — Fleming-Harrington
+
+Equivalent of `fixed_design_fh() |&gt; summary() |&gt; as_gt()`.
+
+```{r fixed-fh}
+fixed_design_fh(
+  alpha = alpha, power = 1 - beta,
+  enroll_rate = enroll_rate, fail_rate = fail_rate,
+  study_duration = study_duration, ratio = 1
+) |&gt; summary() |&gt; lt()
+```
+
+## Group sequential — `gs_power_ahr`
+
+Equivalent of `gs_power_ahr(lpar = ...) |&gt; summary() |&gt; as_gt()`. The long
+&quot;Analysis: N Time: ... AHR: ...&quot; label is a natural row-group header.
+The `lt.gs_design_summary` method handles grouping, spanner, and
+formatting automatically.
+
+```{r gs-power-ahr}
+gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) |&gt;
+  summary() |&gt;
+  lt() |&gt;
+  lt_header(
+    title = &quot;Bound summary for AHR design&quot;,
+    subtitle = &quot;AHR approximations of ~HR at bound&quot;
+  ) |&gt;
+  lt_footnote(
+    &quot;Approximate hazard ratio to cross bound.&quot;,
+    &quot;column&quot;, &quot;~HR at bound&quot;
+  ) |&gt;
+  lt_footnote(
+    &quot;One-sided p-value for experimental vs control treatment.&quot;,
+    &quot;column&quot;, &quot;Nominal p&quot;
+  )
+```
+
+## Group sequential — `gs_design_ahr`
+
+Equivalent of `gs_design_ahr() |&gt; summary() |&gt; as_gt()`.
+
+```{r gs-design-ahr}
+gs_design_ahr() |&gt;
+  summary() |&gt;
+  lt() |&gt;
+  lt_header(
+    title = &quot;Bound summary for AHR design&quot;,
+    subtitle = &quot;AHR approximations of ~HR at bound&quot;
+  )
+```
+
+## What's missing vs `as_gt()`
+
+With `lt()` as an S3 generic, gsDesign2 can ship its own `lt.gs_design_summary`
+and `lt.fixed_design_summary` methods (similar to the ones defined above),
+making `summary() |&gt; lt()` work out of the box. The mapping from gt to lt is:
+
+| gt                                | lt                                  |
+|-----------------------------------|-------------------------------------|
+| `gt::gt(groupname_col=, rowname_col=)` | `lt_group(~ col)` (first column auto-becomes stub) |
+| `gt::tab_header(title=, subtitle=)`    | `lt_header(title=, subtitle=)` |
+| `gt::tab_spanner(label=, columns=)`    | `lt_spanner(label=, columns=)` |
+| `gt::tab_footnote(footnote=, locations=cells_*())` | `lt_footnote(text, where, columns)` |
+| `gt::tab_source_note(source_note=)`    | `lt_note(text)`                |
+| `gt::fmt_number(columns=, decimals=)`  | `lt_format(columns, decimals)`    |
 </code></pre>
 </div>
 </div>

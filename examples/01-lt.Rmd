@@ -1,5 +1,5 @@
 ---
-title: Examples
+title: An Introduction to lt
 output:
   html:
     meta:
@@ -13,6 +13,14 @@ output:
     max-height: 30em;
   }
 }
+```
+
+```{r, include = FALSE}
+# lt_export() to PDF/PNG (and baking a static <table>) needs an external
+# renderer (Node.js or a headless browser), which is unavailable in some
+# environments such as webR. Gate those chunks so the document still renders
+# there.
+can_export = lt:::can_bake()
 ```
 
 ## The cheat sheet (table) {#sec:cheatsheet}
@@ -585,6 +593,9 @@ a headless Chromium browser.
 
 ```{r}
 tbl = lt(head(penguins))
+```
+
+```{r, eval = can_export}
 lt_export(tbl, "01-lt.png")
 ```
 
@@ -596,7 +607,7 @@ lt_export(tbl, "01-lt.png")
 :::
 ::::
 
-```{r}
+```{r, eval = can_export}
 lt_export(tbl, "01-lt.pdf")
 ```
 
@@ -612,7 +623,7 @@ For `.html` output, the table can be baked into a static `<table>` (built once
 by running the lt.js runtime, so the saved file needs no JavaScript to view).
 Set `tidy = TRUE` to pretty-print it with line breaks and indentation:
 
-```{r, attr.output = '.html'}
+```{r, attr.output = '.html', eval = can_export}
 lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 ```
 

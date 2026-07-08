@@ -1,5 +1,5 @@
 ---
-title: "lt vs gt — gsDesign2 examples"
+title: "gsDesign2 examples"
 ---
 
 This document re-runs a few of the `as_gt()` examples from
