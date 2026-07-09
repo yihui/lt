@@ -1,3 +1,6 @@
+# CHANGES IN lt VERSION 0.3
+
+
 # CHANGES IN lt VERSION 0.2
 
 - Added support for raw HTML in tables. Cell values and text are HTML-escaped by default; to emit raw HTML instead, mark whole body columns with `lt_html()`, or wrap the text passed to `lt_header()`, `lt_label()`, `lt_spanner()`, `lt_footnote()`, or `lt_note()` in `I()`.

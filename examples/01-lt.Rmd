@@ -15,23 +15,14 @@ output:
 }
 ```
 
-```{r, include = FALSE}
-# lt_export() to PDF/PNG (and baking a static <table>) needs an external
-# renderer (Node.js or a headless browser), which is unavailable in some
-# environments such as webR. Gate those chunks so the document still renders
-# there.
-can_export = lt:::can_bake()
-```
-
 ## The cheat sheet (table) {#sec:cheatsheet}
 
 The table below is a self-documenting cheat sheet: every function in this
-package is used to build it, and each function's name is placed *exactly where
-that function acts*. The title reads `lt_header(title = ...)` because
+package is used to build it, and each function's name is placed where
+that function acts. The title reads `lt_header(title = ...)` because
 `lt_header()` put it there; every column header is the name of the function
 that shaped that column; the row-group label is `lt_group()`; the footnote text
-is `lt_footnote()`; and so on. To learn what a function does, find its name in
-the table and look at what it is doing to the cell around it.
+is `lt_footnote()`; and so on.
 
 ```{r}
 d = data.frame(
@@ -52,7 +43,7 @@ library(lt)
 lt(d, auto_format = FALSE) |>
   # lt_group(): the "lt_group()" row-group header on the left
   lt_group(~ Grp) |>
-  # lt_header(): the title and subtitle at the top literally name themselves
+  # lt_header(): the title and subtitle at the top
   lt_header(
     title    = "lt_header(title = ...)",
     subtitle = "lt_header(subtitle = ...)"
@@ -85,8 +76,8 @@ lt(d, auto_format = FALSE) |>
   # lt_indent(): indent the two "lt_indent()" child rows
   lt_indent(c(2, 3), level = 1) |>
   # lt_style() + lt_css(): style the cell that names them
-  lt_style("Label", rows = 4L, class = "hl") |>
-  lt_css(.hl = list(fontWeight = "bold", color = "#06c")) |>
+  lt_style("Label", rows = 4L, class = "highlight") |>
+  lt_css(.highlight = list(fontWeight = "bold", color = "#c60")) |>
   # lt_footnote(): provide the footnote text
   lt_footnote("lt_footnote() can add a footnote anywhere.", "title") |>
   lt_footnote(I("<code>Alt + Click</code> a table to toggle raw values."), "subtitle") |>
@@ -586,6 +577,14 @@ lt(d) |>
 ```
 
 ## Exporting
+
+```{r, include = FALSE}
+# lt_export() to PDF/PNG (and baking a static <table>) needs an external
+# renderer (Node.js or a headless browser), which is unavailable in some
+# environments such as webR. Gate those chunks so the document still renders
+# there.
+can_export = lt:::can_bake()
+```
 
 `lt_export()` saves a table to a file. The format is chosen from the file
 extension: `.html`, `.pdf`, or (otherwise) `.png`. PDF and PNG are rendered in
