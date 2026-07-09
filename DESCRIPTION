@@ -15,7 +15,7 @@ BugReports: https://github.com/yihui/lt/issues
 Depends: R (>= 4.1.0)
 Encoding: UTF-8
 Imports:
-    xfun (>= 0.59)
+    xfun (>= 0.60)
 Suggests:
     htmltools,
     knitr,
@@ -27,4 +27,3 @@ Suggests:
 Roxygen: list(markdown = TRUE)
 Config/lt.js: 1.14.67
 Config/roxygen2/version: 8.0.0
-Remotes: yihui/xfun
