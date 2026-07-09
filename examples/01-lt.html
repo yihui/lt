@@ -91,12 +91,11 @@
 </style>
 <h2 id="sec:cheatsheet"><span class="section-number main-number">1</span> The cheat sheet (table)</h2>
 <p>The table below is a self-documenting cheat sheet: every function in this
-package is used to build it, and each function’s name is placed <em>exactly where
-that function acts</em>. The title reads <code>lt_header(title = ...)</code> because
+package is used to build it, and each function’s name is placed where
+that function acts. The title reads <code>lt_header(title = ...)</code> because
 <code>lt_header()</code> put it there; every column header is the name of the function
 that shaped that column; the row-group label is <code>lt_group()</code>; the footnote text
-is <code>lt_footnote()</code>; and so on. To learn what a function does, find its name in
-the table and look at what it is doing to the cell around it.</p>
+is <code>lt_footnote()</code>; and so on.</p>
 <pre><code class="language-r">d = data.frame(
   Grp   = paste(&quot;Group&quot;, c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;)),
   Label = c(&quot;&lt;a href='#sec:cheatsheet'&gt;lt(): make a table&lt;/a&gt;&quot;,
@@ -115,7 +114,7 @@ library(lt)
 lt(d, auto_format = FALSE) |&gt;
   # lt_group(): the &quot;lt_group()&quot; row-group header on the left
   lt_group(~ Grp) |&gt;
-  # lt_header(): the title and subtitle at the top literally name themselves
+  # lt_header(): the title and subtitle at the top
   lt_header(
     title    = &quot;lt_header(title = ...)&quot;,
     subtitle = &quot;lt_header(subtitle = ...)&quot;
@@ -148,8 +147,8 @@ lt(d, auto_format = FALSE) |&gt;
   # lt_indent(): indent the two &quot;lt_indent()&quot; child rows
   lt_indent(c(2, 3), level = 1) |&gt;
   # lt_style() + lt_css(): style the cell that names them
-  lt_style(&quot;Label&quot;, rows = 4L, class = &quot;hl&quot;) |&gt;
-  lt_css(.hl = list(fontWeight = &quot;bold&quot;, color = &quot;#06c&quot;)) |&gt;
+  lt_style(&quot;Label&quot;, rows = 4L, class = &quot;highlight&quot;) |&gt;
+  lt_css(.highlight = list(fontWeight = &quot;bold&quot;, color = &quot;#c60&quot;)) |&gt;
   # lt_footnote(): provide the footnote text
   lt_footnote(&quot;lt_footnote() can add a footnote anywhere.&quot;, &quot;title&quot;) |&gt;
   lt_footnote(I(&quot;&lt;code&gt;Alt + Click&lt;/code&gt; a table to toggle raw values.&quot;), &quot;subtitle&quot;) |&gt;
@@ -162,7 +161,7 @@ lt(d, auto_format = FALSE) |&gt;
 </code></pre>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.67/css/lt.min.css">
 <style>.lt-table {
-  .hl { font-weight: bold; color: #06c; }
+  .highlight { font-weight: bold; color: #c60; }
 }</style>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -242,7 +241,7 @@ lt(d, auto_format = FALSE) |&gt;
       "type": "style",
       "columns": ["Label"],
       "rows": [4],
-      "class": "hl"
+      "class": "highlight"
     }
   ],
   "auto_format": false,
