@@ -19,6 +19,11 @@ assert("lt_spanner() with formula", {
   (s$spanners %==% list(list(label = "Grp", columns = I(c("b", "c")))))
 })
 
+assert("lt_spanner() accepts numeric column indices", {
+  s = lt_spanner(x, "Grp", columns = 2:3)
+  (s$spanners %==% list(list(label = "Grp", columns = I(c("b", "c")))))
+})
+
 assert("lt_spanner() with no args sets auto_span", {
   s = lt_spanner(x)
   (s$auto_span %==% TRUE)
@@ -67,6 +72,11 @@ assert("lt_footnote() builds correct location", {
   ))
 })
 
+assert("lt_footnote() supports numeric column indices", {
+  f = lt_footnote(x, "note", "column", 1)
+  (f$footnotes[[1]]$location %==% list(type = "column_labels", columns = I("a")))
+})
+
 assert("lt_note() appends notes", {
   n = lt_note(x, "Source: data") |> lt_note("Another note")
   (n$notes %==% list("Source: data", "Another note"))
@@ -75,6 +85,11 @@ assert("lt_note() appends notes", {
 assert("lt_align() adds align op", {
   a = lt_align(x, ~ a + b, "center")
   (a$ops %==% list(list(type = "align", columns = I(c("a", "b")), align = "center")))
+})
+
+assert("lt_align() supports numeric column indices", {
+  a = lt_align(x, 1:2, "center")
+  (a$ops[[1]]$columns %==% I(c("a", "b")))
 })
 
 assert("lt_format() adds fmt_number op", {
@@ -136,6 +151,11 @@ assert("lt_sub() adds sub op", {
   )))
 })
 
+assert("lt_sub() supports numeric column indices", {
+  s = lt_sub(x, 1, missing = "—")
+  (s$ops[[1]]$columns %==% I("a"))
+})
+
 assert("lt_indent() adds indent op", {
   i = lt_indent(x, rows = 2:3, level = 2)
   (i$ops %==% list(list(type = "indent", rows = I(2:3), level = 2L)))
@@ -151,6 +171,16 @@ assert("lt_merge() adds merge op", {
   (m$ops %==% list(list(
     type = "merge", columns = I(c("a", "b")), pattern = "{1} ({2})", hide = TRUE
   )))
+})
+
+assert("lt_html() supports numeric column indices", {
+  h = lt_html(x, 1:2)
+  (h$html_cols %==% I(c("a", "b")))
+})
+
+assert("lt_merge() supports numeric column indices", {
+  m = lt_merge(x, 1:2, pattern = "{1} {2}")
+  (m$ops[[1]]$columns %==% I(c("a", "b")))
 })
 
 assert("lt_style() builds CSS from arguments", {
@@ -200,6 +230,28 @@ assert("lt_move() adds move op", {
 assert("lt_move() with after = NULL moves to start", {
   m = lt_move(x, ~ b, after = NULL)
   (m$ops %==% list(list(type = "move", columns = I("b"))))
+})
+
+assert("lt_move() supports numeric column indices", {
+  m = lt_move(x, 3, after = 1)
+  (m$ops %==% list(list(type = "move", columns = I("c"), after = "a")))
+})
+
+assert("lt_group() supports numeric grouping column", {
+  d2 = data.frame(g = c("A", "B", "A"), v = 1:3)
+  g = lt(d2) |> lt_group(1)
+  (g$row_group %==% I("g"))
+})
+
+assert("lt_style() supports numeric column indices", {
+  s = lt_style(x, 1, bold = TRUE)
+  (s$ops[[1]]$columns %==% I("a"))
+})
+
+assert("lt_date() supports numeric column indices", {
+  d2 = data.frame(dt = as.Date('2024-01-15'), v = 1)
+  f = lt(d2) |> lt_date(1)
+  (f$ops[[1]]$columns %==% I("dt"))
 })
 
 assert("lt_css() stores inline rules", {

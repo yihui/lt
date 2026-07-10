@@ -78,5 +78,11 @@ add_op = function(x, type, ...) {
 
 camel2dash = function(x) gsub('([A-Z])', '-\\L\\1', x, perl = TRUE)
 
-# If x is a formula, extract variable names from its RHS; otherwise return as-is
-f_cols = function(x) if (inherits(x, 'formula')) all.vars(x[[length(x)]]) else x
+# Resolve a column selection to column names. `cols` may be a one-sided
+# formula (RHS variable names extracted), a character vector, or integer
+# positions (resolved against `names(data)` when `data` is supplied).
+f_cols = function(cols, data = NULL) {
+  if (inherits(cols, 'formula')) cols = all.vars(cols[[length(cols)]])
+  if (is.numeric(cols) && !is.null(data)) cols = names(data)[cols]
+  cols
+}

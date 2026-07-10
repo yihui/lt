@@ -17,8 +17,8 @@ lt_format(
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character or integer vector of columns (or a one-sided
-formula).}
+\item{columns}{Columns to select: a character vector of column names,
+integer positions, or a one-sided formula.}
 
 \item{decimals}{Number of decimal places (default \code{NULL} means no change).}
 

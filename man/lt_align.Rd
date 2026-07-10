@@ -9,7 +9,8 @@ lt_align(x, columns, align = c("left", "center", "right"))
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names (or a one-sided formula).}
+\item{columns}{Columns to select: a character vector of column names,
+integer positions, or a one-sided formula.}
 
 \item{align}{One of \code{"left"}, \code{"center"}, or \code{"right"}.}
 }

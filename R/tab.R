@@ -27,8 +27,8 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
 #' @param label A character scalar — the spanner text. Alternatively, a
 #'   two-sided formula `Label ~ col1 + col2` providing both the label (LHS)
 #'   and columns (RHS). When missing, spanners are inferred from column names.
-#' @param columns Column names (character or formula). When missing, inferred
-#'   from column names.
+#' @param columns Columns to span: character names, integer positions, or a
+#'   one-sided formula. When missing, inferred from column names.
 #' @param sep Separator pattern for auto-inference (default `"[._]"`).
 #' @note The columns must be contiguous in the body of the table.
 #' @return `x` with the spanner recorded.
@@ -50,7 +50,7 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
     columns = f_cols(label)
     label = deparse(label[[2]])
   }
-  columns = f_cols(columns)
+  columns = f_cols(columns, x$data)
   x$spanners = c(x$spanners, list(list(label = label, columns = I(as.character(columns)))))
   x
 }
@@ -63,8 +63,8 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' full-width separator rows instead of rowspan.
 #'
 #' @inheritParams lt_align
-#' @param ... A column name or formula (e.g., `~col` or `~col1 + col2`) to
-#'   group by column values, or named arguments of the form
+#' @param ... A column name, integer position, or formula (e.g., `~col` or
+#'   `~col1 + col2`) to group by column values, or named arguments of the form
 #'   `"Label" = rows` (integer vector of 1-based row indices) for manual
 #'   groups. Unnamed character strings reorder previously defined groups.
 #' @param sep If `TRUE`, render groups as full-width separator rows instead
@@ -94,7 +94,7 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
   nms = names(args)
   if (!sort) x$sort = FALSE
   if (length(args) == 1 && (is.null(nms) || !nzchar(nms))) {
-    col = f_cols(args[[1]])
+    col = f_cols(args[[1]], x$data)
     if (all(col %in% names(x$data))) {
       x$row_group = if (identical(sep, TRUE)) col[1] else I(col)
       if (identical(sep, FALSE)) x$auto_sep = FALSE
@@ -119,9 +119,9 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
 #' @param text Footnote text.
 #' @param where One of `'title'`, `'subtitle'`, `'column'`, `'spanner'`,
 #'   `'group'`, or `'body'`.
-#' @param columns Character vector of column names or a one-sided formula (for
-#'   `'column'` or `'body'`). For `'group'` with `match = "starts_with"`, a
-#'   single prefix string.
+#' @param columns Character names, integer positions, or a one-sided formula
+#'   (for `'column'` or `'body'`). For `'group'` with `match = "starts_with"`,
+#'   a single prefix string.
 #' @param rows Integer vector of 1-based row indices (for `'body'`; `NULL`
 #'   means all rows).
 #' @param match For `where = "group"`: one of `"exact"` (default),
@@ -135,7 +135,7 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
 #' lt(head(mtcars)) |>
 #'   lt_footnote(I("See <a href='#'>docs</a>."), "title")
 lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL) {
-  columns = f_cols(columns)
+  columns = f_cols(columns, x$data)
   loc = switch(where,
     title = list(type = 'title', group = 'title'),
     subtitle = list(type = 'title', group = 'subtitle'),
@@ -182,14 +182,15 @@ lt_note = function(x, text) {
 #' numeric columns are right-aligned and character columns are left-aligned.
 #'
 #' @param x An [lt()] object.
-#' @param columns Character vector of column names (or a one-sided formula).
+#' @param columns Columns to select: a character vector of column names,
+#'   integer positions, or a one-sided formula.
 #' @param align One of `"left"`, `"center"`, or `"right"`.
 #' @return `x` with the alignment recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_align(~ cyl + gear, "center")
 lt_align = function(x, columns, align = c('left', 'center', 'right')) {
-  columns = f_cols(columns)
+  columns = f_cols(columns, x$data)
   align = match.arg(align)
   add_op(x, 'align', columns = I(as.character(columns)), align = align)
 }
@@ -203,8 +204,6 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' ~col)` with no other arguments.
 #'
 #' @inheritParams lt_align
-#' @param columns Character or integer vector of columns (or a one-sided
-#'   formula).
 #' @param decimals Number of decimal places (default `NULL` means no change).
 #' @param big_mark Thousands separator (e.g., `","`). `NULL` or `""` means
 #'   none.
@@ -227,8 +226,7 @@ lt_format = function(
   x, columns, decimals = NULL, big_mark = NULL, percent = NULL,
   prefix = NULL, suffix = NULL
 ) {
-  columns = f_cols(columns)
-  cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
+  cols = as.character(f_cols(columns, x$data))
   pct = if (identical(percent, "%")) "%" else if (isTRUE(percent)) TRUE
   add_op(
     x, 'fmt_number', columns = I(cols), decimals = decimals,
@@ -244,7 +242,6 @@ lt_format = function(
 #' `new Date(...)` for the browser).
 #'
 #' @inheritParams lt_align
-#' @param columns Column selection (formula, character, or numeric).
 #' @param method A JS Date method name to call (e.g., `"toLocaleDateString"`,
 #'   `"toISOString"`, `"toDateString"`, `"toLocaleString"`,
 #'   `"toLocaleTimeString"`). If `NULL` (the default),
@@ -278,8 +275,7 @@ lt_format = function(
 #' lt(d) |> lt_date(~ date)
 #' lt(d) |> lt_date(~ date, options = list(year = "numeric", month = "short"))
 lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
-  columns = f_cols(columns)
-  cols = if (is.numeric(columns)) names(x$data)[columns] else as.character(columns)
+  cols = as.character(f_cols(columns, x$data))
   add_op(
     x, 'fmt_date', columns = I(cols), method = method,
     locale = locale, options = options
@@ -315,8 +311,9 @@ lt_label = function(x, ...) {
 #' wrap the text in [I()] in the corresponding `lt_*()` function instead.
 #'
 #' @inheritParams lt_align
-#' @param columns Column names (character or one-sided formula) whose cells are
-#'   raw HTML. If missing, all columns are treated as raw HTML.
+#' @param columns Columns whose cells are raw HTML: character names, integer
+#'   positions, or a one-sided formula. If missing, all columns are treated as
+#'   raw HTML.
 #' @return `x` with the raw-HTML columns recorded.
 #' @export
 #' @examples
@@ -326,7 +323,7 @@ lt_label = function(x, ...) {
 #' lt(d) |> lt_html(~ name)
 lt_html = function(x, columns) {
   x$html_cols = if (missing(columns)) TRUE else
-    I(as.character(f_cols(columns)))
+    I(as.character(f_cols(columns, x$data)))
   x
 }
 
@@ -336,7 +333,7 @@ lt_html = function(x, columns) {
 #' Replace `NA`, zero, or small values with display text.
 #'
 #' @inheritParams lt_align
-#' @param columns Character vector of column names, a one-sided formula, or
+#' @param columns Character names, integer positions, a one-sided formula, or
 #'   `NULL` for all.
 #' @param missing Replacement for `NA` cells (e.g., `"—"`). `NULL` to
 #'   leave NAs as empty strings (the default rendering).
@@ -351,7 +348,7 @@ lt_html = function(x, columns) {
 #' lt(d) |> lt_sub(missing = "—", zero = "—", small = 0.01, small_text = "<0.01")
 lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
                   small = NULL, small_text = NULL) {
-  columns = f_cols(columns)
+  columns = f_cols(columns, x$data)
   cols = if (!is.null(columns)) I(as.character(columns))
   add_op(x, 'sub', columns = cols, missing = missing, zero = zero,
     small = small, small_text = small_text)
@@ -380,7 +377,7 @@ lt_indent = function(x, rows, level = 1) {
 #' a pattern. Source columns (all except the first) are hidden by default.
 #'
 #' @inheritParams lt_align
-#' @param columns Character vector of column names (or a one-sided formula).
+#' @param columns Character names, integer positions, or a one-sided formula.
 #'   The first column is the target (receives merged content); the rest are
 #'   sources.
 #' @param pattern A glue-style template using `\{1\}`, `\{2\}`, etc. to refer
@@ -396,7 +393,7 @@ lt_indent = function(x, rows, level = 1) {
 #' d = data.frame(stat = c("Mean", "SD"), value = c(4.2, 1.1), ci = c("(2.0, 6.4)", "(0.5, 1.7)"))
 #' lt(d) |> lt_merge(~ value + ci, pattern = "{1} {2}")
 lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
-  columns = f_cols(columns)
+  columns = as.character(f_cols(columns, x$data))
   if (length(columns) < 2) stop('lt_merge() requires at least 2 columns')
   add_op(x, 'merge', columns = I(columns), pattern = pattern, hide = hide)
 }
@@ -408,7 +405,7 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' values (evaluated in JavaScript).
 #'
 #' @inheritParams lt_align
-#' @param columns Character vector of column names, a one-sided formula, or
+#' @param columns Character names, integer positions, a one-sided formula, or
 #'   `NULL` for all.
 #' @param rows Integer vector of 1-based row indices (or `NULL` for all).
 #' @param test A JavaScript function as a string (e.g., `"v => v < 0"`) that
@@ -434,7 +431,7 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #'   lt_css(.high = list(background = "#cfc"))
 lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
                     bold = NULL, italic = NULL, color = NULL, bg = NULL, ...) {
-  columns = f_cols(columns)
+  columns = f_cols(columns, x$data)
   css = character()
   if (isTRUE(bold))   css = c(css, 'font-weight:bold')
   if (isTRUE(italic)) css = c(css, 'font-style:italic')
@@ -484,14 +481,15 @@ lt_width = function(x, ...) {
 #' Rearrange column display order without modifying the data frame.
 #'
 #' @inheritParams lt_align
-#' @param after Column name after which to place the moved columns. Use
-#'   `NULL` to move to the start.
+#' @param after Column name or integer position after which to place the
+#'   moved columns. Use `NULL` to move to the start.
 #' @return `x` with the column move recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_move(~ gear + carb, after = "mpg")
 lt_move = function(x, columns, after = NULL) {
-  columns = f_cols(columns)
+  columns = f_cols(columns, x$data)
+  if (is.numeric(after)) after = names(x$data)[after]
   add_op(x, 'move', columns = I(as.character(columns)),
     after = if (!is.null(after)) as.character(after))
 }

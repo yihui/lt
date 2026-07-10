@@ -9,8 +9,9 @@ lt_html(x, columns)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Column names (character or one-sided formula) whose cells are
-raw HTML. If missing, all columns are treated as raw HTML.}
+\item{columns}{Columns whose cells are raw HTML: character names, integer
+positions, or a one-sided formula. If missing, all columns are treated as
+raw HTML.}
 }
 \value{
 \code{x} with the raw-HTML columns recorded.

@@ -20,7 +20,7 @@ lt_style(
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names, a one-sided formula, or
+\item{columns}{Character names, integer positions, a one-sided formula, or
 \code{NULL} for all.}
 
 \item{rows}{Integer vector of 1-based row indices (or \code{NULL} for all).}

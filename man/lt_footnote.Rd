@@ -14,9 +14,9 @@ lt_footnote(x, text, where, columns = NULL, rows = NULL, match = NULL)
 \item{where}{One of \code{'title'}, \code{'subtitle'}, \code{'column'}, \code{'spanner'},
 \code{'group'}, or \code{'body'}.}
 
-\item{columns}{Character vector of column names or a one-sided formula (for
-\code{'column'} or \code{'body'}). For \code{'group'} with \code{match = "starts_with"}, a
-single prefix string.}
+\item{columns}{Character names, integer positions, or a one-sided formula
+(for \code{'column'} or \code{'body'}). For \code{'group'} with \code{match = "starts_with"},
+a single prefix string.}
 
 \item{rows}{Integer vector of 1-based row indices (for \code{'body'}; \code{NULL}
 means all rows).}

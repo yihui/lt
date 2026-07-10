@@ -13,8 +13,8 @@ lt_spanner(x, label, columns, sep = "[._]")
 two-sided formula \code{Label ~ col1 + col2} providing both the label (LHS)
 and columns (RHS). When missing, spanners are inferred from column names.}
 
-\item{columns}{Column names (character or formula). When missing, inferred
-from column names.}
+\item{columns}{Columns to span: character names, integer positions, or a
+one-sided formula. When missing, inferred from column names.}
 
 \item{sep}{Separator pattern for auto-inference (default \code{"[._]"}).}
 }

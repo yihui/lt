@@ -9,7 +9,7 @@ lt_merge(x, columns, pattern = NULL, hide = TRUE)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names (or a one-sided formula).
+\item{columns}{Character names, integer positions, or a one-sided formula.
 The first column is the target (receives merged content); the rest are
 sources.}
 

@@ -16,7 +16,7 @@ lt_sub(
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names, a one-sided formula, or
+\item{columns}{Character names, integer positions, a one-sided formula, or
 \code{NULL} for all.}
 
 \item{missing}{Replacement for \code{NA} cells (e.g., \code{"—"}). \code{NULL} to

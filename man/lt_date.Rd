@@ -9,7 +9,8 @@ lt_date(x, columns, method = NULL, locale = NULL, options = NULL)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Column selection (formula, character, or numeric).}
+\item{columns}{Columns to select: a character vector of column names,
+integer positions, or a one-sided formula.}
 
 \item{method}{A JS Date method name to call (e.g., \code{"toLocaleDateString"},
 \code{"toISOString"}, \code{"toDateString"}, \code{"toLocaleString"},

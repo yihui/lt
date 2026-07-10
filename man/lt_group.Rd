@@ -9,8 +9,8 @@ lt_group(x, ..., sep = "auto", sort = TRUE)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{...}{A column name or formula (e.g., \code{~col} or \code{~col1 + col2}) to
-group by column values, or named arguments of the form
+\item{...}{A column name, integer position, or formula (e.g., \code{~col} or
+\code{~col1 + col2}) to group by column values, or named arguments of the form
 \code{"Label" = rows} (integer vector of 1-based row indices) for manual
 groups. Unnamed character strings reorder previously defined groups.}
 

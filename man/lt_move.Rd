@@ -9,10 +9,11 @@ lt_move(x, columns, after = NULL)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character vector of column names (or a one-sided formula).}
+\item{columns}{Columns to select: a character vector of column names,
+integer positions, or a one-sided formula.}
 
-\item{after}{Column name after which to place the moved columns. Use
-\code{NULL} to move to the start.}
+\item{after}{Column name or integer position after which to place the
+moved columns. Use \code{NULL} to move to the start.}
 }
 \value{
 \code{x} with the column move recorded.
