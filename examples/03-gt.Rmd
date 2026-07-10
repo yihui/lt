@@ -1,0 +1,365 @@
+---
+title: "Migrating from gt to lt"
+output:
+  html:
+    meta:
+      css: ["@default", "@callout"]
+      js: ["@callout"]
+---
+
+```{css, echo = FALSE}
+table:not([class]) { width: 100%; }
+```
+
+This guide is for users coming from [**gt**](https://gt.rstudio.com). We deeply
+appreciate **gt**'s pioneering work: it set the standard for display tables in
+R, and **lt** owes much of its design vocabulary — headers, spanners, row
+groups, footnotes — to the ground **gt** broke. **lt** is not a criticism of
+**gt** but a different point on the trade-off curve: **lt** targets HTML output
+only, and in exchange keeps its dependencies and its runtime tiny.[^1]
+
+[^1]: HTML-first does not mean HTML-only for your final artifacts. `lt_export()`
+    renders a table to PDF or PNG (via a headless browser) as well as to static
+    HTML, so you can still drop an **lt** table into a paper or slide deck — it
+    just builds those from the HTML rather than from a separate rendering
+    backend.
+
+::: {.callout-tip data-legend="gt > < lt"}
+A happy coincidence fits the spirit of this trade-off: in the comparison
+operators **gt** is *greater than* and **lt** is *less than* — **lt** does
+deliberately less.
+:::
+
+**lt** aims to be a lightweight drop-in replacement: **gt** pulls in \~54
+recursive dependencies (base64enc, cli, dplyr, htmltools, V8, ...), whereas
+**lt** depends only on **xfun**. The output is styled to look like **gt** by
+default, so in most cases you only need to translate the function calls.
+
+The mapping and notes below distill the practical experience of two real
+migrations:
+
+-   Merck/gsDesign2 [#629](https://github.com/Merck/gsDesign2/pull/629)
+-   keaven/gsDesign [#282](https://github.com/keaven/gsDesign/pull/282)
+
+## Function mapping
+
+Nearly every `lt_*()` function has a **gt** counterpart. The table below covers
+all of **lt**'s exported functions; the last few rows are **lt** functions with
+no direct **gt** equivalent.
+
+**Table construction**
+
+| gt | lt |
+|------------------------------------|--------------------------------------------|
+| `gt(x)` | `lt(x)` |
+| `gt(x, groupname_col = "col")` (separator rows) | `lt(x) \|> lt_group(~ col, sep = TRUE)` |
+| `gt(x, groupname_col = "col", row_group_as_column = TRUE)` | `lt(x) \|> lt_group(~ col, sep = FALSE)` (rowspan) |
+| `dplyr::group_by(x, col) \|> gt()` | `dplyr::group_by(x, col) \|> lt()` |
+
+**Labels, headers, spanners, notes**
+
+| gt | lt |
+|------------------------------------|--------------------------------------------|
+| `tab_header(title=, subtitle=)` | `lt_header(title=, subtitle=)` |
+| `tab_spanner(label=, columns=)` | `lt_spanner(label=, columns=)` |
+| `cols_label(a = "A")` | `lt_label(a = "A")` |
+| `tab_footnote(footnote, cells_title("title"))` | `lt_footnote(text, "title")` |
+| `tab_footnote(footnote, cells_title("subtitle"))` | `lt_footnote(text, "subtitle")` |
+| `tab_footnote(footnote, cells_column_labels(col))` | `lt_footnote(text, "column", columns)` |
+| `tab_footnote(footnote, cells_column_spanners(sp))` | `lt_footnote(text, "spanner", columns)` |
+| `tab_footnote(footnote, cells_row_groups(grp))` | `lt_footnote(text, "group", columns, match=)` |
+| `tab_footnote(footnote, cells_body(col, rows))` | `lt_footnote(text, "body", columns, rows)` |
+| `tab_footnote(footnote)` (no location) | `lt_note(text)` |
+| `tab_source_note(source_note=)` | `lt_note(text)` |
+
+**Value formatting**
+
+| gt | lt |
+|------------------------------------|--------------------------------------------|
+| `fmt_number(columns=, decimals=)` | `lt_format(columns, decimals=)` |
+| `fmt_percent(columns=)` | `lt_format(columns, percent = TRUE)` |
+| `fmt_date(columns=)` | `lt_date(columns)` |
+| `sub_missing()` / `sub_zero()` / `sub_small_vals()` | `lt_sub(missing=, zero=, small=)` |
+| `html(value)` (mark a value as raw HTML) | `I(value)` (title/labels/footnotes); `lt_html(columns)` for body cells |
+
+To keep raw HTML (e.g. a line break) from being escaped in a title, column
+label, or footnote, wrap it in `I()`:
+
+``` r
+lt_label(theta = I("Underlying<br>response rate"))
+```
+
+**Layout and styling**
+
+| gt | lt |
+|------------------------------------|--------------------------------------------|
+| `cols_align(align=, columns=)` | `lt_align(columns, align=)` |
+| `cols_width(col ~ px(100))` | `lt_width(col = "100px")` |
+| `cols_move(columns=, after=)` / `cols_move_to_start()` | `lt_move(columns, after=)` |
+| `cols_merge(columns=, pattern=)` | `lt_merge(columns, pattern=)` |
+| `tab_stub_indent(rows=, indent=)` | `lt_indent(rows, level=)` |
+| `tab_style(style=, locations=)` | `lt_style(columns=, rows=, ...)` |
+| `opt_css(css=)` | `lt_css(...)` |
+
+**Output and Shiny**
+
+| gt                    | lt                 |
+|-----------------------|--------------------|
+| `gtsave(file=)`       | `lt_export(file=)` |
+| `gt_output()` (Shiny) | `lt_output()`      |
+| `render_gt()` (Shiny) | `render_lt()`      |
+
+## Notable differences from gt
+
+A few places where **lt** works differently enough from **gt** to be worth
+spelling out, drawn from porting **gsDesign2** and **gsDesign**.
+
+### Column selection: strings or positions, not tidy-select
+
+**gt** uses tidy-select, so unquoted column names and `tidyselect` helpers work.
+**lt** deliberately does not: it passes column names as *character strings* (or
+integer positions, or a one-sided formula). Tidy-select's ergonomic win is
+mostly at the console; the cost is a large conceptual surface (data masking,
+quosures, injection) and painful programmatic use — the moment a column name
+comes from a variable you're into `{{ }}` / `all_of()` machinery. For a package
+whose calls are often generated from code, plain strings win, so that's what
+**lt** takes.
+
+``` r
+# gt
+tab_spanner(label = "Bounds", columns = c(alt, null))
+# lt
+lt_spanner(label = "Bounds", columns = c("alt", "null"))   # quote them
+lt_spanner(label = "Bounds", columns = c(4, 5))            # or use positions
+lt_spanner(Bounds ~ alt + null)                            # or a (compact) formula
+```
+
+If you dislike quoting names, the formula interface keeps them bare:
+`Bounds ~ alt + null` puts the label on the left and the columns on the right,
+same as `label = "Bounds", columns = c("alt", "null")`. It relies only on base
+R's formula, no NSE machinery — the names stay unevaluated symbols you can read
+off directly. Non-syntactic names work too, quoted in backticks:
+`` Bounds ~ `Alternate hypothesis` + `Null hypothesis` ``.
+
+### Footnotes vs. source notes are two different functions
+
+`gt::tab_footnote()` does double duty: with a location it attaches a footnote to
+cells; without one it adds a general note. **lt** splits these:
+
+-   `lt_footnote(text, where, columns, rows, match)` — attached to a location,
+    gets a marker. `text` is the *first* positional argument (not the location).
+    `where` is one of `"title"`, `"subtitle"`, `"column"`, `"spanner"`,
+    `"group"`, `"body"`. For `"column"`/`"spanner"` pass the name(s) in
+    `columns`; for `"body"` also pass `rows`; for `"group"` you can use
+    `match = "starts_with"` to match a group label by prefix.
+-   `lt_note(text)` — a plain table note at the bottom (this is also the
+    replacement for `tab_source_note()`).
+
+### Row groups: `lt_group(~ col)`, and two rendering styles
+
+**gt** groups either via `gt(groupname_col=)` or a preceding
+`dplyr::group_by()`. In **lt** grouping is a separate step, `lt_group(~ col)`,
+using a one-sided formula for the grouping column.
+
+There are two rendering styles, chosen by `sep`:
+
+-   **Separator rows** — the group label sits on its own full-width row above
+    the group. This is **gt**'s default; in **lt** request it with `sep = TRUE`.
+-   **Rowspan** — the group value is a merged cell down the left. This is
+    **gt**'s `row_group_as_column = TRUE`; in **lt** request it with
+    `sep = FALSE`.
+
+**lt**'s default is neither: `sep = 'auto'` picks rowspan for short labels and
+separator rows once any label exceeds \~20 characters. So a **gt** table won't
+necessarily match out of the box — set `sep` explicitly if you need a specific
+style.
+
+``` r
+# gt default (separator rows)
+x |> group_by(Analysis) |> gt()
+# lt equivalent
+lt(x) |> lt_group(~ Analysis, sep = TRUE)
+```
+
+You can also group by more than one column, `lt_group(~ a + b)`, which nests the
+groups as rowspan cells (`a` spanning `b`). Separator rows apply to a single
+column only, so multi-column grouping always renders as rowspan. This is a real
+difference from **gt**, which has only one level of row groups: `groupname_col`
+takes a single column, and multiple grouping variables are flattened into one
+combined label (joined by `row_group.sep`, default `" - "`) rather than nested.
+
+### Extend `lt()` with S3 methods, don't reinvent a generic
+
+`gt::gt()` is not an S3 generic — it is a plain function. A package that wants
+`gt()`-style output for its own object classes therefore has nowhere to hang a
+method. Both **gsDesign** and **gsDesign2** worked around this the same way:
+each declared its *own* `as_gt()` generic —
+
+``` r
+as_gt <- function(x, ...) UseMethod("as_gt")
+as_gt.fixed_design <- function(x, ...) { ... }
+as_gt.gs_design    <- function(x, ...) { ... }
+```
+
+This is awkward. Every package invents a differently-named entry point
+(`as_gt()`, `as_flextable()`, `as_kable()`, ...), so users must learn a new verb
+per package; two packages can even define clashing `as_gt()` generics that mask
+each other on the search path; and none of it composes — there is no single
+function you can call on "whatever table-like object I have."
+
+`lt()` *is* an S3 generic (`lt <- function(data, ...) UseMethod("lt")`), so
+extending it to a custom class is just defining a method:
+
+``` r
+#' @exportS3Method lt::lt
+lt.fixed_design_summary <- function(data, ...) { ... }
+```
+
+Users then call the one verb they already know — `lt(x)` — on any object, yours
+included. No new generic, no name collisions, and `summary() |> lt()` reads the
+same everywhere. If your package currently exports `as_gt()`, keep it as a thin
+deprecated wrapper that calls `lt::lt()` and move the real logic into `lt.*`
+methods (this is exactly what **gsDesign2** and **gsDesign** now do; sketch
+below).
+
+### Styling — you probably don't need CSS
+
+**lt**'s default look is close to **gt**'s out of the box, so you rarely need
+CSS just to reproduce **gt**'s base appearance. The whole stylesheet
+([`lt.min.css`](https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css)) is
+about 1.3 KB minified, and it is deliberately unopinionated: it sets borders,
+spacing, and alignment, but does *not* impose a `font-family` or a table-wide
+`font-size` (only the title and subtitle get relative sizes). It inherits the
+surrounding page's typography instead.
+
+Because it declares so little, you can override or extend it with a few plain
+CSS rules — no need to fight a heavy default. Add them with `lt_css()` /
+`lt_style()`, or just drop a `<style>`/chunk into your document, e.g.:
+
+``` css
+.lt-table { font-size: 0.9em; width: 100%; }
+```
+
+### Generating a static HTML table
+
+By default an **lt** table is built in the browser by [`lt.js`](02-lt-js.html)
+at view time, which is perfect for HTML pages but useless for output that must
+already contain the finished `<table>` (a GitHub `README.md`, an email, a cached
+page). `lt_export(x, file)` bakes the table into static HTML instead, running
+`lt.js` once at export time (it can also write images and other formats,
+depending on the file extension). Because it runs `lt.js`, baking needs a
+JavaScript engine: either Node.js or a headless browser (e.g.
+Chrome/Chromium/Edge).[^2]
+
+[^2]: This does *not* undercut **lt**'s lightweight promise. The engine is an
+    *opt-in runtime* tool, not an install dependency: installing **lt** still
+    pulls in only `xfun`. You need Node or a browser only on the occasional
+    static-export path — the common cases (HTML pages, Shiny, litedown/pkgdown)
+    render client-side in the browser the reader already has, needing nothing
+    extra. And a headless browser is present on nearly every machine, while Node
+    is a cheap, pure-tooling install. Contrast **gt**, which pulls in the V8
+    JavaScript engine unconditionally at install time (via `juicyjuice`, a plain
+    `Imports`), and for a different purpose: **gt** builds the table in R and
+    uses V8 to *inline its CSS* into per-element `style=` attributes. **lt**
+    needs no such step — it links or embeds its tiny stylesheet (or omits it
+    with `css = FALSE`) — and reaches for a JS engine only on the occasional
+    static-export path. Keeping the styles in a stylesheet is also easier to
+    customize: inline `style=` attributes carry high specificity, so a reader's
+    own stylesheet can't override them without `!important` or editing the
+    markup, whereas an ordinary rule can restyle an **lt** table freely.
+    (Inlining is genuinely useful for email, where `<style>` blocks are often
+    stripped — it's the right tool there, just not a good default elsewhere.)
+
+Inside R Markdown you don't need to call `lt_export()` per table: set
+`options(lt.lt_static = list(...))` and every `lt()` chunk in the document is
+baked with those arguments automatically. *This option only takes effect when
+knitting an Rmd* — anywhere else it does nothing, and you must call
+`lt_export()` explicitly.
+
+That option is how **gsDesign2** turns `README.Rmd` into a `README.md` that
+GitHub renders with real tables. The trick is a custom `knit` field in the YAML
+header: it enables static baking, then knits directly with `knitr::knit()`
+instead of going through pandoc. Pandoc would otherwise reformat the baked
+table, inserting extra blank lines inside it; GitHub then reads those blanks as
+paragraph breaks and wraps each cell's content in a `<p>`, adding ugly large
+margins inside every cell.
+
+``` yaml
+---
+# Use knitr::knit() directly to avoid pandoc reformatting raw HTML tables.
+knit: |
+  (function(inputFile, encoding) {
+    options(lt.lt_static = list(fragment = TRUE, css = FALSE))
+    output = knitr::knit(inputFile, encoding = encoding)
+    body = xfun::yaml_body(xfun::read_utf8(output), parse = FALSE)$body
+    body = body[cumsum(nzchar(body)) > 0]
+    xfun::write_utf8(body, output)
+  })
+---
+```
+
+With that header, each `lt(data)` chunk in the README emits a finished `<table>`
+straight into `README.md`, no post-processing needed.
+
+## A runnable example
+
+A small table that exercises most of the mappings above:
+
+```{r demo}
+library(lt)
+
+df = data.frame(
+  grp  = c("A", "A", "B", "B"),
+  item = c("x", "y", "x", "y"),
+  lo   = c(0.1234, 0.3401, 0.2087, 0.4523),
+  hi   = c(0.8812, 0.6644, 0.7912, 0.5498)
+)
+
+lt(df) |>
+  lt_group(~ grp, sep = TRUE) |>                       # gt: groupname_col
+  lt_label(item = "Item", lo = "Lower", hi = "Upper") |>  # gt: cols_label
+  lt_spanner(Probability ~ lo + hi) |>                 # gt: tab_spanner
+  lt_format(~ lo + hi, decimals = 2) |>                # gt: fmt_number
+  lt_header(title = "Demo", subtitle = "gt -> lt") |>  # gt: tab_header
+  lt_footnote("Interval bounds.", "spanner", "Probability") |>  # tab_footnote
+  lt_note("Source: synthetic data.")                   # gt: tab_source_note
+```
+
+## Shipping **lt** methods from your package
+
+The pattern **gsDesign2** and **gsDesign** settled on: because `lt()` is an S3
+generic, a package defines `lt.<class>()` methods for its summary/result
+classes, so users call `lt()` directly (and the old `as_gt()` becomes a
+deprecated wrapper). No `as_lt()` generic is needed. Sketch, adapted from
+**gsDesign2**'s `as_lt.R`:
+
+``` r
+# in R/as_lt.R; registered via @exportS3Method lt::lt
+lt.fixed_design_summary = function(data, title = NULL, footnote = NULL, ...) {
+  if (is.null(title))    title    = attr(data, "title")
+  if (is.null(footnote)) footnote = attr(data, "footnote")
+  ans = lt::lt(as.data.frame(data), ...) |> lt::lt_header(title = title)
+  if (!isFALSE(footnote))
+    ans = lt::lt_footnote(ans, footnote, where = "title")
+  ans
+}
+
+lt.gs_design_summary = function(data, ...) {
+  lt::lt(as.data.frame(data), ...) |>
+    lt::lt_group(~ Analysis, sep = TRUE) |>
+    lt::lt_spanner(
+      label = "Cumulative boundary crossing probability",
+      columns = c("Alternate hypothesis", "Null hypothesis")
+    ) |>
+    lt::lt_format(
+      c("Z", "~HR at bound", "Nominal p",
+        "Alternate hypothesis", "Null hypothesis"),
+      decimals = 4
+    )
+}
+```
+
+Users then write `fixed_design_ahr(...) |> summary() |> lt()` in place of
+`... |> summary() |> as_gt()`. The full version in **gsDesign2** drives the
+title, subtitle, spanner, per-location footnotes (`where = "group"` / `"body"` /
+`"spanner"`), bound selection, and column selection all from arguments.

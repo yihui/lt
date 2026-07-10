@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 0.9.14">
+<title>Migrating from gt to lt</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/callout.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/prism-xcode.min.css">
+</head>
+<body>
+<nav><p><a href="../index.html">Home</a>
+<a href="../examples.html">Examples</a>
+<a href="../manual.html">Manual</a>
+<a href="../news.html">News</a>
+<a href="../playground/">Playground</a></p></nav>
+<div class="frontmatter">
+<div class="title"><h1>Migrating from gt to lt</h1></div>
+</div>
+<div class="body">
+<div id="TOC">
+<ul class="numbered">
+<li><a href="#sec:function-mapping"><span class="section-number main-number">1</span> Function mapping</a></li>
+<li><a href="#sec:notable-differences-from-gt"><span class="section-number main-number">2</span> Notable differences from gt</a>
+<ul>
+<li><a href="#sec:column-selection-strings-or-positions-not-tidy-select"><span class="section-number">2.1</span> Column selection: strings or positions, not tidy-select</a></li>
+<li><a href="#sec:footnotes-vs-source-notes-are-two-different-functions"><span class="section-number">2.2</span> Footnotes vs. source notes are two different functions</a></li>
+<li><a href="#sec:row-groups-lt-group-col-and-two-rendering-styles"><span class="section-number">2.3</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</a></li>
+<li><a href="#sec:extend-lt-with-s3-methods-don-t-reinvent-a-generic"><span class="section-number">2.4</span> Extend <code>lt()</code> with S3 methods, don’t reinvent a generic</a></li>
+<li><a href="#sec:styling-you-probably-don-t-need-css"><span class="section-number">2.5</span> Styling — you probably don’t need CSS</a></li>
+<li><a href="#sec:generating-a-static-html-table"><span class="section-number">2.6</span> Generating a static HTML table</a></li>
+</ul>
+</li>
+<li><a href="#sec:a-runnable-example"><span class="section-number main-number">3</span> A runnable example</a></li>
+<li><a href="#sec:shipping-lt-methods-from-your-package"><span class="section-number main-number">4</span> Shipping <strong>lt</strong> methods from your package</a></li>
+</ul>
+</div>
+<style type="text/css">
+table:not([class]) { width: 100%; }
+</style>
+<p>This guide is for users coming from <a href="https://gt.rstudio.com"><strong>gt</strong></a>. We deeply
+appreciate <strong>gt</strong>’s pioneering work: it set the standard for display tables in
+R, and <strong>lt</strong> owes much of its design vocabulary — headers, spanners, row
+groups, footnotes — to the ground <strong>gt</strong> broke. <strong>lt</strong> is not a criticism of
+<strong>gt</strong> but a different point on the trade-off curve: <strong>lt</strong> targets HTML output
+only, and in exchange keeps its dependencies and its runtime tiny.<sup class="footnote-ref"><a href="#fn-1" id="fnref-1" data-footnote-ref>1</a></sup></p>
+<div class="callout-tip" data-legend="gt &gt; &lt; lt">
+<p>A happy coincidence fits the spirit of this trade-off: in the comparison
+operators <strong>gt</strong> is <em>greater than</em> and <strong>lt</strong> is <em>less than</em> — <strong>lt</strong> does
+deliberately less.</p>
+</div>
+<p><strong>lt</strong> aims to be a lightweight drop-in replacement: <strong>gt</strong> pulls in ~54
+recursive dependencies (base64enc, cli, dplyr, htmltools, V8, …), whereas
+<strong>lt</strong> depends only on <strong>xfun</strong>. The output is styled to look like <strong>gt</strong> by
+default, so in most cases you only need to translate the function calls.</p>
+<p>The mapping and notes below distill the practical experience of two real
+migrations:</p>
+<ul>
+<li>Merck/gsDesign2 <a href="https://github.com/Merck/gsDesign2/pull/629">#629</a></li>
+<li>keaven/gsDesign <a href="https://github.com/keaven/gsDesign/pull/282">#282</a></li>
+</ul>
+<h2 id="sec:function-mapping"><span class="section-number main-number">1</span> Function mapping</h2>
+<p>Nearly every <code>lt_*()</code> function has a <strong>gt</strong> counterpart. The table below covers
+all of <strong>lt</strong>’s exported functions; the last few rows are <strong>lt</strong> functions with
+no direct <strong>gt</strong> equivalent.</p>
+<p><strong>Table construction</strong></p>
+<table>
+<thead>
+<tr>
+<th>gt</th>
+<th>lt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gt(x)</code></td>
+<td><code>lt(x)</code></td>
+</tr>
+<tr>
+<td><code>gt(x, groupname_col = &quot;col&quot;)</code> (separator rows)</td>
+<td><code>lt(x) |&gt; lt_group(~ col, sep = TRUE)</code></td>
+</tr>
+<tr>
+<td><code>gt(x, groupname_col = &quot;col&quot;, row_group_as_column = TRUE)</code></td>
+<td><code>lt(x) |&gt; lt_group(~ col, sep = FALSE)</code> (rowspan)</td>
+</tr>
+<tr>
+<td><code>dplyr::group_by(x, col) |&gt; gt()</code></td>
+<td><code>dplyr::group_by(x, col) |&gt; lt()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Labels, headers, spanners, notes</strong></p>
+<table>
+<thead>
+<tr>
+<th>gt</th>
+<th>lt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tab_header(title=, subtitle=)</code></td>
+<td><code>lt_header(title=, subtitle=)</code></td>
+</tr>
+<tr>
+<td><code>tab_spanner(label=, columns=)</code></td>
+<td><code>lt_spanner(label=, columns=)</code></td>
+</tr>
+<tr>
+<td><code>cols_label(a = &quot;A&quot;)</code></td>
+<td><code>lt_label(a = &quot;A&quot;)</code></td>
+</tr>
+<tr>
+<td><code>tab_footnote(footnote, cells_title(&quot;title&quot;))</code></td>
+<td><code>lt_footnote(text, &quot;title&quot;)</code></td>
+</tr>
+<tr>
+<td><code>tab_footnote(footnote, cells_title(&quot;subtitle&quot;))</code></td>
+<td><code>lt_footnote(text, &quot;subtitle&quot;)</code></td>
+</tr>
+<tr>
+<td><code>tab_footnote(footnote, cells_column_labels(col))</code></td>
+<td><code>lt_footnote(text, &quot;column&quot;, columns)</code></td>
+</tr>
+<tr>
+<td><code>tab_footnote(footnote, cells_column_spanners(sp))</code></td>
+<td><code>lt_footnote(text, &quot;spanner&quot;, columns)</code></td>
+</tr>
+<tr>
+<td><code>tab_footnote(footnote, cells_row_groups(grp))</code></td>
+<td><code>lt_footnote(text, &quot;group&quot;, columns, match=)</code></td>
+</tr>
+<tr>
+<td><code>tab_footnote(footnote, cells_body(col, rows))</code></td>
+<td><code>lt_footnote(text, &quot;body&quot;, columns, rows)</code></td>
+</tr>
+<tr>
+<td><code>tab_footnote(footnote)</code> (no location)</td>
+<td><code>lt_note(text)</code></td>
+</tr>
+<tr>
+<td><code>tab_source_note(source_note=)</code></td>
+<td><code>lt_note(text)</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Value formatting</strong></p>
+<table>
+<thead>
+<tr>
+<th>gt</th>
+<th>lt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fmt_number(columns=, decimals=)</code></td>
+<td><code>lt_format(columns, decimals=)</code></td>
+</tr>
+<tr>
+<td><code>fmt_percent(columns=)</code></td>
+<td><code>lt_format(columns, percent = TRUE)</code></td>
+</tr>
+<tr>
+<td><code>fmt_date(columns=)</code></td>
+<td><code>lt_date(columns)</code></td>
+</tr>
+<tr>
+<td><code>sub_missing()</code> / <code>sub_zero()</code> / <code>sub_small_vals()</code></td>
+<td><code>lt_sub(missing=, zero=, small=)</code></td>
+</tr>
+<tr>
+<td><code>html(value)</code> (mark a value as raw HTML)</td>
+<td><code>I(value)</code> (title/labels/footnotes); <code>lt_html(columns)</code> for body cells</td>
+</tr>
+</tbody>
+</table>
+<p>To keep raw HTML (e.g. a line break) from being escaped in a title, column
+label, or footnote, wrap it in <code>I()</code>:</p>
+<pre><code class="language-r">lt_label(theta = I(&quot;Underlying&lt;br&gt;response rate&quot;))
+</code></pre>
+<p><strong>Layout and styling</strong></p>
+<table>
+<thead>
+<tr>
+<th>gt</th>
+<th>lt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cols_align(align=, columns=)</code></td>
+<td><code>lt_align(columns, align=)</code></td>
+</tr>
+<tr>
+<td><code>cols_width(col ~ px(100))</code></td>
+<td><code>lt_width(col = &quot;100px&quot;)</code></td>
+</tr>
+<tr>
+<td><code>cols_move(columns=, after=)</code> / <code>cols_move_to_start()</code></td>
+<td><code>lt_move(columns, after=)</code></td>
+</tr>
+<tr>
+<td><code>cols_merge(columns=, pattern=)</code></td>
+<td><code>lt_merge(columns, pattern=)</code></td>
+</tr>
+<tr>
+<td><code>tab_stub_indent(rows=, indent=)</code></td>
+<td><code>lt_indent(rows, level=)</code></td>
+</tr>
+<tr>
+<td><code>tab_style(style=, locations=)</code></td>
+<td><code>lt_style(columns=, rows=, ...)</code></td>
+</tr>
+<tr>
+<td><code>opt_css(css=)</code></td>
+<td><code>lt_css(...)</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output and Shiny</strong></p>
+<table>
+<thead>
+<tr>
+<th>gt</th>
+<th>lt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gtsave(file=)</code></td>
+<td><code>lt_export(file=)</code></td>
+</tr>
+<tr>
+<td><code>gt_output()</code> (Shiny)</td>
+<td><code>lt_output()</code></td>
+</tr>
+<tr>
+<td><code>render_gt()</code> (Shiny)</td>
+<td><code>render_lt()</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="sec:notable-differences-from-gt"><span class="section-number main-number">2</span> Notable differences from gt</h2>
+<p>A few places where <strong>lt</strong> works differently enough from <strong>gt</strong> to be worth
+spelling out, drawn from porting <strong>gsDesign2</strong> and <strong>gsDesign</strong>.</p>
+<h3 id="sec:column-selection-strings-or-positions-not-tidy-select"><span class="section-number">2.1</span> Column selection: strings or positions, not tidy-select</h3>
+<p><strong>gt</strong> uses tidy-select, so unquoted column names and <code>tidyselect</code> helpers work.
+<strong>lt</strong> deliberately does not: it passes column names as <em>character strings</em> (or
+integer positions, or a one-sided formula). Tidy-select’s ergonomic win is
+mostly at the console; the cost is a large conceptual surface (data masking,
+quosures, injection) and painful programmatic use — the moment a column name
+comes from a variable you’re into <code>{{ }}</code> / <code>all_of()</code> machinery. For a package
+whose calls are often generated from code, plain strings win, so that’s what
+<strong>lt</strong> takes.</p>
+<pre><code class="language-r"># gt
+tab_spanner(label = &quot;Bounds&quot;, columns = c(alt, null))
+# lt
+lt_spanner(label = &quot;Bounds&quot;, columns = c(&quot;alt&quot;, &quot;null&quot;))   # quote them
+lt_spanner(label = &quot;Bounds&quot;, columns = c(4, 5))            # or use positions
+lt_spanner(Bounds ~ alt + null)                            # or a (compact) formula
+</code></pre>
+<p>If you dislike quoting names, the formula interface keeps them bare:
+<code>Bounds ~ alt + null</code> puts the label on the left and the columns on the right,
+same as <code>label = &quot;Bounds&quot;, columns = c(&quot;alt&quot;, &quot;null&quot;)</code>. It relies only on base
+R’s formula, no NSE machinery — the names stay unevaluated symbols you can read
+off directly. Non-syntactic names work too, quoted in backticks:
+<code>Bounds ~ `Alternate hypothesis` + `Null hypothesis`</code>.</p>
+<h3 id="sec:footnotes-vs-source-notes-are-two-different-functions"><span class="section-number">2.2</span> Footnotes vs. source notes are two different functions</h3>
+<p><code>gt::tab_footnote()</code> does double duty: with a location it attaches a footnote to
+cells; without one it adds a general note. <strong>lt</strong> splits these:</p>
+<ul>
+<li><code>lt_footnote(text, where, columns, rows, match)</code> — attached to a location,
+gets a marker. <code>text</code> is the <em>first</em> positional argument (not the location).
+<code>where</code> is one of <code>&quot;title&quot;</code>, <code>&quot;subtitle&quot;</code>, <code>&quot;column&quot;</code>, <code>&quot;spanner&quot;</code>,
+<code>&quot;group&quot;</code>, <code>&quot;body&quot;</code>. For <code>&quot;column&quot;</code>/<code>&quot;spanner&quot;</code> pass the name(s) in
+<code>columns</code>; for <code>&quot;body&quot;</code> also pass <code>rows</code>; for <code>&quot;group&quot;</code> you can use
+<code>match = &quot;starts_with&quot;</code> to match a group label by prefix.</li>
+<li><code>lt_note(text)</code> — a plain table note at the bottom (this is also the
+replacement for <code>tab_source_note()</code>).</li>
+</ul>
+<h3 id="sec:row-groups-lt-group-col-and-two-rendering-styles"><span class="section-number">2.3</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</h3>
+<p><strong>gt</strong> groups either via <code>gt(groupname_col=)</code> or a preceding
+<code>dplyr::group_by()</code>. In <strong>lt</strong> grouping is a separate step, <code>lt_group(~ col)</code>,
+using a one-sided formula for the grouping column.</p>
+<p>There are two rendering styles, chosen by <code>sep</code>:</p>
+<ul>
+<li><strong>Separator rows</strong> — the group label sits on its own full-width row above
+the group. This is <strong>gt</strong>’s default; in <strong>lt</strong> request it with <code>sep = TRUE</code>.</li>
+<li><strong>Rowspan</strong> — the group value is a merged cell down the left. This is
+<strong>gt</strong>’s <code>row_group_as_column = TRUE</code>; in <strong>lt</strong> request it with
+<code>sep = FALSE</code>.</li>
+</ul>
+<p><strong>lt</strong>‘s default is neither: <code>sep = 'auto'</code> picks rowspan for short labels and
+separator rows once any label exceeds ~20 characters. So a <strong>gt</strong> table won’t
+necessarily match out of the box — set <code>sep</code> explicitly if you need a specific
+style.</p>
+<pre><code class="language-r"># gt default (separator rows)
+x |&gt; group_by(Analysis) |&gt; gt()
+# lt equivalent
+lt(x) |&gt; lt_group(~ Analysis, sep = TRUE)
+</code></pre>
+<p>You can also group by more than one column, <code>lt_group(~ a + b)</code>, which nests the
+groups as rowspan cells (<code>a</code> spanning <code>b</code>). Separator rows apply to a single
+column only, so multi-column grouping always renders as rowspan. This is a real
+difference from <strong>gt</strong>, which has only one level of row groups: <code>groupname_col</code>
+takes a single column, and multiple grouping variables are flattened into one
+combined label (joined by <code>row_group.sep</code>, default <code>&quot; - &quot;</code>) rather than nested.</p>
+<h3 id="sec:extend-lt-with-s3-methods-don-t-reinvent-a-generic"><span class="section-number">2.4</span> Extend <code>lt()</code> with S3 methods, don’t reinvent a generic</h3>
+<p><code>gt::gt()</code> is not an S3 generic — it is a plain function. A package that wants
+<code>gt()</code>-style output for its own object classes therefore has nowhere to hang a
+method. Both <strong>gsDesign</strong> and <strong>gsDesign2</strong> worked around this the same way:
+each declared its <em>own</em> <code>as_gt()</code> generic —</p>
+<pre><code class="language-r">as_gt &lt;- function(x, ...) UseMethod(&quot;as_gt&quot;)
+as_gt.fixed_design &lt;- function(x, ...) { ... }
+as_gt.gs_design    &lt;- function(x, ...) { ... }
+</code></pre>
+<p>This is awkward. Every package invents a differently-named entry point
+(<code>as_gt()</code>, <code>as_flextable()</code>, <code>as_kable()</code>, …), so users must learn a new verb
+per package; two packages can even define clashing <code>as_gt()</code> generics that mask
+each other on the search path; and none of it composes — there is no single
+function you can call on “whatever table-like object I have.”</p>
+<p><code>lt()</code> <em>is</em> an S3 generic (<code>lt &lt;- function(data, ...) UseMethod(&quot;lt&quot;)</code>), so
+extending it to a custom class is just defining a method:</p>
+<pre><code class="language-r">#' @exportS3Method lt::lt
+lt.fixed_design_summary &lt;- function(data, ...) { ... }
+</code></pre>
+<p>Users then call the one verb they already know — <code>lt(x)</code> — on any object, yours
+included. No new generic, no name collisions, and <code>summary() |&gt; lt()</code> reads the
+same everywhere. If your package currently exports <code>as_gt()</code>, keep it as a thin
+deprecated wrapper that calls <code>lt::lt()</code> and move the real logic into <code>lt.*</code>
+methods (this is exactly what <strong>gsDesign2</strong> and <strong>gsDesign</strong> now do; sketch
+below).</p>
+<h3 id="sec:styling-you-probably-don-t-need-css"><span class="section-number">2.5</span> Styling — you probably don’t need CSS</h3>
+<p><strong>lt</strong>’s default look is close to <strong>gt</strong>’s out of the box, so you rarely need
+CSS just to reproduce <strong>gt</strong>‘s base appearance. The whole stylesheet
+(<a href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css"><code>lt.min.css</code></a>) is
+about 1.3 KB minified, and it is deliberately unopinionated: it sets borders,
+spacing, and alignment, but does <em>not</em> impose a <code>font-family</code> or a table-wide
+<code>font-size</code> (only the title and subtitle get relative sizes). It inherits the
+surrounding page’s typography instead.</p>
+<p>Because it declares so little, you can override or extend it with a few plain
+CSS rules — no need to fight a heavy default. Add them with <code>lt_css()</code> /
+<code>lt_style()</code>, or just drop a <code>&lt;style&gt;</code>/chunk into your document, e.g.:</p>
+<pre><code class="language-css">.lt-table { font-size: 0.9em; width: 100%; }
+</code></pre>
+<h3 id="sec:generating-a-static-html-table"><span class="section-number">2.6</span> Generating a static HTML table</h3>
+<p>By default an <strong>lt</strong> table is built in the browser by <a href="02-lt-js.html"><code>lt.js</code></a>
+at view time, which is perfect for HTML pages but useless for output that must
+already contain the finished <code>&lt;table&gt;</code> (a GitHub <code>README.md</code>, an email, a cached
+page). <code>lt_export(x, file)</code> bakes the table into static HTML instead, running
+<code>lt.js</code> once at export time (it can also write images and other formats,
+depending on the file extension). Because it runs <code>lt.js</code>, baking needs a
+JavaScript engine: either Node.js or a headless browser (e.g.
+Chrome/Chromium/Edge).<sup class="footnote-ref"><a href="#fn-2" id="fnref-2" data-footnote-ref>2</a></sup></p>
+<p>Inside R Markdown you don’t need to call <code>lt_export()</code> per table: set
+<code>options(lt.lt_static = list(...))</code> and every <code>lt()</code> chunk in the document is
+baked with those arguments automatically. <em>This option only takes effect when
+knitting an Rmd</em> — anywhere else it does nothing, and you must call
+<code>lt_export()</code> explicitly.</p>
+<p>That option is how <strong>gsDesign2</strong> turns <code>README.Rmd</code> into a <code>README.md</code> that
+GitHub renders with real tables. The trick is a custom <code>knit</code> field in the YAML
+header: it enables static baking, then knits directly with <code>knitr::knit()</code>
+instead of going through pandoc. Pandoc would otherwise reformat the baked
+table, inserting extra blank lines inside it; GitHub then reads those blanks as
+paragraph breaks and wraps each cell’s content in a <code>&lt;p&gt;</code>, adding ugly large
+margins inside every cell.</p>
+<pre><code class="language-yaml">---
+# Use knitr::knit() directly to avoid pandoc reformatting raw HTML tables.
+knit: |
+  (function(inputFile, encoding) {
+    options(lt.lt_static = list(fragment = TRUE, css = FALSE))
+    output = knitr::knit(inputFile, encoding = encoding)
+    body = xfun::yaml_body(xfun::read_utf8(output), parse = FALSE)$body
+    body = body[cumsum(nzchar(body)) &gt; 0]
+    xfun::write_utf8(body, output)
+  })
+---
+</code></pre>
+<p>With that header, each <code>lt(data)</code> chunk in the README emits a finished <code>&lt;table&gt;</code>
+straight into <code>README.md</code>, no post-processing needed.</p>
+<h2 id="sec:a-runnable-example"><span class="section-number main-number">3</span> A runnable example</h2>
+<p>A small table that exercises most of the mappings above:</p>
+<pre><code class="language-r">library(lt)
+
+df = data.frame(
+  grp  = c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;),
+  item = c(&quot;x&quot;, &quot;y&quot;, &quot;x&quot;, &quot;y&quot;),
+  lo   = c(0.1234, 0.3401, 0.2087, 0.4523),
+  hi   = c(0.8812, 0.6644, 0.7912, 0.5498)
+)
+
+lt(df) |&gt;
+  lt_group(~ grp, sep = TRUE) |&gt;                       # gt: groupname_col
+  lt_label(item = &quot;Item&quot;, lo = &quot;Lower&quot;, hi = &quot;Upper&quot;) |&gt;  # gt: cols_label
+  lt_spanner(Probability ~ lo + hi) |&gt;                 # gt: tab_spanner
+  lt_format(~ lo + hi, decimals = 2) |&gt;                # gt: fmt_number
+  lt_header(title = &quot;Demo&quot;, subtitle = &quot;gt -&gt; lt&quot;) |&gt;  # gt: tab_header
+  lt_footnote(&quot;Interval bounds.&quot;, &quot;spanner&quot;, &quot;Probability&quot;) |&gt;  # tab_footnote
+  lt_note(&quot;Source: synthetic data.&quot;)                   # gt: tab_source_note
+</code></pre>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/lt.min.css">
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "grp": ["A", "A", "B", "B"],
+    "item": ["x", "y", "x", "y"],
+    "lo": [0.1234, 0.3401, 0.2087, 0.4523],
+    "hi": [0.8812, 0.6644, 0.7912, 0.5498]
+  },
+  "ops": [
+    {
+      "type": "label",
+      "labels": {
+        "item": "Item",
+        "lo": "Lower",
+        "hi": "Upper"
+      }
+    },
+    {
+      "type": "fmt_number",
+      "columns": ["lo", "hi"],
+      "decimals": 2
+    }
+  ],
+  "row_group": "grp",
+  "spanners": [
+    {
+      "label": "Probability",
+      "columns": ["lo", "hi"]
+    }
+  ],
+  "header": {
+    "title": "Demo",
+    "subtitle": "gt -> lt"
+  },
+  "footnotes": [
+    {
+      "text": "Interval bounds.",
+      "location": {
+        "type": "column_spanners",
+        "spanners": ["Probability"]
+      }
+    }
+  ],
+  "notes": [
+    "Source: synthetic data."
+  ]
+}
+})</script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/lt.min.js" defer></script>
+<h2 id="sec:shipping-lt-methods-from-your-package"><span class="section-number main-number">4</span> Shipping <strong>lt</strong> methods from your package</h2>
+<p>The pattern <strong>gsDesign2</strong> and <strong>gsDesign</strong> settled on: because <code>lt()</code> is an S3
+generic, a package defines <code>lt.&lt;class&gt;()</code> methods for its summary/result
+classes, so users call <code>lt()</code> directly (and the old <code>as_gt()</code> becomes a
+deprecated wrapper). No <code>as_lt()</code> generic is needed. Sketch, adapted from
+<strong>gsDesign2</strong>’s <code>as_lt.R</code>:</p>
+<pre><code class="language-r"># in R/as_lt.R; registered via @exportS3Method lt::lt
+lt.fixed_design_summary = function(data, title = NULL, footnote = NULL, ...) {
+  if (is.null(title))    title    = attr(data, &quot;title&quot;)
+  if (is.null(footnote)) footnote = attr(data, &quot;footnote&quot;)
+  ans = lt::lt(as.data.frame(data), ...) |&gt; lt::lt_header(title = title)
+  if (!isFALSE(footnote))
+    ans = lt::lt_footnote(ans, footnote, where = &quot;title&quot;)
+  ans
+}
+
+lt.gs_design_summary = function(data, ...) {
+  lt::lt(as.data.frame(data), ...) |&gt;
+    lt::lt_group(~ Analysis, sep = TRUE) |&gt;
+    lt::lt_spanner(
+      label = &quot;Cumulative boundary crossing probability&quot;,
+      columns = c(&quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;)
+    ) |&gt;
+    lt::lt_format(
+      c(&quot;Z&quot;, &quot;~HR at bound&quot;, &quot;Nominal p&quot;,
+        &quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;),
+      decimals = 4
+    )
+}
+</code></pre>
+<p>Users then write <code>fixed_design_ahr(...) |&gt; summary() |&gt; lt()</code> in place of
+<code>... |&gt; summary() |&gt; as_gt()</code>. The full version in <strong>gsDesign2</strong> drives the
+title, subtitle, spanner, per-location footnotes (<code>where = &quot;group&quot;</code> / <code>&quot;body&quot;</code> /
+<code>&quot;spanner&quot;</code>), bound selection, and column selection all from arguments.</p>
+<section class="footnotes" data-footnotes>
+<ol>
+<li id="fn-1">
+<p>HTML-first does not mean HTML-only for your final artifacts. <code>lt_export()</code>
+renders a table to PDF or PNG (via a headless browser) as well as to static
+HTML, so you can still drop an <strong>lt</strong> table into a paper or slide deck — it
+just builds those from the HTML rather than from a separate rendering
+backend. <a href="#fnref-1" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="1" aria-label="Back to reference 1">↩</a></p>
+</li>
+<li id="fn-2">
+<p>This does <em>not</em> undercut <strong>lt</strong>‘s lightweight promise. The engine is an
+<em>opt-in runtime</em> tool, not an install dependency: installing <strong>lt</strong> still
+pulls in only <code>xfun</code>. You need Node or a browser only on the occasional
+static-export path — the common cases (HTML pages, Shiny, litedown/pkgdown)
+render client-side in the browser the reader already has, needing nothing
+extra. And a headless browser is present on nearly every machine, while Node
+is a cheap, pure-tooling install. Contrast <strong>gt</strong>, which pulls in the V8
+JavaScript engine unconditionally at install time (via <code>juicyjuice</code>, a plain
+<code>Imports</code>), and for a different purpose: <strong>gt</strong> builds the table in R and
+uses V8 to <em>inline its CSS</em> into per-element <code>style=</code> attributes. <strong>lt</strong>
+needs no such step — it links or embeds its tiny stylesheet (or omits it
+with <code>css = FALSE</code>) — and reaches for a JS engine only on the occasional
+static-export path. Keeping the styles in a stylesheet is also easier to
+customize: inline <code>style=</code> attributes carry high specificity, so a reader’s
+own stylesheet can’t override them without <code>!important</code> or editing the
+markup, whereas an ordinary rule can restyle an <strong>lt</strong> table freely.
+(Inlining is genuinely useful for email, where <code>&lt;style&gt;</code> blocks are often
+stripped — it’s the right tool there, just not a good default elsewhere.) <a href="#fnref-2" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="2" aria-label="Back to reference 2">↩</a></p>
+</li>
+</ol>
+</section>
+</div>
+<footer><div class="flex-col">
+<p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.9.14</p>
+</div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/appendix.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/callout.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</body>
+</html>
