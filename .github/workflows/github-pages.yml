@@ -23,7 +23,7 @@ jobs:
           use-public-rspm: true
       - uses: yihui/actions/setup-r-dependencies@HEAD
         with:
-          extra-packages: litedown xfun gsDesign2 .
+          extra-packages: litedown xfun .
           r-universe: yihui
       - uses: yihui/actions/litedown-site@HEAD
         with:

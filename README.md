@@ -149,7 +149,10 @@ LT.build({
 `LT.build()` renders the table in place of the calling `<script>` tag. One
 `lt.js` inclusion handles any number of tables on the page.
 
-You can find more examples at <https://pkg.yihui.org/lt/examples.html>.
+You can find more examples at <https://pkg.yihui.org/lt/examples.html>. If you
+are coming from **gt**, see the migration guide at
+<https://pkg.yihui.org/lt/examples/03-gt.html> for a function-by-function mapping and
+notes on where **lt** differs.
 
 ## Acknowledgements
 
