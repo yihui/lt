@@ -66,7 +66,8 @@
 <li><a href="#sec:column-spanners"><span class="section-number">6.1</span> Column spanners</a></li>
 <li><a href="#sec:column-merging"><span class="section-number">6.2</span> Column merging</a></li>
 <li><a href="#sec:column-widths"><span class="section-number">6.3</span> Column widths</a></li>
-<li><a href="#sec:column-reordering"><span class="section-number">6.4</span> Column reordering</a></li>
+<li><a href="#sec:table-width"><span class="section-number">6.4</span> Table width</a></li>
+<li><a href="#sec:column-reordering"><span class="section-number">6.5</span> Column reordering</a></li>
 </ul>
 </li>
 <li><a href="#sec:styling"><span class="section-number main-number">7</span> Styling</a>
@@ -159,7 +160,7 @@ lt(d, auto_format = FALSE) |&gt;
   # lt_note(): the footer note names itself and lt_export()
   lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.67/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.68/css/lt.min.css">
 <style>.lt-table {
   .highlight { font-weight: bold; color: #c60; }
 }</style>
@@ -292,7 +293,7 @@ lt(d, auto_format = FALSE) |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.67/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.68/js/lt.min.js" defer></script>
 <h2 id="sec:basics"><span class="section-number main-number">2</span> Basics</h2>
 <h3 id="sec:a-simple-table"><span class="section-number">2.1</span> A simple table</h3>
 <p>Pass any data frame to <code>lt()</code>:</p>
@@ -1243,7 +1244,51 @@ lt(d) |&gt;
   ]
 }
 })</script>
-<h3 id="sec:column-reordering"><span class="section-number">6.4</span> Column reordering</h3>
+<h3 id="sec:table-width"><span class="section-number">6.4</span> Table width</h3>
+<p>Pass a single unnamed argument to <code>lt_width()</code> to set the width of the
+whole table. It can be combined with named column widths:</p>
+<pre><code class="language-r">tbl_iris |&gt; lt_width(&quot;80%&quot;)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "Sepal.Length": [5.1, 4.9, 4.7, 4.6, 5, 5.4],
+    "Sepal.Width": [3.5, 3, 3.2, 3.1, 3.6, 3.9],
+    "Petal.Length": [1.4, 1.4, 1.3, 1.5, 1.4, 1.7],
+    "Petal.Width": [0.2, 0.2, 0.2, 0.2, 0.2, 0.4],
+    "Species": ["setosa", "setosa", "setosa", "setosa", "setosa", "setosa"]
+  },
+  "ops": [
+    {
+      "type": "width",
+      "table": "80%"
+    }
+  ]
+}
+})</script>
+<pre><code class="language-r">tbl_iris |&gt; lt_width(&quot;100%&quot;, Species = &quot;20em&quot;)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "Sepal.Length": [5.1, 4.9, 4.7, 4.6, 5, 5.4],
+    "Sepal.Width": [3.5, 3, 3.2, 3.1, 3.6, 3.9],
+    "Petal.Length": [1.4, 1.4, 1.3, 1.5, 1.4, 1.7],
+    "Petal.Width": [0.2, 0.2, 0.2, 0.2, 0.2, 0.4],
+    "Species": ["setosa", "setosa", "setosa", "setosa", "setosa", "setosa"]
+  },
+  "ops": [
+    {
+      "type": "width",
+      "widths": {
+        "Species": "20em"
+      },
+      "table": "100%"
+    }
+  ]
+}
+})</script>
+<h3 id="sec:column-reordering"><span class="section-number">6.5</span> Column reordering</h3>
 <pre><code class="language-r">tbl_iris |&gt; lt_move(~ Petal.Length + Petal.Width, after = NULL)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:

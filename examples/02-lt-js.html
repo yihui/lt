@@ -50,7 +50,8 @@
 <li><a href="#sec:column-merging-merge"><span class="section-number">4.1</span> Column merging (<code>merge</code>)</a></li>
 <li><a href="#sec:column-spanners"><span class="section-number">4.2</span> Column spanners</a></li>
 <li><a href="#sec:column-widths"><span class="section-number">4.3</span> Column widths</a></li>
-<li><a href="#sec:column-reordering-move"><span class="section-number">4.4</span> Column reordering (<code>move</code>)</a></li>
+<li><a href="#sec:table-width"><span class="section-number">4.4</span> Table width</a></li>
+<li><a href="#sec:column-reordering-move"><span class="section-number">4.5</span> Column reordering (<code>move</code>)</a></li>
 </ul>
 </li>
 <li><a href="#sec:row-groups"><span class="section-number main-number">5</span> Row groups</a>
@@ -529,7 +530,36 @@ string (e.g., <code>&quot;[.]&quot;</code>) to change the separator.</p>
     { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
   ]
 });</script>
-<h3 id="sec:column-reordering-move"><span class="section-number">4.4</span> Column reordering (<code>move</code>)</h3>
+<h3 id="sec:table-width"><span class="section-number">4.4</span> Table width</h3>
+<p>Set <code>table</code> on a <code>width</code> op to size the whole table. It can be combined
+with column <code>widths</code>:</p>
+<pre><code class="language-js">LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;width&quot;, table: &quot;80%&quot; }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: iris,
+  ops: [
+    { type: "width", table: "80%" }
+  ]
+});</script>
+<pre><code class="language-js">LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;width&quot;, table: &quot;100%&quot;, widths: { Species: &quot;20em&quot; } }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: iris,
+  ops: [
+    { type: "width", table: "100%", widths: { Species: "20em" } }
+  ]
+});</script>
+<h3 id="sec:column-reordering-move"><span class="section-number">4.5</span> Column reordering (<code>move</code>)</h3>
 <p>Move columns to the start or after a specific column:</p>
 <pre><code class="language-js">LT.build({
   data: iris,

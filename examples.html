@@ -524,6 +524,16 @@ lt(d) |&gt;
 tbl_cars |&gt; lt_width(mpg = &quot;8em&quot;, cyl = &quot;5em&quot;, disp = &quot;8em&quot;, hp = &quot;6em&quot;)
 ```
 
+### Table width
+
+Pass a single unnamed argument to `lt_width()` to set the width of the
+whole table. It can be combined with named column widths:
+
+```{r}
+tbl_iris |&gt; lt_width(&quot;80%&quot;)
+tbl_iris |&gt; lt_width(&quot;100%&quot;, Species = &quot;20em&quot;)
+```
+
 ### Column reordering
 
 ```{r}
@@ -1051,6 +1061,29 @@ LT.build({
   data: mtcars,
   ops: [
     { type: &quot;width&quot;, widths: { mpg: &quot;10em&quot;, cyl: &quot;5em&quot;, disp: &quot;10em&quot;, hp: &quot;8em&quot; } }
+  ]
+});
+```
+
+### Table width
+
+Set `table` on a `width` op to size the whole table. It can be combined
+with column `widths`:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;width&quot;, table: &quot;80%&quot; }
+  ]
+});
+```
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: &quot;width&quot;, table: &quot;100%&quot;, widths: { Species: &quot;20em&quot; } }
   ]
 });
 ```

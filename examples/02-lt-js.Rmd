@@ -364,6 +364,29 @@ LT.build({
 });
 ```
 
+### Table width
+
+Set `table` on a `width` op to size the whole table. It can be combined
+with column `widths`:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "width", table: "80%" }
+  ]
+});
+```
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "width", table: "100%", widths: { Species: "20em" } }
+  ]
+});
+```
+
 ### Column reordering (`move`)
 
 Move columns to the start or after a specific column:
