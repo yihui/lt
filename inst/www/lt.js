@@ -257,9 +257,10 @@
       for (const [c, lbl] of Object.entries(op.labels || {})) setByCol(colLabels, c, lbl);
     });
 
-    // Column widths
-    let colWidths = null;
+    // Column widths + whole-table width
+    let colWidths, tableWidth;
     onOp("width", op => {
+      if (op.table) tableWidth = op.table;
       if (!op.widths) return;
       if (!colWidths) colWidths = visible.map(() => "");
       for (const [c, w] of Object.entries(op.widths)) setByCol(colWidths, c, w);
@@ -345,7 +346,7 @@
     }
 
     return {
-      visible, align, colLabels, colWidths, indent,
+      visible, align, colLabels, colWidths, tableWidth, indent,
       groups, rowSpans, styles, spanners,
       footnotes: spec.footnotes || [],
       notes: spec.notes || [],
@@ -415,7 +416,7 @@
     sortByGroups(spec);
     const data = spec.data || {},
           { display, nRow } = applyOps(spec),
-          { visible: cols, align, colLabels, colWidths, indent,
+          { visible: cols, align, colLabels, colWidths, tableWidth, indent,
             groups, rowSpans, styles, spanners, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
           reg = indexFootnotes(fns),
           fIdx = matcher(fns, reg.idx),
@@ -424,7 +425,7 @@
           // Whether column `c`'s body cells are raw HTML (see lt_html() on the
           // R side); spec.html_cols is true (all columns) or a name array.
           isRaw = c => rawCol(spec.html_cols, c),
-          out = [`<table class="lt-table">`];
+          out = [`<table class="lt-table"${tableWidth ? ` style="width:${tableWidth}"` : ""}>`];
     const mark = (type, val) => { const i = fIdx(type, val); return i ? sup(i) : ""; };
     const cell = (c, r) => display[c]?.[r - 1] ?? "";
     // ` name="val"` for a truthy val, else "" — for optional HTML attributes.

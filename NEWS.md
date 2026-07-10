@@ -1,5 +1,6 @@
 # CHANGES IN lt VERSION 0.3
 
+- `lt_width()` can set the width of the whole table via an unnamed argument, e.g., `lt_width("80%")`. It can be combined with named column widths.
 
 # CHANGES IN lt VERSION 0.2
 

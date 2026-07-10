@@ -2,22 +2,26 @@
 % Please edit documentation in R/tab.R
 \name{lt_width}
 \alias{lt_width}
-\title{Set Column Widths}
+\title{Set Column and Table Widths}
 \usage{
 lt_width(x, ...)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{...}{Named arguments of the form \code{col_name = "width"}. Width
-can be any CSS value (e.g., \code{"100px"}, \code{"20\%"}, \code{"8em"}).}
+\item{...}{Named arguments of the form \code{col_name = "width"} set the
+widths of individual columns. A single unnamed argument sets the width
+of the whole table. Widths can be any CSS value (e.g., \code{"100px"},
+\code{"20\%"}, \code{"8em"}).}
 }
 \value{
-\code{x} with the column widths recorded.
+\code{x} with the widths recorded.
 }
 \description{
-Set Column Widths
+Set Column and Table Widths
 }
 \examples{
 lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
+# set the whole-table width, optionally with column widths
+lt(head(mtcars)) |> lt_width("80\%", mpg = "100px")
 }

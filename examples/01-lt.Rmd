@@ -473,6 +473,16 @@ lt(d) |>
 tbl_cars |> lt_width(mpg = "8em", cyl = "5em", disp = "8em", hp = "6em")
 ```
 
+### Table width
+
+Pass a single unnamed argument to `lt_width()` to set the width of the
+whole table. It can be combined with named column widths:
+
+```{r}
+tbl_iris |> lt_width("80%")
+tbl_iris |> lt_width("100%", Species = "20em")
+```
+
 ### Column reordering
 
 ```{r}

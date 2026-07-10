@@ -453,18 +453,29 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
     class = class, css = css)
 }
 
-#' Set Column Widths
+#' Set Column and Table Widths
 #'
 #' @inheritParams lt_align
-#' @param ... Named arguments of the form `col_name = "width"`. Width
-#'   can be any CSS value (e.g., `"100px"`, `"20%"`, `"8em"`).
-#' @return `x` with the column widths recorded.
+#' @param ... Named arguments of the form `col_name = "width"` set the
+#'   widths of individual columns. A single unnamed argument sets the width
+#'   of the whole table. Widths can be any CSS value (e.g., `"100px"`,
+#'   `"20%"`, `"8em"`).
+#' @return `x` with the widths recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
+#' # set the whole-table width, optionally with column widths
+#' lt(head(mtcars)) |> lt_width("80%", mpg = "100px")
 lt_width = function(x, ...) {
-  widths = list(...)
-  add_op(x, 'width', widths = widths)
+  args = list(...)
+  nms = names(args)
+  named = if (is.null(nms)) rep(FALSE, length(args)) else nzchar(nms)
+  widths = args[named]
+  table = args[!named]
+  if (length(table) > 1)
+    stop('Only one unnamed argument (the table width) is allowed.')
+  add_op(x, 'width', widths = if (length(widths)) widths,
+    table = if (length(table)) table[[1]])
 }
 
 

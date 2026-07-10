@@ -178,6 +178,18 @@ assert("lt_style() returns unchanged if no css or class", {
 assert("lt_width() adds width op", {
   w = lt_width(x, a = "100px", b = "50%")
   (w$ops %==% list(list(type = "width", widths = list(a = "100px", b = "50%"))))
+
+  # unnamed argument sets the whole-table width
+  w = lt_width(x, "80%")
+  (w$ops %==% list(list(type = "width", table = "80%")))
+
+  # table width and column widths can be combined
+  w = lt_width(x, "80%", a = "100px")
+  (w$ops %==% list(list(
+    type = "width", widths = list(a = "100px"), table = "80%"
+  )))
+
+  (has_error(lt_width(x, "80%", "90%")))
 })
 
 assert("lt_move() adds move op", {
