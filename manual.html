@@ -166,7 +166,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
 <pre><code>&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;lt&lt;/title&gt;
 &lt;style&gt;body{font-family:system-ui,sans-serif;padding:1em}&lt;/style&gt;&lt;/head&gt;
 &lt;body&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.68/css/lt.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/lt.min.css&quot;&gt;
 &lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   &quot;data&quot;: {
@@ -184,7 +184,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
   }
 }
 })&lt;/script&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.68/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;
 </code></pre>
 <h2 id="sec:man-lt"><span class="section-number main-number">3</span> Create a Table Specification</h2>
@@ -621,6 +621,12 @@ th, td{ padding: 5px; }
   // A column is &quot;numeric&quot; if its first non-null value is a number.
   const numCol = col =&gt; col?.length &amp;&amp; typeof col.find(v =&gt; v != null) === &quot;number&quot;;
 
+  // Column order. Prefer the explicit `spec.columns` sent by R: a JSON object
+  // reorders integer-like keys (e.g. &quot;1&quot;, &quot;2&quot;) ahead of string keys, so
+  // Object.keys(data) alone would scramble columns whose names are numbers.
+  const colOrder = spec =&gt; (spec.columns || Object.keys(spec.data || {}))
+    .filter(c =&gt; c in (spec.data || {}));
+
   // Display label for a column: the last &quot;label&quot; op that names it, else `c`.
   const colLabel = (ops, c) =&gt; {
     let lbl = c;
@@ -669,7 +675,7 @@ th, td{ padding: 5px; }
   function autoFmt(spec, display, nRow) {
     if (spec.auto_format === false) return;
     const data = spec.data || {}, ops = spec.ops || [],
-          colNames = Object.keys(data);
+          colNames = colOrder(spec);
 
     const fmtCols = new Set();
     for (const op of ops) {
@@ -720,7 +726,7 @@ th, td{ padding: 5px; }
   function applyOps(spec) {
     const data = spec.data || {},
           ops = spec.ops || [],
-          colNames = Object.keys(data),
+          colNames = colOrder(spec),
           nRow = colNames.length ? data[colNames[0]].length : 0;
 
     // Working copy: display[col][row] = string
@@ -794,7 +800,7 @@ th, td{ padding: 5px; }
   function resolveSpec(spec) {
     const data = spec.data || {},
           ops = spec.ops || [],
-          colNames = Object.keys(data),
+          colNames = colOrder(spec),
           nRow = colNames.length ? data[colNames[0]].length : 0,
           // Run fn on each op of the given type, in document order.
           onOp = (t, fn) =&gt; { for (const op of ops) if (op.type === t) fn(op); };
@@ -976,7 +982,7 @@ th, td{ padding: 5px; }
     if (spec.sort === false || !spec.row_group) return;
     const data = spec.data || {},
           cols = [].concat(spec.row_group),
-          colNames = Object.keys(data),
+          colNames = colOrder(spec),
           nRow = colNames.length ? data[colNames[0]].length : 0;
     if (!nRow) return;
     const idx = Array.from({length: nRow}, (_, i) =&gt; i);
@@ -1171,7 +1177,7 @@ th, td{ padding: 5px; }
 <pre><code class="language-r">f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//Rtmp846rfg/file12cb3e3f4e91.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//Rtmpzbtde7/file189c6bcec64a.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -1187,7 +1193,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//Rtmp846rfg/file12cb522d267.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/8j/sfr9qqcj73j4p6nhwcfpr0th0000gn/T//Rtmpzbtde7/file189c1fdb94a6.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
