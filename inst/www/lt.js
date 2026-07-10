@@ -33,6 +33,12 @@
   // A column is "numeric" if its first non-null value is a number.
   const numCol = col => col?.length && typeof col.find(v => v != null) === "number";
 
+  // Column order. Prefer the explicit `spec.columns` sent by R: a JSON object
+  // reorders integer-like keys (e.g. "1", "2") ahead of string keys, so
+  // Object.keys(data) alone would scramble columns whose names are numbers.
+  const colOrder = spec => (spec.columns || Object.keys(spec.data || {}))
+    .filter(c => c in (spec.data || {}));
+
   // Display label for a column: the last "label" op that names it, else `c`.
   const colLabel = (ops, c) => {
     let lbl = c;
@@ -81,7 +87,7 @@
   function autoFmt(spec, display, nRow) {
     if (spec.auto_format === false) return;
     const data = spec.data || {}, ops = spec.ops || [],
-          colNames = Object.keys(data);
+          colNames = colOrder(spec);
 
     const fmtCols = new Set();
     for (const op of ops) {
@@ -132,7 +138,7 @@
   function applyOps(spec) {
     const data = spec.data || {},
           ops = spec.ops || [],
-          colNames = Object.keys(data),
+          colNames = colOrder(spec),
           nRow = colNames.length ? data[colNames[0]].length : 0;
 
     // Working copy: display[col][row] = string
@@ -206,7 +212,7 @@
   function resolveSpec(spec) {
     const data = spec.data || {},
           ops = spec.ops || [],
-          colNames = Object.keys(data),
+          colNames = colOrder(spec),
           nRow = colNames.length ? data[colNames[0]].length : 0,
           // Run fn on each op of the given type, in document order.
           onOp = (t, fn) => { for (const op of ops) if (op.type === t) fn(op); };
@@ -388,7 +394,7 @@
     if (spec.sort === false || !spec.row_group) return;
     const data = spec.data || {},
           cols = [].concat(spec.row_group),
-          colNames = Object.keys(data),
+          colNames = colOrder(spec),
           nRow = colNames.length ? data[colNames[0]].length : 0;
     if (!nRow) return;
     const idx = Array.from({length: nRow}, (_, i) => i);

@@ -86,11 +86,30 @@ spec_block = function(x) {
   # Drop css from the static-path spec (already emitted as <link>/<style>);
   # for the Shiny path we keep it on the wire so the output binding can inject links.
   x$css = x$rules = NULL
+  x = with_col_order(x)
   c(
     '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
     inline_safe(xfun::tojson(x[lengths(x) > 0L])),
     '})</script>'
   )
+}
+
+# Record the data frame's column order explicitly, but only when it is at risk.
+# A JSON object reorders "array index" keys: strings that are the canonical
+# form of an integer in 0 .. 2^32 - 2 are sorted ascending and moved ahead of
+# all other keys (JS spec). So a column named "1" or "2" would jump to the
+# front, scrambling the rendered order. Other numeric-looking names ("-1",
+# "1.5", "01", "+1") are ordinary string keys and keep insertion order, so
+# they need no help. When any column name is an array index, we ship the full
+# order and lt.js reads `columns` in preference to Object.keys(); otherwise the
+# field is omitted (it would just duplicate the data's key order).
+any_array_index = function(nms) {
+  any(i <- grepl('^(0|[1-9][0-9]*)$', nms)) && any(as.numeric(nms[i]) < 2^32 - 1)
+}
+with_col_order = function(x) {
+  nms = names(x$data)
+  if (length(nms) && any_array_index(nms)) x$columns = I(nms)
+  x
 }
 
 html_doc = function(body) c(
@@ -273,6 +292,7 @@ lt_static_node = function(x, css = TRUE) {
   runner = pkg_file('js', 'run-lt.js')
   spec = x; spec$css = spec$rules = NULL
   if (!length(spec$ops)) spec$ops = NULL
+  spec = with_col_order(spec)
   json = xfun::tojson(spec)
   out = system2('node', c(shQuote(runner), shQuote(js)), input = json, stdout = TRUE)
   if (!is.null(attr(out, 'status'))) stop('Node.js failed to render the lt table.')

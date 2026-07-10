@@ -53,6 +53,6 @@ render_lt = function(expr, env = parent.frame(), quoted = FALSE) {
       if (is_url(p) || !xfun::is_abs_path(p)) list(href = p)
       else list(content = xfun::file_string(p))
     })
-    list(spec = result)
+    list(spec = with_col_order(result))
   }, lt_output)
 }

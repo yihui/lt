@@ -58,6 +58,25 @@ assert("spec_block() drops css and rules", {
   (matches(html, ".*window\\.LT.*") %==% "")
 })
 
+assert("spec_block() records explicit column order for array-index names", {
+  # Array-index column names ("1", "2") would be reordered ahead of string
+  # names by a JSON object round-trip; spec_block must emit `columns` so the
+  # renderer can restore the original order.
+  d = data.frame(rowname = "Z", "1" = 1, "2" = 2, check.names = FALSE)
+  sb = paste(spec_block(lt(d)), collapse = "")
+  (matches(sb, '.*"columns".*\\[.*"rowname".*"1".*"2".*') %==% "")
+
+  # Ordinary names keep insertion order in JSON, so `columns` is omitted.
+  sb2 = paste(spec_block(lt(data.frame(a = 1, b = 2))), collapse = "")
+  (grepl('"columns"', sb2) %==% FALSE)
+
+  # Non-array-index numeric-looking names are plain string keys — also omitted.
+  d3 = data.frame(x = 1, y = 2, check.names = FALSE)
+  names(d3) = c("-1", "1.5")
+  sb3 = paste(spec_block(lt(d3)), collapse = "")
+  (grepl('"columns"', sb3) %==% FALSE)
+})
+
 assert("tidy_html() indents block tags and keeps rows on one line", {
   html = c(
     '<div class="lt-wrap"><table class="lt-table"><thead>',
