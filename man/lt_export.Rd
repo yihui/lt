@@ -92,13 +92,12 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 tbl = lt(head(mtcars))
 
 # HTML with the JavaScript spec (table built by lt.js when viewed)
-lt_export(tbl, NA, method = 'raw')  # character output
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 
 # Bake a static <table> (needs Node.js or a headless browser).
 if (lt:::can_bake())
-  lt_export(tbl, NA, method = 'auto', fragment = TRUE, css = FALSE)
+  lt_export(tbl, NA, method = 'auto', fragment = TRUE, css = FALSE, tidy = TRUE)
 
 # PDF / PNG are rendered in a headless browser and cropped to the table.
 f2 = tempfile(fileext = '.pdf')
