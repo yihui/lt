@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.9.14">
+<meta name="generator" content="litedown 0.10.1">
 <title>Migrating from gt to lt</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/article.min.css">
@@ -328,16 +328,23 @@ per package; two packages can even define clashing <code>as_gt()</code> generics
 each other on the search path; and none of it composes — there is no single
 function you can call on “whatever table-like object I have.”</p>
 <p><code>lt()</code> <em>is</em> an S3 generic (<code>lt &lt;- function(data, ...) UseMethod(&quot;lt&quot;)</code>), so
-extending it to a custom class is just defining a method:</p>
-<pre><code class="language-r">#' @exportS3Method lt::lt
+extending it to a custom class means re-exporting the generic and defining a
+method:</p>
+<pre><code class="language-r">#' @importFrom lt lt
+#' @export
+lt::lt
+
+#' @export
 lt.fixed_design_summary &lt;- function(data, ...) { ... }
 </code></pre>
-<p>Users then call the one verb they already know — <code>lt(x)</code> — on any object, yours
-included. No new generic, no name collisions, and <code>summary() |&gt; lt()</code> reads the
-same everywhere. If your package currently exports <code>as_gt()</code>, keep it as a thin
-deprecated wrapper that calls <code>lt::lt()</code> and move the real logic into <code>lt.*</code>
-methods (this is exactly what <strong>gsDesign2</strong> and <strong>gsDesign</strong> now do; sketch
-below).</p>
+<p>Re-exporting the generic puts <code>lt()</code> in your own namespace, so users can call it
+without attaching <strong>lt</strong> via <code>library(lt)</code> or writing <code>lt::lt()</code>; each method is
+then registered with a plain <code>#' @export</code>. Users then call the one verb they
+already know — <code>lt(x)</code> — on any object, yours included. No new generic, no name
+collisions, and <code>summary() |&gt; lt()</code> reads the same everywhere.
+If your package currently exports <code>as_gt()</code>, keep it as a thin deprecated
+wrapper that calls <code>lt::lt()</code> and move the real logic into <code>lt.*</code> methods (this
+is exactly what <strong>gsDesign2</strong> and <strong>gsDesign</strong> now do; sketch below).</p>
 <h3 id="sec:styling-you-probably-don-t-need-css"><span class="section-number">2.5</span> Styling — you probably don’t need CSS</h3>
 <p><strong>lt</strong>’s default look is close to <strong>gt</strong>’s out of the box, so you rarely need
 CSS just to reproduce <strong>gt</strong>‘s base appearance. The whole stylesheet
@@ -462,7 +469,15 @@ generic, a package defines <code>lt.&lt;class&gt;()</code> methods for its summa
 classes, so users call <code>lt()</code> directly (and the old <code>as_gt()</code> becomes a
 deprecated wrapper). No <code>as_lt()</code> generic is needed. Sketch, adapted from
 <strong>gsDesign2</strong>’s <code>as_lt.R</code>:</p>
-<pre><code class="language-r"># in R/as_lt.R; registered via @exportS3Method lt::lt
+<pre><code class="language-r"># re-export the lt() generic so that users can call lt() without attaching
+# lt via library(lt) or qualifying it as lt::lt()
+#' @importFrom lt lt
+#' @export
+lt::lt
+
+# in R/as_lt.R; with the generic re-exported into your namespace, each method
+# can be registered with a plain #' @export
+#' @export
 lt.fixed_design_summary = function(data, title = NULL, footnote = NULL, ...) {
   if (is.null(title))    title    = attr(data, &quot;title&quot;)
   if (is.null(footnote)) footnote = attr(data, &quot;footnote&quot;)
@@ -487,9 +502,12 @@ lt.gs_design_summary = function(data, ...) {
 }
 </code></pre>
 <p>Users then write <code>fixed_design_ahr(...) |&gt; summary() |&gt; lt()</code> in place of
-<code>... |&gt; summary() |&gt; as_gt()</code>. The full version in <strong>gsDesign2</strong> drives the
-title, subtitle, spanner, per-location footnotes (<code>where = &quot;group&quot;</code> / <code>&quot;body&quot;</code> /
-<code>&quot;spanner&quot;</code>), bound selection, and column selection all from arguments.</p>
+<code>... |&gt; summary() |&gt; as_gt()</code>. Re-exporting the generic is what makes the bare
+<code>lt()</code> call resolve: it lives in your package’s namespace, so users need not
+attach <strong>lt</strong> with <code>library(lt)</code> or qualify the call as <code>lt::lt()</code>. The full
+version in <strong>gsDesign2</strong> drives the title, subtitle, spanner, per-location
+footnotes (<code>where = &quot;group&quot;</code> / <code>&quot;body&quot;</code> / <code>&quot;spanner&quot;</code>), bound selection, and
+column selection all from arguments.</p>
 <section class="footnotes" data-footnotes>
 <ol>
 <li id="fn-1">
@@ -524,7 +542,7 @@ stripped — it’s the right tool there, just not a good default elsewhere.) <a
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.9.14</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.10.1</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/appendix.min.js" defer></script>

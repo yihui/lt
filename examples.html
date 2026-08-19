@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.9.14">
+<meta name="generator" content="litedown 0.10.1">
 <title>Examples</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/article.min.css">
@@ -1616,19 +1616,26 @@ each other on the search path; and none of it composes — there is no single
 function you can call on &quot;whatever table-like object I have.&quot;
 
 `lt()` *is* an S3 generic (`lt &lt;- function(data, ...) UseMethod(&quot;lt&quot;)`), so
-extending it to a custom class is just defining a method:
+extending it to a custom class means re-exporting the generic and defining a
+method:
 
 ``` r
-#' @exportS3Method lt::lt
+#' @importFrom lt lt
+#' @export
+lt::lt
+
+#' @export
 lt.fixed_design_summary &lt;- function(data, ...) { ... }
 ```
 
-Users then call the one verb they already know — `lt(x)` — on any object, yours
-included. No new generic, no name collisions, and `summary() |&gt; lt()` reads the
-same everywhere. If your package currently exports `as_gt()`, keep it as a thin
-deprecated wrapper that calls `lt::lt()` and move the real logic into `lt.*`
-methods (this is exactly what **gsDesign2** and **gsDesign** now do; sketch
-below).
+Re-exporting the generic puts `lt()` in your own namespace, so users can call it
+without attaching **lt** via `library(lt)` or writing `lt::lt()`; each method is
+then registered with a plain `#' @export`. Users then call the one verb they
+already know — `lt(x)` — on any object, yours included. No new generic, no name
+collisions, and `summary() |&gt; lt()` reads the same everywhere.
+If your package currently exports `as_gt()`, keep it as a thin deprecated
+wrapper that calls `lt::lt()` and move the real logic into `lt.*` methods (this
+is exactly what **gsDesign2** and **gsDesign** now do; sketch below).
 
 ### Styling — you probably don't need CSS
 
@@ -1742,7 +1749,15 @@ deprecated wrapper). No `as_lt()` generic is needed. Sketch, adapted from
 **gsDesign2**'s `as_lt.R`:
 
 ``` r
-# in R/as_lt.R; registered via @exportS3Method lt::lt
+# re-export the lt() generic so that users can call lt() without attaching
+# lt via library(lt) or qualifying it as lt::lt()
+#' @importFrom lt lt
+#' @export
+lt::lt
+
+# in R/as_lt.R; with the generic re-exported into your namespace, each method
+# can be registered with a plain #' @export
+#' @export
 lt.fixed_design_summary = function(data, title = NULL, footnote = NULL, ...) {
   if (is.null(title))    title    = attr(data, &quot;title&quot;)
   if (is.null(footnote)) footnote = attr(data, &quot;footnote&quot;)
@@ -1768,15 +1783,18 @@ lt.gs_design_summary = function(data, ...) {
 ```
 
 Users then write `fixed_design_ahr(...) |&gt; summary() |&gt; lt()` in place of
-`... |&gt; summary() |&gt; as_gt()`. The full version in **gsDesign2** drives the
-title, subtitle, spanner, per-location footnotes (`where = &quot;group&quot;` / `&quot;body&quot;` /
-`&quot;spanner&quot;`), bound selection, and column selection all from arguments.
+`... |&gt; summary() |&gt; as_gt()`. Re-exporting the generic is what makes the bare
+`lt()` call resolve: it lives in your package's namespace, so users need not
+attach **lt** with `library(lt)` or qualify the call as `lt::lt()`. The full
+version in **gsDesign2** drives the title, subtitle, spanner, per-location
+footnotes (`where = &quot;group&quot;` / `&quot;body&quot;` / `&quot;spanner&quot;`), bound selection, and
+column selection all from arguments.
 </code></pre>
 </div>
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.9.14</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.10.1</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/appendix.min.js" defer></script>
