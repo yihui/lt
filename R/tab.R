@@ -134,6 +134,24 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
 #' # raw HTML footnote (wrap in I())
 #' lt(head(mtcars)) |>
 #'   lt_footnote(I("See <a href='#'>docs</a>."), "title")
+#'
+#' # a footnote for each of the six locations
+#' d = data.frame(
+#'   Arm   = c("Treatment", "Treatment", "Control", "Control"),
+#'   Stat  = c("n", "Mean", "n", "Mean"),
+#'   Value = c(31, 6.8, 30, 4.2),
+#'   SE    = c(NA, 0.42, NA, 0.38)
+#' )
+#' lt(d) |>
+#'   lt_group(~ Arm) |>
+#'   lt_header(title = "Study Results", subtitle = "Two arms") |>
+#'   lt_spanner(Summary ~ Value + SE) |>
+#'   lt_footnote("Source: simulated trial data.", "title") |>
+#'   lt_footnote("Intention-to-treat population.", "subtitle") |>
+#'   lt_footnote("Standard error of the mean.", "column", "SE") |>
+#'   lt_footnote("Per-arm summary statistics.", "spanner", "Summary") |>
+#'   lt_footnote("Received active drug.", "group", "Treatment") |>
+#'   lt_footnote("SE undefined for counts.", "body", "SE", rows = c(1, 3))
 lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL) {
   columns = f_cols(columns, x$data)
   loc = switch(where,

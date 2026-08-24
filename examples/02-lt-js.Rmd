@@ -635,16 +635,35 @@ LT.build({
 
 ### Footnotes
 
-Footnotes are de-duplicated by text and numbered automatically. Supported
-locations: `title`, `column_labels`, `column_spanners`, `row_groups`, `body`.
+Footnotes are de-duplicated by text and numbered automatically. Each
+footnote's `location.type` selects a region: `title` (with
+`group: "title"` or `group: "subtitle"`), `column_labels`,
+`column_spanners`, `row_groups`, or `body`. The example below attaches a
+footnote to every location:
 
 ```{js}
 LT.build({
-  data: mtcars,
-  header: { title: "Motor Trend Cars" },
+  data: {
+    Arm: ["Treatment", "Treatment", "Control", "Control"],
+    Stat: ["n", "Mean", "n", "Mean"],
+    Value: [31, 6.8, 30, 4.2],
+    SE: [null, 0.42, null, 0.38]
+  },
+  row_group: "Arm",
+  header: { title: "Study Results", subtitle: "Two arms" },
+  spanners: [{ label: "Summary", columns: ["Value", "SE"] }],
   footnotes: [
-    { text: "Source: 1974 Motor Trend US magazine.", location: { type: "title", group: "title" } },
-    { text: "Miles per US gallon.", location: { type: "column_labels", columns: ["mpg"] } }
+    // title and subtitle share type "title", distinguished by group
+    { text: "Source: simulated trial data.", location: { type: "title", group: "title" } },
+    { text: "Intention-to-treat population.", location: { type: "title", group: "subtitle" } },
+    // a column label
+    { text: "Standard error of the mean.", location: { type: "column_labels", columns: ["SE"] } },
+    // a spanner label
+    { text: "Per-arm summary statistics.", location: { type: "column_spanners", spanners: ["Summary"] } },
+    // a row-group label
+    { text: "Received active drug.", location: { type: "row_groups", match: "exact", values: ["Treatment"] } },
+    // specific body cells (columns + 1-based rows)
+    { text: "SE undefined for counts.", location: { type: "body", columns: ["SE"], rows: [1, 3] } }
   ]
 });
 ```

@@ -72,6 +72,43 @@ assert("lt_footnote() builds correct location", {
   ))
 })
 
+assert("lt_footnote() covers all six locations", {
+  # subtitle shares type "title" but a different group
+  f1 = lt_footnote(x, "note", "subtitle")
+  (f1$footnotes[[1]]$location %==% list(type = "title", group = "subtitle"))
+
+  # spanner label
+  f2 = lt_footnote(x, "note", "spanner", "S")
+  (f2$footnotes[[1]]$location %==% list(
+    type = "column_spanners", spanners = I("S")
+  ))
+
+  # row-group label (exact match is the default)
+  f3 = lt_footnote(x, "note", "group", "G")
+  (f3$footnotes[[1]]$location %==% list(
+    type = "row_groups", match = "exact", values = I("G")
+  ))
+
+  # all row groups
+  f4 = lt_footnote(x, "note", "group", match = "all")
+  (f4$footnotes[[1]]$location %==% list(type = "row_groups", match = "all"))
+
+  # body cells with specific rows
+  f5 = lt_footnote(x, "note", "body", ~ a, rows = c(1, 2))
+  (f5$footnotes[[1]]$location %==% list(
+    type = "body", columns = I("a"), rows = I(c(1L, 2L))
+  ))
+
+  # body cells with all rows (rows stays NULL)
+  f6 = lt_footnote(x, "note", "body", ~ a)
+  (f6$footnotes[[1]]$location %==% list(
+    type = "body", columns = I("a"), rows = NULL
+  ))
+
+  # an unknown location errors
+  (has_error(lt_footnote(x, "note", "nope")))
+})
+
 assert("lt_footnote() supports numeric column indices", {
   f = lt_footnote(x, "note", "column", 1)
   (f$footnotes[[1]]$location %==% list(type = "column_labels", columns = I("a")))
