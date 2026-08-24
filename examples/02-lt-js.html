@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.10.1">
+<meta name="generator" content="litedown 0.10.3">
 <title>lt.js — JavaScript API Reference</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/article.min.css">
@@ -885,23 +885,58 @@ R side’s <code>I()</code> wrapper serializes to.)</li>
 });</script>
 <h2 id="sec:footnotes-and-notes"><span class="section-number main-number">8</span> Footnotes and notes</h2>
 <h3 id="sec:footnotes"><span class="section-number">8.1</span> Footnotes</h3>
-<p>Footnotes are de-duplicated by text and numbered automatically. Supported
-locations: <code>title</code>, <code>column_labels</code>, <code>column_spanners</code>, <code>row_groups</code>, <code>body</code>.</p>
+<p>Footnotes are de-duplicated by text and numbered automatically. Each
+footnote’s <code>location.type</code> selects a region: <code>title</code> (with
+<code>group: &quot;title&quot;</code> or <code>group: &quot;subtitle&quot;</code>), <code>column_labels</code>,
+<code>column_spanners</code>, <code>row_groups</code>, or <code>body</code>. The example below attaches a
+footnote to every location:</p>
 <pre><code class="language-js">LT.build({
-  data: mtcars,
-  header: { title: &quot;Motor Trend Cars&quot; },
+  data: {
+    Arm: [&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;],
+    Stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
+    Value: [31, 6.8, 30, 4.2],
+    SE: [null, 0.42, null, 0.38]
+  },
+  row_group: &quot;Arm&quot;,
+  header: { title: &quot;Study Results&quot;, subtitle: &quot;Two arms&quot; },
+  spanners: [{ label: &quot;Summary&quot;, columns: [&quot;Value&quot;, &quot;SE&quot;] }],
   footnotes: [
-    { text: &quot;Source: 1974 Motor Trend US magazine.&quot;, location: { type: &quot;title&quot;, group: &quot;title&quot; } },
-    { text: &quot;Miles per US gallon.&quot;, location: { type: &quot;column_labels&quot;, columns: [&quot;mpg&quot;] } }
+    // title and subtitle share type &quot;title&quot;, distinguished by group
+    { text: &quot;Source: simulated trial data.&quot;, location: { type: &quot;title&quot;, group: &quot;title&quot; } },
+    { text: &quot;Intention-to-treat population.&quot;, location: { type: &quot;title&quot;, group: &quot;subtitle&quot; } },
+    // a column label
+    { text: &quot;Standard error of the mean.&quot;, location: { type: &quot;column_labels&quot;, columns: [&quot;SE&quot;] } },
+    // a spanner label
+    { text: &quot;Per-arm summary statistics.&quot;, location: { type: &quot;column_spanners&quot;, spanners: [&quot;Summary&quot;] } },
+    // a row-group label
+    { text: &quot;Received active drug.&quot;, location: { type: &quot;row_groups&quot;, match: &quot;exact&quot;, values: [&quot;Treatment&quot;] } },
+    // specific body cells (columns + 1-based rows)
+    { text: &quot;SE undefined for counts.&quot;, location: { type: &quot;body&quot;, columns: [&quot;SE&quot;], rows: [1, 3] } }
   ]
 });
 </code></pre>
 <script>LT.build({
-  data: mtcars,
-  header: { title: "Motor Trend Cars" },
+  data: {
+    Arm: ["Treatment", "Treatment", "Control", "Control"],
+    Stat: ["n", "Mean", "n", "Mean"],
+    Value: [31, 6.8, 30, 4.2],
+    SE: [null, 0.42, null, 0.38]
+  },
+  row_group: "Arm",
+  header: { title: "Study Results", subtitle: "Two arms" },
+  spanners: [{ label: "Summary", columns: ["Value", "SE"] }],
   footnotes: [
-    { text: "Source: 1974 Motor Trend US magazine.", location: { type: "title", group: "title" } },
-    { text: "Miles per US gallon.", location: { type: "column_labels", columns: ["mpg"] } }
+    // title and subtitle share type "title", distinguished by group
+    { text: "Source: simulated trial data.", location: { type: "title", group: "title" } },
+    { text: "Intention-to-treat population.", location: { type: "title", group: "subtitle" } },
+    // a column label
+    { text: "Standard error of the mean.", location: { type: "column_labels", columns: ["SE"] } },
+    // a spanner label
+    { text: "Per-arm summary statistics.", location: { type: "column_spanners", spanners: ["Summary"] } },
+    // a row-group label
+    { text: "Received active drug.", location: { type: "row_groups", match: "exact", values: ["Treatment"] } },
+    // specific body cells (columns + 1-based rows)
+    { text: "SE undefined for counts.", location: { type: "body", columns: ["SE"], rows: [1, 3] } }
   ]
 });</script>
 <h3 id="sec:source-notes"><span class="section-number">8.2</span> Source notes</h3>
@@ -978,7 +1013,7 @@ toggle raw values for all tables on the page.</p>
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.10.1</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.10.3</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/appendix.min.js" defer></script>

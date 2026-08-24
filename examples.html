@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.10.1">
+<meta name="generator" content="litedown 0.10.3">
 <title>Examples</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/article.min.css">
@@ -324,11 +324,33 @@ lt(d) |&gt; lt_format(~ Value, decimals = 2)
 
 ### Footnotes
 
+A footnote can be attached to any of six locations via the `where`
+argument: the `title`, the `subtitle`, a `column` label, a `spanner`
+label, a row `group` label, or one or more `body` cells. The example
+below shows all six at once:
+
 ```{r}
-tbl_cars |&gt;
-  lt_header(title = &quot;Motor Trend Cars&quot;) |&gt;
-  lt_footnote(&quot;Source: 1974 Motor Trend US magazine.&quot;, &quot;title&quot;) |&gt;
-  lt_footnote(&quot;Miles per US gallon.&quot;, &quot;column&quot;, &quot;mpg&quot;)
+d = data.frame(
+  Arm   = c(&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;),
+  Stat  = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
+  Value = c(31, 6.8, 30, 4.2),
+  SE    = c(NA, 0.42, NA, 0.38)
+)
+lt(d) |&gt;
+  lt_group(~ Arm) |&gt;
+  lt_header(title = &quot;Study Results&quot;, subtitle = &quot;Two arms&quot;) |&gt;
+  lt_spanner(`Summary` ~ Value + SE) |&gt;
+  # title and subtitle
+  lt_footnote(&quot;Source: simulated trial data.&quot;, &quot;title&quot;) |&gt;
+  lt_footnote(&quot;Intention-to-treat population.&quot;, &quot;subtitle&quot;) |&gt;
+  # a column label
+  lt_footnote(&quot;Standard error of the mean.&quot;, &quot;column&quot;, &quot;SE&quot;) |&gt;
+  # a spanner label
+  lt_footnote(&quot;Per-arm summary statistics.&quot;, &quot;spanner&quot;, &quot;Summary&quot;) |&gt;
+  # a row-group label
+  lt_footnote(&quot;Received active drug.&quot;, &quot;group&quot;, &quot;Treatment&quot;) |&gt;
+  # specific body cells (column + rows)
+  lt_footnote(&quot;SE undefined for counts.&quot;, &quot;body&quot;, &quot;SE&quot;, rows = c(1, 3))
 ```
 
 ### Notes
@@ -1336,16 +1358,35 @@ LT.build({
 
 ### Footnotes
 
-Footnotes are de-duplicated by text and numbered automatically. Supported
-locations: `title`, `column_labels`, `column_spanners`, `row_groups`, `body`.
+Footnotes are de-duplicated by text and numbered automatically. Each
+footnote's `location.type` selects a region: `title` (with
+`group: &quot;title&quot;` or `group: &quot;subtitle&quot;`), `column_labels`,
+`column_spanners`, `row_groups`, or `body`. The example below attaches a
+footnote to every location:
 
 ```{js}
 LT.build({
-  data: mtcars,
-  header: { title: &quot;Motor Trend Cars&quot; },
+  data: {
+    Arm: [&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;],
+    Stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
+    Value: [31, 6.8, 30, 4.2],
+    SE: [null, 0.42, null, 0.38]
+  },
+  row_group: &quot;Arm&quot;,
+  header: { title: &quot;Study Results&quot;, subtitle: &quot;Two arms&quot; },
+  spanners: [{ label: &quot;Summary&quot;, columns: [&quot;Value&quot;, &quot;SE&quot;] }],
   footnotes: [
-    { text: &quot;Source: 1974 Motor Trend US magazine.&quot;, location: { type: &quot;title&quot;, group: &quot;title&quot; } },
-    { text: &quot;Miles per US gallon.&quot;, location: { type: &quot;column_labels&quot;, columns: [&quot;mpg&quot;] } }
+    // title and subtitle share type &quot;title&quot;, distinguished by group
+    { text: &quot;Source: simulated trial data.&quot;, location: { type: &quot;title&quot;, group: &quot;title&quot; } },
+    { text: &quot;Intention-to-treat population.&quot;, location: { type: &quot;title&quot;, group: &quot;subtitle&quot; } },
+    // a column label
+    { text: &quot;Standard error of the mean.&quot;, location: { type: &quot;column_labels&quot;, columns: [&quot;SE&quot;] } },
+    // a spanner label
+    { text: &quot;Per-arm summary statistics.&quot;, location: { type: &quot;column_spanners&quot;, spanners: [&quot;Summary&quot;] } },
+    // a row-group label
+    { text: &quot;Received active drug.&quot;, location: { type: &quot;row_groups&quot;, match: &quot;exact&quot;, values: [&quot;Treatment&quot;] } },
+    // specific body cells (columns + 1-based rows)
+    { text: &quot;SE undefined for counts.&quot;, location: { type: &quot;body&quot;, columns: [&quot;SE&quot;], rows: [1, 3] } }
   ]
 });
 ```
@@ -1794,7 +1835,7 @@ column selection all from arguments.
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.10.1</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.10.3</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/appendix.min.js" defer></script>
