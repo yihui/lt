@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.10.3">
+<meta name="generator" content="litedown 0.11.1">
 <title>Help pages</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/article.min.css">
@@ -166,7 +166,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
 <pre><code>&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;lt&lt;/title&gt;
 &lt;style&gt;body{font-family:system-ui,sans-serif;padding:1em}&lt;/style&gt;&lt;/head&gt;
 &lt;body&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/css/lt.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.70/css/lt.min.css&quot;&gt;
 &lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   &quot;data&quot;: {
@@ -184,7 +184,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
   }
 }
 })&lt;/script&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.70/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;
 </code></pre>
 <h2 id="sec:man-lt"><span class="section-number main-number">3</span> Create a Table Specification</h2>
@@ -256,6 +256,13 @@ on the page).
 </li></ul>
 <p>Raw values are shown as <code>(value)</code> after the formatted text, highlighted
 with a light yellow background.
+</p>
+<h3 id="sec:missing-values" class="unnumbered unlisted">Missing values</h3>
+<p>By default, missing (<code>NA</code>) cells display an em dash (<code>—</code>) so they are not
+confused with empty strings. Change the table-wide default with the
+<code>lt.missing</code> global option, e.g. <code>options(lt.missing = "n/a")</code>; set it to
+the empty string (<code>options(lt.missing = "")</code>) to leave <code>NA</code> cells blank.
+Use <code><a href="#sec:man-lt-sub">lt_sub()</a></code> with <code>missing =</code> to override the text for specific columns.
 </p>
 <h3 id="sec:examples_2" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">lt(head(mtcars[, 1:4]))
@@ -504,7 +511,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/df/djsxfhc17x95674wsm_g8s980000gn/T//Rtmpl2KKi6/file15831c70066b.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/df/djsxfhc17x95674wsm_g8s980000gn/T//RtmpCmDPIX/file149440f8b6a5.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -618,7 +625,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/df/djsxfhc17x95674wsm_g8s980000gn/T//Rtmpl2KKi6/file15832b3f2813.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/df/djsxfhc17x95674wsm_g8s980000gn/T//RtmpCmDPIX/file14944e94722a.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -1216,8 +1223,9 @@ tbl |&gt;
 </td></tr>
 <tr><td><code>missing</code></td>
 <td>
-<p>Replacement for <code>NA</code> cells (e.g., <code>"—"</code>). <code>NULL</code> to
-leave NAs as empty strings (the default rendering).</p>
+<p>Replacement for <code>NA</code> cells in these columns (e.g.,
+<code>"n/a"</code>). <code>NULL</code> (default) leaves them to the table-wide default, which
+is an em dash (<code>—</code>); see the <code>lt.missing</code> global option in <code><a href="#sec:man-lt">lt()</a></code>.</p>
 </td></tr>
 <tr><td><code>zero</code></td>
 <td>
@@ -1238,7 +1246,7 @@ replaced by <code>small_text</code>.</p>
 </p>
 <h3 id="sec:examples_20" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">d = data.frame(x = c(1, 0, NA, 0.001))
-lt(d) |&gt; lt_sub(missing = &quot;—&quot;, zero = &quot;—&quot;, small = 0.01, small_text = &quot;&lt;0.01&quot;)
+lt(d) |&gt; lt_sub(missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.01, small_text = &quot;&lt;0.01&quot;)
 </code></pre>
 <h2 id="sec:man-lt_width"><span class="section-number main-number">22</span> Set Column and Table Widths</h2>
 <h3 id="sec:description_22" class="unnumbered unlisted">Description</h3>
@@ -1296,7 +1304,7 @@ print(x, ...)</code></pre>
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.10.3</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.1</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.69/js/appendix.min.js" defer></script>
