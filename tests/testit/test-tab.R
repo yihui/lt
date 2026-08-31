@@ -136,6 +136,13 @@ assert("lt_format() adds fmt_number op", {
   )))
 })
 
+assert("lt_format() records sig_digits and errors when combined with decimals", {
+  f = lt_format(x, ~ a, sig_digits = 3)
+  (f$ops[[1]]$sig_digits %==% 3)
+  (is.null(f$ops[[1]]$decimals))
+  (has_error(lt_format(x, ~ a, decimals = 2, sig_digits = 3)))
+})
+
 assert("lt_format() supports numeric column indices", {
   f = lt_format(x, 1:2, decimals = 1)
   (f$ops[[1]]$columns %==% I(c("a", "b")))

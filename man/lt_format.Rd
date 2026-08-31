@@ -8,6 +8,7 @@ lt_format(
   x,
   columns,
   decimals = NULL,
+  sig_digits = NULL,
   big_mark = NULL,
   percent = NULL,
   prefix = NULL,
@@ -21,6 +22,12 @@ lt_format(
 integer positions, or a one-sided formula.}
 
 \item{decimals}{Number of decimal places (default \code{NULL} means no change).}
+
+\item{sig_digits}{Number of significant digits (e.g., \code{3}). Cannot be
+combined with \code{decimals}. Unlike \code{decimals}, which fixes the number of
+places after the decimal point, this targets the total number of
+meaningful digits, which is useful for columns spanning several orders of
+magnitude.}
 
 \item{big_mark}{Thousands separator (e.g., \code{","}). \code{NULL} or \code{""} means
 none.}
@@ -46,4 +53,5 @@ for a column without otherwise changing its display, call \code{lt_format(x, ~co
 lt(head(mtcars)) |> lt_format(~ mpg + wt, decimals = 1, big_mark = ",")
 d = data.frame(Item = c("A", "B"), Price = c(1234.5, 678.9))
 lt(d) |> lt_format(~ Price, decimals = 2, big_mark = ",", prefix = "$")
+lt(d) |> lt_format(~ Price, sig_digits = 3)
 }

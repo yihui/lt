@@ -86,6 +86,30 @@ assert("fmt_number formats decimals", {
   (matches(html, ".*>1\\.10</td>.*>2\\.35</td>.*") %==% "")
 })
 
+assert("fmt_number formats significant digits across magnitudes", {
+  # 3 sig figs: values spanning orders of magnitude each keep 3 meaningful
+  # digits (small values gain decimals, large ones lose them).
+  html = build(list(
+    data = list(x = c(0.0042857, 4285.7)),
+    ops = list(list(type = "fmt_number", columns = list("x"), sig_digits = 3))
+  ))
+  (matches(html, ".*>0\\.00429</td>.*>4290</td>.*") %==% "")
+  # toPrecision would render 4290 as "4.29e+3"; it is expanded to plain
+  # decimal, and big_mark still applies to the integer part.
+  html = build(list(
+    data = list(x = 4285.7),
+    ops = list(list(type = "fmt_number", columns = list("x"),
+                    sig_digits = 2, big_mark = ","))
+  ))
+  (matches(html, ".*>4,300</td>.*") %==% "")
+  # Negative small value uses the typographic minus (U+2212).
+  html = build(list(
+    data = list(x = -0.0042857),
+    ops = list(list(type = "fmt_number", columns = list("x"), sig_digits = 2))
+  ))
+  (matches(html, ".*>−0\\.0043</td>.*") %==% "")
+})
+
 assert("sub replaces NA", {
   html = build(list(
     data = list(x = c(1, NA)),

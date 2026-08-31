@@ -223,6 +223,11 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #'
 #' @inheritParams lt_align
 #' @param decimals Number of decimal places (default `NULL` means no change).
+#' @param sig_digits Number of significant digits (e.g., `3`). Cannot be
+#'   combined with `decimals`. Unlike `decimals`, which fixes the number of
+#'   places after the decimal point, this targets the total number of
+#'   meaningful digits, which is useful for columns spanning several orders of
+#'   magnitude.
 #' @param big_mark Thousands separator (e.g., `","`). `NULL` or `""` means
 #'   none.
 #' @param percent If `TRUE`, multiply values by 100 and append `"%"`. If
@@ -236,20 +241,23 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' lt(head(mtcars)) |> lt_format(~ mpg + wt, decimals = 1, big_mark = ",")
 #' d = data.frame(Item = c("A", "B"), Price = c(1234.5, 678.9))
 #' lt(d) |> lt_format(~ Price, decimals = 2, big_mark = ",", prefix = "$")
+#' lt(d) |> lt_format(~ Price, sig_digits = 3)
 # TODO: potential future params:
 #   decimal_mark - swap "." for "," (European locales, pairs with big_mark = ".")
 #   scale - multiply by a factor before display (e.g., 1e-6 for millions)
 #   sign - force sign on positive values (e.g., "+1.5")
 lt_format = function(
-  x, columns, decimals = NULL, big_mark = NULL, percent = NULL,
-  prefix = NULL, suffix = NULL
+  x, columns, decimals = NULL, sig_digits = NULL, big_mark = NULL,
+  percent = NULL, prefix = NULL, suffix = NULL
 ) {
+  if (!is.null(decimals) && !is.null(sig_digits))
+    stop("Specify only one of 'decimals' and 'sig_digits', not both.")
   cols = as.character(f_cols(columns, x$data))
   pct = if (identical(percent, "%")) "%" else if (isTRUE(percent)) TRUE
   add_op(
     x, 'fmt_number', columns = I(cols), decimals = decimals,
-    big_mark = if (nzchar(big_mark %||% '')) big_mark, percent = pct,
-    prefix = prefix, suffix = suffix
+    sig_digits = sig_digits, big_mark = if (nzchar(big_mark %||% '')) big_mark,
+    percent = pct, prefix = prefix, suffix = suffix
   )
 }
 

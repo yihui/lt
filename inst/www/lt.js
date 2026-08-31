@@ -46,11 +46,26 @@
     return lbl;
   };
 
-  function fmtNumber(v, decimals, bigMark) {
+  // Expand JS exponential notation (e.g. "4.2e+3") to plain decimal,
+  // preserving the significant digits produced by toPrecision.
+  function expandExp(s) {
+    if (!/e/i.test(s)) return s;
+    const [, sign, int, frac = "", expStr] =
+      s.match(/^(-?)(\d+)(?:\.(\d+))?e([+-]?\d+)$/i);
+    const exp = +expStr, digits = int + frac, point = int.length + exp;
+    let out;
+    if (point <= 0) out = "0." + "0".repeat(-point) + digits;
+    else if (point >= digits.length) out = digits + "0".repeat(point - digits.length);
+    else out = digits.slice(0, point) + "." + digits.slice(point);
+    return sign + out;
+  }
+
+  function fmtNumber(v, decimals, bigMark, sigDigits) {
     if (v === Infinity) return "∞";
     if (v === -Infinity) return "−∞";
     if (!isNum(v)) return null;
-    let s = decimals != null ? v.toFixed(decimals) : String(v);
+    let s = sigDigits != null ? expandExp(v.toPrecision(sigDigits)) :
+            decimals != null ? v.toFixed(decimals) : String(v);
     if (/^-0(\.0+)?$/.test(s)) s = s.slice(1);
     if (bigMark) {
       const parts = s.split(".");
@@ -58,7 +73,7 @@
       s = parts.join(".");
     }
     if (s[0] === "-") s = "−" + s.slice(1);
-    return decimals != null || bigMark ? s : null;
+    return decimals != null || bigMark || sigDigits != null ? s : null;
   }
 
   // --- Pattern merge ---
@@ -165,7 +180,7 @@
             if (!isNumInf(raw)) return;
             const v = op.percent === true ? raw * 100 : raw,
                   psfx = op.percent ? "%" : "",
-                  f = fmtNumber(v, op.decimals, op.big_mark ?? ""),
+                  f = fmtNumber(v, op.decimals, op.big_mark ?? "", op.sig_digits),
                   pfx = op.prefix || "", sfx = (op.suffix || "") + psfx;
             if (f != null) display[c][i] = pfx + f + sfx;
             else if (pfx || sfx) display[c][i] = pfx + String(v) + sfx;
