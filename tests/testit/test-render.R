@@ -58,6 +58,23 @@ assert("spec_block() drops css and rules", {
   (matches(html, ".*window\\.LT.*") %==% "")
 })
 
+assert("spec_block() emits the missing default from the lt.missing option", {
+  op = options(lt.missing = NULL); on.exit(options(op), add = TRUE)
+  # unset: no `missing` field is shipped (the runtime defaults to an em dash)
+  sb = paste(spec_block(lt(data.frame(a = 1))), collapse = "")
+  (grepl('"missing"', sb) %==% FALSE)
+
+  # a custom option value is used verbatim
+  options(lt.missing = "n/a")
+  sb = paste(spec_block(lt(data.frame(a = 1))), collapse = "")
+  (matches(sb, '.*"missing": *"n/a".*') %==% "")
+
+  # empty string is shipped, to override the runtime default and keep NAs blank
+  options(lt.missing = "")
+  sb = paste(spec_block(lt(data.frame(a = 1))), collapse = "")
+  (matches(sb, '.*"missing": *"".*') %==% "")
+})
+
 assert("spec_block() records explicit column order for array-index names", {
   # Array-index column names ("1", "2") would be reordered ahead of string
   # names by a JSON object round-trip; spec_block must emit `columns` so the

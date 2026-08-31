@@ -94,6 +94,36 @@ assert("sub replaces NA", {
   (matches(html, ".*>—</td>.*") %==% "")
 })
 
+assert("spec$missing fills NA cells, leaving empty strings blank", {
+  # NA -> the given missing text; an empty string in the data stays empty.
+  html = build(list(
+    data = list(x = c("a", NA), y = c("", "b")),
+    missing = "n/a"
+  ))
+  (matches(html, ".*>a</td>.*>n/a</td>.*") %==% "")
+  # the empty-string cell is untouched
+  (matches(html, ".*></td>.*") %==% "")
+})
+
+assert("missing defaults to an em dash; empty string keeps NA cells blank", {
+  # no `missing` in the spec: the runtime fills NA cells with an em dash
+  html = build(list(data = list(x = c("a", NA))))
+  (matches(html, ".*>a</td>.*>—</td>.*") %==% "")
+  # missing = "" overrides the default and leaves NA cells blank
+  html = build(list(data = list(x = c("a", NA)), missing = ""))
+  (grepl(">—<", html) %==% FALSE)
+})
+
+assert("per-column lt_sub(missing=) overrides the global missing text", {
+  html = build(list(
+    data = list(x = c(1, NA), y = c(2, NA)),
+    missing = "—",
+    ops = list(list(type = "sub", columns = list("x"), missing = "n/a"))
+  ))
+  # column x uses the sub override, column y falls back to the global default
+  (matches(html, ".*>n/a</td>.*>—</td>.*") %==% "")
+})
+
 assert("separator row groups render correctly", {
   html = build(list(
     data = list(g = c("A", "A", "B"), v = 1:3),
@@ -283,12 +313,13 @@ assert("fmt_date formats ISO date strings", {
     ops = list(list(type = "fmt_date", columns = list("date"), method = "toUTCString"))
   ))
   (matches(html, '.*>Mon, 15 Jan 2024 00:00:00 GMT</td>.*') %==% "")
-  # null values are skipped
+  # null values are skipped by fmt_date; the em dash comes from the missing
+  # default injected on the render path (see with_missing()).
   html = build(list(
     data = list(date = list("2024-01-15", NULL)),
     ops = list(list(type = "fmt_date", columns = list("date"), method = "toISOString"))
   ))
-  (matches(html, '.*>2024-01-15T00:00:00\\.000Z</td>.*></td>.*') %==% "")
+  (matches(html, '.*>2024-01-15T00:00:00\\.000Z</td>.*>—</td>.*') %==% "")
 })
 
 assert("footnote on the title renders a marker in the caption", {

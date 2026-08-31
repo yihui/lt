@@ -46,6 +46,12 @@
 #'
 #' Raw values are shown as `(value)` after the formatted text, highlighted
 #' with a light yellow background.
+#' @section Missing values:
+#' By default, missing (`NA`) cells display an em dash (`—`) so they are not
+#' confused with empty strings. Change the table-wide default with the
+#' `lt.missing` global option, e.g. `options(lt.missing = "n/a")`; set it to
+#' the empty string (`options(lt.missing = "")`) to leave `NA` cells blank.
+#' Use [lt_sub()] with `missing =` to override the text for specific columns.
 #' @return A table object that can be piped into `lt_*()` functions.
 #' @export
 #' @examples

@@ -353,8 +353,9 @@ lt_html = function(x, columns) {
 #' @inheritParams lt_align
 #' @param columns Character names, integer positions, a one-sided formula, or
 #'   `NULL` for all.
-#' @param missing Replacement for `NA` cells (e.g., `"—"`). `NULL` to
-#'   leave NAs as empty strings (the default rendering).
+#' @param missing Replacement for `NA` cells in these columns (e.g.,
+#'   `"n/a"`). `NULL` (default) leaves them to the table-wide default, which
+#'   is an em dash (`—`); see the `lt.missing` global option in [lt()].
 #' @param zero Replacement for zero values (e.g., `"—"`).
 #' @param small Threshold: values whose absolute value is below this are
 #'   replaced by `small_text`.
@@ -363,7 +364,7 @@ lt_html = function(x, columns) {
 #' @export
 #' @examples
 #' d = data.frame(x = c(1, 0, NA, 0.001))
-#' lt(d) |> lt_sub(missing = "—", zero = "—", small = 0.01, small_text = "<0.01")
+#' lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.01, small_text = "<0.01")
 lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
                   small = NULL, small_text = NULL) {
   columns = f_cols(columns, x$data)

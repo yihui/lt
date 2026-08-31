@@ -86,7 +86,7 @@ spec_block = function(x) {
   # Drop css from the static-path spec (already emitted as <link>/<style>);
   # for the Shiny path we keep it on the wire so the output binding can inject links.
   x$css = x$rules = NULL
-  x = with_col_order(x)
+  x = with_missing(with_col_order(x))
   c(
     '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
     inline_safe(xfun::tojson(x[lengths(x) > 0L])),
@@ -109,6 +109,15 @@ any_array_index = function(nms) {
 with_col_order = function(x) {
   nms = names(x$data)
   if (length(nms) && any_array_index(nms)) x$columns = I(nms)
+  x
+}
+
+# Display text for missing (NA) cells. The runtime defaults to an em dash, so
+# we only ship `missing` when the `lt.missing` option is set: to a replacement
+# string, or to "" to keep NAs blank (an empty string is still serialized, to
+# override the runtime default). A per-column lt_sub(missing=) overrides this.
+with_missing = function(x) {
+  if (is.null(x$missing) && !is.null(m <- getOption('lt.missing'))) x$missing = m
   x
 }
 
@@ -292,7 +301,7 @@ lt_static_node = function(x, css = TRUE) {
   runner = pkg_file('js', 'run-lt.js')
   spec = x; spec$css = spec$rules = NULL
   if (!length(spec$ops)) spec$ops = NULL
-  spec = with_col_order(spec)
+  spec = with_missing(with_col_order(spec))
   json = xfun::tojson(spec)
   out = system2('node', c(shQuote(runner), shQuote(js)), input = json, stdout = TRUE)
   if (!is.null(attr(out, 'status'))) stop('Node.js failed to render the lt table.')

@@ -108,7 +108,7 @@ lt(d) |>
   lt_header("Study Results", "Primary and secondary endpoints") |>
   lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |>
   lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |>
-  lt_sub(~ P_Value, missing = "—") |>
+  lt_sub(~ P_Value, missing = "n/a") |>
   lt_footnote("Two-sided p-value from log-rank test.", "column", ~ P_Value)
 ```
 
@@ -133,7 +133,7 @@ LT.build({
   },
   "ops": [
     { "type": "fmt_number", "columns": ["Estimate", "CI_Lower", "CI_Upper"], "decimals": 3 },
-    { "type": "sub", "columns": ["P_Value"], "missing": "—" }
+    { "type": "sub", "columns": ["P_Value"], "missing": "n/a" }
   ],
   "row_group": ["Group"],
   "header": { "title": "Study Results", "subtitle": "Primary and secondary endpoints" },

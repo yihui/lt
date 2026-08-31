@@ -1,5 +1,6 @@
 # CHANGES IN lt VERSION 0.4
 
+- Missing (`NA`) cells now display an em dash (`—`) by default instead of an empty cell, so they are no longer confused with empty strings. Change the table-wide default with the `lt.missing` global option, e.g., `options(lt.missing = "n/a")`, or set it to `""` to keep `NA` cells blank. `lt_sub(missing =)` still overrides the text for specific columns.
 
 # CHANGES IN lt VERSION 0.3
 

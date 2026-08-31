@@ -61,6 +61,15 @@ Raw values are shown as \code{(value)} after the formatted text, highlighted
 with a light yellow background.
 }
 
+\section{Missing values}{
+
+By default, missing (\code{NA}) cells display an em dash (\verb{—}) so they are not
+confused with empty strings. Change the table-wide default with the
+\code{lt.missing} global option, e.g. \code{options(lt.missing = "n/a")}; set it to
+the empty string (\code{options(lt.missing = "")}) to leave \code{NA} cells blank.
+Use \code{\link[=lt_sub]{lt_sub()}} with \verb{missing =} to override the text for specific columns.
+}
+
 \examples{
 lt(head(mtcars[, 1:4]))
 }

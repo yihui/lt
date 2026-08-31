@@ -19,8 +19,9 @@ lt_sub(
 \item{columns}{Character names, integer positions, a one-sided formula, or
 \code{NULL} for all.}
 
-\item{missing}{Replacement for \code{NA} cells (e.g., \code{"—"}). \code{NULL} to
-leave NAs as empty strings (the default rendering).}
+\item{missing}{Replacement for \code{NA} cells in these columns (e.g.,
+\code{"n/a"}). \code{NULL} (default) leaves them to the table-wide default, which
+is an em dash (\verb{—}); see the \code{lt.missing} global option in \code{\link[=lt]{lt()}}.}
 
 \item{zero}{Replacement for zero values (e.g., \code{"—"}).}
 
@@ -37,5 +38,5 @@ Replace \code{NA}, zero, or small values with display text.
 }
 \examples{
 d = data.frame(x = c(1, 0, NA, 0.001))
-lt(d) |> lt_sub(missing = "—", zero = "—", small = 0.01, small_text = "<0.01")
+lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.01, small_text = "<0.01")
 }
