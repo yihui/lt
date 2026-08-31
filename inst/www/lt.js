@@ -536,7 +536,7 @@
       for (const rs of rowSpans) {
         const span = rs.spans[r - 1], fill = (rs.spans[r - 2] || 0) - 1;
         if (span > 0)
-          out.push(`<th scope="row" class="lt-row-group${span > 1 ? " lt-row-open" : ""}">${escIf(isRaw(rs.col), cell(rs.col, r))}</th>`);
+          out.push(`<th scope="row" class="lt-row-group${span > 1 ? " lt-row-open" : ""}">${escIf(isRaw(rs.col), cell(rs.col, r))}${mark("row_groups", str(data[rs.col][r - 1]))}</th>`);
         else if (fill > 0)
           out.push(`<th class="lt-row-group"${attr("rowspan", fill > 1 ? fill : 0)}></th>`);
       }

@@ -347,6 +347,22 @@ assert("footnote on row groups matches by starts_with", {
   (matches(html, ".*Banana<sup.*") %==% html)
 })
 
+assert("footnote on row groups renders in rowspan mode", {
+  # An array row_group uses rowspan mode; the footnote marker must still
+  # attach to the group label cell (previously only separator-row mode did).
+  html = build(list(
+    data = list(g = c("A", "A", "B"), v = c(1, 2, 3)),
+    row_group = list("g"),
+    footnotes = list(list(
+      text = "fn",
+      location = list(type = "row_groups", match = "exact", values = list("A"))
+    ))
+  ))
+  # Marker on the "A" label cell; "B" has no marker; one footnote in tfoot.
+  (matches(html, '.*class="lt-row-group lt-row-open">A<sup class="lt-fnref".*') %==% "")
+  (matches(html, ".*>B<sup.*") %==% html)
+})
+
 assert("auto_label replaces separators with spaces in column headers", {
   html = build(list(data = list(Sepal.Length = c(5.1), Petal_Width = c(0.2))))
   (matches(html, '.*>Sepal Length</th>.*>Petal Width</th>.*') %==% "")
