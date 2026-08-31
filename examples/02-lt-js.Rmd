@@ -163,6 +163,23 @@ LT.build({
 });
 ```
 
+#### Significant digits
+
+Use `sig_digits` instead of `decimals` to keep a fixed number of significant
+digits, which suits columns spanning several orders of magnitude:
+
+```{js}
+LT.build({
+  data: {
+    Particle: ["Electron", "Proton", "Alpha"],
+    Mass: [0.00054858, 1.00727647, 4.00150618]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Mass"], sig_digits: 3 }
+  ]
+});
+```
+
 #### Percent without multiplication
 
 Use `percent: "%"` when values are already in percent scale (no `*100`):
