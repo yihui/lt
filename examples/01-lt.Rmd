@@ -170,6 +170,23 @@ lt(d) |>
   lt_format(~ Q1 + Q2, decimals = 2)
 ```
 
+#### Significant digits
+
+Instead of fixing the number of decimal places, use `sig_digits` to keep a
+fixed number of significant digits. This is handy when a column spans several
+orders of magnitude, since small and large values each retain the same number
+of meaningful digits:
+
+```{r}
+d3 = data.frame(
+  Particle = c("Electron", "Proton", "Alpha"),
+  Mass = c(0.00054858, 1.00727647, 4.00150618)
+)
+lt(d3) |> lt_format(~ Mass, sig_digits = 3)
+```
+
+`sig_digits` cannot be combined with `decimals`.
+
 #### Big mark (thousands separator)
 
 ```{r}
