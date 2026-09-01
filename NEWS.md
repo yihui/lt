@@ -1,3 +1,6 @@
+# CHANGES IN lt VERSION 0.5
+
+
 # CHANGES IN lt VERSION 0.4
 
 - `lt_format()` gained a `sig_digits` argument to format numbers to a fixed number of significant digits (e.g., `lt_format(x, ~col, sig_digits = 3)`), which is useful for columns spanning several orders of magnitude. It is mutually exclusive with `decimals`.
