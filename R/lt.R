@@ -84,11 +84,25 @@ add_op = function(x, type, ...) {
 
 camel2dash = function(x) gsub('([A-Z])', '-\\L\\1', x, perl = TRUE)
 
-# Resolve a column selection to column names. `cols` may be a one-sided
-# formula (RHS variable names extracted), a character vector, or integer
-# positions (resolved against `names(data)` when `data` is supplied).
+# Resolve a column selection to column names. `cols` may be:
+# - a one-sided formula; if its right-hand side references the pronoun `.`
+#   (the character vector of column names), it is evaluated as a predicate and
+#   a logical result selects the matching names (a character result is used
+#   as-is), e.g. `~ endsWith(., '_time')` or `~ grep('_x$', ., value = TRUE)`;
+#   otherwise the bare variable names on the RHS are taken, e.g. `~ a + b`;
+# - a character vector of column names;
+# - integer positions (resolved against `names(data)` when `data` is supplied).
 f_cols = function(cols, data = NULL) {
-  if (inherits(cols, 'formula')) cols = all.vars(cols[[length(cols)]])
+  if (inherits(cols, 'formula')) {
+    rhs = cols[[length(cols)]]
+    # predicate mode: `.` is bound to the column names
+    if ('.' %in% all.vars(rhs)) {
+      nms = names(data)
+      val = eval(rhs, list(. = nms), environment(cols))
+      return(if (is.logical(val)) nms[val] else val)
+    }
+    cols = all.vars(rhs)
+  }
   if (is.numeric(cols) && !is.null(data)) cols = names(data)[cols]
   cols
 }

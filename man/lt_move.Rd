@@ -10,7 +10,11 @@ lt_move(x, columns, after = NULL)
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{columns}{Columns to select: a character vector of column names,
-integer positions, or a one-sided formula.}
+integer positions, or a one-sided formula. A formula whose right-hand side
+references the pronoun \code{.} (the character vector of column names) is
+evaluated as a predicate, e.g. \code{~ endsWith(., "_time")} selects all columns
+whose names end with \verb{_time}; otherwise the bare names on the right-hand
+side are used, e.g. \code{~ x + y}.}
 
 \item{after}{Column name or integer position after which to place the
 moved columns. Use \code{NULL} to move to the start.}

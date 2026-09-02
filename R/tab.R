@@ -28,7 +28,8 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
 #'   two-sided formula `Label ~ col1 + col2` providing both the label (LHS)
 #'   and columns (RHS). When missing, spanners are inferred from column names.
 #' @param columns Columns to span: character names, integer positions, or a
-#'   one-sided formula. When missing, inferred from column names.
+#'   one-sided formula (predicate formulas such as `~ endsWith(., "_time")` are
+#'   also allowed; see [lt_align()]). When missing, inferred from column names.
 #' @param sep Separator pattern for auto-inference (default `"[._]"`).
 #' @note The columns must be contiguous in the body of the table.
 #' @return `x` with the spanner recorded.
@@ -120,8 +121,9 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
 #' @param where One of `'title'`, `'subtitle'`, `'column'`, `'spanner'`,
 #'   `'group'`, or `'body'`.
 #' @param columns Character names, integer positions, or a one-sided formula
-#'   (for `'column'` or `'body'`). For `'group'` with `match = "starts_with"`,
-#'   a single prefix string.
+#'   (for `'column'` or `'body'`); predicate formulas such as
+#'   `~ endsWith(., "_time")` are also allowed (see [lt_align()]). For
+#'   `'group'` with `match = "starts_with"`, a single prefix string.
 #' @param rows Integer vector of 1-based row indices (for `'body'`; `NULL`
 #'   means all rows).
 #' @param match For `where = "group"`: one of `"exact"` (default),
@@ -201,7 +203,11 @@ lt_note = function(x, text) {
 #'
 #' @param x An [lt()] object.
 #' @param columns Columns to select: a character vector of column names,
-#'   integer positions, or a one-sided formula.
+#'   integer positions, or a one-sided formula. A formula whose right-hand side
+#'   references the pronoun `.` (the character vector of column names) is
+#'   evaluated as a predicate, e.g. `~ endsWith(., "_time")` selects all columns
+#'   whose names end with `_time`; otherwise the bare names on the right-hand
+#'   side are used, e.g. `~ x + y`.
 #' @param align One of `"left"`, `"center"`, or `"right"`.
 #' @return `x` with the alignment recorded.
 #' @export
@@ -338,8 +344,9 @@ lt_label = function(x, ...) {
 #'
 #' @inheritParams lt_align
 #' @param columns Columns whose cells are raw HTML: character names, integer
-#'   positions, or a one-sided formula. If missing, all columns are treated as
-#'   raw HTML.
+#'   positions, or a one-sided formula (predicate formulas such as
+#'   `~ endsWith(., "_time")` are also allowed; see [lt_align()]). If missing,
+#'   all columns are treated as raw HTML.
 #' @return `x` with the raw-HTML columns recorded.
 #' @export
 #' @examples
@@ -359,8 +366,9 @@ lt_html = function(x, columns) {
 #' Replace `NA`, zero, or small values with display text.
 #'
 #' @inheritParams lt_align
-#' @param columns Character names, integer positions, a one-sided formula, or
-#'   `NULL` for all.
+#' @param columns Character names, integer positions, a one-sided formula
+#'   (predicate formulas such as `~ endsWith(., "_time")` are also allowed; see
+#'   [lt_align()]), or `NULL` for all.
 #' @param missing Replacement for `NA` cells in these columns (e.g.,
 #'   `"n/a"`). `NULL` (default) leaves them to the table-wide default, which
 #'   is an em dash (`—`); see the `lt.missing` global option in [lt()].
@@ -404,7 +412,9 @@ lt_indent = function(x, rows, level = 1) {
 #' a pattern. Source columns (all except the first) are hidden by default.
 #'
 #' @inheritParams lt_align
-#' @param columns Character names, integer positions, or a one-sided formula.
+#' @param columns Character names, integer positions, or a one-sided formula
+#'   (predicate formulas such as `~ endsWith(., "_time")` are also allowed; see
+#'   [lt_align()]).
 #'   The first column is the target (receives merged content); the rest are
 #'   sources.
 #' @param pattern A glue-style template using `\{1\}`, `\{2\}`, etc. to refer
@@ -432,8 +442,9 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' values (evaluated in JavaScript).
 #'
 #' @inheritParams lt_align
-#' @param columns Character names, integer positions, a one-sided formula, or
-#'   `NULL` for all.
+#' @param columns Character names, integer positions, a one-sided formula
+#'   (predicate formulas such as `~ endsWith(., "_time")` are also allowed; see
+#'   [lt_align()]), or `NULL` for all.
 #' @param rows Integer vector of 1-based row indices (or `NULL` for all).
 #' @param test A JavaScript function as a string (e.g., `"v => v < 0"`) that
 #'   receives the raw cell value and returns `true` to apply the style. When

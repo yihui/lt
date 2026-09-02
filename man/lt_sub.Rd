@@ -16,8 +16,9 @@ lt_sub(
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character names, integer positions, a one-sided formula, or
-\code{NULL} for all.}
+\item{columns}{Character names, integer positions, a one-sided formula
+(predicate formulas such as \code{~ endsWith(., "_time")} are also allowed; see
+\code{\link[=lt_align]{lt_align()}}), or \code{NULL} for all.}
 
 \item{missing}{Replacement for \code{NA} cells in these columns (e.g.,
 \code{"n/a"}). \code{NULL} (default) leaves them to the table-wide default, which
