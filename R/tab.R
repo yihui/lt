@@ -320,15 +320,24 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #'
 #' @inheritParams lt_align
 #' @param ... Named arguments of the form `col_name = "Display Label"`. Wrap a
-#'   label in [I()] to treat it as raw HTML.
+#'   label in [I()] to treat it as raw HTML. Alternatively, pass a single named
+#'   list or named character vector mapping column names to labels, which is
+#'   convenient when the labels are computed programmatically, e.g.
+#'   `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`.
 #' @return `x` with the column label overrides recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
 #' # raw HTML label (wrap in I())
 #' lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
+#' # a single named list or vector of labels
+#' lt(head(mtcars)) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
 lt_label = function(x, ...) {
-  add_op(x, 'label', labels = list(...))
+  labels = list(...)
+  # allow a single named list/vector of labels instead of named `...`
+  if (length(labels) == 1 && is.null(names(labels)) && !is.null(names(labels[[1]])))
+    labels = as.list(labels[[1]])
+  add_op(x, 'label', labels = labels)
 }
 
 
