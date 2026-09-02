@@ -32,6 +32,18 @@ assert("f_cols() extracts variable names from formula", {
   (f_cols(c("a", "b")) %==% c("a", "b"))
 })
 
+assert("f_cols() resolves a predicate formula against column names", {
+  d = data.frame(asy_time = 1, sim_time = 1, asy_n = 1, sim_prob = 1)
+  # logical predicate selects matching names
+  (f_cols(~ endsWith(., "_time"), d) %==% c("asy_time", "sim_time"))
+  (f_cols(~ startsWith(., "asy"), d) %==% c("asy_time", "asy_n"))
+  (f_cols(~ grepl("_prob$", .), d) %==% "sim_prob")
+  # character result is used as-is
+  (f_cols(~ grep("_time$", ., value = TRUE), d) %==% c("asy_time", "sim_time"))
+  # bare-name formula still works (no `.`)
+  (f_cols(~ asy_time + sim_time, d) %==% c("asy_time", "sim_time"))
+})
+
 assert("camel2dash() converts camelCase to dash-case", {
   (camel2dash(c("borderLeft", "backgroundColor", "color")) %==%
     c("border-left", "background-color", "color"))

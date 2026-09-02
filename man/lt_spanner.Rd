@@ -14,7 +14,8 @@ two-sided formula \code{Label ~ col1 + col2} providing both the label (LHS)
 and columns (RHS). When missing, spanners are inferred from column names.}
 
 \item{columns}{Columns to span: character names, integer positions, or a
-one-sided formula. When missing, inferred from column names.}
+one-sided formula (predicate formulas such as \code{~ endsWith(., "_time")} are
+also allowed; see \code{\link[=lt_align]{lt_align()}}). When missing, inferred from column names.}
 
 \item{sep}{Separator pattern for auto-inference (default \code{"[._]"}).}
 }

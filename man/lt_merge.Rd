@@ -9,7 +9,9 @@ lt_merge(x, columns, pattern = NULL, hide = TRUE)
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character names, integer positions, or a one-sided formula.
+\item{columns}{Character names, integer positions, or a one-sided formula
+(predicate formulas such as \code{~ endsWith(., "_time")} are also allowed; see
+\code{\link[=lt_align]{lt_align()}}).
 The first column is the target (receives merged content); the rest are
 sources.}
 

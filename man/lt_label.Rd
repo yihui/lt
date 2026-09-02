@@ -10,7 +10,10 @@ lt_label(x, ...)
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{...}{Named arguments of the form \code{col_name = "Display Label"}. Wrap a
-label in \code{\link[=I]{I()}} to treat it as raw HTML.}
+label in \code{\link[=I]{I()}} to treat it as raw HTML. Alternatively, pass a single named
+list or named character vector mapping column names to labels, which is
+convenient when the labels are computed programmatically, e.g.
+\code{lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))}.}
 }
 \value{
 \code{x} with the column label overrides recorded.
@@ -22,4 +25,6 @@ Override column headers without modifying the underlying data frame.
 lt(head(mtcars)) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
 # raw HTML label (wrap in I())
 lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
+# a single named list or vector of labels
+lt(head(mtcars)) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
 }

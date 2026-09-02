@@ -1,5 +1,8 @@
 # CHANGES IN lt VERSION 0.5
 
+- Column selection now accepts predicate formulas: a one-sided formula whose right-hand side references the pronoun `.` (the character vector of column names) is evaluated as a predicate, and a logical result selects the matching names, e.g., `lt_spanner(x, "Time", columns = ~ endsWith(., "_time"))` or `lt_format(x, ~ grepl("_prob$", .), decimals = 2)`. A character result (e.g., `~ grep("_x$", ., value = TRUE)`) is used as-is. Bare-name formulas (e.g., `~ a + b`) continue to work unchanged. This applies to all functions that select columns.
+
+- `lt_label()` now also accepts a single named list or named character vector mapping column names to labels (e.g., `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`), which is convenient when labels are computed programmatically. Named arguments (e.g., `lt_label(x, mpg = "Miles/Gallon")`) continue to work.
 
 # CHANGES IN lt VERSION 0.4
 

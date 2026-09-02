@@ -20,8 +20,9 @@ lt_style(
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{Character names, integer positions, a one-sided formula, or
-\code{NULL} for all.}
+\item{columns}{Character names, integer positions, a one-sided formula
+(predicate formulas such as \code{~ endsWith(., "_time")} are also allowed; see
+\code{\link[=lt_align]{lt_align()}}), or \code{NULL} for all.}
 
 \item{rows}{Integer vector of 1-based row indices (or \code{NULL} for all).}
 

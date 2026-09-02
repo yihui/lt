@@ -15,8 +15,9 @@ lt_footnote(x, text, where, columns = NULL, rows = NULL, match = NULL)
 \code{'group'}, or \code{'body'}.}
 
 \item{columns}{Character names, integer positions, or a one-sided formula
-(for \code{'column'} or \code{'body'}). For \code{'group'} with \code{match = "starts_with"},
-a single prefix string.}
+(for \code{'column'} or \code{'body'}); predicate formulas such as
+\code{~ endsWith(., "_time")} are also allowed (see \code{\link[=lt_align]{lt_align()}}). For
+\code{'group'} with \code{match = "starts_with"}, a single prefix string.}
 
 \item{rows}{Integer vector of 1-based row indices (for \code{'body'}; \code{NULL}
 means all rows).}

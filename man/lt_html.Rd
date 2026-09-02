@@ -10,8 +10,9 @@ lt_html(x, columns)
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{columns}{Columns whose cells are raw HTML: character names, integer
-positions, or a one-sided formula. If missing, all columns are treated as
-raw HTML.}
+positions, or a one-sided formula (predicate formulas such as
+\code{~ endsWith(., "_time")} are also allowed; see \code{\link[=lt_align]{lt_align()}}). If missing,
+all columns are treated as raw HTML.}
 }
 \value{
 \code{x} with the raw-HTML columns recorded.

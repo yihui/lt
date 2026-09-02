@@ -181,6 +181,14 @@ assert("lt_label() adds label op", {
   (l$ops %==% list(list(type = "label", labels = list(a = "Alpha", b = "Beta"))))
 })
 
+assert("lt_label() accepts a single named list or vector of labels", {
+  expected = list(list(type = "label", labels = list(a = "Alpha", b = "Beta")))
+  (lt_label(x, list(a = "Alpha", b = "Beta"))$ops %==% expected)
+  (lt_label(x, c(a = "Alpha", b = "Beta"))$ops %==% expected)
+  # named `...` still works and is not treated as a single-list argument
+  (lt_label(x, a = "Alpha", b = "Beta")$ops %==% expected)
+})
+
 assert("lt_html() marks columns as raw HTML", {
   h = lt_html(x, ~ a + b)
   (h$html_cols %==% I(c("a", "b")))
