@@ -352,8 +352,16 @@
     // Styles: the style ops are consumed directly (css/class/columns/rows/test).
     const styles = ops.filter(op => op.type === "style");
 
-    // Auto-spanners: split column names on separator, group contiguous prefixes
-    let spanners = spec.spanners || [];
+    // Explicit spanners: reorder each spanner's columns to match the final
+    // (post-move) body order, so a spanner is recorded/rendered correctly
+    // regardless of the order in which its columns were listed. A spanner is
+    // matched to the visual position of its first column and then spans the
+    // next columns.length cells, so a first column that is not the leftmost in
+    // `visible` would otherwise misalign the header row.
+    let spanners = (spec.spanners || []).map(sp => {
+      const cols = sp.columns.slice().sort((a, b) => visible.indexOf(a) - visible.indexOf(b));
+      return { ...sp, columns: cols };
+    });
     if (spec.auto_span) {
       const sep = typeof spec.auto_span === "string" ? new RegExp(spec.auto_span) : /[._]/;
       spanners = [...spanners];
