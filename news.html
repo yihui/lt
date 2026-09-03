@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.11.2">
+<meta name="generator" content="litedown 0.11.3">
 <title>News</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.72/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.72/css/article.min.css">
@@ -32,6 +32,17 @@
 </ul>
 </div>
 <h2 id="sec:lt-0-5" class="unnumbered">lt 0.5</h2>
+<ul>
+<li>
+<p>Column selection now accepts predicate formulas: a one-sided formula whose right-hand side references the pronoun <code>.</code> (the character vector of column names) is evaluated as a predicate, and a logical result selects the matching names, e.g., <code>lt_spanner(x, &quot;Time&quot;, columns = ~ endsWith(., &quot;_time&quot;))</code> or <code>lt_format(x, ~ grepl(&quot;_prob$&quot;, .), decimals = 2)</code>. A character result (e.g., <code>~ grep(&quot;_x$&quot;, ., value = TRUE)</code>) is used as-is. Bare-name formulas (e.g., <code>~ a + b</code>) continue to work unchanged. This applies to all functions that select columns.</p>
+</li>
+<li>
+<p><code>lt_label()</code> now also accepts a single named list or named character vector mapping column names to labels (e.g., <code>lt_label(x, c(mpg = &quot;Miles/Gallon&quot;, cyl = &quot;Cylinders&quot;))</code>), which is convenient when labels are computed programmatically. Named arguments (e.g., <code>lt_label(x, mpg = &quot;Miles/Gallon&quot;)</code>) continue to work.</p>
+</li>
+<li>
+<p><code>lt_spanner()</code> no longer requires its <code>columns</code> to be listed in the table’s visual (left-to-right) order. The columns of an explicit spanner are now reordered to match the final body order (after any <code>lt_move()</code>) before rendering, so a spanner is drawn correctly regardless of the order in which its columns were listed. This also makes predicate selectors (e.g., <code>columns = ~ endsWith(., &quot;_time&quot;)</code>) safe to use for spanners. The columns must still be contiguous in the table body.</p>
+</li>
+</ul>
 <h2 id="sec:lt-0-4" class="unnumbered">lt 0.4</h2>
 <ul>
 <li>
@@ -66,7 +77,7 @@
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.2</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.3</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.72/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.72/js/appendix.min.js" defer></script>

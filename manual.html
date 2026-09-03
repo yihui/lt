@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.11.2">
+<meta name="generator" content="litedown 0.11.3">
 <title>Help pages</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.72/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.72/css/article.min.css">
@@ -283,7 +283,11 @@ numeric columns are right-aligned and character columns are left-aligned.
 <tr><td><code>columns</code></td>
 <td>
 <p>Columns to select: a character vector of column names,
-integer positions, or a one-sided formula.</p>
+integer positions, or a one-sided formula. A formula whose right-hand side
+references the pronoun <code>.</code> (the character vector of column names) is
+evaluated as a predicate, e.g. <code>~ endsWith(., "_time")</code> selects all columns
+whose names end with <code>_time</code>; otherwise the bare names on the right-hand
+side are used, e.g. <code>~ x + y</code>.</p>
 </td></tr>
 <tr><td><code>align</code></td>
 <td>
@@ -349,7 +353,11 @@ The underlying data should be Date or POSIXt in R (serialized as
 <tr><td><code>columns</code></td>
 <td>
 <p>Columns to select: a character vector of column names,
-integer positions, or a one-sided formula.</p>
+integer positions, or a one-sided formula. A formula whose right-hand side
+references the pronoun <code>.</code> (the character vector of column names) is
+evaluated as a predicate, e.g. <code>~ endsWith(., "_time")</code> selects all columns
+whose names end with <code>_time</code>; otherwise the bare names on the right-hand
+side are used, e.g. <code>~ x + y</code>.</p>
 </td></tr>
 <tr><td><code>method</code></td>
 <td>
@@ -511,7 +519,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/df/djsxfhc17x95674wsm_g8s980000gn/T//RtmpZcbcWN/filec4368b3b35b.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/df/djsxfhc17x95674wsm_g8s980000gn/T//RtmpqfS3mn/filec35685c5c70.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -625,7 +633,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/df/djsxfhc17x95674wsm_g8s980000gn/T//RtmpZcbcWN/filec4321fe30f5.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/df/djsxfhc17x95674wsm_g8s980000gn/T//RtmpqfS3mn/filec356750a13d.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -654,8 +662,9 @@ automatically in the order they are added (de-duplicated by text).
 <tr><td><code>columns</code></td>
 <td>
 <p>Character names, integer positions, or a one-sided formula
-(for <code>'column'</code> or <code>'body'</code>). For <code>'group'</code> with <code>match = "starts_with"</code>,
-a single prefix string.</p>
+(for <code>'column'</code> or <code>'body'</code>); predicate formulas such as
+<code>~ endsWith(., "_time")</code> are also allowed (see <code><a href="#sec:man-lt-align">lt_align()</a></code>). For
+<code>'group'</code> with <code>match = "starts_with"</code>, a single prefix string.</p>
 </td></tr>
 <tr><td><code>rows</code></td>
 <td>
@@ -723,7 +732,11 @@ for a column without otherwise changing its display, call <code>lt_format(x, ~co
 <tr><td><code>columns</code></td>
 <td>
 <p>Columns to select: a character vector of column names,
-integer positions, or a one-sided formula.</p>
+integer positions, or a one-sided formula. A formula whose right-hand side
+references the pronoun <code>.</code> (the character vector of column names) is
+evaluated as a predicate, e.g. <code>~ endsWith(., "_time")</code> selects all columns
+whose names end with <code>_time</code>; otherwise the bare names on the right-hand
+side are used, e.g. <code>~ x + y</code>.</p>
 </td></tr>
 <tr><td><code>decimals</code></td>
 <td>
@@ -866,8 +879,9 @@ in a column's cells.
 <tr><td><code>columns</code></td>
 <td>
 <p>Columns whose cells are raw HTML: character names, integer
-positions, or a one-sided formula. If missing, all columns are treated as
-raw HTML.</p>
+positions, or a one-sided formula (predicate formulas such as
+<code>~ endsWith(., "_time")</code> are also allowed; see <code><a href="#sec:man-lt-align">lt_align()</a></code>). If missing,
+all columns are treated as raw HTML.</p>
 </td></tr>
 </table>
 <h3 id="sec:details_2" class="unnumbered unlisted">Details</h3>
@@ -927,7 +941,10 @@ lt(d) |&gt; lt_indent(2:3)
 <tr><td><code>...</code></td>
 <td>
 <p>Named arguments of the form <code>col_name = "Display Label"</code>. Wrap a
-label in <code><a href="https://rdrr.io/r/base/AsIs.html">I()</a></code> to treat it as raw HTML.</p>
+label in <code><a href="https://rdrr.io/r/base/AsIs.html">I()</a></code> to treat it as raw HTML. Alternatively, pass a single named
+list or named character vector mapping column names to labels, which is
+convenient when the labels are computed programmatically, e.g.
+<code>lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))</code>.</p>
 </td></tr>
 </table>
 <h3 id="sec:value_13" class="unnumbered unlisted">Value</h3>
@@ -937,6 +954,8 @@ label in <code><a href="https://rdrr.io/r/base/AsIs.html">I()</a></code> to trea
 <pre><code class="language-r">lt(head(mtcars)) |&gt; lt_label(mpg = &quot;Miles/Gallon&quot;, cyl = &quot;Cylinders&quot;)
 # raw HTML label (wrap in I())
 lt(head(mtcars)) |&gt; lt_label(mpg = I(&quot;Miles/Gallon&lt;sup&gt;*&lt;/sup&gt;&quot;))
+# a single named list or vector of labels
+lt(head(mtcars)) |&gt; lt_label(c(mpg = &quot;Miles/Gallon&quot;, cyl = &quot;Cylinders&quot;))
 </code></pre>
 <h2 id="sec:man-lt_merge"><span class="section-number main-number">15</span> Merge Columns</h2>
 <h3 id="sec:description_15" class="unnumbered unlisted">Description</h3>
@@ -953,7 +972,9 @@ a pattern. Source columns (all except the first) are hidden by default.
 </td></tr>
 <tr><td><code>columns</code></td>
 <td>
-<p>Character names, integer positions, or a one-sided formula.
+<p>Character names, integer positions, or a one-sided formula
+(predicate formulas such as <code>~ endsWith(., "_time")</code> are also allowed; see
+<code><a href="#sec:man-lt-align">lt_align()</a></code>).
 The first column is the target (receives merged content); the rest are
 sources.</p>
 </td></tr>
@@ -993,7 +1014,11 @@ lt(d) |&gt; lt_merge(~ value + ci, pattern = &quot;{1} {2}&quot;)
 <tr><td><code>columns</code></td>
 <td>
 <p>Columns to select: a character vector of column names,
-integer positions, or a one-sided formula.</p>
+integer positions, or a one-sided formula. A formula whose right-hand side
+references the pronoun <code>.</code> (the character vector of column names) is
+evaluated as a predicate, e.g. <code>~ endsWith(., "_time")</code> selects all columns
+whose names end with <code>_time</code>; otherwise the bare names on the right-hand
+side are used, e.g. <code>~ x + y</code>.</p>
 </td></tr>
 <tr><td><code>after</code></td>
 <td>
@@ -1100,7 +1125,8 @@ and columns (RHS). When missing, spanners are inferred from column names.</p>
 <tr><td><code>columns</code></td>
 <td>
 <p>Columns to span: character names, integer positions, or a
-one-sided formula. When missing, inferred from column names.</p>
+one-sided formula (predicate formulas such as <code>~ endsWith(., "_time")</code> are
+also allowed; see <code><a href="#sec:man-lt-align">lt_align()</a></code>). When missing, inferred from column names.</p>
 </td></tr>
 <tr><td><code>sep</code></td>
 <td>
@@ -1155,8 +1181,9 @@ values (evaluated in JavaScript).
 </td></tr>
 <tr><td><code>columns</code></td>
 <td>
-<p>Character names, integer positions, a one-sided formula, or
-<code>NULL</code> for all.</p>
+<p>Character names, integer positions, a one-sided formula
+(predicate formulas such as <code>~ endsWith(., "_time")</code> are also allowed; see
+<code><a href="#sec:man-lt-align">lt_align()</a></code>), or <code>NULL</code> for all.</p>
 </td></tr>
 <tr><td><code>rows</code></td>
 <td>
@@ -1228,8 +1255,9 @@ tbl |&gt;
 </td></tr>
 <tr><td><code>columns</code></td>
 <td>
-<p>Character names, integer positions, a one-sided formula, or
-<code>NULL</code> for all.</p>
+<p>Character names, integer positions, a one-sided formula
+(predicate formulas such as <code>~ endsWith(., "_time")</code> are also allowed; see
+<code><a href="#sec:man-lt-align">lt_align()</a></code>), or <code>NULL</code> for all.</p>
 </td></tr>
 <tr><td><code>missing</code></td>
 <td>
@@ -1314,7 +1342,7 @@ print(x, ...)</code></pre>
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.2</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.3</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.72/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.72/js/appendix.min.js" defer></script>
