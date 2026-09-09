@@ -6,6 +6,8 @@
 
 - `lt_spanner()` no longer requires its `columns` to be listed in the table's visual (left-to-right) order. The columns of an explicit spanner are now reordered to match the final body order (after any `lt_move()`) before rendering, so a spanner is drawn correctly regardless of the order in which its columns were listed. This also makes predicate selectors (e.g., `columns = ~ endsWith(., "_time")`) safe to use for spanners. The columns must still be contiguous in the table body.
 
+- `lt_export()` no longer spills a cropped PDF onto a second page (holding a repeated header and the footnotes) when the rendered height of the table is fractional, e.g., with two footnote rows. The measured height is now rounded up by 1px, as the width already was.
+
 # CHANGES IN lt VERSION 0.4
 
 - `lt_format()` gained a `sig_digits` argument to format numbers to a fixed number of significant digits (e.g., `lt_format(x, ~col, sig_digits = 3)`), which is useful for columns spanning several orders of magnitude. It is mutually exclusive with `decimals`.
