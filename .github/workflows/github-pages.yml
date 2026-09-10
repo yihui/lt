@@ -36,7 +36,10 @@ jobs:
           name: site-preview
           path: 'site'
 
-      - if: github.event_name == 'pull_request'
+      # Skipped for PRs from forks: their GITHUB_TOKEN is read-only, so
+      # createCommitStatus() returns 403 and fails the job even though the
+      # build and artifact upload above succeeded.
+      - if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@HEAD
         with:
           script: |
