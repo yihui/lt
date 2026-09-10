@@ -356,6 +356,13 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
   # PDF onto a second page (platform-dependent: seen on macOS, not Linux). Add
   # 1px so the body is never narrower than the content and never re-wraps.
   d[1L] = d[1L] + 1L
+  # scrollHeight is rounded to an integer, and the 0.85em footer text gives the
+  # body a fractional height (e.g., 316.39px with two footnote rows, rounded
+  # down to 316). A page box of exactly scrollHeight px then overflows by a
+  # sub-pixel, and Chromium starts a second page holding the repeated <thead>
+  # and the <tfoot> (also seen on macOS). Add 1px so the page is never
+  # shorter than the content.
+  d[2L] = d[2L] + 1L
   d
 }
 

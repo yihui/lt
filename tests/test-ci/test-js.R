@@ -482,6 +482,22 @@ if (has_browser()) assert("lt_export() crops a wide table to one PDF page", {
   (pdf_pages(pdf) %==% 1L)
 })
 
+# A table whose rendered height is fractional must crop to one page too.
+# scrollHeight is rounded to an integer, and the 0.85em footer text makes the
+# body a fraction of a pixel taller than that (e.g., 316.39px with two footnote
+# rows), so a page box of exactly scrollHeight px overflowed and Chromium added
+# a second page holding the repeated <thead> and the <tfoot> (seen on macOS).
+# lt_measure() now rounds the height up by 1px as well.
+if (has_browser()) assert("lt_export() crops a table with a fractional height to one PDF page", {
+  x = lt(head(mtcars)) |>
+    lt_footnote("Source: 1974 Motor Trend US magazine.", "title") |>
+    lt_footnote("Miles per gallon.", "column", "mpg")
+  pdf = tempfile(fileext = ".pdf")
+  on.exit(unlink(pdf), add = TRUE)
+  lt_export(x, pdf)
+  (pdf_pages(pdf) %==% 1L)
+})
+
 if (has_browser() && xfun::loadable("magick"))
   assert("lt_export() crops PNG tightly to the table size", {
     x = lt(head(mtcars))
