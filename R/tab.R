@@ -587,8 +587,9 @@ lt_css = function(x, ...) {
   x
 }
 
-# A URL or an existing file is used as-is. A bare filename that is not in the
-# working directory is resolved against lt's bundled stylesheets.
+# A URL or an existing file is used as-is (a relative path is kept relative, so
+# it stays portable). A bare filename that is not in the working directory is
+# resolved against lt's bundled stylesheets.
 resolve_css = function(p) {
   if (is_url(p) || file.exists(p)) return(p)
   if (basename(p) == p) {

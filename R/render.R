@@ -409,7 +409,11 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #'   `c(vertical, horizontal)`.
 #' @param browser Path to the Chromium-based browser; passed to
 #'   [xfun::browser_print()]. `NULL` (default) auto-detects.
-#' @param ... Passed to [xfun::browser_print()] for PDF/PNG output.
+#' @param ... Passed to [xfun::browser_print()] for PDF/PNG output. To add
+#'   extra Chromium flags via its `args`, keep `"default"` in the vector (e.g.
+#'   `args = c("default", "--force-device-scale-factor=2")`); `"default"` is
+#'   what makes `browser_print()` add the headless and print flags, so dropping
+#'   it opens the file in a desktop browser and writes nothing.
 #' @return The `output` path, or (when `output` is `NA`) the HTML as a string.
 #' @section Global option:
 #' When the option `lt.lt_static` is set to a list of arguments (e.g.,
@@ -453,6 +457,13 @@ lt_export = function(
     xfun::write_utf8(html, output)
     return(output)
   }
+  # PDF/PNG are rendered from a temporary directory (with_temp_html), so a
+  # relative user-CSS href would not resolve there. Absolutize existing local
+  # files for this render only; x$css itself stays as the user gave it, keeping
+  # HTML output portable.
+  if (length(p <- x$css) && any(i <- file.exists(p)))
+    x$css[i] = xfun::normalize_path(p[i])
+
   html = format(x, fragment = FALSE)
   is_pdf = tolower(xfun::file_ext(output)) == 'pdf'
   # PNG cropping needs magick to trim Chromium's screenshot (its --screenshot
