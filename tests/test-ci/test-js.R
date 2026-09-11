@@ -511,6 +511,24 @@ if (has_browser() && xfun::loadable("magick"))
     (info$height %==% d[2L])
   })
 
+# A relative user-CSS path must still apply when lt_export() renders from its
+# temporary directory: lt_export() absolutizes existing local files for the
+# render, so a stylesheet given as a bare relative name is not silently dropped.
+if (has_browser() && xfun::loadable("magick"))
+  assert("lt_export() applies a relative user-CSS path", {
+    d = tempfile(); dir.create(d)
+    on.exit(unlink(d, recursive = TRUE), add = TRUE)
+    writeLines(".lt-table td { background: #ff0000 }", file.path(d, "red.css"))
+    owd = setwd(d); on.exit(setwd(owd), add = TRUE)
+    x = lt(data.frame(a = 1:2)) |> lt_css("red.css")
+    png = tempfile(fileext = ".png")
+    on.exit(unlink(png), add = TRUE)
+    lt_export(x, png)
+    # the styled cells make the cropped image predominantly red
+    hist = magick::image_data(magick::image_read(png), "rgba")
+    (any(hist[1L, , ] == as.raw(0xff) & hist[2L, , ] == as.raw(0x00)))
+  })
+
 # An explicit width overrides the measured width for both PDF and PNG,
 # regardless of crop.
 if (has_browser() && xfun::loadable("magick"))

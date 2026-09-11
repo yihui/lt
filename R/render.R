@@ -71,16 +71,6 @@ user_css_block = function(paths, local = FALSE) {
   unlist(lapply(paths, user_css_tag, local = local))
 }
 
-# Make user-CSS paths absolute if they point to existing local files, so they
-# still resolve when the page is rendered from another working directory (e.g.
-# lt_export()'s temp dir). URLs and unresolved names (file.exists() is FALSE)
-# are left untouched.
-abs_css = function(p) {
-  i = file.exists(p)
-  p[i] = xfun::normalize_path(p[i])
-  p
-}
-
 rules_block = function(rules) {
   if (length(rules)) c('<style>.lt-table {', rules, '}</style>')
 }
@@ -421,9 +411,9 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #'   [xfun::browser_print()]. `NULL` (default) auto-detects.
 #' @param ... Passed to [xfun::browser_print()] for PDF/PNG output. To add
 #'   extra Chromium flags via its `args`, keep `"default"` in the vector (e.g.
-#'   `args = c("default", "--no-pdf-header-footer")`); `"default"` is what makes
-#'   `browser_print()` add the headless and print flags, so dropping it opens
-#'   the file in a desktop browser and writes nothing.
+#'   `args = c("default", "--force-device-scale-factor=2")`); `"default"` is
+#'   what makes `browser_print()` add the headless and print flags, so dropping
+#'   it opens the file in a desktop browser and writes nothing.
 #' @return The `output` path, or (when `output` is `NA`) the HTML as a string.
 #' @section Global option:
 #' When the option `lt.lt_static` is set to a list of arguments (e.g.,
@@ -471,7 +461,9 @@ lt_export = function(
   # relative user-CSS href would not resolve there. Absolutize existing local
   # files for this render only; x$css itself stays as the user gave it, keeping
   # HTML output portable.
-  x$css = abs_css(x$css)
+  if (length(p <- x$css) && any(i <- file.exists(p)))
+    x$css[i] = xfun::normalize_path(p[i])
+
   html = format(x, fragment = FALSE)
   is_pdf = tolower(xfun::file_ext(output)) == 'pdf'
   # PNG cropping needs magick to trim Chromium's screenshot (its --screenshot
