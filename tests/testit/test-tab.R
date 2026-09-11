@@ -322,7 +322,7 @@ assert("lt_css() resolves bundled stylesheets", {
   (file.exists(c1$css[1]))
 })
 
-assert("lt_css() handles absolute and URL paths", {
+assert("lt_css() handles absolute, relative, and URL paths", {
   tmp = tempfile(fileext = ".css")
   writeLines("td{}", tmp)
   c1 = lt_css(x, tmp)
@@ -330,5 +330,10 @@ assert("lt_css() handles absolute and URL paths", {
   unlink(tmp)
   c2 = lt_css(x, "https://example.com/theme.css")
   (c2$css %==% "https://example.com/theme.css")
+  # a relative path to an existing file is kept relative (portable)
+  d = tempfile(); dir.create(d)
+  writeLines("td{}", file.path(d, "times.css"))
+  owd = setwd(d); on.exit({setwd(owd); unlink(d, recursive = TRUE)})
+  (lt_css(x, "times.css")$css %==% "times.css")
 })
 

@@ -57,7 +57,11 @@ cropping. A single value (all sides) or a length-two vector
 \item{browser}{Path to the Chromium-based browser; passed to
 \code{\link[xfun:browser_print]{xfun::browser_print()}}. \code{NULL} (default) auto-detects.}
 
-\item{...}{Passed to \code{\link[xfun:browser_print]{xfun::browser_print()}} for PDF/PNG output.}
+\item{...}{Passed to \code{\link[xfun:browser_print]{xfun::browser_print()}} for PDF/PNG output. To add
+extra Chromium flags via its \code{args}, keep \code{"default"} in the vector (e.g.
+\code{args = c("default", "--no-pdf-header-footer")}); \code{"default"} is what makes
+\code{browser_print()} add the headless and print flags, so dropping it opens
+the file in a desktop browser and writes nothing.}
 }
 \value{
 The \code{output} path, or (when \code{output} is \code{NA}) the HTML as a string.

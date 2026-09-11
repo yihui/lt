@@ -115,3 +115,16 @@ assert("tidy_html() indents block tags and keeps rows on one line", {
   (lines[length(lines) - 1] %==% '  </table>')
   (lines[length(lines)] %==% '</div>')
 })
+
+assert("abs_css() absolutizes existing local paths, vectorized", {
+  d = tempfile(); dir.create(d)
+  writeLines("td{}", file.path(d, "t.css"))
+  owd = setwd(d); on.exit({setwd(owd); unlink(d, recursive = TRUE)})
+  # URLs and nonexistent names pass through; the existing relative file becomes
+  # absolute (so it resolves from lt_export()'s temp dir)
+  r = abs_css(c("https://example.com/x.css", "missing.css", "t.css"))
+  (r[1] %==% "https://example.com/x.css")
+  (r[2] %==% "missing.css")
+  (xfun::is_abs_path(r[3]))
+  (file.exists(r[3]))
+})
