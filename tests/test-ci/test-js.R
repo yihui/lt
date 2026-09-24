@@ -269,6 +269,20 @@ assert("auto-format picks decimals from value width", {
   (matches(html, ".*>1 235</td>.*>10 000</td>.*") %==% "")
 })
 
+assert("_viewRows sets tbody row order and subset", {
+  # The interactive plugin's core seam: <tbody> iterates the given 1-based
+  # original row indices (order + subset) instead of all rows.
+  html = build(list(data = list(x = c(10, 20, 30)), `_viewRows` = c(3L, 1L)))
+  (matches(html, ".*>30</td>.*>10</td>.*") %==% "")
+  (grepl(">20<", html) %==% FALSE)
+  # row-indexed styles stay keyed to the original index after reordering
+  html = build(list(
+    data = list(x = c(10, 20, 30)), `_viewRows` = c(3L, 1L),
+    ops = list(list(type = "style", columns = list("x"), rows = list(3L), class = "hot"))
+  ))
+  (matches(html, '.*class="al-r hot">30</td>.*>10</td>.*') %==% "")
+})
+
 assert("auto_format = FALSE leaves numbers untouched", {
   html = build(list(data = list(x = c(1.23456, 2.34567)), auto_format = FALSE))
   (matches(html, ".*>1\\.23456</td>.*>2\\.34567</td>.*") %==% "")

@@ -577,7 +577,11 @@
       out.push(`</tr>`);
     };
 
-    // <tbody>
+    // <tbody>. An optional `spec._viewRows` (1-based original row indices) sets
+    // the order/subset of rows for the flat case — the seam the interactive
+    // plugin uses to sort/filter without re-implementing row rendering. Absent
+    // ⇒ all rows in original order (the default). Row-indexed styles/footnotes/
+    // indent stay correct because they remain keyed to the original indices.
     out.push(`<tbody>`);
     if (groups.length) {
       const seen = {};
@@ -586,6 +590,8 @@
         for (const r of g.rows) { seen[r] = 1; pushRow(r); }
       }
       for (let r = 1; r <= nRow; r++) if (!seen[r]) pushRow(r);
+    } else if (spec._viewRows) {
+      for (const r of spec._viewRows) pushRow(r);
     } else {
       for (let r = 1; r <= nRow; r++) pushRow(r);
     }
@@ -601,20 +607,61 @@
     }
 
     out.push(`</table>`);
+    // Expose the resolved visible column order (after hide/move) so plugins can
+    // sort/filter without re-deriving it. Set as a side effect, never read by
+    // core; harmless for the static/Node render path.
+    spec._cols = cols;
     // Wrap in a div so a wide table can scroll horizontally (`overflow-x`)
     // instead of overflowing the page.
     return `<div class="lt-wrap">${out.join("")}</div>`;
   }
 
-  const mount = (s, spec) => {
-    s.insertAdjacentHTML("afterend", buildHtml(spec));
-    const tbl = s.nextElementSibling.querySelector("table"),
-          raw = (e, el) => e.altKey && el.classList.toggle("lt-raw");
+  // Plugin hook registry, prism.js-style: an extension (e.g. lt-interactive.js)
+  // registers with hooks.add and attaches its public handle under LT.plugins.
+  // Core fires the 'mounted' hook after building each table so a loaded plugin
+  // can enhance it; with no plugin registered this iterates an empty list.
+  const hooks = root.LT?.hooks || {
+    all: {},
+    add(name, fn) { (this.all[name] ||= []).push(fn); },
+    run(name, env) { (this.all[name] || []).forEach(fn => fn(env)); },
+  };
+  const plugins = root.LT?.plugins || {};
+
+  // Alt-click toggles raw values in this table; alt-dblclick toggles page-wide.
+  const wireRaw = tbl => {
+    const raw = (e, el) => e.altKey && el.classList.toggle("lt-raw");
     tbl.onclick = e => e.detail === 1 && raw(e, tbl);
     tbl.ondblclick = e => raw(e, tbl.ownerDocument.documentElement);
+  };
+  // Wire behaviors and fire 'mounted' for a just-built table. The spec is
+  // stashed on the element so a plugin loaded *after* the table mounted (the
+  // usual case — the extension loads after core drains the queue) can still
+  // find and enhance it by scanning `.lt-table` on load.
+  const ready = (tbl, spec, container) => {
+    tbl._ltSpec = spec;
+    wireRaw(tbl);
+    hooks.run("mounted", { el: tbl, spec, container });
+  };
+
+  const mount = (s, spec) => {
+    s.insertAdjacentHTML("afterend", buildHtml(spec));
+    const container = s.nextElementSibling;
+    ready(container.querySelector("table"), spec, container);
+  };
+  // Imperative render: build `spec` into `container`. For lazy/on-demand tables
+  // rendered long after page load (e.g. drill-downs), where the queue-replay
+  // path does not apply. Returns the table element.
+  const render = (container, spec) => {
+    container.innerHTML = buildHtml(spec);
+    const tbl = container.querySelector("table");
+    ready(tbl, spec, container);
+    return tbl;
   };
   // q.push renders immediately; replay any entries queued before we loaded.
   const q = { push: e => mount(e.s, e.d) };
   (root.LT?.q || []).forEach(q.push);
-  root.LT = { build: spec => mount(document.currentScript, spec), buildHtml, q };
+  root.LT = {
+    build: spec => mount(document.currentScript, spec),
+    buildHtml, render, hooks, plugins, q,
+  };
 })(window);

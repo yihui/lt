@@ -1,0 +1,37 @@
+/* lt-interactive.css — controls for lt-interactive.js (search box, sortable
+ * headers). Classes are namespaced `lti-*` to avoid clashing with core `lt-*`.
+ * Only properties that change a default are declared. */
+
+.lti-toolbar {
+  margin: 0 0 0.4em;
+}
+
+/* Search: a magnifier glyph adorning a borderless input inside a framed box
+ * (no placeholder text — the glyph carries the meaning). */
+.lti-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.1em 0.5em;
+}
+.lti-search input {
+  border: 0;
+  font: inherit;
+  background: transparent;
+}
+
+.lti-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.lti-sort {
+  margin-left: 0.3em;
+  font-size: 0.8em;
+}
+
+.lti-empty td {
+  text-align: center;
+  color: #888;
+}
