@@ -35,11 +35,12 @@ recursive dependencies (base64enc, cli, dplyr, htmltools, V8, ...), whereas
 **lt** depends only on **xfun**. The output is styled to look like **gt** by
 default, so in most cases you only need to translate the function calls.
 
-The mapping and notes below distill the practical experience of two real
+The mapping and notes below distill the practical experience of three real
 migrations:
 
--   Merck/gsDesign2 [#629](https://github.com/Merck/gsDesign2/pull/629)
--   keaven/gsDesign [#282](https://github.com/keaven/gsDesign/pull/282)
+-   [Merck/gsDesign2#629](https://github.com/Merck/gsDesign2/pull/629)
+-   [keaven/gsDesign#282](https://github.com/keaven/gsDesign/pull/282)
+-   [keaven/gsDesignNB#48](https://github.com/keaven/gsDesignNB/pull/48)
 
 ## Function mapping
 
@@ -89,6 +90,18 @@ label, or footnote, wrap it in `I()`:
 lt_label(theta = I("Underlying<br>response rate"))
 ```
 
+`I()` is also the answer to **gt**'s `md()`. **gt** lets you wrap a title or
+label in `md("**bold**")` to render Markdown; **lt** has no Markdown-in-labels
+equivalent. Pass plain text (the common case — `md("**Power**")` becomes
+`"Power"`), or, if you truly need formatting, use `I()` with raw HTML:
+`I("<b>Power</b>")`.
+
+Two `lt_sub()` defaults are worth knowing before you translate a `sub_*()` call:
+missing values already render as an em dash (`—`) and there is nothing special
+done to zeros or small values. So a `sub_missing(missing_text = "—")` in **gt**
+is usually just noise in **lt** — drop it unless you want a *different*
+placeholder.
+
 **Layout and styling**
 
 | gt | lt |
@@ -112,7 +125,7 @@ lt_label(theta = I("Underlying<br>response rate"))
 ## Notable differences from gt
 
 A few places where **lt** works differently enough from **gt** to be worth
-spelling out, drawn from porting **gsDesign2** and **gsDesign**.
+spelling out, drawn from porting **gsDesign2**, **gsDesign**, and **gsDesignNB**.
 
 ### Column selection: strings or positions, not tidy-select
 
@@ -140,6 +153,24 @@ same as `label = "Bounds", columns = c("alt", "null")`. It relies only on base
 R's formula, no NSE machinery — the names stay unevaluated symbols you can read
 off directly. Non-syntactic names work too, quoted in backticks:
 `` Bounds ~ `Alternate hypothesis` + `Null hypothesis` ``.
+
+The formula also does duty for tidy-select *predicates*. In `lt_format()`,
+`lt_align()`, etc. a **one-sided** formula whose right side is a logical
+expression selects columns for which it is `TRUE`, with `.` bound to the vector
+of column names. So **gt**'s "all columns but one" idiom translates cleanly:
+
+``` r
+# gt: format every numeric column
+fmt_number(columns = where(is.numeric), decimals = 4)
+# lt: select by name, not by type
+lt_format(~ . != "Metric", decimals = 4)   # every column except Metric
+```
+
+Note the difference in what's being tested: `where(is.numeric)` inspects each
+column's *values* (its type), whereas the **lt** formula sees only the column
+*names* in `.`. There is no name-based way to say "the numeric ones", so pick
+out the columns you don't want to format by name (often the single label column)
+and negate, or list the ones you do.
 
 ### Footnotes vs. source notes are two different functions
 
@@ -187,6 +218,34 @@ column only, so multi-column grouping always renders as rowspan. This is a real
 difference from **gt**, which has only one level of row groups: `groupname_col`
 takes a single column, and multiple grouping variables are flattened into one
 combined label (joined by `row_group.sep`, default `" - "`) rather than nested.
+
+**Groups from row conditions, and controlling their order.** **gt** can define
+groups on the fly from row predicates — a `tab_row_group(label=, rows=<cond>)`
+per group — then set their order with `row_group_order()`. **lt** has no
+predicate form: it groups only by the value of an existing column. So the port
+is to *materialize that column first*. Build a factor whose levels are the group
+order you want (e.g. with `data.table::fcase()` or nested `ifelse()`), sort the
+data by it, and group on it with `sort = FALSE` so **lt** keeps your row order
+instead of re-sorting the labels alphabetically:
+
+``` r
+# gt: groups defined by conditions, ordered explicitly
+tab_row_group(label = "Power",  rows = Metric == "Power") |>
+tab_row_group(label = "Events", rows = grepl("Events", Metric)) |>
+row_group_order(groups = c("Events", "Power"))
+
+# lt: derive an ordered factor column, then group by it
+df$Group = factor(
+  ifelse(df$Metric == "Power", "Power", grepl("Events", df$Metric), "Events"),
+  levels = c("Events", "Power")          # desired group order
+)
+df = df[order(df$Group), ]
+lt(df) |> lt_group(~ Group, sep = TRUE, sort = FALSE)
+```
+
+`sort = FALSE` is the key: by default `lt_group()` sorts rows by the grouping
+value, which would discard the factor order you set. With it off, groups appear
+in first-seen row order — i.e. the factor-level order you sorted into.
 
 ### Extend `lt()` with S3 methods, don't reinvent a generic
 

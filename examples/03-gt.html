@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.11.3">
+<meta name="generator" content="litedown 0.11.4">
 <title>Migrating from gt to lt</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/article.min.css">
@@ -59,11 +59,12 @@ deliberately less.</p>
 recursive dependencies (base64enc, cli, dplyr, htmltools, V8, …), whereas
 <strong>lt</strong> depends only on <strong>xfun</strong>. The output is styled to look like <strong>gt</strong> by
 default, so in most cases you only need to translate the function calls.</p>
-<p>The mapping and notes below distill the practical experience of two real
+<p>The mapping and notes below distill the practical experience of three real
 migrations:</p>
 <ul>
-<li>Merck/gsDesign2 <a href="https://github.com/Merck/gsDesign2/pull/629">#629</a></li>
-<li>keaven/gsDesign <a href="https://github.com/keaven/gsDesign/pull/282">#282</a></li>
+<li><a href="https://github.com/Merck/gsDesign2/pull/629">Merck/gsDesign2#629</a></li>
+<li><a href="https://github.com/keaven/gsDesign/pull/282">keaven/gsDesign#282</a></li>
+<li><a href="https://github.com/keaven/gsDesignNB/pull/48">keaven/gsDesignNB#48</a></li>
 </ul>
 <h2 id="sec:function-mapping"><span class="section-number main-number">1</span> Function mapping</h2>
 <p>Nearly every <code>lt_*()</code> function has a <strong>gt</strong> counterpart. The table below covers
@@ -186,6 +187,16 @@ no direct <strong>gt</strong> equivalent.</p>
 label, or footnote, wrap it in <code>I()</code>:</p>
 <pre><code class="language-r">lt_label(theta = I(&quot;Underlying&lt;br&gt;response rate&quot;))
 </code></pre>
+<p><code>I()</code> is also the answer to <strong>gt</strong>’s <code>md()</code>. <strong>gt</strong> lets you wrap a title or
+label in <code>md(&quot;**bold**&quot;)</code> to render Markdown; <strong>lt</strong> has no Markdown-in-labels
+equivalent. Pass plain text (the common case — <code>md(&quot;**Power**&quot;)</code> becomes
+<code>&quot;Power&quot;</code>), or, if you truly need formatting, use <code>I()</code> with raw HTML:
+<code>I(&quot;&lt;b&gt;Power&lt;/b&gt;&quot;)</code>.</p>
+<p>Two <code>lt_sub()</code> defaults are worth knowing before you translate a <code>sub_*()</code> call:
+missing values already render as an em dash (<code>—</code>) and there is nothing special
+done to zeros or small values. So a <code>sub_missing(missing_text = &quot;—&quot;)</code> in <strong>gt</strong>
+is usually just noise in <strong>lt</strong> — drop it unless you want a <em>different</em>
+placeholder.</p>
 <p><strong>Layout and styling</strong></p>
 <table>
 <thead>
@@ -250,7 +261,7 @@ label, or footnote, wrap it in <code>I()</code>:</p>
 </table>
 <h2 id="sec:notable-differences-from-gt"><span class="section-number main-number">2</span> Notable differences from gt</h2>
 <p>A few places where <strong>lt</strong> works differently enough from <strong>gt</strong> to be worth
-spelling out, drawn from porting <strong>gsDesign2</strong> and <strong>gsDesign</strong>.</p>
+spelling out, drawn from porting <strong>gsDesign2</strong>, <strong>gsDesign</strong>, and <strong>gsDesignNB</strong>.</p>
 <h3 id="sec:column-selection-strings-or-positions-not-tidy-select"><span class="section-number">2.1</span> Column selection: strings or positions, not tidy-select</h3>
 <p><strong>gt</strong> uses tidy-select, so unquoted column names and <code>tidyselect</code> helpers work.
 <strong>lt</strong> deliberately does not: it passes column names as <em>character strings</em> (or
@@ -273,6 +284,20 @@ same as <code>label = &quot;Bounds&quot;, columns = c(&quot;alt&quot;, &quot;nul
 R’s formula, no NSE machinery — the names stay unevaluated symbols you can read
 off directly. Non-syntactic names work too, quoted in backticks:
 <code>Bounds ~ `Alternate hypothesis` + `Null hypothesis`</code>.</p>
+<p>The formula also does duty for tidy-select <em>predicates</em>. In <code>lt_format()</code>,
+<code>lt_align()</code>, etc. a <strong>one-sided</strong> formula whose right side is a logical
+expression selects columns for which it is <code>TRUE</code>, with <code>.</code> bound to the vector
+of column names. So <strong>gt</strong>’s “all columns but one” idiom translates cleanly:</p>
+<pre><code class="language-r"># gt: format every numeric column
+fmt_number(columns = where(is.numeric), decimals = 4)
+# lt: select by name, not by type
+lt_format(~ . != &quot;Metric&quot;, decimals = 4)   # every column except Metric
+</code></pre>
+<p>Note the difference in what’s being tested: <code>where(is.numeric)</code> inspects each
+column’s <em>values</em> (its type), whereas the <strong>lt</strong> formula sees only the column
+<em>names</em> in <code>.</code>. There is no name-based way to say “the numeric ones”, so pick
+out the columns you don’t want to format by name (often the single label column)
+and negate, or list the ones you do.</p>
 <h3 id="sec:footnotes-vs-source-notes-are-two-different-functions"><span class="section-number">2.2</span> Footnotes vs. source notes are two different functions</h3>
 <p><code>gt::tab_footnote()</code> does double duty: with a location it attaches a footnote to
 cells; without one it adds a general note. <strong>lt</strong> splits these:</p>
@@ -313,6 +338,30 @@ column only, so multi-column grouping always renders as rowspan. This is a real
 difference from <strong>gt</strong>, which has only one level of row groups: <code>groupname_col</code>
 takes a single column, and multiple grouping variables are flattened into one
 combined label (joined by <code>row_group.sep</code>, default <code>&quot; - &quot;</code>) rather than nested.</p>
+<p><strong>Groups from row conditions, and controlling their order.</strong> <strong>gt</strong> can define
+groups on the fly from row predicates — a <code>tab_row_group(label=, rows=&lt;cond&gt;)</code>
+per group — then set their order with <code>row_group_order()</code>. <strong>lt</strong> has no
+predicate form: it groups only by the value of an existing column. So the port
+is to <em>materialize that column first</em>. Build a factor whose levels are the group
+order you want (e.g. with <code>data.table::fcase()</code> or nested <code>ifelse()</code>), sort the
+data by it, and group on it with <code>sort = FALSE</code> so <strong>lt</strong> keeps your row order
+instead of re-sorting the labels alphabetically:</p>
+<pre><code class="language-r"># gt: groups defined by conditions, ordered explicitly
+tab_row_group(label = &quot;Power&quot;,  rows = Metric == &quot;Power&quot;) |&gt;
+tab_row_group(label = &quot;Events&quot;, rows = grepl(&quot;Events&quot;, Metric)) |&gt;
+row_group_order(groups = c(&quot;Events&quot;, &quot;Power&quot;))
+
+# lt: derive an ordered factor column, then group by it
+df$Group = factor(
+  ifelse(df$Metric == &quot;Power&quot;, &quot;Power&quot;, grepl(&quot;Events&quot;, df$Metric), &quot;Events&quot;),
+  levels = c(&quot;Events&quot;, &quot;Power&quot;)          # desired group order
+)
+df = df[order(df$Group), ]
+lt(df) |&gt; lt_group(~ Group, sep = TRUE, sort = FALSE)
+</code></pre>
+<p><code>sort = FALSE</code> is the key: by default <code>lt_group()</code> sorts rows by the grouping
+value, which would discard the factor order you set. With it off, groups appear
+in first-seen row order — i.e. the factor-level order you sorted into.</p>
 <h3 id="sec:extend-lt-with-s3-methods-don-t-reinvent-a-generic"><span class="section-number">2.4</span> Extend <code>lt()</code> with S3 methods, don’t reinvent a generic</h3>
 <p><code>gt::gt()</code> is not an S3 generic — it is a plain function. A package that wants
 <code>gt()</code>-style output for its own object classes therefore has nowhere to hang a
@@ -542,7 +591,7 @@ stripped — it’s the right tool there, just not a good default elsewhere.) <a
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.3</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.4</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/appendix.min.js" defer></script>
