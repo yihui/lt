@@ -167,6 +167,7 @@
   function searchInput(doc, label) {
     const input = doc.createElement("input");
     input.type = "search";
+    input.className = "lti-search";
     input.setAttribute("aria-label", label);
     return input;
   }
@@ -197,7 +198,6 @@
   function addSearch(el, cols, state, refresh) {
     const cell = fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0),
           input = cell.appendChild(searchInput(el.ownerDocument, "Search"));
-    input.className = "lti-search";
     onType(input, v => { state.term = v; refresh(); });
   }
 
