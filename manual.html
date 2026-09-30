@@ -174,7 +174,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
 <pre><code>&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;lt&lt;/title&gt;
 &lt;style&gt;body{font-family:system-ui,sans-serif;padding:1em}&lt;/style&gt;&lt;/head&gt;
 &lt;body&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.75/css/lt.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.76/css/lt.min.css&quot;&gt;
 &lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   &quot;data&quot;: {
@@ -192,7 +192,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
   }
 }
 })&lt;/script&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.75/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.76/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;
 </code></pre>
 <h2 id="sec:man-lt"><span class="section-number main-number">3</span> Create a Table Specification</h2>
@@ -444,7 +444,7 @@ assets behind <code><a href="#sec:man-lt-interactive">lt_interactive()</a></code
 </code></pre>
 <pre><code>#&gt; List of 10
 #&gt;  $ name      : chr &quot;lt&quot;
-#&gt;  $ version   : chr &quot;0.4.10&quot;
+#&gt;  $ version   : chr &quot;0.4.11&quot;
 #&gt;  $ src       :List of 1
 #&gt;   ..$ file: chr &quot;/Users/runner/work/_temp/Library/lt/www&quot;
 #&gt;  $ meta      : NULL
@@ -574,7 +574,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpDRz8Q9/filefd37b8fe63b.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmp0oOQcz/fileb1316675e22.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -688,7 +688,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpDRz8Q9/filefd37d340745.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmp0oOQcz/fileb13c194f75.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
