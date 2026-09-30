@@ -87,16 +87,39 @@ js_block = function(files, inline = TRUE) {
   ))
 }
 
+#' Extract a table's render-ready spec
+#'
+#' Return the JSON-ready spec for an [lt()] table: the raw data plus the
+#' declarative ops (and any [lt_interactive()] options), prepared exactly as the
+#' JavaScript runtime expects. This is the payload the runtime consumes, so
+#' another widget can embed an lt table by shipping this spec (e.g.
+#' `xfun::tojson(lt_spec(x))`) and rendering it client-side on demand with
+#' `LT.render(container, spec)` (or `LT.buildHtml(spec)`). Styling from
+#' [lt_css()] and CSS rules is dropped; attach the runtime assets separately
+#' (see [lt_dependency()]).
+#'
+#' @param x An `lt_tbl` object.
+#' @return A named list of spec fields (`data`, `ops`, and any others set on the
+#'   table), ready to serialize to JSON.
+#' @export
+#' @examples
+#' spec = lt_spec(lt(head(mtcars)) |> lt_interactive())
+#' str(spec, max.level = 1)
+#' xfun::tojson(spec)  # ship this, then LT.render(container, spec) in the browser
+lt_spec = function(x) {
+  # Drop css/rules (emitted separately as <link>/<style>, or attached via
+  # lt_dependency()) and prep exactly as the render/queue paths expect.
+  x$css = x$rules = NULL
+  x = with_missing(with_col_order(x))
+  x[lengths(x) > 0L]
+}
+
 # Per-table block: queue the spec with a reference to the current script.
 # The runtime drains the queue when it loads.
 spec_block = function(x) {
-  # Drop css from the static-path spec (already emitted as <link>/<style>);
-  # for the Shiny path we keep it on the wire so the output binding can inject links.
-  x$css = x$rules = NULL
-  x = with_missing(with_col_order(x))
   c(
     '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
-    inline_safe(xfun::tojson(x[lengths(x) > 0L])),
+    inline_safe(xfun::tojson(lt_spec(x))),
     '})</script>'
   )
 }
