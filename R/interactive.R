@@ -28,16 +28,17 @@
 #' @param page_sizes The page sizes to offer, as a vector of row counts; the
 #'   first one is used initially. Paging shows that many of the filtered and
 #'   sorted rows at a time, with a pager (first, previous, next, last), the row
-#'   range, and (for more than one size) a selector below the table. Use `FALSE`
-#'   or `NULL` to show all rows on one page.
+#'   range, and (for more than one size) a selector below the table. `Inf` is a
+#'   valid size (every row on one page), offered as `∞` in the selector. Use
+#'   `FALSE` or `NULL` to show all rows with no pager at all.
 #' @return `x` with interactivity enabled.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_interactive()
 #' # search only, no click-to-sort or pagination
 #' lt(head(mtcars)) |> lt_interactive(sort = FALSE, page_sizes = NULL)
-#' # 5 rows at a time (no other size offered), with a filter box on one column
-#' lt(mtcars) |> lt_interactive(filter = 'cyl', page_sizes = 5)
+#' # 5 rows at a time, or all of them, with a filter box on one column
+#' lt(mtcars) |> lt_interactive(filter = 'cyl', page_sizes = c(5, Inf))
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = FALSE,
   page_sizes = c(10, 25, 50, 100)
@@ -47,8 +48,11 @@ lt_interactive = function(
   opts = list(sort = sort, search = search)
   if (!isFALSE(filter)) opts$filter = if (is.character(filter))
     list(columns = I(filter)) else TRUE
-  if (!isFALSE(page_sizes) && length(page_sizes))
-    opts$paginate = I(unique(as.integer(page_sizes)))
+  if (!isFALSE(page_sizes) && length(page_sizes)) {
+    sizes = unique(page_sizes)
+    sizes[!is.finite(sizes)] = 0  # the runtime reads 0 as "every row"
+    opts$paginate = I(as.integer(sizes))
+  }
   x$interactive = opts
   x
 }

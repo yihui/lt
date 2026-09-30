@@ -53,6 +53,9 @@ assert("the filter and pagination options reach the client spec", {
   # a single size still serializes as an array
   (grepl('"paginate": \\[5\\]', format(lt(d) |> lt_interactive(page_sizes = 5),
                                       assets = FALSE)) %==% TRUE)
+  # Inf (every row on one page) travels as 0, which the runtime reads as such
+  (grepl('"paginate": \\[5, 0\\]', format(lt(d) |> lt_interactive(page_sizes = c(5, Inf)),
+                                         assets = FALSE)) %==% TRUE)
   # filtering every column needs no column list
   (grepl('"filter": true', format(lt(d) |> lt_interactive(filter = TRUE), assets = FALSE))
    %==% TRUE)

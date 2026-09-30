@@ -32,8 +32,9 @@ of column names, to filter on those columns only.}
 \item{page_sizes}{The page sizes to offer, as a vector of row counts; the
 first one is used initially. Paging shows that many of the filtered and
 sorted rows at a time, with a pager (first, previous, next, last), the row
-range, and (for more than one size) a selector below the table. Use \code{FALSE}
-or \code{NULL} to show all rows on one page.}
+range, and (for more than one size) a selector below the table. \code{Inf} is a
+valid size (every row on one page), offered as \verb{∞} in the selector. Use
+\code{FALSE} or \code{NULL} to show all rows with no pager at all.}
 }
 \value{
 \code{x} with interactivity enabled.
@@ -53,6 +54,6 @@ rendered static (a console warning is emitted in the browser).
 lt(head(mtcars)) |> lt_interactive()
 # search only, no click-to-sort or pagination
 lt(head(mtcars)) |> lt_interactive(sort = FALSE, page_sizes = NULL)
-# 5 rows at a time (no other size offered), with a filter box on one column
-lt(mtcars) |> lt_interactive(filter = 'cyl', page_sizes = 5)
+# 5 rows at a time, or all of them, with a filter box on one column
+lt(mtcars) |> lt_interactive(filter = 'cyl', page_sizes = c(5, Inf))
 }

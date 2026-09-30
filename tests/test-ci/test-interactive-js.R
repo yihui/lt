@@ -22,9 +22,9 @@ spec._cols = spec._cols || Object.keys(data);
 const disp = inp.disp || {};
 for (const k of Object.keys(disp)) if (!Array.isArray(disp[k])) disp[k] = [disp[k]];
 const int = ctx.LT.plugins.interactive, state = inp.state || {};
-let view = int.computeView(spec, disp, state);
-if (state.pageSize) view = int.pageSlice(view, state);
-process.stdout.write(view.join(",") + (state.pageSize ? "|" + state.page : ""));
+let view = int.computeView(spec, disp, state), paged = "pageSize" in state;
+if (paged) view = int.pageSlice(view, state);
+process.stdout.write(view.join(",") + (paged ? "|" + state.page : ""));
 '
 
 run_out = function(data, state = list(), disp = NULL) {
@@ -132,6 +132,10 @@ assert("paging slices the view and clamps the page into range", {
   # no matches at all: the first page of nothing
   p = run_page(d, list(pageSize = 3, page = 2, term = 'zzz'))
   (p$rows %==% integer(0))
+  (p$page %==% 0L)
+  # a page size of 0 (Inf in R) is one page holding every row
+  p = run_page(d, list(pageSize = 0, page = 2))
+  (p$rows %==% 1:7)
   (p$page %==% 0L)
 })
 
@@ -252,6 +256,21 @@ assert("the page size selector re-pages, and searching returns to page 1", {
   (lti_rows(x, paste('document.querySelectorAll(".lti-pager button")[2].click()', find,
                      sep = ';')) %==% c("Rash", "Nausea"))
   (lti_eval(x, 'document.querySelector(".lti-pos").textContent', find) %==% '1–2 / 3')
+})
+
+assert("a page size of Inf puts every row on one page", {
+  x = itbl(page_sizes = c(2, Inf))
+  # the selector offers it as a symbol, since there is no count to show
+  (lti_eval(x, '[...document.querySelectorAll(".lti-pager option")].map(o => o.textContent).join(",")')
+   %==% '2,∞')
+  pick = 'var s = document.querySelector(".lti-pager select");
+          s.value = "0"; s.dispatchEvent(new Event("change"))'
+  (lti_rows(x) %==% c("Rash", "Nausea"))
+  (lti_rows(x, pick) %==% sym)
+  (lti_eval(x, 'document.querySelector(".lti-pos").textContent', pick) %==% '1–4 / 4')
+  # one page: every arrow is dead
+  (lti_eval(x, '[...document.querySelectorAll(".lti-pager button")].map(b => +b.disabled).join("")',
+            pick) %==% '1111')
 })
 
 assert("sort and search can be disabled individually", {

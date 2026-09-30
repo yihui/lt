@@ -89,10 +89,11 @@
 
   // The rows of `view` on the current page. `state.page` is clamped into range
   // first (in place, so the pager reads back the page actually shown): the row
-  // count shrinks as filters are typed. `state.pageSize` of 0 means no paging.
+  // count shrinks as filters are typed. A `state.pageSize` of 0 means every row
+  // on one page.
   function pageSlice(view, state) {
     const n = state.pageSize;
-    if (!n) return view;
+    if (!n) { state.page = 0; return view; }
     const last = Math.max(0, Math.ceil(view.length / n) - 1);
     state.page = Math.min(Math.max(state.page || 0, 0), last);
     return view.slice(state.page * n, (state.page + 1) * n);
@@ -254,13 +255,16 @@
       sel.setAttribute("aria-label", "Rows per page");
       sizes.forEach(n => {
         const o = sel.appendChild(doc.createElement("option"));
-        o.value = o.textContent = n;
+        o.value = n;
+        o.textContent = n || "∞";  // 0: every row
       });
       sel.onchange = () => { state.pageSize = +sel.value; state.page = 0; repage(); };
     }
     wrap.parentNode.insertBefore(bar, wrap.nextSibling);
     return total => {
-      const n = state.pageSize, last = Math.max(0, Math.ceil(total / n) - 1);
+      // a page size of 0 is one page holding everything
+      const n = state.pageSize || total || 1,
+            last = Math.max(0, Math.ceil(total / n) - 1);
       pos.textContent = total ?
         `${state.page * n + 1}–${Math.min(total, (state.page + 1) * n)} / ${total}` :
         "0 / 0";
