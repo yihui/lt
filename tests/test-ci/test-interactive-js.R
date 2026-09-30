@@ -297,6 +297,25 @@ assert("the controls are rows of the table, so they match its width", {
      'lt-source-note,lti-pager-row')
 })
 
+assert("a table rendered on demand is enhanced like one rendered in place", {
+  # forestly's lazy path: a spec turned into a table long after the page loaded
+  x = itbl(pager = 2)
+  make = 'var t2 = LT.render(document.body.appendChild(
+            document.createElement("div")), t._ltSpec)'
+  (lti_eval(x, 't2.className', make) %==% 'lt-table')
+  # the new table got its own controls and its own first page
+  (lti_eval(x, 't2.querySelectorAll(".lti-sortable").length', make) %==% '2')
+  rows = '[...t2.querySelectorAll("tbody tr")].map(r => r.children[0].textContent).join("|")'
+  (lti_eval(x, rows, make) %==% 'Rash|Nausea')
+  # its state is its own: sorting it leaves the table it was built from alone
+  sort2 = paste(make, 't2.querySelectorAll("thead th")[1].click()', sep = ';')
+  (lti_eval(x, rows, sort2) %==% 'Headache|Rash')
+  (lti_eval(
+    x, '[...t.querySelectorAll("tbody tr")].map(r => r.children[0].textContent).join("|")',
+    sort2
+  ) %==% 'Rash|Nausea')
+})
+
 assert("a table whose row order carries meaning is left static", {
   d = data.frame(g = c("a", "a", "b"), v = 1:3)
   # row groups
