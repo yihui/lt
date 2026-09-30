@@ -146,8 +146,10 @@
     // wire sort before adding the filter row, so it sees the header row only
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
     if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
+    // `paginate` is the page sizes to offer, the first one being the initial
     if (opts.paginate) {
-      sync = addPaginate(el, opts.paginate, state, () => refresh(false));
+      const sizes = Array.isArray(opts.paginate) ? opts.paginate : [10, 25, 50, 100];
+      sync = addPaginate(el, sizes, state, () => refresh(false));
       refresh();  // cut the full render down to the first page
     }
   }
@@ -226,25 +228,16 @@
     hrow.parentNode.appendChild(row);
   }
 
-  // Page-size <select> and pager below the table. Both are symbols or numbers
-  // only: « ‹ › » for first/previous/next/last and `from–to / total` for the
-  // position. Returns the callback that updates them for a new row count.
-  function addPaginate(el, opt, state, repage) {
+  // Pager below the table, with a page-size <select> when there is more than
+  // one size to offer. Both are symbols or numbers only: « ‹ › » for
+  // first/previous/next/last and `from–to / total` for the position. Returns
+  // the callback that updates them for a new row count.
+  function addPaginate(el, sizes, state, repage) {
     const doc = el.ownerDocument, wrap = el.closest(".lt-wrap") || el,
-          sizes = opt.pageSizeOptions || [10, 25, 50, 100],
-          bar = doc.createElement("div"),
-          sel = doc.createElement("select"),
-          pos = doc.createElement("span");
-    state.pageSize = opt.pageSize || sizes[0];
+          bar = doc.createElement("div"), pos = doc.createElement("span");
+    state.pageSize = sizes[0];
     bar.className = "lti-pager";
     pos.className = "lti-pos";
-    sel.setAttribute("aria-label", "Rows per page");
-    sizes.forEach(n => {
-      const o = sel.appendChild(doc.createElement("option"));
-      o.value = o.textContent = n;
-    });
-    sel.value = state.pageSize;
-    sel.onchange = () => { state.pageSize = +sel.value; state.page = 0; repage(); };
     // the last page is clamped by pageSlice(), so a large number will do
     const steps = [() => 0, p => p - 1, p => p + 1, () => 1e9];
     const btns = ["«", "‹", "›", "»"].map((glyph, i) => {
@@ -255,7 +248,16 @@
       b.onclick = () => { state.page = steps[i](state.page); repage(); };
       return b;
     });
-    bar.append(pos, sel);
+    bar.appendChild(pos);
+    if (sizes.length > 1) {
+      const sel = bar.appendChild(doc.createElement("select"));
+      sel.setAttribute("aria-label", "Rows per page");
+      sizes.forEach(n => {
+        const o = sel.appendChild(doc.createElement("option"));
+        o.value = o.textContent = n;
+      });
+      sel.onchange = () => { state.pageSize = +sel.value; state.page = 0; repage(); };
+    }
     wrap.parentNode.insertBefore(bar, wrap.nextSibling);
     return total => {
       const n = state.pageSize, last = Math.max(0, Math.ceil(total / n) - 1);

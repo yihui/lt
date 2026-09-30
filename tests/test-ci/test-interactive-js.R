@@ -213,7 +213,7 @@ assert("a column filter box filters on its own column", {
 })
 
 assert("the pager shows one page of rows at a time", {
-  x = itbl(paginate = TRUE, page_size = 2)
+  x = itbl(page_sizes = 2)
   click = function(i) sprintf(
     'document.querySelectorAll(".lti-pager button")[%d].click()', i
   )
@@ -229,10 +229,18 @@ assert("the pager shows one page of rows at a time", {
   dis = 'document.querySelectorAll(".lti-pager button")'
   (lti_eval(x, sprintf('[...%s].map(b => +b.disabled).join("")', dis)) %==% '1100')
   (lti_eval(x, sprintf('[...%s].map(b => +b.disabled).join("")', dis), click(2)) %==% '0011')
+  # a single page size offers no selector
+  (lti_eval(x, 'document.querySelectorAll(".lti-pager select").length') %==% '0')
+})
+
+assert("paging is on by default and can be turned off", {
+  (lti_eval(itbl(), 'document.querySelector(".lti-pos").textContent') %==% '1–4 / 4')
+  (lti_eval(itbl(page_sizes = NULL),
+            'document.querySelectorAll(".lti-pager").length') %==% '0')
 })
 
 assert("the page size selector re-pages, and searching returns to page 1", {
-  x = itbl(paginate = TRUE, page_size = 2, page_size_options = c(2, 4))
+  x = itbl(page_sizes = c(2, 4))
   size = function(v) sprintf(
     'var s = document.querySelector(".lti-pager select");
      s.value = "%s"; s.dispatchEvent(new Event("change"))', v
