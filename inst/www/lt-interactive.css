@@ -1,6 +1,7 @@
-/* lt-interactive.css — search box and sortable headers for lt-interactive.js.
- * Classes are namespaced `lti-*` to avoid clashing with core `lt-*`. Only
- * properties that change a default are declared. */
+/* lt-interactive.css — controls for lt-interactive.js (search box, sortable
+ * headers, column filters, pager). Classes are namespaced `lti-*` to avoid
+ * clashing with core `lt-*`. Only properties that change a default are
+ * declared. */
 
 /* the search box sits on its own line above the table */
 .lti-search {
@@ -20,4 +21,28 @@
 
 .lti-empty td {
   text-align: center;
+}
+
+/* one filter box per column, each as wide as its column */
+.lti-filters input {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.lti-pager {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  margin-top: 0.4em;
+  /* the pager is chrome, not data: keep it out of the table's way */
+  font-size: 0.9em;
+}
+.lti-pager button,
+.lti-pager select {
+  font: inherit;
+  cursor: pointer;
+}
+/* push the row count away from the arrows, and the page size to the far end */
+.lti-pos {
+  margin: 0 auto 0 0.3em;
 }

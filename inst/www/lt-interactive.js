@@ -1,10 +1,11 @@
-/* lt-interactive.js — opt-in interactivity for lt tables (search + sort).
+/* lt-interactive.js — opt-in interactivity for lt tables (search, sort, column
+ * filters, pagination).
  *
  * A plugin on the existing LT global (see lt.js): it adds no new global. For a
- * table whose spec carries `interactive`, it adds a search box and
- * click-to-sort headers, re-rendering <tbody> through the core `spec._viewRows`
- * seam. Flat tables only (no row groups / spanners / rowspan); others stay
- * static, with a console warning.
+ * table whose spec carries `interactive`, it adds the requested controls and
+ * re-renders <tbody> through the core `spec._viewRows` seam. Flat tables only
+ * (no row groups / spanners / rowspan); others stay static, with a console
+ * warning.
  */
 (root => {
   "use strict";
@@ -51,18 +52,26 @@
     );
   }
 
-  // The view pipeline (pure — no DOM): search, then sort, yielding the 1-based
-  // original row indices for `spec._viewRows`. `disp[col][i]` is a cell's
-  // displayed text (what substring search matches); `state` holds the term and
-  // the sorted column/direction.
+  // The view pipeline (pure — no DOM): per-column filters, then the table-wide
+  // search, then sort, yielding the 1-based original row indices for
+  // `spec._viewRows`. `disp[col][i]` is a cell's displayed text (what substring
+  // search matches); `state` holds the filter terms (`filters[col]`), the
+  // search term, and the sorted column/direction. Filters and the search are
+  // combined with AND: a row must pass all of them.
   function computeView(spec, disp, state) {
-    const cols = spec._cols || [], data = spec.data || {};
+    const cols = spec._cols || [], data = spec.data || {},
+          cell = (c, r) => ({
+            raw: data[c]?.[r - 1] ?? null, disp: disp[c]?.[r - 1] ?? ""
+          });
     let idx = Array.from({ length: (data[cols[0]] || []).length }, (_, i) => i + 1);
 
+    // filters first: each looks at one cell, so they are the cheapest
+    for (const c in state.filters || {}) {
+      const pred = matcher(state.filters[c]);
+      if (pred) idx = idx.filter(r => pred([cell(c, r)]));
+    }
     const pred = matcher(state.term);
-    if (pred) idx = idx.filter(r => pred(cols.map(c => ({
-      raw: data[c]?.[r - 1] ?? null, disp: disp[c]?.[r - 1] ?? ""
-    }))));
+    if (pred) idx = idx.filter(r => pred(cols.map(c => cell(c, r))));
 
     const col = data[state.sortCol];
     if (col && state.sortDir) {
@@ -76,6 +85,17 @@
       });
     }
     return idx;
+  }
+
+  // The rows of `view` on the current page. `state.page` is clamped into range
+  // first (in place, so the pager reads back the page actually shown): the row
+  // count shrinks as filters are typed. `state.pageSize` of 0 means no paging.
+  function pageSlice(view, state) {
+    const n = state.pageSize;
+    if (!n) return view;
+    const last = Math.max(0, Math.ceil(view.length / n) - 1);
+    state.page = Math.min(Math.max(state.page || 0, 0), last);
+    return view.slice(state.page * n, (state.page + 1) * n);
   }
 
   // Enhanceable only when the table is flat: no row groups, spanners, rowspan,
@@ -101,45 +121,71 @@
       "rowspan); rendering a static table."
     );
     const opts = spec.interactive, cols = spec._cols || [],
-          disp = captureDisplay(el, cols), state = {};
+          disp = captureDisplay(el, cols),
+          // the bottom header row: the one whose cells line up with `cols`
+          hrow = [...el.querySelectorAll("thead tr")].pop(),
+          state = { filters: {}, page: 0, pageSize: 0 };
+    let view,          // filtered + sorted indices, cached across page turns
+        sync = () => {};  // pager readout, replaced by addPaginate()
 
-    const refresh = () => {
-      const view = computeView(spec, disp, state),
+    // `stale` means the view itself changed (a term or the sort), as opposed to
+    // only the page: recompute it and go back to the first page.
+    const refresh = (stale = true) => {
+      if (stale) { view = computeView(spec, disp, state); state.page = 0; }
+      const rows = pageSlice(view, state),
             tmp = el.ownerDocument.createElement("template");
-      tmp.innerHTML = LT.buildHtml({ ...spec, _viewRows: view });
+      tmp.innerHTML = LT.buildHtml({ ...spec, _viewRows: rows });
       const body = tmp.content.querySelector("tbody");
-      if (!view.length)  // no matches: a neutral symbol spanning all columns
+      if (!rows.length)  // no matches: a neutral symbol spanning all columns
         body.innerHTML = `<tr class="lti-empty"><td colspan="${cols.length}">—</td></tr>`;
       el.querySelector("tbody").replaceWith(body);
+      sync(view.length);
     };
 
     if (opts.search !== false) addSearch(el, state, refresh);
-    if (opts.sort !== false) addSort(el, cols, state, refresh);
+    // wire sort before adding the filter row, so it sees the header row only
+    if (opts.sort !== false) addSort(hrow, cols, state, refresh);
+    if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
+    if (opts.paginate) {
+      sync = addPaginate(el, opts.paginate, state, () => refresh(false));
+      refresh();  // cut the full render down to the first page
+    }
   }
 
-  // Table-wide search box above the table. `type="search"` lets the browser
-  // supply the affordance (and a clear button), so there is no icon or
-  // placeholder text to translate; the label is for screen readers only.
+  // A search input: `type="search"` lets the browser supply the affordance (and
+  // a clear button), so there is no icon or placeholder text to translate; the
+  // label is for screen readers only.
+  function searchInput(doc, label) {
+    const input = doc.createElement("input");
+    input.type = "search";
+    input.setAttribute("aria-label", label);
+    return input;
+  }
+
+  // Debounce typing so a long list is not re-rendered per keystroke; Enter (or
+  // leaving the box) applies at once.
+  function onType(input, apply) {
+    let timer;
+    const go = () => apply(input.value);
+    input.oninput = () => { clearTimeout(timer); timer = setTimeout(go, 150); };
+    input.onchange = () => { clearTimeout(timer); go(); };
+  }
+
+  // Table-wide search box above the table.
   function addSearch(el, state, refresh) {
     const wrap = el.closest(".lt-wrap") || el,
-          input = el.ownerDocument.createElement("input");
-    input.type = "search";
+          input = searchInput(el.ownerDocument, "Search");
     input.className = "lti-search";
-    input.setAttribute("aria-label", "Search");
-    const apply = () => { state.term = input.value; refresh(); };
-    let timer;
-    // Debounce typing; Enter (or leaving the box) applies at once.
-    input.oninput = () => { clearTimeout(timer); timer = setTimeout(apply, 150); };
-    input.onchange = () => { clearTimeout(timer); apply(); };
+    onType(input, v => { state.term = v; refresh(); });
     wrap.parentNode.insertBefore(input, wrap);
   }
 
   // Click-to-sort headers, one column at a time: clicking cycles asc → desc →
   // unsorted. The indicator and aria-sort live on the <th>, which survives the
   // <tbody> swap, so they need no re-render.
-  function addSort(el, cols, state, refresh) {
-    const doc = el.ownerDocument, marks = [];
-    el.querySelectorAll("thead tr:last-child th").forEach((th, ci) => {
+  function addSort(hrow, cols, state, refresh) {
+    const doc = hrow.ownerDocument, marks = [];
+    hrow.querySelectorAll("th").forEach((th, ci) => {
       const col = cols[ci];
       if (col == null) return;
       th.classList.add("lti-sortable");
@@ -164,6 +210,62 @@
     });
   }
 
+  // A row of per-column search boxes below the headers, inside <thead> so the
+  // <tbody> swap leaves it (and what has been typed into it) alone.
+  // `opt.columns`, when an array, restricts which columns get a box.
+  function addFilter(hrow, cols, opt, state, refresh) {
+    const doc = hrow.ownerDocument, only = opt.columns,
+          row = doc.createElement("tr");
+    row.className = "lti-filters";
+    cols.forEach(c => {
+      const cell = row.appendChild(doc.createElement("td"));
+      if (Array.isArray(only) && !only.includes(c)) return;
+      const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
+      onType(input, v => { state.filters[c] = v; refresh(); });
+    });
+    hrow.parentNode.appendChild(row);
+  }
+
+  // Page-size <select> and pager below the table. Both are symbols or numbers
+  // only: « ‹ › » for first/previous/next/last and `from–to / total` for the
+  // position. Returns the callback that updates them for a new row count.
+  function addPaginate(el, opt, state, repage) {
+    const doc = el.ownerDocument, wrap = el.closest(".lt-wrap") || el,
+          sizes = opt.pageSizeOptions || [10, 25, 50, 100],
+          bar = doc.createElement("div"),
+          sel = doc.createElement("select"),
+          pos = doc.createElement("span");
+    state.pageSize = opt.pageSize || sizes[0];
+    bar.className = "lti-pager";
+    pos.className = "lti-pos";
+    sel.setAttribute("aria-label", "Rows per page");
+    sizes.forEach(n => {
+      const o = sel.appendChild(doc.createElement("option"));
+      o.value = o.textContent = n;
+    });
+    sel.value = state.pageSize;
+    sel.onchange = () => { state.pageSize = +sel.value; state.page = 0; repage(); };
+    // the last page is clamped by pageSlice(), so a large number will do
+    const steps = [() => 0, p => p - 1, p => p + 1, () => 1e9];
+    const btns = ["«", "‹", "›", "»"].map((glyph, i) => {
+      const b = bar.appendChild(doc.createElement("button"));
+      b.type = "button";
+      b.textContent = glyph;
+      b.setAttribute("aria-label", ["First", "Previous", "Next", "Last"][i]);
+      b.onclick = () => { state.page = steps[i](state.page); repage(); };
+      return b;
+    });
+    bar.append(pos, sel);
+    wrap.parentNode.insertBefore(bar, wrap.nextSibling);
+    return total => {
+      const n = state.pageSize, last = Math.max(0, Math.ceil(total / n) - 1);
+      pos.textContent = total ?
+        `${state.page * n + 1}–${Math.min(total, (state.page + 1) * n)} / ${total}` :
+        "0 / 0";
+      btns.forEach((b, i) => b.disabled = i < 2 ? !state.page : state.page === last);
+    };
+  }
+
   // Enhance a mounted table that opted in (idempotent via the dataset flag).
   const onMount = (el, spec) => {
     if (!spec?.interactive || el.dataset.ltiOn) return;
@@ -171,7 +273,7 @@
     enhance(el, spec);
   };
 
-  LT.plugins.interactive = { matcher, computeView, enhance };
+  LT.plugins.interactive = { matcher, computeView, pageSlice, enhance };
   LT.onMount.push(onMount);
   // Core drains its render queue before this file loads, so the callback above
   // only sees later renders; enhance the tables already on the page now.

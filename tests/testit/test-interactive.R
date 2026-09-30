@@ -44,6 +44,22 @@ assert("the extension follows the asset kind it belongs to", {
   (grepl('LT[.]q', html) %==% TRUE)
 })
 
+assert("the filter and pagination options reach the client spec", {
+  # assets aside, format() emits the spec the runtime reads
+  json = format(lt(d) |> lt_interactive(
+    filter = 'y', paginate = TRUE, page_size = 5, page_size_options = c(20, 5)
+  ), assets = FALSE)
+  (grepl('"columns": \\["y"\\]', json) %==% TRUE)
+  (grepl('"pageSize": 5', json) %==% TRUE)
+  # the current size is offered too, and the options are sorted
+  (grepl('"pageSizeOptions": \\[5, 20\\]', json) %==% TRUE)
+  # filtering every column needs no column list
+  (grepl('"filter": true', format(lt(d) |> lt_interactive(filter = TRUE), assets = FALSE))
+   %==% TRUE)
+  # off by default: nothing is serialized for either
+  (grepl('filter|paginate', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
+})
+
 count = function(p, x) sum(gregexpr(p, x)[[1]] > 0)
 
 # Emulate a document: knit the tables in order, after clearing the flags that

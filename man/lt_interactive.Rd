@@ -4,7 +4,15 @@
 \alias{lt_interactive}
 \title{Enable Interactive Table Features}
 \usage{
-lt_interactive(x, sort = TRUE, search = TRUE)
+lt_interactive(
+  x,
+  sort = TRUE,
+  search = TRUE,
+  filter = FALSE,
+  paginate = FALSE,
+  page_size = 10,
+  page_size_options = c(10, 25, 50, 100)
+)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
@@ -17,14 +25,29 @@ values, so numeric columns sort numerically.}
 any cell matches the term. Besides plain substring matching, a term that
 references the cell variable \code{x} (e.g. \code{x > 5} or \code{x != "A"}) is evaluated
 as a JavaScript expression against each cell's value.}
+
+\item{filter}{Whether to show a filter box under each column header, matching
+terms the same way as \code{search} but against that column only. A row is kept
+when it passes every filter and the search. Can also be a character vector
+of column names, to filter on those columns only.}
+
+\item{paginate}{Whether to show one page of rows at a time, with a pager
+(first, previous, next, last), the row range, and a page size selector
+below the table. Paging applies to the filtered and sorted rows.}
+
+\item{page_size}{The number of rows per page.}
+
+\item{page_size_options}{The page sizes offered in the selector (\code{page_size}
+is always offered, and the options are sorted).}
 }
 \value{
 \code{x} with interactivity enabled.
 }
 \description{
-Make a table interactive in the browser: a table-wide search box and
-click-to-sort column headers. The features are handled client-side by an
-opt-in JavaScript extension, loaded only for tables that call this function.
+Make a table interactive in the browser: a table-wide search box,
+click-to-sort column headers, per-column filter boxes, and pagination. The
+features are handled client-side by an opt-in JavaScript extension, loaded
+only for tables that call this function.
 }
 \details{
 Interactivity targets flat tables. Tables with row groups
@@ -35,4 +58,6 @@ rendered static (a console warning is emitted in the browser).
 lt(head(mtcars)) |> lt_interactive()
 # search only, no click-to-sort
 lt(head(mtcars)) |> lt_interactive(sort = FALSE)
+# 10 rows at a time, with a filter box on one column
+lt(mtcars) |> lt_interactive(filter = 'cyl', paginate = TRUE)
 }
