@@ -1,8 +1,10 @@
 d = data.frame(x = 1:3, y = c("b", "a", "c"))
 
-# Markers unique to each asset. `lt-interactive` alone is not enough: it also
-# appears in a comment inside core lt.js.
-ext_css = 'lti-search'; ext_js = 'LT\\.plugins\\.interactive'
+# A marker occurring exactly once in each asset, so it can be counted as well
+# as looked for. The bare name of a class or a file is not enough: the CSS class
+# names appear in the extension's script too, and `lt-interactive` appears in a
+# comment inside core lt.js.
+ext_css = '[.]lti-search \\{'; ext_js = 'LT[.]plugins[.]interactive = \\{'
 core_css = '[.]lt-wrap \\{'; core_js = 'root[.]LT = \\{'
 
 assert("the interactive extension is included only for a table that opts in", {
@@ -23,25 +25,55 @@ assert("the linked form loads the extension after the core runtime", {
   (grepl('lt-interactive', src) %==% c(FALSE, TRUE))
 })
 
-assert("assets selects which pieces to emit, so a document can dedup them", {
+assert("the extension follows the asset kind it belongs to", {
   x = lt(d) |> lt_interactive()
-  # a later interactive table, in a document that already emitted the runtime
-  html = format(x, assets = 'interactive')
+  # stylesheet only
+  html = format(x, assets = 'css')
+  (grepl(core_css, html) %==% TRUE)
   (grepl(ext_css, html) %==% TRUE)
-  (grepl(ext_js, html) %==% TRUE)
-  (grepl(core_css, html) %==% FALSE)
-  (grepl(core_js, html) %==% FALSE)
-  # the runtime without the extension, for a document whose first table is
-  # static and whose second one is interactive
-  html = format(x, assets = c('css', 'js'))
-  (grepl(core_js, html) %==% TRUE)
   (grepl(ext_js, html) %==% FALSE)
-  # nothing at all
-  (grepl('<script', format(x, assets = FALSE)) %==% TRUE)  # only the spec block
-  (grepl(ext_js, format(x, assets = FALSE)) %==% FALSE)
-  # asking for the extension on a static table is a no-op
-  (grepl(ext_js, format(lt(d), assets = 'interactive')) %==% FALSE)
+  # script only
+  html = format(x, assets = 'js')
+  (grepl(core_js, html) %==% TRUE)
+  (grepl(ext_js, html) %==% TRUE)
+  (grepl(ext_css, html) %==% FALSE)
+  # neither: the spec block alone
+  html = format(x, assets = FALSE)
+  (grepl(ext_css, html) %==% FALSE)
+  (grepl(ext_js, html) %==% FALSE)
+  (grepl('LT[.]q', html) %==% TRUE)
 })
+
+count = function(p, x) sum(gregexpr(p, x)[[1]] > 0)
+
+# Emulate a document: knit the tables in order, after clearing the flags that
+# knit_print() uses to dedup assets (knitr resets them between real knits).
+knit_doc = function(...) {
+  for (f in c(.knit_flag, .int_flag))
+    knitr::opts_knit$set(stats::setNames(list(NULL), f))
+  paste(unlist(lapply(list(...), knit_print.lt_tbl)), collapse = '\n')
+}
+
+if (xfun::loadable('knitr'))
+  assert("knit_print emits the extension once, for the first interactive table", {
+    int = lt(d) |> lt_interactive(); static = lt(d)
+
+    html = knit_doc(int, int)
+    (count(ext_css, html) %==% 1L)
+    (count(ext_js, html) %==% 1L)
+    (count(core_js, html) %==% 1L)
+
+    # a static table first: the core runtime is already out by the time the
+    # extension is needed, and it still has to load after it
+    html = knit_doc(static, int)
+    (count(ext_css, html) %==% 1L)
+    (count(ext_js, html) %==% 1L)
+    (count(core_js, html) %==% 1L)
+    (regexpr(ext_js, html) > regexpr(core_js, html))
+
+    # a document with no interactive table never loads the extension
+    (count(ext_js, knit_doc(static, static)) %==% 0L)
+  })
 
 assert("record_print emits the linked extension for an interactive table", {
   html = paste(unlist(record_print.lt_tbl(lt(d) |> lt_interactive())), collapse = '\n')

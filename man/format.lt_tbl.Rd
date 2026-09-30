@@ -16,11 +16,11 @@ embedding. If \code{FALSE}, wrap in a minimal \verb{<html><body>} document.}
 \code{FALSE}, emit \verb{<link>} / \verb{<script src=...>} tags (assets must be served
 alongside the HTML).}
 
-\item{assets}{Which runtime assets to include: \code{TRUE} (default) for
-everything the table needs, \code{FALSE} for nothing, or a character vector
-subset of \code{c("css", "js", "interactive")} for selective inclusion.
-\code{"interactive"} is the extension behind \code{\link[=lt_interactive]{lt_interactive()}}, and is a no-op
-for a table that does not enable it.}
+\item{assets}{Which runtime assets to include: \code{TRUE} (default) for both
+CSS and JS, \code{FALSE} for neither, or a character vector subset of
+\code{c("css", "js")} for selective inclusion. A table with \code{\link[=lt_interactive]{lt_interactive()}}
+enabled also gets the interactivity extension: its stylesheet with
+\code{"css"}, its script with \code{"js"}.}
 
 \item{...}{Reserved for future use.}
 }

@@ -145,11 +145,11 @@ html_doc = function(body) c(
 #' @param inline_assets If `TRUE` (default), inline the CSS/JS as text. If
 #'   `FALSE`, emit `<link>` / `<script src=...>` tags (assets must be served
 #'   alongside the HTML).
-#' @param assets Which runtime assets to include: `TRUE` (default) for
-#'   everything the table needs, `FALSE` for nothing, or a character vector
-#'   subset of `c("css", "js", "interactive")` for selective inclusion.
-#'   `"interactive"` is the extension behind [lt_interactive()], and is a no-op
-#'   for a table that does not enable it.
+#' @param assets Which runtime assets to include: `TRUE` (default) for both
+#'   CSS and JS, `FALSE` for neither, or a character vector subset of
+#'   `c("css", "js")` for selective inclusion. A table with [lt_interactive()]
+#'   enabled also gets the interactivity extension: its stylesheet with
+#'   `"css"`, its script with `"js"`.
 #' @param ... Reserved for future use.
 #' @return A character scalar containing HTML.
 #' @export
@@ -158,19 +158,17 @@ html_doc = function(body) c(
 #' html = format(tbl)
 #' format(tbl, fragment = FALSE, inline_assets = FALSE)
 format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
-  if (isTRUE(assets)) assets = c('css', 'js', 'interactive')
+  if (isTRUE(assets)) assets = c('css', 'js')
   if (isFALSE(assets)) assets = character()
-  int = 'interactive' %in% assets && !is.null(x$interactive)
+  int = !is.null(x$interactive)
   body = c(
-    css_block(c(
-      if ('css' %in% assets) 'lt.css', if (int) 'lt-interactive.css'
-    ), inline_assets),
+    css_block(if ('css' %in% assets) c('lt.css', if (int) 'lt-interactive.css'),
+              inline_assets),
     user_css_block(x$css),
     rules_block(x$rules),
     spec_block(x),
-    js_block(c(
-      if ('js' %in% assets) 'lt.js', if (int) 'lt-interactive.js'
-    ), inline_assets)
+    js_block(if ('js' %in% assets) c('lt.js', if (int) 'lt-interactive.js'),
+             inline_assets)
   )
   if (!fragment) body = html_doc(body)
   xfun::raw_string(paste(body, collapse = '\n'))
@@ -202,8 +200,9 @@ knit_print.lt_tbl = function(x, ...) {
   ))
   first = !isTRUE(knitr::opts_knit$get(.knit_flag))
   if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), .knit_flag))
-  # The interactivity extension is tracked separately because the first
-  # interactive table need not be the first table overall.
+  # Track the interactivity extension separately: the first interactive table
+  # need not be the first table overall, in which case format() has no assets
+  # left to attach it to and we emit it around the table below.
   int_first = FALSE
   if (!is.null(x$interactive)) {
     int_first = !isTRUE(knitr::opts_knit$get(.int_flag))
@@ -217,10 +216,13 @@ knit_print.lt_tbl = function(x, ...) {
   x$css = setdiff(x$css, seen)
   if (length(x$css))
     knitr::opts_knit$set(stats::setNames(list(c(seen, x$css)), .css_flag))
-  structure(
-    format(x, assets = c(if (first) c('css', 'js'), if (int_first) 'interactive')),
-    class = c('knit_asis', 'html')
-  )
+  html = format(x, assets = first)
+  # The extension in the same places format() would put it: stylesheet before
+  # the table, script after it (so it runs after the core runtime).
+  if (int_first && !first) html = paste(c(
+    css_block('lt-interactive.css'), html, js_block('lt-interactive.js')
+  ), collapse = '\n')
+  structure(xfun::raw_string(html), class = c('knit_asis', 'html'))
 }
 
 # record_print (litedown / xfun::record): for HTML output emit assets + spec;
@@ -281,10 +283,8 @@ lt_static = function(
   tidy = FALSE
 ) {
   method = match.arg(method)
-  # 'raw' keeps the JS spec, so the interactivity extension still applies; the
-  # baked methods produce a static <table>, where it would do nothing.
   if (method == 'raw') return(format(
-    x, fragment = fragment, assets = c(if (css) 'css', 'js', 'interactive')
+    x, fragment = fragment, assets = c(if (css) 'css', 'js')
   ))
   if (method == 'auto') method = if (has_node()) 'node' else if (has_browser()) 'browser'
   if (is.null(method)) stop(
