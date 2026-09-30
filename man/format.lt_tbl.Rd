@@ -4,14 +4,7 @@
 \alias{format.lt_tbl}
 \title{Render an \code{lt_tbl} to HTML}
 \usage{
-\method{format}{lt_tbl}(
-  x,
-  fragment = TRUE,
-  inline_assets = TRUE,
-  assets = TRUE,
-  interactive_assets = NULL,
-  ...
-)
+\method{format}{lt_tbl}(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...)
 }
 \arguments{
 \item{x}{An \code{lt_tbl} object.}
@@ -23,15 +16,11 @@ embedding. If \code{FALSE}, wrap in a minimal \verb{<html><body>} document.}
 \code{FALSE}, emit \verb{<link>} / \verb{<script src=...>} tags (assets must be served
 alongside the HTML).}
 
-\item{assets}{Which runtime assets to include: \code{TRUE} (default) for both
-CSS and JS, \code{FALSE} for neither, or a character vector subset of
-\code{c("css", "js")} for selective inclusion.}
-
-\item{interactive_assets}{Whether to include the interactivity extension
-(\code{lt-interactive.css}/\code{.js}). \code{NULL} (default) includes it when the table
-has \code{\link[=lt_interactive]{lt_interactive()}} enabled. Tracked separately from \code{assets} so a
-document can emit the extension once for the first interactive table even
-when the core runtime was already emitted for an earlier table.}
+\item{assets}{Which runtime assets to include: \code{TRUE} (default) for
+everything the table needs, \code{FALSE} for nothing, or a character vector
+subset of \code{c("css", "js", "interactive")} for selective inclusion.
+\code{"interactive"} is the extension behind \code{\link[=lt_interactive]{lt_interactive()}}, and is a no-op
+for a table that does not enable it.}
 
 \item{...}{Reserved for future use.}
 }

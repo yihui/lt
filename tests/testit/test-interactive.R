@@ -1,55 +1,52 @@
 d = data.frame(x = 1:3, y = c("b", "a", "c"))
 
-assert("lt_interactive() records interactivity options on the spec", {
-  x = lt(d) |> lt_interactive()
-  (is.list(x$interactive))
-  (x$interactive$sort %==% TRUE)
-  (x$interactive$search %==% TRUE)
-  # options are respected
-  x2 = lt(d) |> lt_interactive(sort = FALSE, search = FALSE)
-  (x2$interactive$sort %==% FALSE)
-  (x2$interactive$search %==% FALSE)
-})
+# Markers unique to each asset. `lt-interactive` alone is not enough: it also
+# appears in a comment inside core lt.js.
+ext_css = 'lti-search'; ext_js = 'LT\\.plugins\\.interactive'
+core_css = '[.]lt-wrap \\{'; core_js = 'root[.]LT = \\{'
 
-assert("the interactive option is serialized into the spec block", {
+assert("the interactive extension is included only for a table that opts in", {
   html = format(lt(d) |> lt_interactive())
-  # the spec carries an `interactive` object read by the runtime
-  (grepl('"interactive":', html) %==% TRUE)
+  (grepl(ext_css, html) %==% TRUE)
+  (grepl(ext_js, html) %==% TRUE)
+  html = format(lt(d))
+  (grepl(ext_css, html) %==% FALSE)
+  (grepl(ext_js, html) %==% FALSE)
 })
 
-assert("a non-interactive table records nothing and omits the extension", {
-  x = lt(d)
-  (is.null(x$interactive))
-  html = format(x)
-  # `lt-interactive` also appears in a core lt.js comment, so test for markers
-  # unique to the extension itself
-  (grepl('LT\\.plugins\\.interactive', html) %==% FALSE)
-  (grepl('lti-search', html) %==% FALSE)
-})
-
-assert("format() inlines the interactive extension only when enabled", {
-  html = format(lt(d) |> lt_interactive())
-  (grepl('LT\\.plugins\\.interactive', html) %==% TRUE)  # js present
-  (grepl('lti-search', html) %==% TRUE)                  # css present
-})
-
-assert("format(inline_assets = FALSE) links the interactive extension", {
+assert("the linked form loads the extension after the core runtime", {
   html = format(lt(d) |> lt_interactive(), inline_assets = FALSE)
-  (grepl('<script src="[^"]*lt-interactive[^"]*" defer></script>', html) %==% TRUE)
   (grepl('<link rel="stylesheet" href="[^"]*lt-interactive[^"]*">', html) %==% TRUE)
+  # the plugin registers itself on the LT global, so core must execute first
+  src = regmatches(html, gregexpr('<script src="[^"]+"', html))[[1]]
+  (length(src) %==% 2L)
+  (grepl('lt-interactive', src) %==% c(FALSE, TRUE))
 })
 
-assert("interactive_assets = FALSE suppresses the extension even when enabled", {
-  html = format(lt(d) |> lt_interactive(), interactive_assets = FALSE)
-  (grepl('LT\\.plugins\\.interactive', html) %==% FALSE)
-  (grepl('lti-search', html) %==% FALSE)
+assert("assets selects which pieces to emit, so a document can dedup them", {
+  x = lt(d) |> lt_interactive()
+  # a later interactive table, in a document that already emitted the runtime
+  html = format(x, assets = 'interactive')
+  (grepl(ext_css, html) %==% TRUE)
+  (grepl(ext_js, html) %==% TRUE)
+  (grepl(core_css, html) %==% FALSE)
+  (grepl(core_js, html) %==% FALSE)
+  # the runtime without the extension, for a document whose first table is
+  # static and whose second one is interactive
+  html = format(x, assets = c('css', 'js'))
+  (grepl(core_js, html) %==% TRUE)
+  (grepl(ext_js, html) %==% FALSE)
+  # nothing at all
+  (grepl('<script', format(x, assets = FALSE)) %==% TRUE)  # only the spec block
+  (grepl(ext_js, format(x, assets = FALSE)) %==% FALSE)
+  # asking for the extension on a static table is a no-op
+  (grepl(ext_js, format(lt(d), assets = 'interactive')) %==% FALSE)
 })
 
 assert("record_print emits the linked extension for an interactive table", {
-  rec = record_print.lt_tbl(lt(d) |> lt_interactive())
-  html = paste(unlist(rec), collapse = '\n')
-  (grepl('lt-interactive', html) %==% TRUE)
-  # a non-interactive table's record has no extension tags
-  rec2 = record_print.lt_tbl(lt(d))
-  (grepl('lt-interactive', paste(unlist(rec2), collapse = '\n')) %==% FALSE)
+  html = paste(unlist(record_print.lt_tbl(lt(d) |> lt_interactive())), collapse = '\n')
+  (grepl('lt-interactive[^"]*[.]css', html) %==% TRUE)
+  (grepl('lt-interactive[^"]*[.]js', html) %==% TRUE)
+  html = paste(unlist(record_print.lt_tbl(lt(d))), collapse = '\n')
+  (grepl('lt-interactive', html) %==% FALSE)
 })

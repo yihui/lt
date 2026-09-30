@@ -44,12 +44,15 @@ inline_safe = function(s) gsub(
   '</(script)', '<\\\\/\\1', s, perl = TRUE, ignore.case = TRUE
 )
 
-# Inline CSS + JS runtime. Emit once per page; the runtime is idempotent if
-# included twice, but the bytes are wasteful — pass `inline = FALSE` for
-# the linked form (litedown dedups identical <link>/<script src> tags).
-css_block = function(inline = TRUE) {
-  if (inline) c('<style>', read_asset('lt.css'), '</style>')
-  else sprintf('<link rel="stylesheet" href="%s">', asset_url('lt.css'))
+# Inline the CSS/JS runtime assets. `files` are file names under inst/www, so
+# the interactivity extension rides along for the tables that opt in. Emit once
+# per page; the runtime is idempotent if included twice, but the bytes are
+# wasteful — pass `inline = FALSE` for the linked form (litedown dedups
+# identical <link>/<script src> tags).
+css_block = function(files, inline = TRUE) {
+  if (!length(files)) return()
+  if (inline) c('<style>', unlist(lapply(files, read_asset)), '</style>')
+  else sprintf('<link rel="stylesheet" href="%s">', vapply(files, asset_url, ''))
 }
 
 # User CSS path -> tag. URLs and relative paths become <link> (browser
@@ -75,22 +78,13 @@ rules_block = function(rules) {
   if (length(rules)) c('<style>.lt-table {', rules, '}</style>')
 }
 
-js_block = function(inline = TRUE) {
-  if (inline) c('<script>', inline_safe(read_asset('lt.js')), '</script>')
-  else sprintf('<script src="%s" defer></script>', asset_url('lt.js'))
-}
-
-# The opt-in interactivity extension (lt-interactive.css/.js). Emitted only for
-# tables that call lt_interactive(); the CSS follows core lt.css and the JS
-# follows core lt.js (it registers a plugin on the LT global at load).
-interactive_css_block = function(inline = TRUE) {
-  if (inline) c('<style>', read_asset('lt-interactive.css'), '</style>')
-  else sprintf('<link rel="stylesheet" href="%s">', asset_url('lt-interactive.css'))
-}
-
-interactive_js_block = function(inline = TRUE) {
-  if (inline) c('<script>', inline_safe(read_asset('lt-interactive.js')), '</script>')
-  else sprintf('<script src="%s" defer></script>', asset_url('lt-interactive.js'))
+# Each asset gets its own <script>: they are separate top-level programs, and
+# `defer` keeps linked ones executing in document order (core before plugins).
+js_block = function(files, inline = TRUE) {
+  unlist(lapply(files, function(f) if (inline)
+    c('<script>', inline_safe(read_asset(f)), '</script>')
+    else sprintf('<script src="%s" defer></script>', asset_url(f))
+  ))
 }
 
 # Per-table block: queue the spec with a reference to the current script.
@@ -151,14 +145,11 @@ html_doc = function(body) c(
 #' @param inline_assets If `TRUE` (default), inline the CSS/JS as text. If
 #'   `FALSE`, emit `<link>` / `<script src=...>` tags (assets must be served
 #'   alongside the HTML).
-#' @param assets Which runtime assets to include: `TRUE` (default) for both
-#'   CSS and JS, `FALSE` for neither, or a character vector subset of
-#'   `c("css", "js")` for selective inclusion.
-#' @param interactive_assets Whether to include the interactivity extension
-#'   (`lt-interactive.css`/`.js`). `NULL` (default) includes it when the table
-#'   has [lt_interactive()] enabled. Tracked separately from `assets` so a
-#'   document can emit the extension once for the first interactive table even
-#'   when the core runtime was already emitted for an earlier table.
+#' @param assets Which runtime assets to include: `TRUE` (default) for
+#'   everything the table needs, `FALSE` for nothing, or a character vector
+#'   subset of `c("css", "js", "interactive")` for selective inclusion.
+#'   `"interactive"` is the extension behind [lt_interactive()], and is a no-op
+#'   for a table that does not enable it.
 #' @param ... Reserved for future use.
 #' @return A character scalar containing HTML.
 #' @export
@@ -166,19 +157,20 @@ html_doc = function(body) c(
 #' tbl = lt(head(mtcars))
 #' html = format(tbl)
 #' format(tbl, fragment = FALSE, inline_assets = FALSE)
-format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE,
-                         interactive_assets = NULL, ...) {
-  if (isTRUE(assets)) assets = c('css', 'js')
+format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
+  if (isTRUE(assets)) assets = c('css', 'js', 'interactive')
   if (isFALSE(assets)) assets = character()
-  if (is.null(interactive_assets)) interactive_assets = !is.null(x$interactive)
+  int = 'interactive' %in% assets && !is.null(x$interactive)
   body = c(
-    if ('css' %in% assets) css_block(inline_assets),
-    if (interactive_assets) interactive_css_block(inline_assets),
+    css_block(c(
+      if ('css' %in% assets) 'lt.css', if (int) 'lt-interactive.css'
+    ), inline_assets),
     user_css_block(x$css),
     rules_block(x$rules),
     spec_block(x),
-    if ('js' %in% assets) js_block(inline_assets),
-    if (interactive_assets) interactive_js_block(inline_assets)
+    js_block(c(
+      if ('js' %in% assets) 'lt.js', if (int) 'lt-interactive.js'
+    ), inline_assets)
   )
   if (!fragment) body = html_doc(body)
   xfun::raw_string(paste(body, collapse = '\n'))
@@ -210,8 +202,8 @@ knit_print.lt_tbl = function(x, ...) {
   ))
   first = !isTRUE(knitr::opts_knit$get(.knit_flag))
   if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), .knit_flag))
-  # The interactivity extension is emitted once per document, on the first
-  # interactive table (which need not be the first table overall).
+  # The interactivity extension is tracked separately because the first
+  # interactive table need not be the first table overall.
   int_first = FALSE
   if (!is.null(x$interactive)) {
     int_first = !isTRUE(knitr::opts_knit$get(.int_flag))
@@ -225,8 +217,10 @@ knit_print.lt_tbl = function(x, ...) {
   x$css = setdiff(x$css, seen)
   if (length(x$css))
     knitr::opts_knit$set(stats::setNames(list(c(seen, x$css)), .css_flag))
-  structure(format(x, assets = first, interactive_assets = int_first),
-    class = c('knit_asis', 'html'))
+  structure(
+    format(x, assets = c(if (first) c('css', 'js'), if (int_first) 'interactive')),
+    class = c('knit_asis', 'html')
+  )
 }
 
 # record_print (litedown / xfun::record): for HTML output emit assets + spec;
@@ -241,12 +235,10 @@ record_print.lt_tbl = function(x, ...) {
   # extension's <link>/<script src> can be emitted for every interactive table.
   int = !is.null(x$interactive)
   xfun::new_record(c(
-    css_block(inline = FALSE),
-    if (int) interactive_css_block(inline = FALSE),
+    css_block(c('lt.css', if (int) 'lt-interactive.css'), inline = FALSE),
     user_css_block(x$css, local = TRUE),
     rules_block(x$rules), spec_block(x),
-    js_block(inline = FALSE),
-    if (int) interactive_js_block(inline = FALSE), ''
+    js_block(c('lt.js', if (int) 'lt-interactive.js'), inline = FALSE), ''
   ), 'asis')
 }
 
@@ -289,8 +281,10 @@ lt_static = function(
   tidy = FALSE
 ) {
   method = match.arg(method)
+  # 'raw' keeps the JS spec, so the interactivity extension still applies; the
+  # baked methods produce a static <table>, where it would do nothing.
   if (method == 'raw') return(format(
-    x, fragment = fragment, assets = c(if (css) 'css', 'js')
+    x, fragment = fragment, assets = c(if (css) 'css', 'js', 'interactive')
   ))
   if (method == 'auto') method = if (has_node()) 'node' else if (has_browser()) 'browser'
   if (is.null(method)) stop(
@@ -344,7 +338,10 @@ lt_static_node = function(x, css = TRUE) {
   out = system2('node', c(shQuote(runner), shQuote(js)), input = json, stdout = TRUE)
   if (!is.null(attr(out, 'status'))) stop('Node.js failed to render the lt table.')
   Encoding(out) = 'UTF-8'
-  c(if (css) css_block(TRUE), user_css_block(x$css), rules_block(x$rules), out)
+  c(
+    css_block(if (css) 'lt.css'), user_css_block(x$css), rules_block(x$rules),
+    out
+  )
 }
 
 # Write `html` to a temp file, run it through headless Chromium via
