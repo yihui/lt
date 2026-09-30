@@ -1,3 +1,14 @@
+# Build the package site:
+#   - main          -> deploy to the gh-pages branch
+#   - pull requests -> preview at lt-pr-<N>.surge.sh, with the URL commented
+#     on the PR
+#
+# Preview teardown lives in surge-teardown.yml: it runs on the `delete` event so
+# it survives deleting the branch at merge time (which cancels close-event runs).
+#
+# One-time setup: run `surge token` on a machine where you ran `surge login` and
+# add the result as repo secret SURGE_TOKEN (Settings -> Secrets and variables ->
+# Actions). The deploy step is skipped until it exists. Preview URLs are public.
 name: Build and deploy package site
 
 on:
@@ -9,12 +20,20 @@ on:
 permissions:
   contents: write
 
+# One run per ref; a new push supersedes the previous one.
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+
 jobs:
   build:
     runs-on: macos-latest
     permissions:
       contents: write
-      statuses: write
+      pull-requests: write # comment the preview URL
     steps:
       - uses: actions/checkout@HEAD
 
@@ -29,30 +48,23 @@ jobs:
         with:
           site-dir: 'site'
 
-      - if: github.event_name == 'pull_request'
-        id: upload
-        uses: actions/upload-artifact@HEAD
-        with:
-          name: site-preview
-          path: 'site'
+      # Fork PRs cannot read SURGE_TOKEN, so the two steps below are skipped for
+      # them: the build still verifies the site, but there is no live preview.
+      - name: Deploy PR preview to surge
+        if: env.SURGE_TOKEN != '' && github.event_name == 'pull_request'
+        run: |
+          npm install -g surge
+          surge ./site "lt-pr-${{ github.event.pull_request.number }}.surge.sh"
 
-      # Skipped for PRs from forks: their GITHUB_TOKEN is read-only, so
-      # createCommitStatus() returns 403 and fails the job even though the
-      # build and artifact upload above succeeded.
-      - if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/github-script@HEAD
+      - name: Comment preview URL
+        if: env.SURGE_TOKEN != '' && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          script: |
-            const runUrl = `${{ steps.upload.outputs.artifact-url }}`;
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.payload.pull_request.head.sha,
-              state: 'success',
-              target_url: runUrl,
-              description: 'Site preview artifact ready',
-              context: 'Site preview'
-            });
+          header: surge-preview
+          message: |
+            🚀 Site preview: https://lt-pr-${{ github.event.pull_request.number }}.surge.sh
+
+            Updates on every push; removed when this PR closes.
 
       - name: Deploy to gh-pages
         if: github.event_name != 'pull_request'
