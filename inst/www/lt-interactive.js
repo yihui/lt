@@ -151,9 +151,9 @@
     // wire sort before adding the filter row, so it sees the header row only
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
     if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
-    // `paginate` is the page sizes to offer, the first one being the initial
-    if (opts.paginate) {
-      const sizes = Array.isArray(opts.paginate) ? opts.paginate : [10, 25, 50, 100];
+    // `pager` is the page sizes to offer, the first one being the initial
+    if (opts.pager) {
+      const sizes = Array.isArray(opts.pager) ? opts.pager : [10, 25, 50, 100];
       sync = addPaginate(el, cols, sizes, state, () => refresh(false));
       refresh();  // cut the full render down to the first page
     }

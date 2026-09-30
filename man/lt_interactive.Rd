@@ -9,7 +9,7 @@ lt_interactive(
   sort = TRUE,
   search = TRUE,
   filter = FALSE,
-  page_sizes = c(10, 25, 50, 100)
+  pager = c(10, 25, 50, 100)
 )
 }
 \arguments{
@@ -29,7 +29,7 @@ terms the same way as \code{search} but against that column only. A row is kept
 when it passes every filter and the search. Can also be a character vector
 of column names, to filter on those columns only.}
 
-\item{page_sizes}{The page sizes to offer, as a vector of row counts; the
+\item{pager}{The page sizes to offer, as a vector of row counts; the
 first one is used initially. Paging shows that many of the filtered and
 sorted rows at a time, with a pager (first, previous, next, last), the row
 range, and (for more than one size) a selector below the table. \code{Inf} is a
@@ -55,7 +55,7 @@ row-specific styles or footnotes: those travel with their rows.
 \examples{
 lt(head(mtcars)) |> lt_interactive()
 # search only, no click-to-sort or pagination
-lt(head(mtcars)) |> lt_interactive(sort = FALSE, page_sizes = NULL)
+lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 # 5 rows at a time, or all of them, with a filter box on one column
-lt(mtcars) |> lt_interactive(filter = 'cyl', page_sizes = c(5, Inf))
+lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
 }

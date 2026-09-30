@@ -217,7 +217,7 @@ assert("a column filter box filters on its own column", {
 })
 
 assert("the pager shows one page of rows at a time", {
-  x = itbl(page_sizes = 2)
+  x = itbl(pager = 2)
   click = function(i) sprintf(
     'document.querySelectorAll(".lti-pager button")[%d].click()', i
   )
@@ -239,12 +239,12 @@ assert("the pager shows one page of rows at a time", {
 
 assert("paging is on by default and can be turned off", {
   (lti_eval(itbl(), 'document.querySelector(".lti-pos").textContent') %==% '1–4 / 4')
-  (lti_eval(itbl(page_sizes = NULL),
+  (lti_eval(itbl(pager = FALSE),
             'document.querySelectorAll(".lti-pager").length') %==% '0')
 })
 
 assert("a page size of Inf puts every row on one page", {
-  x = itbl(page_sizes = c(2, Inf))
+  x = itbl(pager = c(2, Inf))
   # the selector offers it as a symbol, since there is no count to show
   (lti_eval(x, '[...document.querySelectorAll(".lti-pager option")].map(o => o.textContent).join(",")')
    %==% '2,∞')
@@ -259,7 +259,7 @@ assert("a page size of Inf puts every row on one page", {
 })
 
 assert("the page size selector re-pages, and searching returns to page 1", {
-  x = itbl(page_sizes = c(2, 4))
+  x = itbl(pager = c(2, 4))
   size = function(v) sprintf(
     'var s = document.querySelector(".lti-pager select");
      s.value = "%s"; s.dispatchEvent(new Event("change"))', v
@@ -292,7 +292,7 @@ assert("the controls are rows of the table, so they match its width", {
   (lti_eval(x, 't.querySelector(".lti-head td").colSpan') %==% '2')
   (lti_eval(x, 't.querySelector(".lti-pager-row td").colSpan') %==% '2')
   # a table with notes keeps them above the pager, so their borders still apply
-  y = lt(data.frame(a = 1:3)) |> lt_note('hi') |> lt_interactive(page_sizes = 2)
+  y = lt(data.frame(a = 1:3)) |> lt_note('hi') |> lt_interactive(pager = 2)
   (lti_eval(y, '[...t.tFoot.rows].map(r => r.className).join(",")') %==%
      'lt-source-note,lti-pager-row')
 })
