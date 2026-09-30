@@ -7,6 +7,8 @@
   "use strict";
   if (root.LT?.buildHtml) return;  // duplicate inclusion is a no-op
 
+  const $ = (el, sel) => el.querySelector(sel);
+
   // `[<]` (not `<`) avoids `</…` so this file is safe to inline in <script>.
   const esc = s => String(s)
     .replace(/&/g, "&amp;").replace(/[<]/g, "&lt;")
@@ -643,7 +645,7 @@
 
   const mount = (s, spec) => {
     s.insertAdjacentHTML("afterend", buildHtml(spec));
-    ready(s.nextElementSibling.querySelector("table"), spec);
+    ready($(s.nextElementSibling, "table"), spec);
   };
 
   // Render a spec into `el` (replacing its content) at any time, e.g. long
@@ -652,7 +654,7 @@
   // returned table element.
   const render = (el, spec) => {
     el.innerHTML = buildHtml(spec);
-    return ready(el.querySelector("table"), spec);
+    return ready($(el, "table"), spec);
   };
   // q.push renders immediately; replay any entries queued before we loaded.
   const q = { push: e => mount(e.s, e.d) };

@@ -20,6 +20,21 @@
   // lt.js decides alignment and formatting).
   const numCol = col => typeof col.find(v => v != null) === "number";
 
+  // --- Small DOM helpers, so building the controls stays terse ---
+  const $ = (el, sel) => el.querySelector(sel),
+        $$ = (el, sel) => el.querySelectorAll(sel),
+        on = (t, type, fn, opts) => t.addEventListener(type, fn, opts),
+        off = (t, type, fn) => t.removeEventListener(type, fn);
+  // Create a <tag> and assign `props`: a dashed key ("aria-label") sets an
+  // attribute, any other key ("className", "type", "textContent") a DOM
+  // property. Appends to `parent` when given, and returns the new element.
+  function elem(doc, tag, props = {}, parent) {
+    const e = doc.createElement(tag);
+    for (const k in props)
+      k.includes("-") ? e.setAttribute(k, props[k]) : (e[k] = props[k]);
+    return parent ? parent.appendChild(e) : e;
+  }
+
   // Compile a search term into a predicate over one row's cells (`{raw, disp}`
   // objects), or null to keep every row. Ported from forestly's
   // inst/js/search-filter.js so results stay consistent across the projects.
@@ -115,7 +130,7 @@
   function captureDisplay(el, cols) {
     const disp = {};
     cols.forEach(c => disp[c] = []);
-    el.querySelectorAll("tbody tr").forEach((tr, ri) => cols.forEach(
+    $$(el, "tbody tr").forEach((tr, ri) => cols.forEach(
       (c, ci) => disp[c][ri] = tr.children[ci]?.textContent ?? ""
     ));
     return disp;
@@ -129,7 +144,7 @@
     const opts = spec.interactive, cols = spec._cols || [],
           disp = captureDisplay(el, cols),
           // the bottom header row: the one whose cells line up with `cols`
-          hrow = [...el.querySelectorAll("thead tr")].pop(),
+          hrow = [...$$(el, "thead tr")].pop(),
           state = { filters: {}, page: 0, pageSize: 0 };
     let view,          // filtered + sorted indices, cached across page turns
         sync = () => {};  // pager readout, replaced by addPaginate()
@@ -139,12 +154,13 @@
     const refresh = (stale = true) => {
       if (stale) { view = computeView(spec, disp, state); state.page = 0; }
       const rows = pageSlice(view, state),
-            tmp = el.ownerDocument.createElement("template");
-      tmp.innerHTML = LT.buildHtml({ ...spec, _viewRows: rows });
-      const body = tmp.content.querySelector("tbody");
+            tmp = elem(el.ownerDocument, "template", {
+              innerHTML: LT.buildHtml({ ...spec, _viewRows: rows })
+            });
+      const body = $(tmp.content, "tbody");
       if (!rows.length)  // no matches: a neutral symbol spanning all columns
         body.innerHTML = `<tr class="lti-empty"><td colspan="${cols.length}">—</td></tr>`;
-      el.querySelector("tbody").replaceWith(body);
+      $(el, "tbody").replaceWith(body);
       sync(view.length);
     };
 
@@ -165,11 +181,9 @@
   // a clear button), so there is no icon or placeholder text to translate; the
   // label is for screen readers only.
   function searchInput(doc, label) {
-    const input = doc.createElement("input");
-    input.type = "search";
-    input.className = "lti-search";
-    input.setAttribute("aria-label", label);
-    return input;
+    return elem(doc, "input", {
+      type: "search", className: "lti-search", "aria-label": label
+    });
   }
 
   // A full-width row of the table, for a control that belongs to the table as a
@@ -177,12 +191,9 @@
   // controls exactly as wide as the table, however narrow that is, and keeps
   // everything inside the core `.lt-wrap` scroll box. Returns its single cell.
   function fullRow(sect, cls, nCol, pos) {
-    const cell = sect.insertRow(pos).appendChild(
-      sect.ownerDocument.createElement("td")
-    );
-    cell.parentNode.className = cls;
-    cell.colSpan = nCol;
-    return cell;
+    const row = sect.insertRow(pos);
+    row.className = cls;
+    return elem(sect.ownerDocument, "td", { colSpan: nCol }, row);
   }
 
   // Debounce typing so a long list is not re-rendered per keystroke; Enter (or
@@ -206,12 +217,11 @@
   // <tbody> swap, so they need no re-render.
   function addSort(hrow, cols, state, refresh) {
     const doc = hrow.ownerDocument, marks = [];
-    hrow.querySelectorAll("th").forEach((th, ci) => {
+    $$(hrow, "th").forEach((th, ci) => {
       const col = cols[ci];
       if (col == null) return;
       th.classList.add("lti-sortable");
-      const ind = th.appendChild(doc.createElement("span"));
-      ind.className = "lti-sort";
+      const ind = elem(doc, "span", { className: "lti-sort" }, th);
       marks.push([th, ind]);
       th.onclick = () => {
         const dir = state.sortCol !== col ? "asc" : state.sortDir === "asc" ?
@@ -236,10 +246,9 @@
   // `opt.columns`, when an array, restricts which columns get a box.
   function addFilter(hrow, cols, opt, state, refresh) {
     const doc = hrow.ownerDocument, only = opt.columns,
-          row = doc.createElement("tr");
-    row.className = "lti-filters";
+          row = elem(doc, "tr", { className: "lti-filters" });
     cols.forEach(c => {
-      const cell = row.appendChild(doc.createElement("td"));
+      const cell = elem(doc, "td", {}, row);
       if (Array.isArray(only) && !only.includes(c)) return;
       const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
       onType(input, v => { state.filters[c] = v; refresh(); });
@@ -250,11 +259,11 @@
   // The table's <colgroup>, created (one <col> per column) when core emitted
   // none — it only does so for a table given explicit widths on the R side.
   function colGroup(el, nCol) {
-    let g = el.querySelector("colgroup");
+    let g = $(el, "colgroup");
     if (!g) {
       const doc = el.ownerDocument;
-      g = doc.createElement("colgroup");
-      for (let i = 0; i < nCol; i++) g.appendChild(doc.createElement("col"));
+      g = elem(doc, "colgroup");
+      for (let i = 0; i < nCol; i++) elem(doc, "col", {}, g);
       // <colgroup> comes after <caption> (the title), before <thead>
       el.insertBefore(g, el.caption?.nextSibling || el.firstChild);
     }
@@ -268,7 +277,7 @@
   // edge moves that edge alone instead of reflowing the whole table. A
   // double-click on a grip fits its column to its content.
   function addResize(el, hrow, nCol) {
-    const doc = el.ownerDocument, ths = [...hrow.querySelectorAll("th")],
+    const doc = el.ownerDocument, ths = [...$$(hrow, "th")],
           cs = colGroup(el, nCol), wOf = e => e.getBoundingClientRect().width;
     const freeze = () => {
       if (el.classList.contains("lti-fixed")) return;
@@ -300,8 +309,7 @@
         parseFloat(el.style.width) + parseFloat(cs[i].style.width) - old + "px";
     };
     ths.forEach((th, i) => {
-      const grip = th.appendChild(doc.createElement("div"));
-      grip.className = "lti-resizer";
+      const grip = elem(doc, "div", { className: "lti-resizer" }, th);
       // the grip sits in a header cell that may sort on click: its own events
       // stop here, or a drag would sort the column as well
       grip.onclick = e => e.stopPropagation();
@@ -317,9 +325,9 @@
         const x0 = e.clientX, w0 = parseFloat(cs[i].style.width),
               move = ev => setWidth(i, w0 + ev.clientX - x0);
         el.classList.add("lti-resizing");
-        doc.addEventListener("pointermove", move);
-        doc.addEventListener("pointerup", () => {
-          doc.removeEventListener("pointermove", move);
+        on(doc, "pointermove", move);
+        on(doc, "pointerup", () => {
+          off(doc, "pointermove", move);
           el.classList.remove("lti-resizing");
         }, { once: true });
       };
@@ -336,31 +344,25 @@
     let foot = el.tFoot;
     // reuse the core footer if there is one, so the pager is sized like it
     if (!foot) (foot = el.createTFoot()).className = "lt-footer";
-    const bar = fullRow(foot, "lti-pager-row", cols.length, -1)
-            .appendChild(doc.createElement("div")),
-          pos = doc.createElement("span");
+    const bar = elem(doc, "div", { className: "lti-pager" },
+            fullRow(foot, "lti-pager-row", cols.length, -1)),
+          pos = elem(doc, "span", { className: "lti-pos" });
     state.pageSize = sizes[0];
-    bar.className = "lti-pager";
-    pos.className = "lti-pos";
     // the last page is clamped by pageSlice(), so a large number will do
     const steps = [() => 0, p => p - 1, p => p + 1, () => 1e9];
     const btns = ["«", "‹", "›", "»"].map((glyph, i) => {
-      const b = bar.appendChild(doc.createElement("button"));
-      b.type = "button";
-      b.textContent = glyph;
-      b.setAttribute("aria-label", ["First", "Previous", "Next", "Last"][i]);
+      const b = elem(doc, "button", {
+        type: "button", textContent: glyph,
+        "aria-label": ["First", "Previous", "Next", "Last"][i]
+      }, bar);
       b.onclick = () => { state.page = steps[i](state.page); repage(); };
       return b;
     });
     bar.appendChild(pos);
     if (sizes.length > 1) {
-      const sel = bar.appendChild(doc.createElement("select"));
-      sel.setAttribute("aria-label", "Rows per page");
-      sizes.forEach(n => {
-        const o = sel.appendChild(doc.createElement("option"));
-        o.value = n;
-        o.textContent = n || "∞";  // 0: every row
-      });
+      const sel = elem(doc, "select", { "aria-label": "Rows per page" }, bar);
+      // 0: every row on one page (∞)
+      sizes.forEach(n => elem(doc, "option", { value: n, textContent: n || "∞" }, sel));
       sel.onchange = () => { state.pageSize = +sel.value; state.page = 0; repage(); };
     }
     return total => {
@@ -387,5 +389,5 @@
   // only sees later renders; enhance the tables already on the page now.
   // (Skipped in non-DOM hosts, e.g. the Node.js tests.)
   if (typeof document !== "undefined")
-    document.querySelectorAll(".lt-table").forEach(el => onMount(el, el._ltSpec));
+    $$(document, ".lt-table").forEach(el => onMount(el, el._ltSpec));
 })(typeof window !== "undefined" ? window : globalThis);
