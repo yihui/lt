@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="generator" content="litedown 0.11.5">
 <title>News</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/css/site.min.css">
 </head>
 <body>
 <nav><p><a href="index.html">Home</a>
@@ -33,6 +33,12 @@
 </div>
 <h2 id="sec:lt-0-5" class="unnumbered">lt 0.5</h2>
 <ul>
+<li>
+<p>Added <code>lt_interactive()</code> to make a table interactive in the browser: click-to-sort column headers, a table-wide search box, per-column filter boxes (<code>filter</code>), pagination (<code>pager</code>, on by default, and <code>Inf</code> is a valid page size meaning all rows), and resizable columns (<code>resize</code>). Searching and filtering match the displayed text case-insensitively, with a leading <code>!</code> to negate; a term that mentions <code>x</code> (e.g., <code>x &gt; 5</code>) is evaluated as a JavaScript expression against the raw cell values instead. The controls are rows of the table itself, so they are exactly as wide as it is. All of this is handled client-side by an extension (<code>lt-interactive.js</code>/<code>.css</code>) that is only loaded for tables that call <code>lt_interactive()</code>, so the base runtime stays small for everyone else. Tables with row groups or row indentation are left static, since sorting and filtering would destroy the meaning their row order carries.</p>
+</li>
+<li>
+<p>The lt.js runtime gained <code>LT.render(el, spec)</code>, which renders a spec into a container element at any time (unlike <code>LT.build()</code>, which has to be called from an inline <code>&lt;script&gt;</code> while the page is parsing). This is for tables built on demand, e.g., a table rendered when the reader expands a row.</p>
+</li>
 <li>
 <p>Column selection now accepts predicate formulas: a one-sided formula whose right-hand side references the pronoun <code>.</code> (the character vector of column names) is evaluated as a predicate, and a logical result selects the matching names, e.g., <code>lt_spanner(x, &quot;Time&quot;, columns = ~ endsWith(., &quot;_time&quot;))</code> or <code>lt_format(x, ~ grepl(&quot;_prob$&quot;, .), decimals = 2)</code>. A character result (e.g., <code>~ grep(&quot;_x$&quot;, ., value = TRUE)</code>) is used as-is. Bare-name formulas (e.g., <code>~ a + b</code>) continue to work unchanged. This applies to all functions that select columns.</p>
 </li>
@@ -82,11 +88,11 @@
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
 <p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.5</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/appendix.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/js/appendix.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.74/js/pages.min.js" defer></script>
 </body>
 </html>
