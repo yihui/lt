@@ -117,7 +117,7 @@ lti_rows = function(x, js = '') strsplit(lti_eval(
 
 itbl = function(...) lt(data.frame(name = sym, n = c(5, 12, 3, 8))) |> lt_interactive(...)
 
-if (has_browser()) assert("clicking a header sorts the rendered rows", {
+assert("clicking a header sorts the rendered rows", {
   x = itbl()
   (lti_rows(x) %==% sym)  # no sort applied yet
   click = 'document.querySelectorAll("thead th")[1].click()'
@@ -129,7 +129,7 @@ if (has_browser()) assert("clicking a header sorts the rendered rows", {
   (lti_eval(x, 'document.querySelectorAll("thead th")[1].ariaSort', click) %==% 'ascending')
 })
 
-if (has_browser()) assert("the search box filters the rendered rows", {
+assert("the search box filters the rendered rows", {
   x = itbl()
   # a `change` event (Enter, or leaving the box) applies the term immediately,
   # bypassing the debounce that `input` events go through
@@ -145,7 +145,7 @@ if (has_browser()) assert("the search box filters the rendered rows", {
   (lti_eval(x, 't.querySelector("tbody td").colSpan', find('zzz')) %==% '2')
 })
 
-if (has_browser()) assert("sort and search can be disabled individually", {
+assert("sort and search can be disabled individually", {
   # `n` of controls: sortable headers, search boxes
   probe = '[t.querySelectorAll(".lti-sortable").length,
             t.parentNode.parentNode.querySelectorAll("input").length].join(",")'
@@ -154,7 +154,7 @@ if (has_browser()) assert("sort and search can be disabled individually", {
   (lti_eval(itbl(search = FALSE), probe) %==% '2,0')
 })
 
-if (has_browser()) assert("a non-flat table is left static", {
+assert("a non-flat table is left static", {
   x = lt(data.frame(g = c("a", "a", "b"), v = 1:3)) |> lt_group(~ g) |>
     lt_interactive()
   (lti_eval(x, '[...t.querySelectorAll(".lti-sortable")].length') %==% '0')
