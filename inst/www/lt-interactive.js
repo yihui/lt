@@ -3,7 +3,9 @@
  *
  * A plugin on the existing LT global (see lt.js): it adds no new global. For a
  * table whose spec carries `interactive`, it adds the requested controls and
- * re-renders <tbody> through the core `spec._viewRows` seam. Flat tables only
+ * re-renders <tbody> through the core `spec._viewRows` seam. Every control is a
+ * row of the table itself — the search box in <thead>, the pager in <tfoot> —
+ * so it is exactly as wide as the table and scrolls with it. Flat tables only
  * (no row groups / spanners / rowspan); others stay static, with a console
  * warning.
  */
@@ -143,14 +145,14 @@
       sync(view.length);
     };
 
-    if (opts.search !== false) addSearch(el, state, refresh);
+    if (opts.search !== false) addSearch(el, cols, state, refresh);
     // wire sort before adding the filter row, so it sees the header row only
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
     if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
     // `paginate` is the page sizes to offer, the first one being the initial
     if (opts.paginate) {
       const sizes = Array.isArray(opts.paginate) ? opts.paginate : [10, 25, 50, 100];
-      sync = addPaginate(el, sizes, state, () => refresh(false));
+      sync = addPaginate(el, cols, sizes, state, () => refresh(false));
       refresh();  // cut the full render down to the first page
     }
   }
@@ -165,6 +167,19 @@
     return input;
   }
 
+  // A full-width row of the table, for a control that belongs to the table as a
+  // whole. Living inside the table (instead of beside it) is what keeps the
+  // controls exactly as wide as the table, however narrow that is, and keeps
+  // everything inside the core `.lt-wrap` scroll box. Returns its single cell.
+  function fullRow(sect, cls, nCol, pos) {
+    const cell = sect.insertRow(pos).appendChild(
+      sect.ownerDocument.createElement("td")
+    );
+    cell.parentNode.className = cls;
+    cell.colSpan = nCol;
+    return cell;
+  }
+
   // Debounce typing so a long list is not re-rendered per keystroke; Enter (or
   // leaving the box) applies at once.
   function onType(input, apply) {
@@ -174,13 +189,12 @@
     input.onchange = () => { clearTimeout(timer); go(); };
   }
 
-  // Table-wide search box above the table.
-  function addSearch(el, state, refresh) {
-    const wrap = el.closest(".lt-wrap") || el,
-          input = searchInput(el.ownerDocument, "Search");
+  // Table-wide search box, as the first row of <thead>.
+  function addSearch(el, cols, state, refresh) {
+    const cell = fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0),
+          input = cell.appendChild(searchInput(el.ownerDocument, "Search"));
     input.className = "lti-search";
     onType(input, v => { state.term = v; refresh(); });
-    wrap.parentNode.insertBefore(input, wrap);
   }
 
   // Click-to-sort headers, one column at a time: clicking cycles asc → desc →
@@ -229,13 +243,19 @@
     hrow.parentNode.appendChild(row);
   }
 
-  // Pager below the table, with a page-size <select> when there is more than
-  // one size to offer. Both are symbols or numbers only: « ‹ › » for
-  // first/previous/next/last and `from–to / total` for the position. Returns
-  // the callback that updates them for a new row count.
-  function addPaginate(el, sizes, state, repage) {
-    const doc = el.ownerDocument, wrap = el.closest(".lt-wrap") || el,
-          bar = doc.createElement("div"), pos = doc.createElement("span");
+  // Pager as the last row of <tfoot> (after any footnotes), with a page-size
+  // <select> when there is more than one size to offer. Both are symbols or
+  // numbers only: « ‹ › » for first/previous/next/last and `from–to / total`
+  // for the position. Returns the callback that updates them for a new row
+  // count.
+  function addPaginate(el, cols, sizes, state, repage) {
+    const doc = el.ownerDocument;
+    let foot = el.tFoot;
+    // reuse the core footer if there is one, so the pager is sized like it
+    if (!foot) (foot = el.createTFoot()).className = "lt-footer";
+    const bar = fullRow(foot, "lti-pager-row", cols.length, -1)
+            .appendChild(doc.createElement("div")),
+          pos = doc.createElement("span");
     state.pageSize = sizes[0];
     bar.className = "lti-pager";
     pos.className = "lti-pos";
@@ -260,7 +280,6 @@
       });
       sel.onchange = () => { state.pageSize = +sel.value; state.page = 0; repage(); };
     }
-    wrap.parentNode.insertBefore(bar, wrap.nextSibling);
     return total => {
       // a page size of 0 is one page holding everything
       const n = state.pageSize || total || 1,

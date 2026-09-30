@@ -189,7 +189,7 @@ assert("the search box filters the rendered rows", {
   # a `change` event (Enter, or leaving the box) applies the term immediately,
   # bypassing the debounce that `input` events go through
   find = function(term) sprintf(
-    'var i = t.closest(".lt-wrap").previousElementSibling;
+    'var i = t.querySelector(".lti-search");
      i.value = %s; i.dispatchEvent(new Event("change"))', xfun::tojson(term)
   )
   (lti_rows(x, find('rash')) %==% 'Rash')
@@ -243,21 +243,6 @@ assert("paging is on by default and can be turned off", {
             'document.querySelectorAll(".lti-pager").length') %==% '0')
 })
 
-assert("the page size selector re-pages, and searching returns to page 1", {
-  x = itbl(page_sizes = c(2, 4))
-  size = function(v) sprintf(
-    'var s = document.querySelector(".lti-pager select");
-     s.value = "%s"; s.dispatchEvent(new Event("change"))', v
-  )
-  (lti_rows(x, size(4)) %==% sym)
-  # on page 2, then a search whose matches fit on page 1
-  find = 'var i = t.closest(".lt-wrap").previousElementSibling;
-          i.value = "a"; i.dispatchEvent(new Event("change"))'
-  (lti_rows(x, paste('document.querySelectorAll(".lti-pager button")[2].click()', find,
-                     sep = ';')) %==% c("Rash", "Nausea"))
-  (lti_eval(x, 'document.querySelector(".lti-pos").textContent', find) %==% '1–2 / 3')
-})
-
 assert("a page size of Inf puts every row on one page", {
   x = itbl(page_sizes = c(2, Inf))
   # the selector offers it as a symbol, since there is no count to show
@@ -273,13 +258,43 @@ assert("a page size of Inf puts every row on one page", {
             pick) %==% '1111')
 })
 
+assert("the page size selector re-pages, and searching returns to page 1", {
+  x = itbl(page_sizes = c(2, 4))
+  size = function(v) sprintf(
+    'var s = document.querySelector(".lti-pager select");
+     s.value = "%s"; s.dispatchEvent(new Event("change"))', v
+  )
+  (lti_rows(x, size(4)) %==% sym)
+  # on page 2, then a search whose matches fit on page 1
+  find = 'var i = t.querySelector(".lti-search");
+          i.value = "a"; i.dispatchEvent(new Event("change"))'
+  (lti_rows(x, paste('document.querySelectorAll(".lti-pager button")[2].click()', find,
+                     sep = ';')) %==% c("Rash", "Nausea"))
+  (lti_eval(x, 'document.querySelector(".lti-pos").textContent', find) %==% '1–2 / 3')
+})
+
 assert("sort and search can be disabled individually", {
   # `n` of controls: sortable headers, search boxes
   probe = '[t.querySelectorAll(".lti-sortable").length,
-            t.parentNode.parentNode.querySelectorAll("input").length].join(",")'
+            t.querySelectorAll(".lti-search").length].join(",")'
   (lti_eval(itbl(), probe) %==% '2,1')
   (lti_eval(itbl(sort = FALSE), probe) %==% '0,1')
   (lti_eval(itbl(search = FALSE), probe) %==% '2,0')
+})
+
+assert("the controls are rows of the table, so they match its width", {
+  x = itbl(filter = TRUE)
+  # nothing is placed beside the table: the core wrapper holds the table alone
+  (lti_eval(x, 't.parentNode.className') %==% 'lt-wrap')
+  (lti_eval(x, 't.parentNode.children.length') %==% '1')
+  # the search box and the pager each span every column
+  (lti_eval(x, 't.tHead.rows[0].className') %==% 'lti-head')
+  (lti_eval(x, 't.querySelector(".lti-head td").colSpan') %==% '2')
+  (lti_eval(x, 't.querySelector(".lti-pager-row td").colSpan') %==% '2')
+  # a table with notes keeps them above the pager, so their borders still apply
+  y = lt(data.frame(a = 1:3)) |> lt_note('hi') |> lt_interactive(page_sizes = 2)
+  (lti_eval(y, '[...t.tFoot.rows].map(r => r.className).join(",")') %==%
+     'lt-source-note,lti-pager-row')
 })
 
 assert("a non-flat table is left static", {

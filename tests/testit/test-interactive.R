@@ -4,7 +4,7 @@ d = data.frame(x = 1:3, y = c("b", "a", "c"))
 # as looked for. The bare name of a class or a file is not enough: the CSS class
 # names appear in the extension's script too, and `lt-interactive` appears in a
 # comment inside core lt.js.
-ext_css = '[.]lti-search \\{'; ext_js = 'LT[.]plugins[.]interactive = \\{'
+ext_css = '[.]lti-sortable \\{'; ext_js = 'LT[.]plugins[.]interactive = \\{'
 core_css = '[.]lt-wrap \\{'; core_js = 'root[.]LT = \\{'
 
 assert("the interactive extension is included only for a table that opts in", {
