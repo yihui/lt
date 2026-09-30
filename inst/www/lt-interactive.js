@@ -5,9 +5,8 @@
  * table whose spec carries `interactive`, it adds the requested controls and
  * re-renders <tbody> through the core `spec._viewRows` seam. Every control is a
  * row of the table itself — the search box in <thead>, the pager in <tfoot> —
- * so it is exactly as wide as the table and scrolls with it. Flat tables only
- * (no row groups / spanners / rowspan); others stay static, with a console
- * warning.
+ * so it is exactly as wide as the table and scrolls with it. Flat rows only (no
+ * row groups or indentation); such tables stay static, with a console warning.
  */
 (root => {
   "use strict";
@@ -101,11 +100,14 @@
     return view.slice(state.page * n, (state.page + 1) * n);
   }
 
-  // Enhanceable only when the table is flat: no row groups, spanners, rowspan,
-  // or row-indexed ops (those make row order and row indices interdependent).
-  const isFlat = spec => !spec.row_group && !spec.auto_span &&
-    !spec.spanners?.length &&
-    !(spec.ops || []).some(o => o.type === "row_group" || o.rows?.length);
+  // Enhanceable only when the rows are flat: row groups and indentation give the
+  // row order a meaning of its own (grouping, hierarchy) that reordering or
+  // dropping rows would destroy. Column spanners, explicit or from `auto_span`,
+  // are no obstacle: they are <thead> rows, and only <tbody> is ever re-rendered.
+  // Row-keyed styles and footnotes are fine too — core keys them to the original
+  // row indices, which is what the view carries.
+  const isFlat = spec => !spec.row_group &&
+    !(spec.ops || []).some(o => o.type === "row_group" || o.type === "indent");
 
   // Displayed text per column, keyed to the original row order. It does not
   // change with the view, so capture it once from the initial full render.
@@ -120,8 +122,8 @@
 
   function enhance(el, spec) {
     if (!isFlat(spec)) return console.warn(
-      "lt: interactive tables must be flat (no row groups, spanners, or " +
-      "rowspan); rendering a static table."
+      "lt: interactive tables need flat rows (no row groups or indentation); " +
+      "rendering a static table."
     );
     const opts = spec.interactive, cols = spec._cols || [],
           disp = captureDisplay(el, cols),

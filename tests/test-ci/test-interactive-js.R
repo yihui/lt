@@ -297,8 +297,31 @@ assert("the controls are rows of the table, so they match its width", {
      'lt-source-note,lti-pager-row')
 })
 
-assert("a non-flat table is left static", {
-  x = lt(data.frame(g = c("a", "a", "b"), v = 1:3)) |> lt_group(~ g) |>
-    lt_interactive()
+assert("a table whose row order carries meaning is left static", {
+  d = data.frame(g = c("a", "a", "b"), v = 1:3)
+  # row groups
+  x = lt(d) |> lt_group(~ g) |> lt_interactive()
   (lti_eval(x, '[...t.querySelectorAll(".lti-sortable")].length') %==% '0')
+  # indentation (a hierarchy sorting would scramble)
+  x = lt(d) |> lt_indent(2) |> lt_interactive()
+  (lti_eval(x, '[...t.querySelectorAll(".lti-sortable")].length') %==% '0')
+})
+
+assert("column spanners stay interactive: they are header rows, not body rows", {
+  d = data.frame(a.x = c(3L, 1L, 2L), a.y = c("p", "r", "q"), b = 1:3)
+  # `a.x` and `a.y` are spanned under `a`, inferred from the column names
+  x = lt(d) |> lt_spanner() |> lt_interactive()
+  spans = 'sel => [...t.querySelectorAll(sel)].map(e => e.textContent).join(",")'
+  # sorting is wired to the column labels, not the spanner labels above them
+  (lti_eval(x, sprintf('(%s)("thead .lti-sortable")', spans)) %==% 'x,y,b')
+  click = 'document.querySelectorAll("thead tr:nth-child(3) th")[0].click()'
+  (lti_rows(x, click) %==% c('1', '2', '3'))
+  # the spanner row survives the re-render of <tbody>
+  (lti_eval(x, sprintf('(%s)(".lt-spanner")', spans), click) %==% 'a')
+  # an explicit spanner works the same way
+  y = lt(data.frame(p = c(2L, 1L), q = c("b", "a"))) |> lt_spanner(both ~ p + q) |>
+    lt_interactive()
+  (lti_eval(y, sprintf('(%s)(".lt-spanner")', spans)) %==% 'both')
+  (lti_rows(y, 'document.querySelectorAll("thead tr:nth-child(3) th")[0].click()') %==%
+     c('1', '2'))
 })

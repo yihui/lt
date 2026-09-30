@@ -46,9 +46,11 @@ handled client-side by an opt-in JavaScript extension, loaded only for tables
 that call this function.
 }
 \details{
-Interactivity targets flat tables. Tables with row groups
-(\code{\link[=lt_group]{lt_group()}}), spanners (\code{\link[=lt_spanner]{lt_spanner()}}), or row-indexed operations are
-rendered static (a console warning is emitted in the browser).
+Interactivity needs the rows to be independent of each other, since it
+reorders and hides them. Tables with row groups (\code{\link[=lt_group]{lt_group()}}) or indentation
+(\code{\link[=lt_indent]{lt_indent()}}) are rendered static (a console warning is emitted in the
+browser). Column spanners (\code{\link[=lt_spanner]{lt_spanner()}}) are no obstacle, nor are
+row-specific styles or footnotes: those travel with their rows.
 }
 \examples{
 lt(head(mtcars)) |> lt_interactive()
