@@ -1,5 +1,6 @@
 /* lt.js — build a semantic <table> from a JSON spec.
- * Call LT.build(spec) from an inline <script> to render a table in place.
+ * Call LT.build(spec) from an inline <script> to render a table in place, or
+ * LT.render(el, spec) to render one into a container at any later time.
  * One runtime per page renders any number of tables.
  */
 (root => {
@@ -628,21 +629,36 @@
     tbl.ondblclick = e => raw(e, tbl.ownerDocument.documentElement);
   };
 
-  const mount = (s, spec) => {
-    s.insertAdjacentHTML("afterend", buildHtml(spec));
-    const tbl = s.nextElementSibling.querySelector("table");
+  // Finish a freshly inserted table: remember its spec, wire the raw-value
+  // toggle, and let the plugins enhance it. Returns the table element.
+  const ready = (tbl, spec) => {
     // Stash the spec so a plugin loaded *after* this table mounted (the usual
     // case — core drains the queue before a plugin file runs) can still find
     // and enhance it by scanning `.lt-table`.
     tbl._ltSpec = spec;
     wireRaw(tbl);
     onMount.forEach(f => f(tbl, spec));
+    return tbl;
+  };
+
+  const mount = (s, spec) => {
+    s.insertAdjacentHTML("afterend", buildHtml(spec));
+    ready(s.nextElementSibling.querySelector("table"), spec);
+  };
+
+  // Render a spec into `el` (replacing its content) at any time, e.g. long
+  // after the page loaded, for a table built on demand. Unlike build(), it
+  // needs no inline <script> to anchor to, and the caller may hold on to the
+  // returned table element.
+  const render = (el, spec) => {
+    el.innerHTML = buildHtml(spec);
+    return ready(el.querySelector("table"), spec);
   };
   // q.push renders immediately; replay any entries queued before we loaded.
   const q = { push: e => mount(e.s, e.d) };
   (root.LT?.q || []).forEach(q.push);
   root.LT = {
     build: spec => mount(document.currentScript, spec),
-    buildHtml, plugins, onMount, q,
+    render, buildHtml, plugins, onMount, q,
   };
 })(window);

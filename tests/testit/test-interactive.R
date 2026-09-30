@@ -68,6 +68,12 @@ assert("the filter and pagination options reach the client spec", {
   (grepl('filter|pager', json) %==% FALSE)
 })
 
+assert("resizable columns are opt-in", {
+  json = format(lt(d) |> lt_interactive(resize = TRUE), assets = FALSE)
+  (grepl('"resize": true', json) %==% TRUE)
+  (grepl('resize', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
+})
+
 count = function(p, x) sum(gregexpr(p, x)[[1]] > 0)
 
 # Emulate a document: knit the tables in order, after clearing the flags that

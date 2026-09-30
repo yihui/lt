@@ -32,6 +32,35 @@
     text-align: center;
   }
 
+  /* the drag grip sits on a column's right edge, inside its header cell */
+  th:has(.lti-resizer) {
+    position: relative;
+  }
+  .lti-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    user-select: none;
+    touch-action: none;
+  }
+  .lti-resizer:hover {
+    background: currentColor;
+    opacity: 0.3;
+  }
+  /* while dragging, the pointer keeps the resize cursor anywhere on the table,
+   * and the drag selects no text */
+  &.lti-resizing {
+    cursor: col-resize;
+    user-select: none;
+  }
+  /* column widths are authoritative once frozen, so a drag moves one edge only */
+  &.lti-fixed {
+    table-layout: fixed;
+  }
+
   .lti-pager {
     display: flex;
     align-items: center;

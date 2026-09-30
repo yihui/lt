@@ -1,5 +1,5 @@
 /* lt-interactive.js — opt-in interactivity for lt tables (search, sort, column
- * filters, pagination).
+ * filters, pagination, column resizing).
  *
  * A plugin on the existing LT global (see lt.js): it adds no new global. For a
  * table whose spec carries `interactive`, it adds the requested controls and
@@ -14,6 +14,7 @@
   // Bail out if core is absent or too old, or the plugin already loaded.
   if (!LT?.onMount || LT.plugins.interactive) return;
 
+  const MIN_COL = 24;  // px: a dragged column never gets narrower than this
   let coll;  // locale-aware comparator, built on first use and reused
   // A column is numeric if its first non-null value is a number (how core
   // lt.js decides alignment and formatting).
@@ -151,6 +152,7 @@
     // wire sort before adding the filter row, so it sees the header row only
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
     if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
+    if (opts.resize) addResize(el, hrow, cols.length);
     // `pager` is the page sizes to offer, the first one being the initial
     if (opts.pager) {
       const sizes = Array.isArray(opts.pager) ? opts.pager : [10, 25, 50, 100];
@@ -243,6 +245,85 @@
       onType(input, v => { state.filters[c] = v; refresh(); });
     });
     hrow.parentNode.appendChild(row);
+  }
+
+  // The table's <colgroup>, created (one <col> per column) when core emitted
+  // none — it only does so for a table given explicit widths on the R side.
+  function colGroup(el, nCol) {
+    let g = el.querySelector("colgroup");
+    if (!g) {
+      const doc = el.ownerDocument;
+      g = doc.createElement("colgroup");
+      for (let i = 0; i < nCol; i++) g.appendChild(doc.createElement("col"));
+      // <colgroup> comes after <caption> (the title), before <thead>
+      el.insertBefore(g, el.caption?.nextSibling || el.firstChild);
+    }
+    return [...g.children];
+  }
+
+  // Drag-to-resize column edges: a grip on the right edge of each header cell.
+  // The widths live on the <colgroup>, which is outside <tbody> and so survives
+  // every re-render. On the first drag the table is switched to fixed layout
+  // with every column frozen at the width it has then, so that dragging one
+  // edge moves that edge alone instead of reflowing the whole table. A
+  // double-click on a grip fits its column to its content.
+  function addResize(el, hrow, nCol) {
+    const doc = el.ownerDocument, ths = [...hrow.querySelectorAll("th")],
+          cs = colGroup(el, nCol), wOf = e => e.getBoundingClientRect().width;
+    const freeze = () => {
+      if (el.classList.contains("lti-fixed")) return;
+      const w = ths.map(wOf);
+      el.style.width = wOf(el) + "px";
+      cs.forEach((c, i) => c.style.width = w[i] + "px");
+      el.classList.add("lti-fixed");
+    };
+    // What column `i` is wide when nothing constrains it: its content width.
+    // Measuring it means laying the table out unconstrained and putting the
+    // widths back, so only do this on demand (a double-click).
+    const natural = i => {
+      const keep = cs.map(c => c.style.width), tw = el.style.width;
+      cs.forEach(c => c.style.width = "");
+      el.style.width = "";
+      el.classList.remove("lti-fixed");
+      const w = wOf(ths[i]);  // forces the reflow
+      cs.forEach((c, j) => c.style.width = keep[j]);
+      el.style.width = tw;
+      el.classList.add("lti-fixed");
+      return w;
+    };
+    // Give column `i` a width of `w` px, widening or narrowing the table by as
+    // much: the other columns keep the widths they have (the wrapper scrolls).
+    const setWidth = (i, w) => {
+      const old = parseFloat(cs[i].style.width);
+      cs[i].style.width = Math.max(w, MIN_COL) + "px";
+      el.style.width =
+        parseFloat(el.style.width) + parseFloat(cs[i].style.width) - old + "px";
+    };
+    ths.forEach((th, i) => {
+      const grip = th.appendChild(doc.createElement("div"));
+      grip.className = "lti-resizer";
+      // the grip sits in a header cell that may sort on click: its own events
+      // stop here, or a drag would sort the column as well
+      grip.onclick = e => e.stopPropagation();
+      grip.ondblclick = e => {
+        e.stopPropagation();
+        freeze();
+        setWidth(i, natural(i));
+      };
+      grip.onpointerdown = e => {
+        e.preventDefault();  // no text selection while dragging
+        e.stopPropagation();
+        freeze();
+        const x0 = e.clientX, w0 = parseFloat(cs[i].style.width),
+              move = ev => setWidth(i, w0 + ev.clientX - x0);
+        el.classList.add("lti-resizing");
+        doc.addEventListener("pointermove", move);
+        doc.addEventListener("pointerup", () => {
+          doc.removeEventListener("pointermove", move);
+          el.classList.remove("lti-resizing");
+        }, { once: true });
+      };
+    });
   }
 
   // Pager as the last row of <tfoot> (after any footnotes), with a page-size
