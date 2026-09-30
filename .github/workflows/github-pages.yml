@@ -1,7 +1,7 @@
 # Build the package site:
 #   - main          -> deploy to the gh-pages branch
 #   - pull requests -> preview at lt-pr-<N>.surge.sh, with the URL commented
-#     on the PR (plus a downloadable artifact, the only preview for fork PRs)
+#     on the PR
 #
 # Preview teardown lives in surge-teardown.yml: it runs on the `delete` event so
 # it survives deleting the branch at merge time (which cancels close-event runs).
@@ -33,7 +33,6 @@ jobs:
     runs-on: macos-latest
     permissions:
       contents: write
-      statuses: write
       pull-requests: write # comment the preview URL
     steps:
       - uses: actions/checkout@HEAD
@@ -49,33 +48,8 @@ jobs:
         with:
           site-dir: 'site'
 
-      - if: github.event_name == 'pull_request'
-        id: upload
-        uses: actions/upload-artifact@HEAD
-        with:
-          name: site-preview
-          path: 'site'
-
-      # Skipped for PRs from forks: their GITHUB_TOKEN is read-only, so
-      # createCommitStatus() returns 403 and fails the job even though the
-      # build and artifact upload above succeeded.
-      - if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/github-script@HEAD
-        with:
-          script: |
-            const runUrl = `${{ steps.upload.outputs.artifact-url }}`;
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.payload.pull_request.head.sha,
-              state: 'success',
-              target_url: runUrl,
-              description: 'Site preview artifact ready',
-              context: 'Site preview'
-            });
-
       # Fork PRs cannot read SURGE_TOKEN, so the two steps below are skipped for
-      # them and the artifact above remains their only preview.
+      # them: the build still verifies the site, but there is no live preview.
       - name: Deploy PR preview to surge
         if: env.SURGE_TOKEN != '' && github.event_name == 'pull_request'
         run: |
