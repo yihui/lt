@@ -677,7 +677,59 @@ lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 
 ## Interactivity
 
+### Raw values
+
 When cell values are formatted, the original values are available in
 tooltips (hover over a cell to see). You can also `Alt + Click` on a
 table to reveal all raw values at once, or `Alt + Double-Click` to
 toggle raw values for all tables on the page.
+
+### Sorting, searching, filtering, and paging
+
+`lt_interactive()` turns a table into an interactive one: click a column
+header to sort by it (ascending, descending, then unsorted), type in the
+search box above the table to keep only the rows that match, and walk
+through the rows a page at a time with the pager below the table. Paging
+is on by default; the page sizes to offer are given as a vector, the
+first of which is used initially.
+
+```{r}
+d = mtcars[, c("mpg", "cyl", "hp", "wt")]
+lt(d) |> lt_interactive(pager = c(5, 10, Inf))
+```
+
+The extra controls (and the JavaScript that drives them) are only loaded
+for tables that call `lt_interactive()`, so other tables cost nothing.
+
+A search term is matched case-insensitively against the displayed text,
+and a leading `!` negates it (e.g. `!merc` keeps the rows that do *not*
+mention Mercedes). A term that mentions `x` is instead evaluated as a
+JavaScript expression against each raw cell value, so `x > 20` keeps the
+rows with a value above 20 in any column.
+
+`filter = TRUE` adds a box under each column header, matching the same
+way but against that column alone; a row is kept when it passes every
+filter and the search. Pass a character vector to filter on some columns
+only.
+
+```{r}
+lt(d) |> lt_interactive(filter = TRUE, search = FALSE, pager = 5)
+```
+
+### Resizable columns
+
+With `resize = TRUE`, each column can be resized by dragging the right
+edge of its header; double-clicking that edge fits the column to its
+content. Widening a column widens the table, leaving the other columns
+as they are. Initial widths come from `lt_width()` as usual.
+
+```{r}
+lt(head(d)) |> lt_interactive(resize = TRUE, pager = FALSE) |>
+  lt_width(mpg = "8em")
+```
+
+Interactive features need the rows to be independent of one another,
+since sorting and filtering reorder and hide them: a table with row
+groups or indentation is rendered static instead (with a warning in the
+browser console). Column spanners, styles, and footnotes are no
+obstacle.
