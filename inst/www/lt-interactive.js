@@ -1,139 +1,115 @@
-/* lt-interactive.js — opt-in interactivity for lt tables (sort + search).
+/* lt-interactive.js — opt-in interactivity for lt tables (search + sort).
  *
- * Registers as a plugin on the existing LT global (see lt.js): it adds no new
- * global. When a table's spec carries `interactive`, the plugin adds a
- * table-wide search box and click-to-sort headers, then re-renders <tbody> via
- * the core `spec._viewRows` seam. Interactivity targets flat tables only (no
- * row groups / spanners / rowspan); other tables render static with a warning.
+ * A plugin on the existing LT global (see lt.js): it adds no new global. For a
+ * table whose spec carries `interactive`, it adds a search box and
+ * click-to-sort headers, re-rendering <tbody> through the core `spec._viewRows`
+ * seam. Flat tables only (no row groups / spanners / rowspan); others stay
+ * static, with a console warning.
  */
 (root => {
   "use strict";
   const LT = root.LT;
-  if (!LT || LT.plugins?.interactive) return;  // core absent or already loaded
+  // Bail out if core is absent or too old, or the plugin already loaded.
+  if (!LT?.onMount || LT.plugins.interactive) return;
 
-  const SEARCH_DEBOUNCE = 150;
-  // Locale-aware string comparator, built once and reused across all tables.
-  let coll;
-  const collator = () => coll || (coll = new Intl.Collator());
-  // A column is numeric if its first non-null value is a number (matches how
-  // core lt.js decides alignment/formatting).
-  const numCol = col => col?.length && typeof col.find(v => v != null) === "number";
+  let coll;  // locale-aware comparator, built on first use and reused
+  // A column is numeric if its first non-null value is a number (how core
+  // lt.js decides alignment and formatting).
+  const numCol = col => typeof col.find(v => v != null) === "number";
 
-  // Compile a matcher for a search term, ported from forestly's
+  // Compile a search term into a predicate over one row's cells (`{raw, disp}`
+  // objects), or null to keep every row. Ported from forestly's
   // inst/js/search-filter.js so results stay consistent across the projects.
-  // Returns a predicate over a row's searched cells (`{raw, disp}` objects), or
-  // null to match every row. Two modes:
-  //  - Expression mode (term references the cell variable `x`, e.g. `x > 5`,
-  //    `x !== "Rash"`, `!x.includes("itch")`): evaluated against the *raw*
-  //    value (as string, and as a finite number when applicable). A leading `!`
-  //    or an `!=` is negation — a row is kept only when *every* searched cell
-  //    satisfies the test; otherwise *any* cell keeps the row.
+  //  - Expression mode, when the term references the cell variable `x` (e.g.
+  //    `x > 5`, `x !== "Rash"`): evaluated as JavaScript against the *raw*
+  //    value, as a string and (when finite) as a number. A leading `!` or an
+  //    `!=` is negation, which keeps a row only when *every* cell satisfies the
+  //    test; otherwise *any* matching cell keeps the row.
   //  - Substring mode otherwise: case-insensitive match against the *display*
-  //    text; a leading `!` negates.
-  function defaultMatch(term) {
-    const v = String(term == null ? "" : term).trim();
+  //    text, with a leading `!` negating.
+  function matcher(term) {
+    const v = String(term ?? "").trim();
     if (v === "") return null;
     if (/(^|[^\w$])x([^\w$]|$)/.test(v)) {
       let fn;
-      try { fn = new Function("x", "return (" + v + ");"); } catch (e) { fn = null; }
+      try { fn = new Function("x", `return (${v});`); } catch (e) {}
       if (fn) {
-        const isNegation = /^\s*!|!=/.test(v),
-              method = isNegation ? "every" : "some",
-              evalCell = raw => {
-                if (raw == null) return isNegation;
-                try {
-                  const num = Number(raw);
-                  return !!fn(String(raw)) ||
-                    (raw !== "" && isFinite(num) && !!fn(num));
-                } catch (e) { return false; }
-              };
-        return cells => cells[method](c => evalCell(c.raw));
+        const neg = /^\s*!|!=/.test(v), test = raw => {
+          if (raw == null) return neg;
+          try {
+            const num = Number(raw);
+            return !!fn(String(raw)) || (raw !== "" && isFinite(num) && !!fn(num));
+          } catch (e) { return false; }
+        };
+        return cells => cells[neg ? "every" : "some"](c => test(c.raw));
       }
     }
-    const negate = v.charAt(0) === "!",
-          term2 = negate ? v.slice(1).trim() : v;
-    if (term2 === "") return null;
-    const needle = term2.toLowerCase();
-    return cells => {
-      const match = cells.some(c =>
-        c.disp != null && String(c.disp).toLowerCase().indexOf(needle) > -1);
-      return negate ? !match : match;
-    };
+    const neg = v[0] === "!", needle = (neg ? v.slice(1).trim() : v).toLowerCase();
+    if (needle === "") return null;
+    return cells => neg !== cells.some(
+      c => c.disp != null && String(c.disp).toLowerCase().includes(needle)
+    );
   }
 
-  // The view pipeline (pure — no DOM): rawRows → search → sort → 1-based index
-  // array for `spec._viewRows`. `disp[col]` holds the displayed text per row
-  // (used for substring search); `state` is { term, sortCol, sortDir }.
+  // The view pipeline (pure — no DOM): search, then sort, yielding the 1-based
+  // original row indices for `spec._viewRows`. `disp[col][i]` is a cell's
+  // displayed text (what substring search matches); `state` holds the term and
+  // the sorted column/direction.
   function computeView(spec, disp, state) {
-    const cols = spec._cols || [], data = spec.data || {},
-          n = cols.length && data[cols[0]] ? data[cols[0]].length : 0;
-    let idx = [];
-    for (let i = 1; i <= n; i++) idx.push(i);
+    const cols = spec._cols || [], data = spec.data || {};
+    let idx = Array.from({ length: (data[cols[0]] || []).length }, (_, i) => i + 1);
 
-    const pred = defaultMatch(state.term || "");
+    const pred = matcher(state.term);
     if (pred) idx = idx.filter(r => pred(cols.map(c => ({
-      raw: data[c] ? data[c][r - 1] : null,
-      disp: disp[c] ? disp[c][r - 1] : ""
+      raw: data[c]?.[r - 1] ?? null, disp: disp[c]?.[r - 1] ?? ""
     }))));
 
-    if (state.sortCol != null && state.sortDir) {
-      const col = data[state.sortCol] || [], numeric = numCol(col),
-            dir = state.sortDir === "desc" ? -1 : 1, cmp = collator();
-      idx = idx.slice().sort((a, b) => {
-        const va = col[a - 1], vb = col[b - 1];
-        if (va == null && vb == null) return 0;
-        if (va == null) return 1;         // nulls sort last, both directions
-        if (vb == null) return -1;
-        const d = numeric ? va - vb : cmp.compare(String(va), String(vb));
-        return dir * d;
+    const col = data[state.sortCol];
+    if (col && state.sortDir) {
+      const num = numCol(col), dir = state.sortDir === "desc" ? -1 : 1;
+      coll ||= new Intl.Collator();
+      idx.sort((a, b) => {
+        const x = col[a - 1], y = col[b - 1];
+        // nulls sort last in both directions
+        if (x == null || y == null) return x == y ? 0 : x == null ? 1 : -1;
+        return dir * (num ? x - y : coll.compare(String(x), String(y)));
       });
     }
     return idx;
   }
 
-  // A table is enhanceable only when flat: interactive mode does not support
-  // row groups, spanners, rowspan, or row-indexed ops in v1.
-  function isFlat(spec) {
-    if (spec.row_group || spec.auto_span) return false;
-    if (spec.spanners && spec.spanners.length) return false;
-    for (const op of (spec.ops || []))
-      if (op.type === "row_group" || (op.rows && op.rows.length)) return false;
-    return true;
-  }
+  // Enhanceable only when the table is flat: no row groups, spanners, rowspan,
+  // or row-indexed ops (those make row order and row indices interdependent).
+  const isFlat = spec => !spec.row_group && !spec.auto_span &&
+    !spec.spanners?.length &&
+    !(spec.ops || []).some(o => o.type === "row_group" || o.rows?.length);
 
-  // Capture the displayed text per (column, row) from the initial full render,
-  // keyed to original row order. Display text does not change with the view, so
-  // this is captured once and reused across sort/search re-renders.
+  // Displayed text per column, keyed to the original row order. It does not
+  // change with the view, so capture it once from the initial full render.
   function captureDisplay(el, cols) {
     const disp = {};
     cols.forEach(c => disp[c] = []);
-    el.querySelectorAll("tbody tr").forEach((tr, ri) => {
-      cols.forEach((c, ci) => {
-        const td = tr.children[ci];
-        disp[c][ri] = td ? td.textContent : "";
-      });
-    });
+    el.querySelectorAll("tbody tr").forEach((tr, ri) => cols.forEach(
+      (c, ci) => disp[c][ri] = tr.children[ci]?.textContent ?? ""
+    ));
     return disp;
   }
 
   function enhance(el, spec) {
-    const opts = spec.interactive || {};
-    if (!isFlat(spec)) {
-      console.warn("lt: interactive mode supports flat tables only " +
-        "(no row groups, spanners, or rowspan); rendering a static table.");
-      return;
-    }
-    const cols = spec._cols || [], nCol = cols.length,
-          disp = captureDisplay(el, cols),
-          state = { term: "", sortCol: null, sortDir: null };
+    if (!isFlat(spec)) return console.warn(
+      "lt: interactive tables must be flat (no row groups, spanners, or " +
+      "rowspan); rendering a static table."
+    );
+    const opts = spec.interactive, cols = spec._cols || [],
+          disp = captureDisplay(el, cols), state = {};
 
     const refresh = () => {
       const view = computeView(spec, disp, state),
             tmp = el.ownerDocument.createElement("template");
-      tmp.innerHTML = LT.buildHtml(Object.assign({}, spec, { _viewRows: view }));
+      tmp.innerHTML = LT.buildHtml({ ...spec, _viewRows: view });
       const body = tmp.content.querySelector("tbody");
-      if (!view.length)  // empty result: a neutral symbol spanning all columns
-        body.innerHTML = `<tr class="lti-empty"><td colspan="${nCol}">—</td></tr>`;
+      if (!view.length)  // no matches: a neutral symbol spanning all columns
+        body.innerHTML = `<tr class="lti-empty"><td colspan="${cols.length}">—</td></tr>`;
       el.querySelector("tbody").replaceWith(body);
     };
 
@@ -141,72 +117,65 @@
     if (opts.sort !== false) addSort(el, cols, state, refresh);
   }
 
-  // Table-wide search: a magnifier glyph + input above the table. No visible
-  // words (the glyph is locale-independent); the aria-label is a fixed English
-  // token for screen readers, which is accessibility, not translatable UI.
+  // Table-wide search box above the table. `type="search"` lets the browser
+  // supply the affordance (and a clear button), so there is no icon or
+  // placeholder text to translate; the label is for screen readers only.
   function addSearch(el, state, refresh) {
-    const doc = el.ownerDocument, wrap = el.closest(".lt-wrap") || el,
-          bar = doc.createElement("div"), box = doc.createElement("label"),
-          input = doc.createElement("input");
-    bar.className = "lti-toolbar";
-    box.className = "lti-search";
-    box.append("🔍");  // 🔍
+    const wrap = el.closest(".lt-wrap") || el,
+          input = el.ownerDocument.createElement("input");
     input.type = "search";
+    input.className = "lti-search";
     input.setAttribute("aria-label", "Search");
+    const apply = () => { state.term = input.value; refresh(); };
     let timer;
-    input.oninput = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => { state.term = input.value; refresh(); },
-        SEARCH_DEBOUNCE);
-    };
-    box.append(input);
-    bar.append(box);
-    wrap.parentNode.insertBefore(bar, wrap);
+    // Debounce typing; Enter (or leaving the box) applies at once.
+    input.oninput = () => { clearTimeout(timer); timer = setTimeout(apply, 150); };
+    input.onchange = () => { clearTimeout(timer); apply(); };
+    wrap.parentNode.insertBefore(input, wrap);
   }
 
-  // Click-to-sort headers. v1 sorts one column at a time: clicking cycles
-  // asc → desc → unsorted. The indicator (▲/▼) and aria-sort live on the <th>,
-  // which survives the <tbody> swap, so they need no re-render.
+  // Click-to-sort headers, one column at a time: clicking cycles asc → desc →
+  // unsorted. The indicator and aria-sort live on the <th>, which survives the
+  // <tbody> swap, so they need no re-render.
   function addSort(el, cols, state, refresh) {
-    const ths = el.querySelectorAll("thead tr:last-child th");
-    ths.forEach((th, ci) => {
+    const doc = el.ownerDocument, marks = [];
+    el.querySelectorAll("thead tr:last-child th").forEach((th, ci) => {
       const col = cols[ci];
       if (col == null) return;
       th.classList.add("lti-sortable");
-      const ind = th.ownerDocument.createElement("span");
+      const ind = th.appendChild(doc.createElement("span"));
       ind.className = "lti-sort";
-      th.append(ind);
+      marks.push([th, ind]);
       th.onclick = () => {
-        const dir = state.sortCol === col ?
-          (state.sortDir === "asc" ? "desc" : state.sortDir === "desc" ? null : "asc") :
-          "asc";
-        state.sortCol = dir ? col : null;
+        const dir = state.sortCol !== col ? "asc" : state.sortDir === "asc" ?
+          "desc" : state.sortDir === "desc" ? null : "asc";
+        state.sortCol = col;
         state.sortDir = dir;
-        ths.forEach(t => {
+        marks.forEach(([t, m]) => {
           t.removeAttribute("aria-sort");
-          t.querySelector(".lti-sort").textContent = "";
+          m.textContent = "";
         });
         if (dir) {
           th.setAttribute("aria-sort", dir === "asc" ? "ascending" : "descending");
-          ind.textContent = dir === "asc" ? "▲" : "▼";  // ▲ / ▼
+          ind.textContent = dir === "asc" ? "▲" : "▼";
         }
         refresh();
       };
     });
   }
 
-  // Enhance a mounted table if its spec opts in and it has not been enhanced.
-  const maybeEnhance = (el, spec) => {
-    if (!spec || !spec.interactive || el.dataset.ltiOn) return;
+  // Enhance a mounted table that opted in (idempotent via the dataset flag).
+  const onMount = (el, spec) => {
+    if (!spec?.interactive || el.dataset.ltiOn) return;
     el.dataset.ltiOn = "1";
     enhance(el, spec);
   };
 
-  LT.plugins.interactive = { defaultMatch, computeView, enhance };
-  LT.hooks.add("mounted", ({ el, spec }) => maybeEnhance(el, spec));
-  // Core drains its render queue before this file loads, so the 'mounted' hook
-  // above misses already-rendered tables. Enhance any interactive ones now
-  // (idempotent via the ltiOn guard). Guarded for non-DOM hosts (Node tests).
+  LT.plugins.interactive = { matcher, computeView, enhance };
+  LT.onMount.push(onMount);
+  // Core drains its render queue before this file loads, so the callback above
+  // only sees later renders; enhance the tables already on the page now.
+  // (Skipped in non-DOM hosts, e.g. the Node.js tests.)
   if (typeof document !== "undefined")
-    document.querySelectorAll(".lt-table").forEach(el => maybeEnhance(el, el._ltSpec));
+    document.querySelectorAll(".lt-table").forEach(el => onMount(el, el._ltSpec));
 })(typeof window !== "undefined" ? window : globalThis);

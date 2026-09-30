@@ -616,16 +616,10 @@
     return `<div class="lt-wrap">${out.join("")}</div>`;
   }
 
-  // Plugin hook registry, prism.js-style: an extension (e.g. lt-interactive.js)
-  // registers with hooks.add and attaches its public handle under LT.plugins.
-  // Core fires the 'mounted' hook after building each table so a loaded plugin
-  // can enhance it; with no plugin registered this iterates an empty list.
-  const hooks = root.LT?.hooks || {
-    all: {},
-    add(name, fn) { (this.all[name] ||= []).push(fn); },
-    run(name, env) { (this.all[name] || []).forEach(fn => fn(env)); },
-  };
-  const plugins = root.LT?.plugins || {};
+  // Plugin seam (see lt-interactive.js): a plugin attaches its handle under
+  // LT.plugins and pushes a callback onto LT.onMount, which core calls with
+  // each table element and its spec right after the table is mounted.
+  const plugins = root.LT?.plugins || {}, onMount = root.LT?.onMount || [];
 
   // Alt-click toggles raw values in this table; alt-dblclick toggles page-wide.
   const wireRaw = tbl => {
@@ -633,35 +627,22 @@
     tbl.onclick = e => e.detail === 1 && raw(e, tbl);
     tbl.ondblclick = e => raw(e, tbl.ownerDocument.documentElement);
   };
-  // Wire behaviors and fire 'mounted' for a just-built table. The spec is
-  // stashed on the element so a plugin loaded *after* the table mounted (the
-  // usual case — the extension loads after core drains the queue) can still
-  // find and enhance it by scanning `.lt-table` on load.
-  const ready = (tbl, spec, container) => {
-    tbl._ltSpec = spec;
-    wireRaw(tbl);
-    hooks.run("mounted", { el: tbl, spec, container });
-  };
 
   const mount = (s, spec) => {
     s.insertAdjacentHTML("afterend", buildHtml(spec));
-    const container = s.nextElementSibling;
-    ready(container.querySelector("table"), spec, container);
-  };
-  // Imperative render: build `spec` into `container`. For lazy/on-demand tables
-  // rendered long after page load (e.g. drill-downs), where the queue-replay
-  // path does not apply. Returns the table element.
-  const render = (container, spec) => {
-    container.innerHTML = buildHtml(spec);
-    const tbl = container.querySelector("table");
-    ready(tbl, spec, container);
-    return tbl;
+    const tbl = s.nextElementSibling.querySelector("table");
+    // Stash the spec so a plugin loaded *after* this table mounted (the usual
+    // case — core drains the queue before a plugin file runs) can still find
+    // and enhance it by scanning `.lt-table`.
+    tbl._ltSpec = spec;
+    wireRaw(tbl);
+    onMount.forEach(f => f(tbl, spec));
   };
   // q.push renders immediately; replay any entries queued before we loaded.
   const q = { push: e => mount(e.s, e.d) };
   (root.LT?.q || []).forEach(q.push);
   root.LT = {
     build: spec => mount(document.currentScript, spec),
-    buildHtml, render, hooks, plugins, q,
+    buildHtml, plugins, onMount, q,
   };
 })(window);
