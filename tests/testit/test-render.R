@@ -94,6 +94,36 @@ assert("spec_block() records explicit column order for array-index names", {
   (grepl('"columns"', sb3) %==% FALSE)
 })
 
+assert("lt_spec() returns a render-ready spec and drops css/rules", {
+  x2 = lt(d) |> lt_align("x", "center") |> lt_interactive()
+  x2$css = "some.css"; x2$rules = ".na { color: red }"
+  s = lt_spec(x2)
+  (is.list(s))
+  (all(c("data", "ops", "interactive") %in% names(s)))
+  (is.null(s$css))
+  (is.null(s$rules))
+})
+
+assert("lt_spec() is the payload spec_block() serializes", {
+  x2 = lt(d) |> lt_interactive()
+  j = xfun::tojson(lt_spec(x2))
+  sb = paste(spec_block(x2), collapse = "")
+  (grepl(j, sb, fixed = TRUE))
+})
+
+if (requireNamespace("htmltools", quietly = TRUE)) {
+  assert("lt_dependency() bundles core assets; opts add extension/binding", {
+    dep = lt_dependency()
+    (dep$script %==% "lt.js")
+    ("lt.css" %in% dep$stylesheet)
+    di = lt_dependency(interactive = TRUE)
+    ("lt-interactive.js" %in% di$script)
+    ("lt-interactive.css" %in% di$stylesheet)
+    ds = lt_dependency(shiny = TRUE)
+    ("lt-binding.js" %in% ds$script)
+  })
+}
+
 assert("tidy_html() indents block tags and keeps rows on one line", {
   html = c(
     '<div class="lt-wrap"><table class="lt-table"><thead>',

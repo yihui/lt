@@ -5,12 +5,31 @@
 # payload via shiny::markRenderFunction(); the binding receives the spec
 # and calls LT.build(spec) to swap in the <table>.
 
-lt_dependency = function() htmltools::htmlDependency(
-  'lt', as.character(utils::packageVersion('lt')),
-  src = pkg_file('www'),
-  stylesheet = 'lt.css',
-  script = c('lt.js', 'lt-binding.js')
-)
+#' HTML dependency for lt tables
+#'
+#' The [htmltools::htmlDependency()] bundling lt's runtime assets, for embedding
+#' lt tables in other HTML output (e.g. another htmlwidget or a `reactable`
+#' cell) and rendering them client-side with `LT.render()` / `LT.buildHtml()`
+#' on a spec from [lt_spec()]. Requires the \pkg{htmltools} package.
+#'
+#' @param interactive Whether to also include the interactivity extension (the
+#'   assets behind [lt_interactive()]): its script and stylesheet.
+#' @param shiny Whether to include the Shiny output binding (only needed by
+#'   [lt_output()] / [render_lt()]).
+#' @return An `html_dependency` object.
+#' @export
+#' @examples
+#' if (requireNamespace('htmltools', quietly = TRUE))
+#'   lt_dependency(interactive = TRUE)
+lt_dependency = function(interactive = FALSE, shiny = FALSE)
+  htmltools::htmlDependency(
+    'lt', as.character(utils::packageVersion('lt')),
+    src = pkg_file('www'),
+    stylesheet = c('lt.css', if (interactive) 'lt-interactive.css'),
+    script = c(
+      'lt.js', if (interactive) 'lt-interactive.js', if (shiny) 'lt-binding.js'
+    )
+  )
 
 #' Shiny Bindings for lt
 #'
@@ -36,7 +55,7 @@ lt_dependency = function() htmltools::htmlDependency(
 #' shinyApp(ui, server)
 #' }
 lt_output = function(outputId, ...) shiny::tagList(
-  lt_dependency(),
+  lt_dependency(shiny = TRUE),
   shiny::div(id = outputId, class = 'lt-output')
 )
 
