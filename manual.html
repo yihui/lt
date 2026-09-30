@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.11.4">
+<meta name="generator" content="litedown 0.11.5">
 <title>Help pages</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/article.min.css">
@@ -527,7 +527,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpFwZz16/fileb8d711c2d12.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmptPSiQH/filea1c7095af04.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -641,7 +641,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpFwZz16/fileb8d1c7fbd16.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmptPSiQH/filea1c7165dbaf.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -936,12 +936,19 @@ lt(d) |&gt; lt_indent(2:3)
 </code></pre>
 <h2 id="sec:man-lt_interactive"><span class="section-number main-number">14</span> Enable Interactive Table Features</h2>
 <h3 id="sec:description_14" class="unnumbered unlisted">Description</h3>
-<p>Make a table interactive in the browser: a table-wide search box and
-click-to-sort column headers. The features are handled client-side by an
-opt-in JavaScript extension, loaded only for tables that call this function.
+<p>Make a table interactive in the browser: pagination, a table-wide search box,
+click-to-sort column headers, and per-column filter boxes. The features are
+handled client-side by an opt-in JavaScript extension, loaded only for tables
+that call this function.
 </p>
 <h3 id="sec:usage_13" class="unnumbered unlisted">Usage</h3>
-<pre><code class="language-r">lt_interactive(x, sort = TRUE, search = TRUE)</code></pre>
+<pre><code class="language-r">lt_interactive(
+  x,
+  sort = TRUE,
+  search = TRUE,
+  filter = FALSE,
+  pager = c(10, 25, 50, 100)
+)</code></pre>
 <h3 id="sec:arguments_13" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
@@ -961,19 +968,39 @@ any cell matches the term. Besides plain substring matching, a term that
 references the cell variable <code>x</code> (e.g. <code>x &gt; 5</code> or <code>x != "A"</code>) is evaluated
 as a JavaScript expression against each cell's value.</p>
 </td></tr>
+<tr><td><code>filter</code></td>
+<td>
+<p>Whether to show a filter box under each column header, matching
+terms the same way as <code>search</code> but against that column only. A row is kept
+when it passes every filter and the search. Can also be a character vector
+of column names, to filter on those columns only.</p>
+</td></tr>
+<tr><td><code>pager</code></td>
+<td>
+<p>The page sizes to offer, as a vector of row counts; the
+first one is used initially. Paging shows that many of the filtered and
+sorted rows at a time, with a pager (first, previous, next, last), the row
+range, and (for more than one size) a selector below the table. <code>Inf</code> is a
+valid size (every row on one page), offered as <code>∞</code> in the selector. Use
+<code>FALSE</code> or <code>NULL</code> to show all rows with no pager at all.</p>
+</td></tr>
 </table>
 <h3 id="sec:details_3" class="unnumbered unlisted">Details</h3>
-<p>Interactivity targets flat tables. Tables with row groups
-(<code><a href="#sec:man-lt-group">lt_group()</a></code>), spanners (<code><a href="#sec:man-lt-spanner">lt_spanner()</a></code>), or row-indexed operations are
-rendered static (a console warning is emitted in the browser).
+<p>Interactivity needs the rows to be independent of each other, since it
+reorders and hides them. Tables with row groups (<code><a href="#sec:man-lt-group">lt_group()</a></code>) or indentation
+(<code><a href="#sec:man-lt-indent">lt_indent()</a></code>) are rendered static (a console warning is emitted in the
+browser). Column spanners (<code><a href="#sec:man-lt-spanner">lt_spanner()</a></code>) are no obstacle, nor are
+row-specific styles or footnotes: those travel with their rows.
 </p>
 <h3 id="sec:value_13" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with interactivity enabled.
 </p>
 <h3 id="sec:examples_13" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">lt(head(mtcars)) |&gt; lt_interactive()
-# search only, no click-to-sort
-lt(head(mtcars)) |&gt; lt_interactive(sort = FALSE)
+# search only, no click-to-sort or pagination
+lt(head(mtcars)) |&gt; lt_interactive(sort = FALSE, pager = FALSE)
+# 5 rows at a time, or all of them, with a filter box on one column
+lt(mtcars) |&gt; lt_interactive(filter = 'cyl', pager = c(5, Inf))
 </code></pre>
 <h2 id="sec:man-lt_label"><span class="section-number main-number">15</span> Rename Column Labels</h2>
 <h3 id="sec:description_15" class="unnumbered unlisted">Description</h3>
@@ -1391,7 +1418,7 @@ print(x, ...)</code></pre>
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.4</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.5</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/js/appendix.min.js" defer></script>
