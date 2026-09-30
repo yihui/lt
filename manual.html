@@ -38,16 +38,17 @@
 <li><a href="#sec:man-lt_header"><span class="section-number main-number">11</span> Add a Title and Subtitle</a></li>
 <li><a href="#sec:man-lt_html"><span class="section-number main-number">12</span> Render Column Cells as Raw HTML</a></li>
 <li><a href="#sec:man-lt_indent"><span class="section-number main-number">13</span> Indent Rows</a></li>
-<li><a href="#sec:man-lt_label"><span class="section-number main-number">14</span> Rename Column Labels</a></li>
-<li><a href="#sec:man-lt_merge"><span class="section-number main-number">15</span> Merge Columns</a></li>
-<li><a href="#sec:man-lt_move"><span class="section-number main-number">16</span> Move Columns</a></li>
-<li><a href="#sec:man-lt_note"><span class="section-number main-number">17</span> Add a Note</a></li>
-<li><a href="#sec:man-lt_output"><span class="section-number main-number">18</span> Shiny Bindings for lt</a></li>
-<li><a href="#sec:man-lt_spanner"><span class="section-number main-number">19</span> Add a Column Spanner</a></li>
-<li><a href="#sec:man-lt_style"><span class="section-number main-number">20</span> Style Cells</a></li>
-<li><a href="#sec:man-lt_sub"><span class="section-number main-number">21</span> Substitute Cell Values</a></li>
-<li><a href="#sec:man-lt_width"><span class="section-number main-number">22</span> Set Column and Table Widths</a></li>
-<li><a href="#sec:man-print.lt_tbl"><span class="section-number main-number">23</span> Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)</a></li>
+<li><a href="#sec:man-lt_interactive"><span class="section-number main-number">14</span> Enable Interactive Table Features</a></li>
+<li><a href="#sec:man-lt_label"><span class="section-number main-number">15</span> Rename Column Labels</a></li>
+<li><a href="#sec:man-lt_merge"><span class="section-number main-number">16</span> Merge Columns</a></li>
+<li><a href="#sec:man-lt_move"><span class="section-number main-number">17</span> Move Columns</a></li>
+<li><a href="#sec:man-lt_note"><span class="section-number main-number">18</span> Add a Note</a></li>
+<li><a href="#sec:man-lt_output"><span class="section-number main-number">19</span> Shiny Bindings for lt</a></li>
+<li><a href="#sec:man-lt_spanner"><span class="section-number main-number">20</span> Add a Column Spanner</a></li>
+<li><a href="#sec:man-lt_style"><span class="section-number main-number">21</span> Style Cells</a></li>
+<li><a href="#sec:man-lt_sub"><span class="section-number main-number">22</span> Substitute Cell Values</a></li>
+<li><a href="#sec:man-lt_width"><span class="section-number main-number">23</span> Set Column and Table Widths</a></li>
+<li><a href="#sec:man-print.lt_tbl"><span class="section-number main-number">24</span> Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)</a></li>
 </ul>
 </div>
 <style type="text/css">
@@ -75,6 +76,7 @@ h2 {
 <a href="#sec:man-lt_header"><code>lt_header()</code></a>
 <a href="#sec:man-lt_html"><code>lt_html()</code></a>
 <a href="#sec:man-lt_indent"><code>lt_indent()</code></a>
+<a href="#sec:man-lt_interactive"><code>lt_interactive()</code></a>
 <a href="#sec:man-lt_label"><code>lt_label()</code></a>
 <a href="#sec:man-lt_merge"><code>lt_merge()</code></a>
 <a href="#sec:man-lt_move"><code>lt_move()</code></a>
@@ -148,7 +150,9 @@ alongside the HTML).</p>
 <td>
 <p>Which runtime assets to include: <code>TRUE</code> (default) for both
 CSS and JS, <code>FALSE</code> for neither, or a character vector subset of
-<code>c("css", "js")</code> for selective inclusion.</p>
+<code>c("css", "js")</code> for selective inclusion. A table with <code><a href="#sec:man-lt-interactive">lt_interactive()</a></code>
+enabled also gets the interactivity extension: its stylesheet with
+<code>"css"</code>, its script with <code>"js"</code>.</p>
 </td></tr>
 <tr><td><code>...</code></td>
 <td>
@@ -523,7 +527,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpypyhaT/filee89680d81d2.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpFwZz16/fileb8d711c2d12.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -637,7 +641,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpypyhaT/filee8922699432.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpFwZz16/fileb8d1c7fbd16.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -930,13 +934,54 @@ left padding.</p>
 <pre><code class="language-r">d = data.frame(label = c(&quot;Overall&quot;, &quot;Male&quot;, &quot;Female&quot;), n = c(100, 55, 45))
 lt(d) |&gt; lt_indent(2:3)
 </code></pre>
-<h2 id="sec:man-lt_label"><span class="section-number main-number">14</span> Rename Column Labels</h2>
+<h2 id="sec:man-lt_interactive"><span class="section-number main-number">14</span> Enable Interactive Table Features</h2>
 <h3 id="sec:description_14" class="unnumbered unlisted">Description</h3>
-<p>Override column headers without modifying the underlying data frame.
+<p>Make a table interactive in the browser: a table-wide search box and
+click-to-sort column headers. The features are handled client-side by an
+opt-in JavaScript extension, loaded only for tables that call this function.
 </p>
 <h3 id="sec:usage_13" class="unnumbered unlisted">Usage</h3>
-<pre><code class="language-r">lt_label(x, ...)</code></pre>
+<pre><code class="language-r">lt_interactive(x, sort = TRUE, search = TRUE)</code></pre>
 <h3 id="sec:arguments_13" class="unnumbered unlisted">Arguments</h3>
+<table role = "presentation">
+<tr><td><code>x</code></td>
+<td>
+<p>An <code><a href="#sec:man-lt">lt()</a></code> object.</p>
+</td></tr>
+<tr><td><code>sort</code></td>
+<td>
+<p>Whether clicking a column header sorts the table by that column
+(cycling ascending, descending, then unsorted). Sorting uses the raw
+values, so numeric columns sort numerically.</p>
+</td></tr>
+<tr><td><code>search</code></td>
+<td>
+<p>Whether to show a table-wide search box. A row is kept when
+any cell matches the term. Besides plain substring matching, a term that
+references the cell variable <code>x</code> (e.g. <code>x &gt; 5</code> or <code>x != "A"</code>) is evaluated
+as a JavaScript expression against each cell's value.</p>
+</td></tr>
+</table>
+<h3 id="sec:details_3" class="unnumbered unlisted">Details</h3>
+<p>Interactivity targets flat tables. Tables with row groups
+(<code><a href="#sec:man-lt-group">lt_group()</a></code>), spanners (<code><a href="#sec:man-lt-spanner">lt_spanner()</a></code>), or row-indexed operations are
+rendered static (a console warning is emitted in the browser).
+</p>
+<h3 id="sec:value_13" class="unnumbered unlisted">Value</h3>
+<p><code>x</code> with interactivity enabled.
+</p>
+<h3 id="sec:examples_13" class="unnumbered unlisted">Examples</h3>
+<pre><code class="language-r">lt(head(mtcars)) |&gt; lt_interactive()
+# search only, no click-to-sort
+lt(head(mtcars)) |&gt; lt_interactive(sort = FALSE)
+</code></pre>
+<h2 id="sec:man-lt_label"><span class="section-number main-number">15</span> Rename Column Labels</h2>
+<h3 id="sec:description_15" class="unnumbered unlisted">Description</h3>
+<p>Override column headers without modifying the underlying data frame.
+</p>
+<h3 id="sec:usage_14" class="unnumbered unlisted">Usage</h3>
+<pre><code class="language-r">lt_label(x, ...)</code></pre>
+<h3 id="sec:arguments_14" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -951,24 +996,24 @@ convenient when the labels are computed programmatically, e.g.
 <code>lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))</code>.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_13" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_14" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the column label overrides recorded.
 </p>
-<h3 id="sec:examples_13" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_14" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">lt(head(mtcars)) |&gt; lt_label(mpg = &quot;Miles/Gallon&quot;, cyl = &quot;Cylinders&quot;)
 # raw HTML label (wrap in I())
 lt(head(mtcars)) |&gt; lt_label(mpg = I(&quot;Miles/Gallon&lt;sup&gt;*&lt;/sup&gt;&quot;))
 # a single named list or vector of labels
 lt(head(mtcars)) |&gt; lt_label(c(mpg = &quot;Miles/Gallon&quot;, cyl = &quot;Cylinders&quot;))
 </code></pre>
-<h2 id="sec:man-lt_merge"><span class="section-number main-number">15</span> Merge Columns</h2>
-<h3 id="sec:description_15" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_merge"><span class="section-number main-number">16</span> Merge Columns</h2>
+<h3 id="sec:description_16" class="unnumbered unlisted">Description</h3>
 <p>Combine values from multiple columns into a single display column using
 a pattern. Source columns (all except the first) are hidden by default.
 </p>
-<h3 id="sec:usage_14" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_15" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_merge(x, columns, pattern = NULL, hide = TRUE)</code></pre>
-<h3 id="sec:arguments_14" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_15" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -996,20 +1041,20 @@ separated by spaces.</p>
 automatically hidden.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_14" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_15" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the merge recorded.
 </p>
-<h3 id="sec:examples_14" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_15" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">d = data.frame(stat = c(&quot;Mean&quot;, &quot;SD&quot;), value = c(4.2, 1.1), ci = c(&quot;(2.0, 6.4)&quot;, &quot;(0.5, 1.7)&quot;))
 lt(d) |&gt; lt_merge(~ value + ci, pattern = &quot;{1} {2}&quot;)
 </code></pre>
-<h2 id="sec:man-lt_move"><span class="section-number main-number">16</span> Move Columns</h2>
-<h3 id="sec:description_16" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_move"><span class="section-number main-number">17</span> Move Columns</h2>
+<h3 id="sec:description_17" class="unnumbered unlisted">Description</h3>
 <p>Rearrange column display order without modifying the data frame.
 </p>
-<h3 id="sec:usage_15" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_16" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_move(x, columns, after = NULL)</code></pre>
-<h3 id="sec:arguments_15" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_16" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1030,19 +1075,19 @@ side are used, e.g. <code>~ x + y</code>.</p>
 moved columns. Use <code>NULL</code> to move to the start.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_15" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_16" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the column move recorded.
 </p>
-<h3 id="sec:examples_15" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_16" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">lt(head(mtcars)) |&gt; lt_move(~ gear + carb, after = &quot;mpg&quot;)
 </code></pre>
-<h2 id="sec:man-lt_note"><span class="section-number main-number">17</span> Add a Note</h2>
-<h3 id="sec:description_17" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_note"><span class="section-number main-number">18</span> Add a Note</h2>
+<h3 id="sec:description_18" class="unnumbered unlisted">Description</h3>
 <p>Notes are rendered in the table footer below numbered footnotes.
 </p>
-<h3 id="sec:usage_16" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_17" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_note(x, text)</code></pre>
-<h3 id="sec:arguments_16" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_17" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1053,25 +1098,25 @@ moved columns. Use <code>NULL</code> to move to the start.</p>
 <p>Note text. Wrap in <code><a href="https://rdrr.io/r/base/AsIs.html">I()</a></code> to treat as raw HTML.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_16" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_17" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the note recorded.
 </p>
-<h3 id="sec:examples_16" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_17" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">lt(head(mtcars)) |&gt; lt_note(&quot;CI = confidence interval.&quot;)
 # raw HTML note (wrap in I())
 lt(head(mtcars)) |&gt; lt_note(I(&quot;CI = &lt;em&gt;confidence interval&lt;/em&gt;.&quot;))
 </code></pre>
-<h2 id="sec:man-lt_output"><span class="section-number main-number">18</span> Shiny Bindings for lt</h2>
-<h3 id="sec:description_18" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_output"><span class="section-number main-number">19</span> Shiny Bindings for lt</h2>
+<h3 id="sec:description_19" class="unnumbered unlisted">Description</h3>
 <p><code>lt_output()</code> creates a UI placeholder; <code>render_lt()</code> supplies the table
 spec from the server. Together they render an <code><a href="#sec:man-lt">lt()</a></code> table as a custom
 Shiny output — no <code>renderUI()</code> involved.
 </p>
-<h3 id="sec:usage_17" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_18" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_output(outputId, ...)
 
 render_lt(expr, env = parent.frame(), quoted = FALSE)</code></pre>
-<h3 id="sec:arguments_17" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_18" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>outputId</code></td>
 <td>
@@ -1094,11 +1139,11 @@ render_lt(expr, env = parent.frame(), quoted = FALSE)</code></pre>
 <p>Whether <code>expr</code> is already quoted.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_17" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_18" class="unnumbered unlisted">Value</h3>
 <p><code>lt_output()</code> returns a Shiny UI element; <code>render_lt()</code> returns a
 render function.
 </p>
-<h3 id="sec:examples_17" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_18" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">if (interactive()) {
 library(shiny)
 ui = fluidPage(lt_output(&quot;tbl&quot;))
@@ -1108,13 +1153,13 @@ server = function(input, output) {
 shinyApp(ui, server)
 }
 </code></pre>
-<h2 id="sec:man-lt_spanner"><span class="section-number main-number">19</span> Add a Column Spanner</h2>
-<h3 id="sec:description_19" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_spanner"><span class="section-number main-number">20</span> Add a Column Spanner</h2>
+<h3 id="sec:description_20" class="unnumbered unlisted">Description</h3>
 <p>A spanner is a label rendered above a contiguous group of column headers.
 </p>
-<h3 id="sec:usage_18" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_19" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_spanner(x, label, columns, sep = "[._]")</code></pre>
-<h3 id="sec:arguments_18" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_19" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1137,19 +1182,19 @@ also allowed; see <code><a href="#sec:man-lt-align">lt_align()</a></code>). When
 <p>Separator pattern for auto-inference (default <code>"[._]"</code>).</p>
 </td></tr>
 </table>
-<h3 id="sec:details_3" class="unnumbered unlisted">Details</h3>
+<h3 id="sec:details_4" class="unnumbered unlisted">Details</h3>
 <p>When called with no <code>label</code> or <code>columns</code>, infers spanners from column
 names by splitting on the first <code>.</code> or <code>_</code> separator. Contiguous columns
 sharing a prefix are grouped under that prefix, and column labels are
 shortened to the suffix.
 </p>
-<h3 id="sec:value_18" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_19" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the spanner recorded.
 </p>
 <h3 id="sec:note_2" class="unnumbered unlisted">Note</h3>
 <p>The columns must be contiguous in the body of the table.
 </p>
-<h3 id="sec:examples_18" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_19" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">tbl = lt(head(iris))
 # Explicit spanner
 tbl |&gt; lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
@@ -1158,13 +1203,13 @@ tbl |&gt; lt_spanner()
 # raw HTML label (wrap in I())
 tbl |&gt; lt_spanner(I(&quot;&lt;em&gt;Sepal&lt;/em&gt;&quot;), ~ Sepal.Length + Sepal.Width)
 </code></pre>
-<h2 id="sec:man-lt_style"><span class="section-number main-number">20</span> Style Cells</h2>
-<h3 id="sec:description_20" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_style"><span class="section-number main-number">21</span> Style Cells</h2>
+<h3 id="sec:description_21" class="unnumbered unlisted">Description</h3>
 <p>Apply CSS styling to specific cells. Target cells by column, row, or both.
 When <code>test</code> is provided, styles are applied conditionally based on cell
 values (evaluated in JavaScript).
 </p>
-<h3 id="sec:usage_19" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_20" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_style(
   x,
   columns = NULL,
@@ -1177,7 +1222,7 @@ values (evaluated in JavaScript).
   bg = NULL,
   ...
 )</code></pre>
-<h3 id="sec:arguments_19" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_20" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1227,10 +1272,10 @@ camelCase (e.g., <code>borderLeft</code>) or quoted dash-case (e.g.,
 <code>`border-left`</code>). Values are CSS strings.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_19" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_20" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the style recorded.
 </p>
-<h3 id="sec:examples_19" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_20" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">tbl = lt(head(mtcars))
 tbl |&gt;
   lt_style(&quot;mpg&quot;, rows = 1L, bold = TRUE, borderBottom = &quot;2px solid red&quot;)
@@ -1238,11 +1283,11 @@ tbl |&gt;
   lt_style(&quot;mpg&quot;, test = &quot;v =&gt; v &gt; 20&quot;, class = &quot;high&quot;) |&gt;
   lt_css(.high = list(background = &quot;#cfc&quot;))
 </code></pre>
-<h2 id="sec:man-lt_sub"><span class="section-number main-number">21</span> Substitute Cell Values</h2>
-<h3 id="sec:description_21" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_sub"><span class="section-number main-number">22</span> Substitute Cell Values</h2>
+<h3 id="sec:description_22" class="unnumbered unlisted">Description</h3>
 <p>Replace <code>NA</code>, zero, or small values with display text.
 </p>
-<h3 id="sec:usage_20" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_21" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_sub(
   x,
   columns = NULL,
@@ -1251,7 +1296,7 @@ tbl |&gt;
   small = NULL,
   small_text = NULL
 )</code></pre>
-<h3 id="sec:arguments_20" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_21" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1283,20 +1328,20 @@ replaced by <code>small_text</code>.</p>
 <p>Text shown for values below <code>small</code> (e.g., <code>"&lt;0.1"</code>).</p>
 </td></tr>
 </table>
-<h3 id="sec:value_20" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_21" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the substitution recorded.
 </p>
-<h3 id="sec:examples_20" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_21" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">d = data.frame(x = c(1, 0, NA, 0.001))
 lt(d) |&gt; lt_sub(missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.01, small_text = &quot;&lt;0.01&quot;)
 </code></pre>
-<h2 id="sec:man-lt_width"><span class="section-number main-number">22</span> Set Column and Table Widths</h2>
-<h3 id="sec:description_22" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_width"><span class="section-number main-number">23</span> Set Column and Table Widths</h2>
+<h3 id="sec:description_23" class="unnumbered unlisted">Description</h3>
 <p>Set Column and Table Widths
 </p>
-<h3 id="sec:usage_21" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_22" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_width(x, ...)</code></pre>
-<h3 id="sec:arguments_21" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_22" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1310,22 +1355,22 @@ of the whole table. Widths can be any CSS value (e.g., <code>"100px"</code>,
 <code>"20%"</code>, <code>"8em"</code>).</p>
 </td></tr>
 </table>
-<h3 id="sec:value_21" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_22" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the widths recorded.
 </p>
-<h3 id="sec:examples_21" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_22" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">lt(head(mtcars)) |&gt; lt_width(mpg = &quot;100px&quot;, cyl = &quot;50px&quot;)
 # set the whole-table width, optionally with column widths
 lt(head(mtcars)) |&gt; lt_width(&quot;80%&quot;, mpg = &quot;100px&quot;)
 </code></pre>
-<h2 id="sec:man-print.lt_tbl"><span class="section-number main-number">23</span> Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)</h2>
-<h3 id="sec:description_23" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-print.lt_tbl"><span class="section-number main-number">24</span> Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)</h2>
+<h3 id="sec:description_24" class="unnumbered unlisted">Description</h3>
 <p>Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)
 </p>
-<h3 id="sec:usage_22" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_23" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">## S3 method for class 'lt_tbl'
 print(x, ...)</code></pre>
-<h3 id="sec:arguments_22" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_23" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1336,10 +1381,10 @@ print(x, ...)</code></pre>
 <p>Passed to <code><a href="https://rdrr.io/r/base/format.html">format()</a></code>.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_22" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_23" class="unnumbered unlisted">Value</h3>
 <p><code>x</code>, invisibly.
 </p>
-<h3 id="sec:examples_22" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_23" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">print(lt(head(mtcars)))
 </code></pre>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.73/css/manual.min.css">
