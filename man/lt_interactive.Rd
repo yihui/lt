@@ -9,7 +9,8 @@ lt_interactive(
   sort = TRUE,
   search = TRUE,
   filter = FALSE,
-  pager = c(10, 25, 50, 100)
+  pager = c(10, 25, 50, 100),
+  resize = FALSE
 )
 }
 \arguments{
@@ -35,15 +36,20 @@ sorted rows at a time, with a pager (first, previous, next, last), the row
 range, and (for more than one size) a selector below the table. \code{Inf} is a
 valid size (every row on one page), offered as \verb{∞} in the selector. Use
 \code{FALSE} or \code{NULL} to show all rows with no pager at all.}
+
+\item{resize}{Whether to let the reader drag a column's right edge to resize
+it (double-clicking the edge fits the column to its content). Widening a
+column widens the table, leaving the other columns as they are. Initial
+widths can be set with \code{\link[=lt_width]{lt_width()}}.}
 }
 \value{
 \code{x} with interactivity enabled.
 }
 \description{
 Make a table interactive in the browser: pagination, a table-wide search box,
-click-to-sort column headers, and per-column filter boxes. The features are
-handled client-side by an opt-in JavaScript extension, loaded only for tables
-that call this function.
+click-to-sort column headers, per-column filter boxes, and resizable
+columns. The features are handled client-side by an opt-in JavaScript
+extension, loaded only for tables that call this function.
 }
 \details{
 Interactivity needs the rows to be independent of each other, since it
@@ -58,4 +64,6 @@ lt(head(mtcars)) |> lt_interactive()
 lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 # 5 rows at a time, or all of them, with a filter box on one column
 lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
+# resizable columns
+lt(head(mtcars)) |> lt_interactive(resize = TRUE)
 }
