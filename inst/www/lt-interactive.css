@@ -15,7 +15,6 @@
    * filter */
   .lti-search,
   .lti-filters input {
-    box-sizing: border-box;
     width: 100%;
   }
 
