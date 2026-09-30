@@ -18,7 +18,9 @@ alongside the HTML).}
 
 \item{assets}{Which runtime assets to include: \code{TRUE} (default) for both
 CSS and JS, \code{FALSE} for neither, or a character vector subset of
-\code{c("css", "js")} for selective inclusion.}
+\code{c("css", "js")} for selective inclusion. A table with \code{\link[=lt_interactive]{lt_interactive()}}
+enabled also gets the interactivity extension: its stylesheet with
+\code{"css"}, its script with \code{"js"}.}
 
 \item{...}{Reserved for future use.}
 }

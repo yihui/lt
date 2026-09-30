@@ -269,6 +269,20 @@ assert("auto-format picks decimals from value width", {
   (matches(html, ".*>1 235</td>.*>10 000</td>.*") %==% "")
 })
 
+assert("_viewRows sets tbody row order and subset", {
+  # The interactive plugin's core seam: <tbody> iterates the given 1-based
+  # original row indices (order + subset) instead of all rows.
+  html = build(list(data = list(x = c(10, 20, 30)), `_viewRows` = c(3L, 1L)))
+  (matches(html, ".*>30</td>.*>10</td>.*") %==% "")
+  (grepl(">20<", html) %==% FALSE)
+  # row-indexed styles stay keyed to the original index after reordering
+  html = build(list(
+    data = list(x = c(10, 20, 30)), `_viewRows` = c(3L, 1L),
+    ops = list(list(type = "style", columns = list("x"), rows = list(3L), class = "hot"))
+  ))
+  (matches(html, '.*class="al-r hot">30</td>.*>10</td>.*') %==% "")
+})
+
 assert("auto_format = FALSE leaves numbers untouched", {
   html = build(list(data = list(x = c(1.23456, 2.34567)), auto_format = FALSE))
   (matches(html, ".*>1\\.23456</td>.*>2\\.34567</td>.*") %==% "")
@@ -434,7 +448,7 @@ pdf_pages = function(f) {
   length(gregexpr("/Type\\s*/Page[^s]", raw)[[1]])
 }
 
-if (has_browser()) assert("lt_export() writes PDF and PNG by extension", {
+assert("lt_export() writes PDF and PNG by extension", {
   x = lt(data.frame(a = 1:2, b = c("x", "y")))
   pdf = tempfile(fileext = ".pdf")
   png = tempfile(fileext = ".png")
@@ -458,7 +472,7 @@ if (has_browser()) assert("lt_export() writes PDF and PNG by extension", {
 # for) must still crop to one page: the table's caption border and footer
 # spacing extend past the table's own border-box, so we measure the body's
 # scroll size, not the table box.
-if (has_browser()) assert("lt_export() crops a large table to one PDF page", {
+assert("lt_export() crops a large table to one PDF page", {
   x = lt(head(iris, 20))
   pdf = tempfile(fileext = ".pdf")
   on.exit(unlink(pdf), add = TRUE)
@@ -471,7 +485,7 @@ if (has_browser()) assert("lt_export() crops a large table to one PDF page", {
 # used to leave it a sub-pixel too narrow, wrapping a cell and growing the
 # table past the measured height, so the PDF spilled onto a second page
 # (seen on macOS, not Linux). lt_measure() now rounds the width up by 1px.
-if (has_browser()) assert("lt_export() crops a wide table to one PDF page", {
+assert("lt_export() crops a wide table to one PDF page", {
   # Many columns with long labels give the table a fractional natural width.
   x = lt(as.data.frame(matrix(
     1:32, 4, 8, dimnames = list(NULL, paste0("a_long_column_label_", 1:8))
@@ -488,7 +502,7 @@ if (has_browser()) assert("lt_export() crops a wide table to one PDF page", {
 # rows), so a page box of exactly scrollHeight px overflowed and Chromium added
 # a second page holding the repeated <thead> and the <tfoot> (seen on macOS).
 # lt_measure() now rounds the height up by 1px as well.
-if (has_browser()) assert("lt_export() crops a table with a fractional height to one PDF page", {
+assert("lt_export() crops a table with a fractional height to one PDF page", {
   x = lt(head(mtcars)) |>
     lt_footnote("Source: 1974 Motor Trend US magazine.", "title") |>
     lt_footnote("Miles per gallon.", "column", "mpg")
@@ -498,7 +512,7 @@ if (has_browser()) assert("lt_export() crops a table with a fractional height to
   (pdf_pages(pdf) %==% 1L)
 })
 
-if (has_browser() && xfun::loadable("magick"))
+if (xfun::loadable("magick"))
   assert("lt_export() crops PNG tightly to the table size", {
     x = lt(head(mtcars))
     d = lt_measure(format(x, fragment = FALSE), c(8L, 8L), NULL)
@@ -514,7 +528,7 @@ if (has_browser() && xfun::loadable("magick"))
 # A relative user-CSS path must still apply when lt_export() renders from its
 # temporary directory: lt_export() absolutizes existing local files for the
 # render, so a stylesheet given as a bare relative name is not silently dropped.
-if (has_browser() && xfun::loadable("magick"))
+if (xfun::loadable("magick"))
   assert("lt_export() applies a relative user-CSS path", {
     d = tempfile(); dir.create(d)
     on.exit(unlink(d, recursive = TRUE), add = TRUE)
@@ -531,7 +545,7 @@ if (has_browser() && xfun::loadable("magick"))
 
 # An explicit width overrides the measured width for both PDF and PNG,
 # regardless of crop.
-if (has_browser() && xfun::loadable("magick"))
+if (xfun::loadable("magick"))
   assert("lt_export() honors an explicit width", {
     x = lt(head(mtcars))
     png = tempfile(fileext = ".png")

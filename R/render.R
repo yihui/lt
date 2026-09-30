@@ -44,12 +44,15 @@ inline_safe = function(s) gsub(
   '</(script)', '<\\\\/\\1', s, perl = TRUE, ignore.case = TRUE
 )
 
-# Inline CSS + JS runtime. Emit once per page; the runtime is idempotent if
-# included twice, but the bytes are wasteful — pass `inline = FALSE` for
-# the linked form (litedown dedups identical <link>/<script src> tags).
-css_block = function(inline = TRUE) {
-  if (inline) c('<style>', read_asset('lt.css'), '</style>')
-  else sprintf('<link rel="stylesheet" href="%s">', asset_url('lt.css'))
+# Inline the CSS/JS runtime assets. `files` are file names under inst/www, so
+# the interactivity extension rides along for the tables that opt in. Emit once
+# per page; the runtime is idempotent if included twice, but the bytes are
+# wasteful — pass `inline = FALSE` for the linked form (litedown dedups
+# identical <link>/<script src> tags).
+css_block = function(files, inline = TRUE) {
+  if (!length(files)) return()
+  if (inline) c('<style>', unlist(lapply(files, read_asset)), '</style>')
+  else sprintf('<link rel="stylesheet" href="%s">', vapply(files, asset_url, ''))
 }
 
 # User CSS path -> tag. URLs and relative paths become <link> (browser
@@ -75,9 +78,13 @@ rules_block = function(rules) {
   if (length(rules)) c('<style>.lt-table {', rules, '}</style>')
 }
 
-js_block = function(inline = TRUE) {
-  if (inline) c('<script>', inline_safe(read_asset('lt.js')), '</script>')
-  else sprintf('<script src="%s" defer></script>', asset_url('lt.js'))
+# Each asset gets its own <script>: they are separate top-level programs, and
+# `defer` keeps linked ones executing in document order (core before plugins).
+js_block = function(files, inline = TRUE) {
+  unlist(lapply(files, function(f) if (inline)
+    c('<script>', inline_safe(read_asset(f)), '</script>')
+    else sprintf('<script src="%s" defer></script>', asset_url(f))
+  ))
 }
 
 # Per-table block: queue the spec with a reference to the current script.
@@ -140,7 +147,9 @@ html_doc = function(body) c(
 #'   alongside the HTML).
 #' @param assets Which runtime assets to include: `TRUE` (default) for both
 #'   CSS and JS, `FALSE` for neither, or a character vector subset of
-#'   `c("css", "js")` for selective inclusion.
+#'   `c("css", "js")` for selective inclusion. A table with [lt_interactive()]
+#'   enabled also gets the interactivity extension: its stylesheet with
+#'   `"css"`, its script with `"js"`.
 #' @param ... Reserved for future use.
 #' @return A character scalar containing HTML.
 #' @export
@@ -151,12 +160,15 @@ html_doc = function(body) c(
 format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
   if (isTRUE(assets)) assets = c('css', 'js')
   if (isFALSE(assets)) assets = character()
+  int = !is.null(x$interactive)
   body = c(
-    if ('css' %in% assets) css_block(inline_assets),
+    css_block(if ('css' %in% assets) c('lt.css', if (int) 'lt-interactive.css'),
+              inline_assets),
     user_css_block(x$css),
     rules_block(x$rules),
     spec_block(x),
-    if ('js' %in% assets) js_block(inline_assets)
+    js_block(if ('js' %in% assets) c('lt.js', if (int) 'lt-interactive.js'),
+             inline_assets)
   )
   if (!fragment) body = html_doc(body)
   xfun::raw_string(paste(body, collapse = '\n'))
@@ -180,6 +192,7 @@ print.lt_tbl = function(x, ...) {
 # knit_print fires, so this never reaches knitr:: when knitr is absent.
 .knit_flag = 'lt.assets_added'
 .css_flag = 'lt.css_added'
+.int_flag = 'lt.interactive_added'
 
 knit_print.lt_tbl = function(x, ...) {
   if (is.list(opts <- getOption('lt.lt_static'))) return(structure(
@@ -187,6 +200,14 @@ knit_print.lt_tbl = function(x, ...) {
   ))
   first = !isTRUE(knitr::opts_knit$get(.knit_flag))
   if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), .knit_flag))
+  # Track the interactivity extension separately: the first interactive table
+  # need not be the first table overall, in which case format() has no assets
+  # left to attach it to and we emit it around the table below.
+  int_first = FALSE
+  if (!is.null(x$interactive)) {
+    int_first = !isTRUE(knitr::opts_knit$get(.int_flag))
+    if (int_first) knitr::opts_knit$set(stats::setNames(list(TRUE), .int_flag))
+  }
   # Dedup user CSS (from lt_css()) across the document: a stylesheet shared
   # by many tables (e.g. a package theme) should be emitted once. Identical
   # <link> hrefs would dedup in the browser, but inlined <style> blocks
@@ -195,7 +216,13 @@ knit_print.lt_tbl = function(x, ...) {
   x$css = setdiff(x$css, seen)
   if (length(x$css))
     knitr::opts_knit$set(stats::setNames(list(c(seen, x$css)), .css_flag))
-  structure(format(x, assets = first), class = c('knit_asis', 'html'))
+  html = format(x, assets = first)
+  # The extension in the same places format() would put it: stylesheet before
+  # the table, script after it (so it runs after the core runtime).
+  if (int_first && !first) html = paste(c(
+    css_block('lt-interactive.css'), html, js_block('lt-interactive.js')
+  ), collapse = '\n')
+  structure(xfun::raw_string(html), class = c('knit_asis', 'html'))
 }
 
 # record_print (litedown / xfun::record): for HTML output emit assets + spec;
@@ -206,9 +233,14 @@ knit_print.lt_tbl = function(x, ...) {
 record_print.lt_tbl = function(x, ...) {
   if (is.list(opts <- getOption('lt.lt_static')))
     return(xfun::new_record(c(do.call(lt_static, c(list(x), opts)), ''), 'asis'))
+  # litedown dedups identical linked tags across the document, so the
+  # extension's <link>/<script src> can be emitted for every interactive table.
+  int = !is.null(x$interactive)
   xfun::new_record(c(
-    css_block(inline = FALSE), user_css_block(x$css, local = TRUE),
-    rules_block(x$rules), spec_block(x), js_block(inline = FALSE), ''
+    css_block(c('lt.css', if (int) 'lt-interactive.css'), inline = FALSE),
+    user_css_block(x$css, local = TRUE),
+    rules_block(x$rules), spec_block(x),
+    js_block(c('lt.js', if (int) 'lt-interactive.js'), inline = FALSE), ''
   ), 'asis')
 }
 
@@ -306,7 +338,10 @@ lt_static_node = function(x, css = TRUE) {
   out = system2('node', c(shQuote(runner), shQuote(js)), input = json, stdout = TRUE)
   if (!is.null(attr(out, 'status'))) stop('Node.js failed to render the lt table.')
   Encoding(out) = 'UTF-8'
-  c(if (css) css_block(TRUE), user_css_block(x$css), rules_block(x$rules), out)
+  c(
+    css_block(if (css) 'lt.css'), user_css_block(x$css), rules_block(x$rules),
+    out
+  )
 }
 
 # Write `html` to a temp file, run it through headless Chromium via

@@ -1,0 +1,23 @@
+/* lt-interactive.css — search box and sortable headers for lt-interactive.js.
+ * Classes are namespaced `lti-*` to avoid clashing with core `lt-*`. Only
+ * properties that change a default are declared. */
+
+/* the search box sits on its own line above the table */
+.lti-search {
+  display: block;
+  margin-bottom: 0.4em;
+}
+
+.lti-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+/* the ▲/▼ indicator, set off from the column label */
+.lti-sort {
+  margin-left: 0.3em;
+  font-size: 0.8em;
+}
+
+.lti-empty td {
+  text-align: center;
+}
