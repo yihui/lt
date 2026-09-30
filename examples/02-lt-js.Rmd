@@ -3,8 +3,8 @@ title: "lt.js — JavaScript API Reference"
 output:
   html:
     meta:
-      css: ["@default", "@lt", "@key-buttons"]
-      js: ["@lt", "@key-buttons"]
+      css: ["@default", "@lt", "@lt-interactive", "@key-buttons"]
+      js: ["@lt", "@lt-interactive", "@key-buttons"]
 ---
 
 This document demonstrates the lt.js runtime directly from JavaScript.
@@ -21,7 +21,17 @@ Add the stylesheet and script to your HTML page:
 
 Then call `LT.build(spec)` from an inline `<script>` wherever you want a
 table to appear. The runtime renders the table immediately after the
-calling script element.
+calling script element. To build a table at any other time (e.g., when
+the reader expands a row), call `LT.render(element, spec)` instead; see
+[interactivity](#sec:interactive).
+
+Interactive tables (sorting, search, filters, paging, resizing) need one
+more stylesheet and script, loaded after the core ones:
+
+``` html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt-interactive.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-interactive.min.js"></script>
+```
 
 ```{r, echo = FALSE}
 iris5 = head(iris, 5)
@@ -729,9 +739,67 @@ LT.build({
 });
 ```
 
-## Interactivity
+## Interactivity {#sec:interactive}
+
+### Raw values
 
 When cell values are formatted, the original values are available in
 tooltips (hover over a cell to see). You can also `Alt + Click` on a
 table to reveal all raw values at once, or `Alt + Double-Click` to
 toggle raw values for all tables on the page.
+
+### The `interactive` field
+
+With `lt-interactive.js` on the page, a spec that carries an
+`interactive` object gets the requested controls. Every field is
+optional:
+
+- `sort`: click-to-sort headers, ascending then descending then
+  unsorted (`false` to turn off);
+- `search`: a search box above the table, matching any cell (`false` to
+  turn off);
+- `filter`: a box under each column header, matching that column only —
+  `true` for every column, or `{ columns: [...] }` for some of them;
+- `pager`: the page sizes to offer, as an array whose first element is
+  the initial size; `0` means every row on one page. Omit the field for
+  the default sizes, or set it to `false` to show all rows with no
+  pager;
+- `resize`: drag a column's right edge to resize it (double-click that
+  edge to fit the column to its content).
+
+A term is matched case-insensitively against the displayed text, with a
+leading `!` to negate it; a term that mentions `x` (e.g., `x > 20`) is
+evaluated as a JavaScript expression against the raw cell values
+instead.
+
+```{js}
+LT.build({
+  data: mtcars,
+  interactive: { filter: { columns: ["mpg"] }, pager: [3, 6, 0], resize: true }
+});
+```
+
+Sorting and filtering reorder and hide rows, so a spec with `row_group`
+or an `indent` op is rendered as a static table (with a warning in the
+browser console); spanners, styles, and footnotes are no obstacle.
+
+### Rendering on demand
+
+`LT.build()` has to run while the page is parsing, since it renders the
+table where its `<script>` sits. `LT.render(element, spec)` has no such
+constraint: it renders the spec into a container element whenever it is
+called, returning the table element. Interactive tables built this way
+are enhanced like any other, which is how a table can be built lazily —
+for instance, only when the reader asks for it:
+
+```{js}
+const box = document.createElement("div");
+const btn = document.createElement("button");
+btn.textContent = "Build a table";
+btn.onclick = () => {
+  LT.render(box, { data: iris, interactive: { pager: [3] } });
+  btn.disabled = true;
+};
+document.currentScript.after(box);
+document.currentScript.after(btn);
+```
