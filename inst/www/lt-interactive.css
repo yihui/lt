@@ -1,23 +1,48 @@
-/* lt-interactive.css — search box and sortable headers for lt-interactive.js.
- * Classes are namespaced `lti-*` to avoid clashing with core `lt-*`. Only
- * properties that change a default are declared. */
+/* lt-interactive.css — controls for lt-interactive.js (search box, sortable
+ * headers, column filters, pager). Classes are namespaced `lti-*` to avoid
+ * clashing with core `lt-*`. Only properties that change a default are
+ * declared. */
 
-/* the search box sits on its own line above the table */
-.lti-search {
-  display: block;
-  margin-bottom: 0.4em;
-}
+.lt-table {
+  /* the search box and the pager are full-width rows of the table, so they line
+   * up with its edges rather than the cell text */
+  :is(.lti-head, .lti-pager-row) td {
+    padding-left: 0;
+    padding-right: 0;
+  }
 
-.lti-sortable {
-  cursor: pointer;
-  user-select: none;
-}
-/* the ▲/▼ indicator, set off from the column label */
-.lti-sort {
-  margin-left: 0.3em;
-  font-size: 0.8em;
-}
+  /* each box fills its cell: the whole table for the search, one column for a
+   * filter */
+  .lti-search,
+  .lti-filters input {
+    width: 100%;
+  }
 
-.lti-empty td {
-  text-align: center;
+  .lti-sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+  /* the ▲/▼ indicator, set off from the column label */
+  .lti-sort {
+    margin-left: 0.3em;
+    font-size: 0.8em;
+  }
+
+  .lti-empty td {
+    text-align: center;
+  }
+
+  .lti-pager {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+  }
+  .lti-pager :is(button, select) {
+    font: inherit;
+    cursor: pointer;
+  }
+  /* push the row count away from the arrows, and the page size to the far end */
+  .lti-pos {
+    margin: 0 auto 0 0.3em;
+  }
 }

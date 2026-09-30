@@ -4,7 +4,13 @@
 \alias{lt_interactive}
 \title{Enable Interactive Table Features}
 \usage{
-lt_interactive(x, sort = TRUE, search = TRUE)
+lt_interactive(
+  x,
+  sort = TRUE,
+  search = TRUE,
+  filter = FALSE,
+  pager = c(10, 25, 50, 100)
+)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
@@ -17,22 +23,39 @@ values, so numeric columns sort numerically.}
 any cell matches the term. Besides plain substring matching, a term that
 references the cell variable \code{x} (e.g. \code{x > 5} or \code{x != "A"}) is evaluated
 as a JavaScript expression against each cell's value.}
+
+\item{filter}{Whether to show a filter box under each column header, matching
+terms the same way as \code{search} but against that column only. A row is kept
+when it passes every filter and the search. Can also be a character vector
+of column names, to filter on those columns only.}
+
+\item{pager}{The page sizes to offer, as a vector of row counts; the
+first one is used initially. Paging shows that many of the filtered and
+sorted rows at a time, with a pager (first, previous, next, last), the row
+range, and (for more than one size) a selector below the table. \code{Inf} is a
+valid size (every row on one page), offered as \verb{∞} in the selector. Use
+\code{FALSE} or \code{NULL} to show all rows with no pager at all.}
 }
 \value{
 \code{x} with interactivity enabled.
 }
 \description{
-Make a table interactive in the browser: a table-wide search box and
-click-to-sort column headers. The features are handled client-side by an
-opt-in JavaScript extension, loaded only for tables that call this function.
+Make a table interactive in the browser: pagination, a table-wide search box,
+click-to-sort column headers, and per-column filter boxes. The features are
+handled client-side by an opt-in JavaScript extension, loaded only for tables
+that call this function.
 }
 \details{
-Interactivity targets flat tables. Tables with row groups
-(\code{\link[=lt_group]{lt_group()}}), spanners (\code{\link[=lt_spanner]{lt_spanner()}}), or row-indexed operations are
-rendered static (a console warning is emitted in the browser).
+Interactivity needs the rows to be independent of each other, since it
+reorders and hides them. Tables with row groups (\code{\link[=lt_group]{lt_group()}}) or indentation
+(\code{\link[=lt_indent]{lt_indent()}}) are rendered static (a console warning is emitted in the
+browser). Column spanners (\code{\link[=lt_spanner]{lt_spanner()}}) are no obstacle, nor are
+row-specific styles or footnotes: those travel with their rows.
 }
 \examples{
 lt(head(mtcars)) |> lt_interactive()
-# search only, no click-to-sort
-lt(head(mtcars)) |> lt_interactive(sort = FALSE)
+# search only, no click-to-sort or pagination
+lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
+# 5 rows at a time, or all of them, with a filter box on one column
+lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
 }

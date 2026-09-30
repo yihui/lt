@@ -1,7 +1,9 @@
-# Exercise the interactive plugin's view pipeline (search + sort) in Node.js.
-# The runner loads core lt.js and lt-interactive.js into one context, then calls
-# LT.plugins.interactive.computeView on a spec/display/state supplied as JSON,
-# and prints the resulting 1-based row indices (spec._viewRows) as a CSV list.
+# Exercise the interactive plugin's view pipeline (filters, search, sort, and
+# paging) in Node.js. The runner loads core lt.js and lt-interactive.js into one
+# context, then calls LT.plugins.interactive.computeView on a spec/display/state
+# supplied as JSON, and prints the resulting 1-based row indices
+# (spec._viewRows) as a CSV list. When the state asks for paging, the page
+# actually shown is appended after a `|` (pageSlice clamps it into range).
 
 RUNNER = '
 const fs = require("fs"), vm = require("vm");
@@ -19,11 +21,13 @@ for (const k of Object.keys(data)) if (!Array.isArray(data[k])) data[k] = [data[
 spec._cols = spec._cols || Object.keys(data);
 const disp = inp.disp || {};
 for (const k of Object.keys(disp)) if (!Array.isArray(disp[k])) disp[k] = [disp[k]];
-const view = ctx.LT.plugins.interactive.computeView(spec, disp, inp.state || {});
-process.stdout.write(view.join(","));
+const int = ctx.LT.plugins.interactive, state = inp.state || {};
+let view = int.computeView(spec, disp, state), paged = "pageSize" in state;
+if (paged) view = int.pageSlice(view, state);
+process.stdout.write(view.join(",") + (paged ? "|" + state.page : ""));
 '
 
-run_view = function(data, state = list(), disp = NULL) {
+run_out = function(data, state = list(), disp = NULL) {
   if (is.null(disp)) disp = lapply(data, as.character)
   runner = tempfile(fileext = '.js')
   writeLines(RUNNER, runner)
@@ -34,8 +38,20 @@ run_view = function(data, state = list(), disp = NULL) {
     shQuote(c(runner, asset_path('lt.js'), asset_path('lt-interactive.js'))),
     input = input, stdout = TRUE
   )
-  out = paste(out, collapse = '')
-  if (!nzchar(out)) integer(0) else as.integer(strsplit(out, ',')[[1]])
+  strsplit(paste(out, collapse = ''), '|', fixed = TRUE)[[1]]
+}
+
+as_rows = function(x) if (is.na(x) || !nzchar(x)) integer(0) else
+  as.integer(strsplit(x, ',')[[1]])
+
+# the view (the rendered row indices)
+run_view = function(data, state = list(), disp = NULL)
+  as_rows(run_out(data, state, disp)[1])
+
+# the view plus the page it was taken from, for a state that asks for paging
+run_page = function(data, state) {
+  out = run_out(data, state)
+  list(rows = as_rows(out[1]), page = as.integer(out[2]))
 }
 
 sym = c("Rash", "Nausea", "Headache", "Itch")
@@ -82,6 +98,45 @@ assert("search and sort compose (filter then sort)", {
   d = list(name = sym, n = c(5, 12, 3, 8))
   # keep rows containing 'a' (1,2,3), then sort by n descending: 12,5,3
   (run_view(d, list(term = 'a', sortCol = 'n', sortDir = 'desc')) %==% c(2L, 1L, 3L))
+})
+
+assert("a column filter looks only at its own column", {
+  d = list(name = sym, n = c(5, 12, 3, 8))
+  (run_view(d, list(filters = list(name = 'a'))) %==% c(1L, 2L, 3L))
+  (run_view(d, list(filters = list(n = 'x > 5'))) %==% c(2L, 4L))
+  # '1' is in the display of n = 12 only; the names are not searched
+  (run_view(d, list(filters = list(n = '1'))) %==% 2L)
+})
+
+assert("filters and the search are combined with AND", {
+  d = list(name = sym, n = c(5, 12, 3, 8))
+  # 'a' in name keeps 1,2,3; n > 5 keeps 2,4
+  (run_view(d, list(filters = list(name = 'a', n = 'x > 5'))) %==% 2L)
+  (run_view(d, list(filters = list(name = 'a'), term = 'x > 5')) %==% 2L)
+  (run_view(d, list(filters = list(name = 'a', n = 'x > 100'))) %==% integer(0))
+})
+
+assert("paging slices the view and clamps the page into range", {
+  d = list(n = 1:7)
+  (run_page(d, list(pageSize = 3))$rows %==% 1:3)
+  (run_page(d, list(pageSize = 3, page = 1))$rows %==% 4:6)
+  (run_page(d, list(pageSize = 3, page = 2))$rows %==% 7L)
+  # the pager's "last" step asks for a page past the end
+  p = run_page(d, list(pageSize = 3, page = 99))
+  (p$rows %==% 7L)
+  (p$page %==% 2L)
+  # a filter can leave fewer rows than the current page holds
+  p = run_page(d, list(pageSize = 3, page = 2, term = 'x < 3'))
+  (p$rows %==% 1:2)
+  (p$page %==% 0L)
+  # no matches at all: the first page of nothing
+  p = run_page(d, list(pageSize = 3, page = 2, term = 'zzz'))
+  (p$rows %==% integer(0))
+  (p$page %==% 0L)
+  # a page size of 0 (Inf in R) is one page holding every row
+  p = run_page(d, list(pageSize = 0, page = 2))
+  (p$rows %==% 1:7)
+  (p$page %==% 0L)
 })
 
 # End-to-end in a headless browser: the extension must find the table lt.js
@@ -134,7 +189,7 @@ assert("the search box filters the rendered rows", {
   # a `change` event (Enter, or leaving the box) applies the term immediately,
   # bypassing the debounce that `input` events go through
   find = function(term) sprintf(
-    'var i = t.closest(".lt-wrap").previousElementSibling;
+    'var i = t.querySelector(".lti-search");
      i.value = %s; i.dispatchEvent(new Event("change"))', xfun::tojson(term)
   )
   (lti_rows(x, find('rash')) %==% 'Rash')
@@ -145,17 +200,128 @@ assert("the search box filters the rendered rows", {
   (lti_eval(x, 't.querySelector("tbody td").colSpan', find('zzz')) %==% '2')
 })
 
+assert("a column filter box filters on its own column", {
+  x = itbl(filter = TRUE)
+  set = function(i, term) sprintf(
+    'var i = t.querySelectorAll(".lti-filters input")[%d];
+     i.value = %s; i.dispatchEvent(new Event("change"))', i, xfun::tojson(term)
+  )
+  (lti_rows(x, set(0, 'a')) %==% c("Rash", "Nausea", "Headache"))
+  (lti_rows(x, set(1, 'x > 5')) %==% c("Nausea", "Itch"))
+  # a character vector picks the columns that get a box
+  (lti_eval(itbl(filter = 'n'), 't.querySelectorAll(".lti-filters input").length') %==% '1')
+  # off by default, and the filter row lives in <thead>, so it survives a
+  # re-render of <tbody>
+  (lti_eval(itbl(), 't.querySelectorAll(".lti-filters").length') %==% '0')
+  (lti_eval(x, 't.querySelectorAll("thead .lti-filters input").length', set(0, 'a')) %==% '2')
+})
+
+assert("the pager shows one page of rows at a time", {
+  x = itbl(pager = 2)
+  click = function(i) sprintf(
+    'document.querySelectorAll(".lti-pager button")[%d].click()', i
+  )
+  (lti_rows(x) %==% c("Rash", "Nausea"))
+  (lti_rows(x, click(2)) %==% c("Headache", "Itch"))                    # next
+  (lti_rows(x, paste(click(2), click(1), sep = ';')) %==% c("Rash", "Nausea"))  # prev
+  (lti_rows(x, click(3)) %==% c("Headache", "Itch"))                    # last
+  (lti_rows(x, paste(click(3), click(0), sep = ';')) %==% c("Rash", "Nausea"))  # first
+  # the readout counts the rows, and the arrows are dead at the ends
+  pos = 'document.querySelector(".lti-pos").textContent'
+  (lti_eval(x, pos) %==% '1–2 / 4')
+  (lti_eval(x, pos, click(2)) %==% '3–4 / 4')
+  dis = 'document.querySelectorAll(".lti-pager button")'
+  (lti_eval(x, sprintf('[...%s].map(b => +b.disabled).join("")', dis)) %==% '1100')
+  (lti_eval(x, sprintf('[...%s].map(b => +b.disabled).join("")', dis), click(2)) %==% '0011')
+  # a single page size offers no selector
+  (lti_eval(x, 'document.querySelectorAll(".lti-pager select").length') %==% '0')
+})
+
+assert("paging is on by default and can be turned off", {
+  (lti_eval(itbl(), 'document.querySelector(".lti-pos").textContent') %==% '1–4 / 4')
+  (lti_eval(itbl(pager = FALSE),
+            'document.querySelectorAll(".lti-pager").length') %==% '0')
+})
+
+assert("a page size of Inf puts every row on one page", {
+  x = itbl(pager = c(2, Inf))
+  # the selector offers it as a symbol, since there is no count to show
+  (lti_eval(x, '[...document.querySelectorAll(".lti-pager option")].map(o => o.textContent).join(",")')
+   %==% '2,∞')
+  pick = 'var s = document.querySelector(".lti-pager select");
+          s.value = "0"; s.dispatchEvent(new Event("change"))'
+  (lti_rows(x) %==% c("Rash", "Nausea"))
+  (lti_rows(x, pick) %==% sym)
+  (lti_eval(x, 'document.querySelector(".lti-pos").textContent', pick) %==% '1–4 / 4')
+  # one page: every arrow is dead
+  (lti_eval(x, '[...document.querySelectorAll(".lti-pager button")].map(b => +b.disabled).join("")',
+            pick) %==% '1111')
+})
+
+assert("the page size selector re-pages, and searching returns to page 1", {
+  x = itbl(pager = c(2, 4))
+  size = function(v) sprintf(
+    'var s = document.querySelector(".lti-pager select");
+     s.value = "%s"; s.dispatchEvent(new Event("change"))', v
+  )
+  (lti_rows(x, size(4)) %==% sym)
+  # on page 2, then a search whose matches fit on page 1
+  find = 'var i = t.querySelector(".lti-search");
+          i.value = "a"; i.dispatchEvent(new Event("change"))'
+  (lti_rows(x, paste('document.querySelectorAll(".lti-pager button")[2].click()', find,
+                     sep = ';')) %==% c("Rash", "Nausea"))
+  (lti_eval(x, 'document.querySelector(".lti-pos").textContent', find) %==% '1–2 / 3')
+})
+
 assert("sort and search can be disabled individually", {
   # `n` of controls: sortable headers, search boxes
   probe = '[t.querySelectorAll(".lti-sortable").length,
-            t.parentNode.parentNode.querySelectorAll("input").length].join(",")'
+            t.querySelectorAll(".lti-search").length].join(",")'
   (lti_eval(itbl(), probe) %==% '2,1')
   (lti_eval(itbl(sort = FALSE), probe) %==% '0,1')
   (lti_eval(itbl(search = FALSE), probe) %==% '2,0')
 })
 
-assert("a non-flat table is left static", {
-  x = lt(data.frame(g = c("a", "a", "b"), v = 1:3)) |> lt_group(~ g) |>
-    lt_interactive()
+assert("the controls are rows of the table, so they match its width", {
+  x = itbl(filter = TRUE)
+  # nothing is placed beside the table: the core wrapper holds the table alone
+  (lti_eval(x, 't.parentNode.className') %==% 'lt-wrap')
+  (lti_eval(x, 't.parentNode.children.length') %==% '1')
+  # the search box and the pager each span every column
+  (lti_eval(x, 't.tHead.rows[0].className') %==% 'lti-head')
+  (lti_eval(x, 't.querySelector(".lti-head td").colSpan') %==% '2')
+  (lti_eval(x, 't.querySelector(".lti-pager-row td").colSpan') %==% '2')
+  # a table with notes keeps them above the pager, so their borders still apply
+  y = lt(data.frame(a = 1:3)) |> lt_note('hi') |> lt_interactive(pager = 2)
+  (lti_eval(y, '[...t.tFoot.rows].map(r => r.className).join(",")') %==%
+     'lt-source-note,lti-pager-row')
+})
+
+assert("a table whose row order carries meaning is left static", {
+  d = data.frame(g = c("a", "a", "b"), v = 1:3)
+  # row groups
+  x = lt(d) |> lt_group(~ g) |> lt_interactive()
   (lti_eval(x, '[...t.querySelectorAll(".lti-sortable")].length') %==% '0')
+  # indentation (a hierarchy sorting would scramble)
+  x = lt(d) |> lt_indent(2) |> lt_interactive()
+  (lti_eval(x, '[...t.querySelectorAll(".lti-sortable")].length') %==% '0')
+})
+
+assert("column spanners stay interactive: they are header rows, not body rows", {
+  d = data.frame(a.x = c(3L, 1L, 2L), a.y = c("p", "r", "q"), b = 1:3)
+  # `a.x` and `a.y` are spanned under `a`, inferred from the column names
+  x = lt(d) |> lt_spanner() |> lt_interactive()
+  spans = 'sel => [...t.querySelectorAll(sel)].map(e => e.textContent).join(",")'
+  # sorting is wired to the column labels, not the spanner labels above them
+  (lti_eval(x, sprintf('(%s)("thead .lti-sortable")', spans)) %==% 'x,y,b')
+  click = 'document.querySelectorAll("thead tr:nth-child(3) th")[0].click()'
+  (lti_rows(x, click) %==% c('1', '2', '3'))
+  # the spanner row survives the re-render of <tbody>
+  (lti_eval(x, sprintf('(%s)(".lt-spanner")', spans), click) %==% 'a')
+  # an explicit spanner works the same way
+  y = lt(data.frame(p = c(2L, 1L), q = c("b", "a"))) |> lt_spanner(both ~ p + q) |>
+    lt_interactive()
+  (lti_eval(y, sprintf('(%s)(".lt-spanner")', spans)) %==% 'both')
+  (lti_rows(y, 'document.querySelectorAll("thead tr:nth-child(3) th")[0].click()') %==%
+     c('1', '2'))
 })
