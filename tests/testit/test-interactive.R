@@ -89,10 +89,10 @@ assert("resizable columns are opt-in", {
   (grepl('resize', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
 })
 
-assert("row detail names a client function in the spec", {
-  json = format(lt(d) |> lt_interactive(detail = 'rowDetail'), assets = FALSE)
-  (grepl('"detail": "rowDetail"', json) %==% TRUE)
-  # off by default
+assert("row detail reaches the client spec when given, and is off by default", {
+  json = format(lt(d) |> lt_interactive(detail = js('(row) => ({})')),
+                assets = FALSE)
+  (grepl('"detail":', json) %==% TRUE)
   (grepl('detail', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
 })
 

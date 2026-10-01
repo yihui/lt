@@ -48,12 +48,14 @@ it (double-clicking the edge fits the column to its content). Widening a
 column widens the table, leaving the other columns as they are. Initial
 widths can be set with \code{\link[=lt_width]{lt_width()}}.}
 
-\item{detail}{Row detail (drill-down): the name of a JavaScript function
-that, given a row's values (an object keyed by column name) and its index,
-returns a table spec to render below that row. An expand caret is added to
-each row; clicking it reveals the detail table (built on first expand), and
-a detail table may itself be interactive. \code{NULL} (the default) adds no row
-detail.}
+\item{detail}{Row detail (drill-down): a JavaScript function that, given a
+row's values (an object keyed by column name) and its index, returns a
+table spec to render below that row. Pass the function inline as a string
+wrapped in \code{\link[xfun:js]{js()}} (e.g. \code{js('(row, i) => lt_spec_like_object')}), or pass a
+plain string naming a function defined on the page. An expand caret is
+added to each row; clicking it reveals the detail table (built on first
+expand), and a detail table may itself be interactive. \code{NULL} (the default)
+adds no row detail.}
 }
 \value{
 \code{x} with interactivity enabled.
@@ -83,6 +85,12 @@ lt(head(mtcars)) |> lt_interactive(resize = TRUE)
 # forms: a character vector, or a formula)
 lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
 lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
-# expandable row detail, built by a JavaScript function on the page
+# expandable row detail, built by a JavaScript callback: given a row's
+# values, return a (mini) table spec to show below it
+lt(head(mtcars)) |> lt_interactive(
+  detail = js('(row) => ({ data: { metric: ["gear", "carb"],
+    value: [row.gear, row.carb] } })')
+)
+# or name a function defined elsewhere on the page
 lt(head(mtcars)) |> lt_interactive(detail = 'rowDetail')
 }

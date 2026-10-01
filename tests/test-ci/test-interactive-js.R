@@ -440,6 +440,16 @@ assert("expanding a row reveals its detail, which follows the row", {
   ) %==% 'true')
 })
 
+assert("row detail accepts an inline js() callback, not only a global name", {
+  # the callback travels verbatim in the spec, so no function need be defined
+  # on the page: expanding a row builds its detail straight from the callback
+  x = itbl(detail = js('(row) => ({ data: { d: [row.name + ":" + row.n] } })'))
+  open0 = 't.querySelectorAll("tbody .lti-expand")[0].click()'
+  (lti_eval(x, 't.querySelectorAll("tbody .lti-expand").length') %==% '4')
+  (lti_eval(x, 't.querySelector(".lti-detail .lt-table td").textContent', open0)
+   %==% 'Rash:5')
+})
+
 assert("a table whose row order carries meaning is left static", {
   d = data.frame(g = c("a", "a", "b"), v = 1:3)
   # row groups
