@@ -17,8 +17,12 @@ lt_interactive(
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{sort}{Whether clicking a column header sorts the table by that column
-(cycling ascending, descending, then unsorted). Sorting uses the raw
-values, so numeric columns sort numerically.}
+(cycling ascending, descending, then unsorted); shift-clicking adds a
+column as a further tie-breaker, so several columns can sort at once.
+Sorting uses the raw values, so numeric columns sort numerically. Can also
+be a character vector of column names, giving an initial sort by those
+columns in order (ascending, or descending for a name prefixed with \code{-},
+e.g. \code{c('g', '-x')}).}
 
 \item{search}{Whether to show a table-wide search box. A row is kept when
 any cell matches the term. Besides plain substring matching, a term that
@@ -66,4 +70,6 @@ lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
 # resizable columns
 lt(head(mtcars)) |> lt_interactive(resize = TRUE)
+# an initial sort by cyl, then mpg descending within each
+lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
 }

@@ -17,8 +17,12 @@
 #'
 #' @inheritParams lt_align
 #' @param sort Whether clicking a column header sorts the table by that column
-#'   (cycling ascending, descending, then unsorted). Sorting uses the raw
-#'   values, so numeric columns sort numerically.
+#'   (cycling ascending, descending, then unsorted); shift-clicking adds a
+#'   column as a further tie-breaker, so several columns can sort at once.
+#'   Sorting uses the raw values, so numeric columns sort numerically. Can also
+#'   be a character vector of column names, giving an initial sort by those
+#'   columns in order (ascending, or descending for a name prefixed with `-`,
+#'   e.g. `c('g', '-x')`).
 #' @param search Whether to show a table-wide search box. A row is kept when
 #'   any cell matches the term. Besides plain substring matching, a term that
 #'   references the cell variable `x` (e.g. `x > 5` or `x != "A"`) is evaluated
@@ -47,13 +51,15 @@
 #' lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
 #' # resizable columns
 #' lt(head(mtcars)) |> lt_interactive(resize = TRUE)
+#' # an initial sort by cyl, then mpg descending within each
+#' lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = FALSE, pager = c(10, 25, 50, 100),
   resize = FALSE
 ) {
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
-  opts = list(sort = sort, search = search)
+  opts = list(sort = sort_keys(sort), search = search)
   if (!isFALSE(filter)) opts$filter = if (is.character(filter))
     list(columns = I(filter)) else TRUE
   if (!isFALSE(pager) && length(pager)) {
@@ -64,4 +70,16 @@ lt_interactive = function(
   if (isTRUE(resize)) opts$resize = TRUE
   x$interactive = opts
   x
+}
+
+# Normalize the `sort` argument. A logical passes through (enable or disable
+# click-to-sort); a character vector is an initial multi-column sort, each name
+# ascending unless prefixed with `-` for descending, carried to the client as a
+# list of `{col, dir}` keys applied in order.
+sort_keys = function(sort) {
+  if (!is.character(sort)) return(sort)
+  desc = startsWith(sort, '-')
+  cols = ifelse(desc, substring(sort, 2L), sort)
+  unname(Map(function(col, d) list(col = col, dir = if (d) 'desc' else 'asc'),
+             cols, desc))
 }
