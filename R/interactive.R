@@ -17,8 +17,13 @@
 #'
 #' @inheritParams lt_align
 #' @param sort Whether clicking a column header sorts the table by that column
-#'   (cycling ascending, descending, then unsorted). Sorting uses the raw
-#'   values, so numeric columns sort numerically.
+#'   (cycling ascending, descending, then unsorted); shift-clicking adds a
+#'   column as a further tie-breaker, so several columns can sort at once.
+#'   Sorting uses the raw values, so numeric columns sort numerically. Can also
+#'   request an initial sort by one or more columns, given either as a character
+#'   vector of column names or as a one-sided formula (e.g. `~ x + -y`); a name
+#'   prefixed with `-` (or a negated formula term) sorts that column descending,
+#'   e.g. `c('g', '-x')` or `~ g + -x`.
 #' @param search Whether to show a table-wide search box. A row is kept when
 #'   any cell matches the term. Besides plain substring matching, a term that
 #'   references the cell variable `x` (e.g. `x > 5` or `x != "A"`) is evaluated
@@ -47,13 +52,17 @@
 #' lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
 #' # resizable columns
 #' lt(head(mtcars)) |> lt_interactive(resize = TRUE)
+#' # an initial sort by cyl, then mpg descending within each (two equivalent
+#' # forms: a character vector, or a formula)
+#' lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
+#' lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = FALSE, pager = c(10, 25, 50, 100),
   resize = FALSE
 ) {
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
-  opts = list(sort = sort, search = search)
+  opts = list(sort = sort_keys(sort), search = search)
   if (!isFALSE(filter)) opts$filter = if (is.character(filter))
     list(columns = I(filter)) else TRUE
   if (!isFALSE(pager) && length(pager)) {
@@ -64,4 +73,33 @@ lt_interactive = function(
   if (isTRUE(resize)) opts$resize = TRUE
   x$interactive = opts
   x
+}
+
+# Normalize the `sort` argument. A logical passes through (enable or disable
+# click-to-sort). An initial multi-column sort can be given as a character
+# vector of column names or as a one-sided formula (e.g. `~ x + -y`); either
+# way a leading `-` on a name, or a negated formula term, means descending. The
+# names travel to the client as-is (the `-` convention is parsed there).
+sort_keys = function(sort) {
+  if (inherits(sort, 'formula')) sort = formula_sort(sort)
+  if (!is.character(sort)) return(sort)
+  I(sort)
+}
+
+# Flatten the right-hand side of a sort formula into `-`-prefixed column names,
+# carrying the sign through nested `+`/`-` (unary `-` or the right side of a
+# binary `-` flips a term to descending), e.g. `~ x + -y` and `~ x - y` both
+# give `c('x', '-y')`.
+formula_sort = function(f) {
+  walk = function(e, neg = FALSE) {
+    if (is.call(e)) {
+      op = as.character(e[[1]])
+      if (op == '+') return(c(walk(e[[2]], neg), walk(e[[3]], neg)))
+      if (op == '-') return(if (length(e) == 3L)
+        c(walk(e[[2]], neg), walk(e[[3]], !neg)) else walk(e[[2]], !neg))
+    }
+    stats::setNames(neg, as.character(e))
+  }
+  d = walk(f[[length(f)]])  # the right-hand side
+  ifelse(d, paste0('-', names(d)), names(d))
 }

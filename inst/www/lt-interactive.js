@@ -19,6 +19,12 @@
   // A column is numeric if its first non-null value is a number (how core
   // lt.js decides alignment and formatting).
   const numCol = col => typeof col.find(v => v != null) === "number";
+  // A number as subscript digits (₁ ₂ …), for the sort-order ordinals.
+  const sub = n => String(n).replace(/\d/g, d => "₀₁₂₃₄₅₆₇₈₉"[d]);
+  // A sort key: a `"col"` (ascending) or `"-col"` (descending) string, or an
+  // explicit `{col, dir}` object. Normalizes either to `{col, dir}`.
+  const parseKey = k => typeof k !== "string" ? { ...k } :
+    k[0] === "-" ? { col: k.slice(1), dir: "desc" } : { col: k, dir: "asc" };
 
   // --- Small DOM helpers, so building the controls stays terse ---
   const $ = (el, sel) => el.querySelector(sel),
@@ -73,8 +79,9 @@
   // search, then sort, yielding the 1-based original row indices for
   // `spec._viewRows`. `disp[col][i]` is a cell's displayed text (what substring
   // search matches); `state` holds the filter terms (`filters[col]`), the
-  // search term, and the sorted column/direction. Filters and the search are
-  // combined with AND: a row must pass all of them.
+  // search term, and the sort keys (`sort`, an array of `{col, dir}` applied in
+  // order). Filters and the search are combined with AND: a row must pass all
+  // of them.
   function computeView(spec, disp, state) {
     const cols = spec._cols || [], data = spec.data || {},
           cell = (c, r) => ({
@@ -90,15 +97,23 @@
     const pred = matcher(state.term);
     if (pred) idx = idx.filter(r => pred(cols.map(c => cell(c, r))));
 
-    const col = data[state.sortCol];
-    if (col && state.sortDir) {
-      const num = numCol(col), dir = state.sortDir === "desc" ? -1 : 1;
+    // sort by each key in turn, falling through to the next on a tie; a key's
+    // column (resolved once) carries its numeric test and direction. nulls sort
+    // last regardless of direction, so the direction never applies to them.
+    const keys = (state.sort || []).map(k => {
+      const col = data[k.col];
+      return col && { col, num: numCol(col), dir: k.dir === "desc" ? -1 : 1 };
+    }).filter(Boolean);
+    if (keys.length) {
       coll ||= new Intl.Collator();
       idx.sort((a, b) => {
-        const x = col[a - 1], y = col[b - 1];
-        // nulls sort last in both directions
-        if (x == null || y == null) return x == y ? 0 : x == null ? 1 : -1;
-        return dir * (num ? x - y : coll.compare(String(x), String(y)));
+        for (const { col, num, dir } of keys) {
+          const x = col[a - 1], y = col[b - 1], xn = x == null, yn = y == null;
+          if (xn || yn) { if (xn !== yn) return xn ? 1 : -1; continue; }
+          const c = num ? x - y : coll.compare(String(x), String(y));
+          if (c) return dir * c;
+        }
+        return 0;
       });
     }
     return idx;
@@ -145,7 +160,12 @@
           disp = captureDisplay(el, cols),
           // the bottom header row: the one whose cells line up with `cols`
           hrow = [...$$(el, "thead tr")].pop(),
-          state = { filters: {}, page: 0, pageSize: 0 };
+          // an array `sort` on the options is an initial sort (a list of key
+          // strings or objects, see parseKey); `true` just turns sorting on
+          state = {
+            filters: {}, page: 0, pageSize: 0,
+            sort: Array.isArray(opts.sort) ? opts.sort.map(parseKey) : []
+          };
     let view,          // filtered + sorted indices, cached across page turns
         sync = () => {};  // pager readout, replaced by addPaginate()
 
@@ -174,6 +194,8 @@
       const sizes = Array.isArray(opts.pager) ? opts.pager : [10, 25, 50, 100];
       sync = addPaginate(el, cols, sizes, state, () => refresh(false));
       refresh();  // cut the full render down to the first page
+    } else if (state.sort.length) {
+      refresh();  // core rendered the rows in file order; apply the initial sort
     }
   }
 
@@ -212,33 +234,49 @@
     onType(input, v => { state.term = v; refresh(); });
   }
 
-  // Click-to-sort headers, one column at a time: clicking cycles asc → desc →
-  // unsorted. The indicator and aria-sort live on the <th>, which survives the
-  // <tbody> swap, so they need no re-render.
+  // Advance one column through asc → desc → unsorted, updating `state.sort` (an
+  // ordered list of `{col, dir}` keys). A plain click sorts by that column
+  // alone; a shift-click adds it as a further tie-breaker (or re-cycles it where
+  // it already is), so several columns can sort together.
+  function cycle(state, col, additive) {
+    const order = (state.sort || []).slice(),
+          i = order.findIndex(k => k.col === col),
+          dir = i < 0 ? "asc" : order[i].dir === "asc" ? "desc" : null;
+    if (!additive) { state.sort = dir ? [{ col, dir }] : []; return; }
+    if (i < 0) order.push({ col, dir });        // dir is "asc" here
+    else if (dir) order[i] = { col, dir };
+    else order.splice(i, 1);
+    state.sort = order;
+  }
+
+  // Click-to-sort headers (shift-click to sort by several at once). The
+  // indicators and aria-sort live on the <th>s, which survive the <tbody> swap,
+  // so repainting them needs no re-render. An ordinal (₁ ₂ …) marks each key's
+  // place when more than one column sorts.
   function addSort(hrow, cols, state, refresh) {
-    const doc = hrow.ownerDocument, marks = [];
+    const doc = hrow.ownerDocument, marks = {};
+    const paint = () => {
+      for (const c in marks) {
+        marks[c].th.removeAttribute("aria-sort");
+        marks[c].ind.textContent = "";
+      }
+      const order = state.sort || [];
+      order.forEach(({ col, dir }, i) => {
+        const m = marks[col];
+        if (!m) return;
+        m.th.setAttribute("aria-sort", dir === "desc" ? "descending" : "ascending");
+        m.ind.textContent = (dir === "desc" ? "▼" : "▲") +
+          (order.length > 1 ? sub(i + 1) : "");
+      });
+    };
     $$(hrow, "th").forEach((th, ci) => {
       const col = cols[ci];
       if (col == null) return;
       th.classList.add("lti-sortable");
-      const ind = elem(doc, "span", { className: "lti-sort" }, th);
-      marks.push([th, ind]);
-      th.onclick = () => {
-        const dir = state.sortCol !== col ? "asc" : state.sortDir === "asc" ?
-          "desc" : state.sortDir === "desc" ? null : "asc";
-        state.sortCol = col;
-        state.sortDir = dir;
-        marks.forEach(([t, m]) => {
-          t.removeAttribute("aria-sort");
-          m.textContent = "";
-        });
-        if (dir) {
-          th.setAttribute("aria-sort", dir === "asc" ? "ascending" : "descending");
-          ind.textContent = dir === "asc" ? "▲" : "▼";
-        }
-        refresh();
-      };
+      marks[col] = { th, ind: elem(doc, "span", { className: "lti-sort" }, th) };
+      th.onclick = e => { cycle(state, col, e.shiftKey); paint(); refresh(); };
     });
+    paint();  // reflect any initial sort carried on the spec
   }
 
   // A row of per-column search boxes below the headers, inside <thead> so the

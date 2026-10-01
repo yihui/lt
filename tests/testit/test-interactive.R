@@ -68,6 +68,21 @@ assert("the filter and pagination options reach the client spec", {
   (grepl('filter|pager', json) %==% FALSE)
 })
 
+assert("a default sort reaches the client spec as ordered name keys", {
+  # the names travel as-is, keeping the '-' prefix; the client parses it
+  json = format(lt(d) |> lt_interactive(sort = c('x', '-y')), assets = FALSE)
+  (grepl('"sort": \\["x", "-y"\\]', json) %==% TRUE)
+  # a one-sided formula is an equivalent way to spell the same keys
+  (grepl('"sort": \\["x", "-y"\\]',
+         format(lt(d) |> lt_interactive(sort = ~ x + -y), assets = FALSE)) %==% TRUE)
+  (grepl('"sort": \\["x", "-y"\\]',
+         format(lt(d) |> lt_interactive(sort = ~ x - y), assets = FALSE)) %==% TRUE)
+  # a logical still passes through unchanged (enable or disable click-to-sort)
+  (grepl('"sort": true', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% TRUE)
+  (grepl('"sort": false',
+         format(lt(d) |> lt_interactive(sort = FALSE), assets = FALSE)) %==% TRUE)
+})
+
 assert("resizable columns are opt-in", {
   json = format(lt(d) |> lt_interactive(resize = TRUE), assets = FALSE)
   (grepl('"resize": true', json) %==% TRUE)

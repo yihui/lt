@@ -56,18 +56,33 @@ run_page = function(data, state) {
 
 sym = c("Rash", "Nausea", "Headache", "Itch")
 
+# `state$sort` is a list of {col, dir} keys applied in order; `k()` builds one
+# and `by()` wraps a set of them into a sort state.
+k = function(col, dir = 'asc') list(col = col, dir = dir)
+by = function(...) list(sort = list(...))
+
 assert("numeric sort orders by raw value; nulls sort last both directions", {
   d = list(name = sym, n = c(5, 12, 3, 8))
-  (run_view(d, list(sortCol = 'n', sortDir = 'asc')) %==% c(3L, 1L, 4L, 2L))
-  (run_view(d, list(sortCol = 'n', sortDir = 'desc')) %==% c(2L, 4L, 1L, 3L))
+  (run_view(d, by(k('n', 'asc'))) %==% c(3L, 1L, 4L, 2L))
+  (run_view(d, by(k('n', 'desc'))) %==% c(2L, 4L, 1L, 3L))
   d2 = list(n = c(5, NA, 3))
-  (run_view(d2, list(sortCol = 'n', sortDir = 'asc')) %==% c(3L, 1L, 2L))
-  (run_view(d2, list(sortCol = 'n', sortDir = 'desc')) %==% c(1L, 3L, 2L))
+  (run_view(d2, by(k('n', 'asc'))) %==% c(3L, 1L, 2L))
+  (run_view(d2, by(k('n', 'desc'))) %==% c(1L, 3L, 2L))
 })
 
 assert("string columns sort locale-aware (case-insensitive letter order)", {
   d = list(g = c("banana", "Apple", "cherry"))
-  (run_view(d, list(sortCol = 'g', sortDir = 'asc')) %==% c(2L, 1L, 3L))
+  (run_view(d, by(k('g', 'asc'))) %==% c(2L, 1L, 3L))
+})
+
+assert("several sort keys break ties in order", {
+  d = list(g = c("a", "a", "b", "b"), v = c(2, 1, 1, 2))
+  # g ascending, then v descending within each group
+  (run_view(d, by(k('g'), k('v', 'desc'))) %==% c(1L, 2L, 4L, 3L))
+  # g ascending, then v ascending
+  (run_view(d, by(k('g'), k('v'))) %==% c(2L, 1L, 3L, 4L))
+  # a later key only decides rows the earlier ones tie on
+  (run_view(d, by(k('v'), k('g'))) %==% c(2L, 3L, 1L, 4L))
 })
 
 assert("substring search matches display text; leading ! negates", {
@@ -97,7 +112,7 @@ assert("substring matches display while expression matches the raw value", {
 assert("search and sort compose (filter then sort)", {
   d = list(name = sym, n = c(5, 12, 3, 8))
   # keep rows containing 'a' (1,2,3), then sort by n descending: 12,5,3
-  (run_view(d, list(term = 'a', sortCol = 'n', sortDir = 'desc')) %==% c(2L, 1L, 3L))
+  (run_view(d, c(list(term = 'a'), by(k('n', 'desc')))) %==% c(2L, 1L, 3L))
 })
 
 assert("a column filter looks only at its own column", {
@@ -182,6 +197,38 @@ assert("clicking a header sorts the rendered rows", {
   (lti_rows(x, paste(rep(click, 3), collapse = ';')) %==% sym)            # unsorted
   # the sorted column is announced to screen readers
   (lti_eval(x, 'document.querySelectorAll("thead th")[1].ariaSort', click) %==% 'ascending')
+})
+
+# a column's rendered cell text, column `ci` (0-based), in rendered row order
+lti_col = function(x, ci, js = '') strsplit(lti_eval(x, sprintf(
+  '[...t.querySelectorAll("tbody tr")].map(r => r.children[%d].textContent).join("|")', ci
+), js), '|', fixed = TRUE)[[1]]
+
+assert("shift-clicking adds a sort key, so columns sort together", {
+  d = data.frame(g = c("a", "a", "b", "b"), v = c(2, 1, 1, 2))
+  x = lt(d) |> lt_interactive(pager = FALSE)
+  gc = 'document.querySelectorAll("thead th")[0].click()'
+  vs = 'document.querySelectorAll("thead th")[1].dispatchEvent(
+          new MouseEvent("click", {bubbles: true, shiftKey: true}))'
+  # g ascending, then v ascending as a tie-breaker within each g: v reads 1,2,1,2
+  (lti_col(x, 1, paste(gc, vs, sep = ';')) %==% c("1", "2", "1", "2"))
+  # both headers are announced, with an ordinal marking each key's place
+  (lti_eval(x, 'document.querySelectorAll("thead th")[0].ariaSort',
+            paste(gc, vs, sep = ';')) %==% 'ascending')
+  ind = '[...t.querySelectorAll("thead th .lti-sort")].map(s => s.textContent).join("|")'
+  (lti_eval(x, ind, paste(gc, vs, sep = ';')) %==% '▲₁|▲₂')
+  # a plain click (no shift) drops the extra key, back to a single-column sort
+  # (and cycles that column on, here from ascending to descending)
+  (lti_eval(x, ind, paste(gc, vs, gc, sep = ';')) %==% '▼|')
+})
+
+assert("an initial sort orders the rows before any click", {
+  d = data.frame(g = c("b", "a", "b", "a"), v = c(1, 2, 3, 4))
+  x = lt(d) |> lt_interactive(sort = c('g', '-v'), pager = FALSE)
+  # g ascending, then v descending: a(v4, v2) then b(v3, v1)
+  (lti_col(x, 1) %==% c("4", "2", "3", "1"))
+  (lti_eval(x, 'document.querySelectorAll("thead th")[0].ariaSort') %==% 'ascending')
+  (lti_eval(x, 'document.querySelectorAll("thead th")[1].ariaSort') %==% 'descending')
 })
 
 assert("the search box filters the rendered rows", {
