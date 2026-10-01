@@ -440,14 +440,31 @@ assert("expanding a row reveals its detail, which follows the row", {
   ) %==% 'true')
 })
 
-assert("row detail accepts an inline js() callback, not only a global name", {
-  # the callback travels verbatim in the spec, so no function need be defined
-  # on the page: expanding a row builds its detail straight from the callback
-  x = itbl(detail = js('(row) => ({ data: { d: [row.name + ":" + row.n] } })'))
+assert("row detail takes an inline js() callback and sees hidden columns", {
+  # `secret` is hidden from the main table but still reaches the callback,
+  # which travels verbatim in the spec (no function need be defined on the page)
+  x = lt(data.frame(name = sym, n = c(5, 12, 3, 8),
+                    secret = c("p", "q", "r", "s"))) |>
+    lt_hide("secret") |>
+    lt_interactive(detail = js('(row) => ({ data: { d: [row.secret] } })'))
+  # the hidden column is absent from the main table's headers
+  (lti_eval(x, '[...t.querySelectorAll("thead th")].some(h => h.textContent === "secret")')
+   %==% 'false')
+  # expanding the first row builds its detail straight from the callback,
+  # surfacing the hidden value
   open0 = 't.querySelectorAll("tbody .lti-expand")[0].click()'
-  (lti_eval(x, 't.querySelectorAll("tbody .lti-expand").length') %==% '4')
   (lti_eval(x, 't.querySelector(".lti-detail .lt-table td").textContent', open0)
-   %==% 'Rash:5')
+   %==% 'p')
+})
+
+assert("a detail table is itself interactive when its spec opts in", {
+  # the callback returns a spec with its own `interactive` field: the mounted
+  # detail table enhances like any other (here its headers become sortable)
+  x = itbl(detail = js(
+    '(row) => ({ data: { k: ["x", "y"], v: [2, 1] }, interactive: { sort: true } })'))
+  open0 = 't.querySelectorAll("tbody .lti-expand")[0].click()'
+  (lti_eval(x, 't.querySelectorAll(".lti-detail .lt-table .lti-sortable").length', open0)
+   %==% '2')
 })
 
 assert("a table whose row order carries meaning is left static", {

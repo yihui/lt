@@ -51,11 +51,14 @@ widths can be set with \code{\link[=lt_width]{lt_width()}}.}
 \item{detail}{Row detail (drill-down): a JavaScript function that, given a
 row's values (an object keyed by column name) and its index, returns a
 table spec to render below that row. Pass the function inline as a string
-wrapped in \code{\link[xfun:js]{js()}} (e.g. \code{js('(row, i) => lt_spec_like_object')}), or pass a
+wrapped in \code{\link[=js]{js()}} (e.g. \code{js('(row, i) => lt_spec_like_object')}), or pass a
 plain string naming a function defined on the page. An expand caret is
 added to each row; clicking it reveals the detail table (built on first
-expand), and a detail table may itself be interactive. \code{NULL} (the default)
-adds no row detail.}
+expand). The callback sees every column, including ones hidden from the
+main table with \code{\link[=lt_hide]{lt_hide()}}. To make the detail table itself interactive,
+give the spec it returns an \code{interactive} field (e.g.
+\verb{\{ data: ..., interactive: \{ sort: true \} \}}). \code{NULL} (the default) adds no
+row detail.}
 }
 \value{
 \code{x} with interactivity enabled.
@@ -86,11 +89,15 @@ lt(head(mtcars)) |> lt_interactive(resize = TRUE)
 lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
 lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
 # expandable row detail, built by a JavaScript callback: given a row's
-# values, return a (mini) table spec to show below it
-lt(head(mtcars)) |> lt_interactive(
-  detail = js('(row) => ({ data: { metric: ["gear", "carb"],
-    value: [row.gear, row.carb] } })')
-)
+# values and its index, return a (mini) table spec to show below it. Here
+# gear and carb are hidden from the main table (lt_hide()) but still reach
+# the callback, which surfaces them (with the row index) in the detail.
+lt(head(mtcars)) |>
+  lt_hide(~ gear + carb) |>
+  lt_interactive(
+    detail = js('(row, i) => ({ data: { metric: ["row", "gear", "carb"],
+      value: [i, row.gear, row.carb] } })')
+  )
 # or name a function defined elsewhere on the page
 lt(head(mtcars)) |> lt_interactive(detail = 'rowDetail')
 }

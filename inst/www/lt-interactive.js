@@ -317,9 +317,11 @@
   function addDetail(el, spec, cols, state, detailOpt, rerender) {
     const doc = el.ownerDocument, nCol = cols.length, cache = {};
     state.expanded = new Set();
+    // the full row (every data column, including ones hidden from the table),
+    // so a detail can surface columns the main table leaves out
     const rowObj = r => {
-      const o = {};
-      for (const c of cols) o[c] = spec.data?.[c]?.[r - 1] ?? null;
+      const o = {}, data = spec.data || {};
+      for (const c in data) o[c] = data[c]?.[r - 1] ?? null;
       return o;
     };
     const build = r => {

@@ -427,6 +427,21 @@ LT.build({
 });
 ```
 
+### Hiding columns (`hide`)
+
+Drop columns from the table without dropping their data: the values still
+travel in the spec, so they stay available to anything that reads the whole
+row (e.g. an interactive table's row `detail`).
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "hide", columns: ["Petal.Length", "Petal.Width"] }
+  ]
+});
+```
+
 ## Row groups
 
 ### Group by column
@@ -771,7 +786,9 @@ optional:
 - `detail`: row detail (drill-down). A function `(rowValues, index) =>
   spec` (or the name of a global one) that builds the spec for a table
   shown below a row; an expand caret is added to each row, and the detail
-  table is built on first expand and may itself be interactive.
+  table is built on first expand. `rowValues` has every column, including
+  ones hidden with a `hide` op. Give the returned spec its own
+  `interactive` field to make the detail table interactive too.
 
 A term is matched case-insensitively against the displayed text, with a
 leading `!` to negate it; a term that mentions `x` (e.g., `x > 20`) is
