@@ -700,13 +700,12 @@ lt(d) |> lt_interactive(pager = c(5, 10, Inf))
 
 Shift-click a second header to sort by it as a tie-breaker, so several
 columns sort at once (an ordinal in each header marks its place). An
-initial sort can be requested with `sort`, as a character vector of
-column names or a one-sided formula; a `-` prefix (or a negated formula
-term) sorts a column descending. The two tables below are sorted the
-same way, by `cyl` and then `mpg` descending within each.
+initial sort can be requested with `sort`, either as a character vector
+of column names (`c("cyl", "-mpg")`) or as the equivalent one-sided
+formula below; a `-` prefix (or a negated formula term) sorts a column
+descending.
 
 ```{r}
-lt(d) |> lt_interactive(sort = c("cyl", "-mpg"), pager = 10)
 lt(d) |> lt_interactive(sort = ~ cyl + -mpg, pager = 10)
 ```
 
