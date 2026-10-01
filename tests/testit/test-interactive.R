@@ -89,6 +89,13 @@ assert("resizable columns are opt-in", {
   (grepl('resize', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
 })
 
+assert("row detail names a client function in the spec", {
+  json = format(lt(d) |> lt_interactive(detail = 'rowDetail'), assets = FALSE)
+  (grepl('"detail": "rowDetail"', json) %==% TRUE)
+  # off by default
+  (grepl('detail', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
+})
+
 count = function(p, x) sum(gregexpr(p, x)[[1]] > 0)
 
 # Emulate a document: knit the tables in order, after clearing the flags that

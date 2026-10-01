@@ -43,6 +43,21 @@
     text-align: center;
   }
 
+  /* the expand caret leads the first cell of each row; it carries its own
+   * glyph (▸ / ▾), so it needs no borders or background of its own */
+  .lti-expand {
+    border: none;
+    background: none;
+    padding: 0;
+    margin-right: 0.4em;
+    cursor: pointer;
+  }
+  /* a row's detail spans every column; the inset marks it as belonging to the
+   * row above it */
+  .lti-detail > td {
+    padding-left: 1.5em;
+  }
+
   /* the drag grip sits on a column's right edge, inside its header cell */
   th:has(.lti-resizer) {
     position: relative;

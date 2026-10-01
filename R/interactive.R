@@ -42,6 +42,12 @@
 #'   it (double-clicking the edge fits the column to its content). Widening a
 #'   column widens the table, leaving the other columns as they are. Initial
 #'   widths can be set with [lt_width()].
+#' @param detail Row detail (drill-down): the name of a JavaScript function
+#'   that, given a row's values (an object keyed by column name) and its index,
+#'   returns a table spec to render below that row. An expand caret is added to
+#'   each row; clicking it reveals the detail table (built on first expand), and
+#'   a detail table may itself be interactive. `NULL` (the default) adds no row
+#'   detail.
 #' @return `x` with interactivity enabled.
 #' @export
 #' @examples
@@ -56,9 +62,11 @@
 #' # forms: a character vector, or a formula)
 #' lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
 #' lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
+#' # expandable row detail, built by a JavaScript function on the page
+#' lt(head(mtcars)) |> lt_interactive(detail = 'rowDetail')
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = FALSE, pager = c(10, 25, 50, 100),
-  resize = FALSE
+  resize = FALSE, detail = NULL
 ) {
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
@@ -71,6 +79,7 @@ lt_interactive = function(
     opts$pager = I(as.integer(sizes))
   }
   if (isTRUE(resize)) opts$resize = TRUE
+  if (!is.null(detail)) opts$detail = detail
   x$interactive = opts
   x
 }

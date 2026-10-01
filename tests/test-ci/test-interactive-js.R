@@ -410,6 +410,36 @@ assert("a table rendered on demand is enhanced like one rendered in place", {
   ) %==% 'Rash|Nausea')
 })
 
+assert("expanding a row reveals its detail, which follows the row", {
+  x = itbl(detail = 'mkDetail')
+  # a function on the page builds a one-cell detail table from the row's values
+  def = 'window.mkDetail = function(row) {
+           return { data: { d: [row.name + ":" + row.n] } };
+         };'
+  caret = function(i) sprintf('t.querySelectorAll("tbody .lti-expand")[%d].click()', i)
+  # one caret per body row, nothing expanded yet
+  (lti_eval(x, 't.querySelectorAll("tbody .lti-expand").length', def) %==% '4')
+  (lti_eval(x, 't.querySelectorAll(".lti-detail").length', def) %==% '0')
+  # expanding the first row inserts a detail row carrying the built table
+  open0 = paste(def, caret(0), sep = ';')
+  (lti_eval(x, 't.querySelectorAll(".lti-detail").length', open0) %==% '1')
+  (lti_eval(x, 't.querySelector(".lti-detail .lt-table td").textContent', open0) %==% 'Rash:5')
+  (lti_eval(x, 't.querySelector(".lti-detail td").colSpan', open0) %==% '2')
+  (lti_eval(x, 't.querySelectorAll(".lti-expand")[0].ariaExpanded', open0) %==% 'true')
+  # collapsing it again removes the detail row
+  (lti_eval(x, 't.querySelectorAll(".lti-detail").length',
+            paste(open0, caret(0), sep = ';')) %==% '0')
+  # it stays open across a sort (which re-renders <tbody>) and follows its row:
+  # after sorting by n ascending, Rash (n = 5) moves, and its detail trails it
+  srt = paste(open0, 'document.querySelectorAll("thead th")[1].click()', sep = ';')
+  (lti_eval(x, 't.querySelectorAll(".lti-detail").length', srt) %==% '1')
+  (lti_eval(
+    x,
+    't.querySelector(".lti-detail").previousElementSibling.cells[0].textContent.includes("Rash")',
+    srt
+  ) %==% 'true')
+})
+
 assert("a table whose row order carries meaning is left static", {
   d = data.frame(g = c("a", "a", "b"), v = 1:3)
   # row groups

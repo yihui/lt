@@ -767,7 +767,11 @@ optional:
   the default sizes, or set it to `false` to show all rows with no
   pager;
 - `resize`: drag a column's right edge to resize it (double-click that
-  edge to fit the column to its content).
+  edge to fit the column to its content);
+- `detail`: row detail (drill-down). A function `(rowValues, index) =>
+  spec` (or the name of a global one) that builds the spec for a table
+  shown below a row; an expand caret is added to each row, and the detail
+  table is built on first expand and may itself be interactive.
 
 A term is matched case-insensitively against the displayed text, with a
 leading `!` to negate it; a term that mentions `x` (e.g., `x > 20`) is

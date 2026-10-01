@@ -10,7 +10,8 @@ lt_interactive(
   search = TRUE,
   filter = FALSE,
   pager = c(10, 25, 50, 100),
-  resize = FALSE
+  resize = FALSE,
+  detail = NULL
 )
 }
 \arguments{
@@ -46,6 +47,13 @@ valid size (every row on one page), offered as \verb{∞} in the selector. Use
 it (double-clicking the edge fits the column to its content). Widening a
 column widens the table, leaving the other columns as they are. Initial
 widths can be set with \code{\link[=lt_width]{lt_width()}}.}
+
+\item{detail}{Row detail (drill-down): the name of a JavaScript function
+that, given a row's values (an object keyed by column name) and its index,
+returns a table spec to render below that row. An expand caret is added to
+each row; clicking it reveals the detail table (built on first expand), and
+a detail table may itself be interactive. \code{NULL} (the default) adds no row
+detail.}
 }
 \value{
 \code{x} with interactivity enabled.
@@ -75,4 +83,6 @@ lt(head(mtcars)) |> lt_interactive(resize = TRUE)
 # forms: a character vector, or a formula)
 lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
 lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
+# expandable row detail, built by a JavaScript function on the page
+lt(head(mtcars)) |> lt_interactive(detail = 'rowDetail')
 }
