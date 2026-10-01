@@ -21,6 +21,10 @@
   const numCol = col => typeof col.find(v => v != null) === "number";
   // A number as subscript digits (₁ ₂ …), for the sort-order ordinals.
   const sub = n => String(n).replace(/\d/g, d => "₀₁₂₃₄₅₆₇₈₉"[d]);
+  // A sort key: a `"col"` (ascending) or `"-col"` (descending) string, or an
+  // explicit `{col, dir}` object. Normalizes either to `{col, dir}`.
+  const parseKey = k => typeof k !== "string" ? { ...k } :
+    k[0] === "-" ? { col: k.slice(1), dir: "desc" } : { col: k, dir: "asc" };
 
   // --- Small DOM helpers, so building the controls stays terse ---
   const $ = (el, sel) => el.querySelector(sel),
@@ -156,11 +160,11 @@
           disp = captureDisplay(el, cols),
           // the bottom header row: the one whose cells line up with `cols`
           hrow = [...$$(el, "thead tr")].pop(),
-          // an array `sort` on the options is an initial sort (a list of
-          // `{col, dir}` keys); `true` just turns sorting on with none applied
+          // an array `sort` on the options is an initial sort (a list of key
+          // strings or objects, see parseKey); `true` just turns sorting on
           state = {
             filters: {}, page: 0, pageSize: 0,
-            sort: Array.isArray(opts.sort) ? opts.sort.map(k => ({ ...k })) : []
+            sort: Array.isArray(opts.sort) ? opts.sort.map(parseKey) : []
           };
     let view,          // filtered + sorted indices, cached across page turns
         sync = () => {};  // pager readout, replaced by addPaginate()

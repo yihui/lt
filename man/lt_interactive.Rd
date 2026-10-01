@@ -20,9 +20,10 @@ lt_interactive(
 (cycling ascending, descending, then unsorted); shift-clicking adds a
 column as a further tie-breaker, so several columns can sort at once.
 Sorting uses the raw values, so numeric columns sort numerically. Can also
-be a character vector of column names, giving an initial sort by those
-columns in order (ascending, or descending for a name prefixed with \code{-},
-e.g. \code{c('g', '-x')}).}
+request an initial sort by one or more columns, given either as a character
+vector of column names or as a one-sided formula (e.g. \code{~ x + -y}); a name
+prefixed with \code{-} (or a negated formula term) sorts that column descending,
+e.g. \code{c('g', '-x')} or \code{~ g + -x}.}
 
 \item{search}{Whether to show a table-wide search box. A row is kept when
 any cell matches the term. Besides plain substring matching, a term that
@@ -70,6 +71,8 @@ lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
 # resizable columns
 lt(head(mtcars)) |> lt_interactive(resize = TRUE)
-# an initial sort by cyl, then mpg descending within each
+# an initial sort by cyl, then mpg descending within each (two equivalent
+# forms: a character vector, or a formula)
 lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
+lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
 }

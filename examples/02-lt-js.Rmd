@@ -755,7 +755,9 @@ With `lt-interactive.js` on the page, a spec that carries an
 optional:
 
 - `sort`: click-to-sort headers, ascending then descending then
-  unsorted (`false` to turn off);
+  unsorted (`false` to turn off); shift-click adds a column as a
+  tie-breaker. An array requests an initial sort, each element a column
+  name string, `"-name"` for descending (or a `{ col, dir }` object);
 - `search`: a search box above the table, matching any cell (`false` to
   turn off);
 - `filter`: a box under each column header, matching that column only —
