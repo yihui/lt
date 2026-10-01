@@ -255,13 +255,14 @@
         !numCol(data[rowGroupCols[0]]) &&
         data[rowGroupCols[0]]?.some(v => (v + "").length > 20)) rowGroupSep = true;
 
-    // Hidden columns: row_group, merge sources
+    // Hidden columns: row_group, merge sources, explicit hide op
     const hidden = new Set();
     for (const g of rowGroupCols) hidden.add(g);
     onOp("merge", op => {
       if (op.hide !== false && op.columns)
         op.columns.slice(1).forEach(c => hidden.add(c));
     });
+    onOp("hide", op => (op.columns || []).forEach(c => hidden.add(c)));
 
     // Visible columns after hiding
     let visible = colNames.filter(c => !hidden.has(c));

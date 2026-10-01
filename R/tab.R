@@ -541,6 +541,23 @@ lt_move = function(x, columns, after = NULL) {
     after = if (!is.null(after)) as.character(after))
 }
 
+#' Hide Columns
+#'
+#' Drop columns from the rendered table without removing them from the data.
+#' The values still travel to the client in the spec, so they remain available
+#' to things that read the whole row, such as an interactive table's row detail
+#' (see the `detail` argument of [lt_interactive()]).
+#'
+#' @inheritParams lt_align
+#' @return `x` with the hidden columns recorded.
+#' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_hide(~ gear + carb)
+lt_hide = function(x, columns) {
+  columns = f_cols(columns, x$data)
+  add_op(x, 'hide', columns = I(as.character(columns)))
+}
+
 #' Attach Custom CSS
 #'
 #' Add user-supplied stylesheets or inline rules that render after the
