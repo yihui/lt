@@ -783,12 +783,15 @@ optional:
   pager;
 - `resize`: drag a column's right edge to resize it (double-click that
   edge to fit the column to its content);
-- `detail`: row detail (drill-down). A function `(rowValues, index) =>
-  spec` (or the name of a global one) that builds the spec for a table
-  shown below a row; an expand caret is added to each row, and the detail
-  table is built on first expand. `rowValues` has every column, including
-  ones hidden with a `hide` op. Give the returned spec its own
-  `interactive` field to make the detail table interactive too.
+- `detail`: row detail (drill-down). An expand caret is added to each row,
+  and a table is built below it on first expand. Give either an array of
+  column names (the detail is a one-row table of those columns' displayed
+  values, including ones hidden with a `hide` op) or a function `(row,
+  index, display) => spec` (or the name of a global one) that returns the
+  spec. `row` has the raw values and `display` the formatted text, each
+  keyed by column name and covering every column. The returned spec is an
+  ordinary table spec, so give it its own `interactive` field to make the
+  detail table sortable/filterable/paged too.
 
 A term is matched case-insensitively against the displayed text, with a
 leading `!` to negate it; a term that mentions `x` (e.g., `x > 20`) is

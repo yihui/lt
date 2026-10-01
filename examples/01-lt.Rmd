@@ -740,22 +740,32 @@ lt(d) |> lt_interactive(filter = TRUE, search = FALSE, pager = 5)
 ### Row detail (drill-down)
 
 `detail` adds an expand caret to each row; clicking it reveals a child
-table built on the spot from that row. Pass a JavaScript callback, wrapped
-in `js()`, that takes the row's values (an object keyed by column name) and
-its index, and returns a table spec. The callback sees every column,
-including ones hidden from the main table with `lt_hide()` — a natural way
-to tuck extra fields into the detail. Here `hp` and `wt` are hidden above
-but surfaced (with the row index) on expand. To make the detail table
-itself interactive, give the returned spec its own `interactive` field
-(e.g. `interactive: { sort: true }`).
+table built on the spot from that row. The simplest form names the columns
+to show, as a character vector or a one-sided formula: their displayed
+(formatted) values are laid out as a one-row table. The columns can be ones
+hidden from the main table with `lt_hide()` — a natural way to tuck extra
+fields into the detail. Here `hp` and `wt` are hidden above but surfaced in
+the detail.
+
+```{r}
+lt(d) |>
+  lt_hide(~ hp + wt) |>
+  lt_interactive(pager = 5, detail = ~ hp + wt)
+```
+
+For full control, pass a JavaScript callback yourself, wrapped in `js()`.
+It is called as `(row, index, display)`: `row` has the raw values,
+`display` the formatted text, each keyed by column name. Return a table
+spec; give it an `interactive` field to make the detail table itself
+interactive.
 
 ```{r}
 lt(d) |>
   lt_hide(~ hp + wt) |>
   lt_interactive(
     pager = 5,
-    detail = js('(row, i) => ({ data: { field: ["row", "hp", "wt"],
-      value: [i, row.hp, row.wt] } })')
+    detail = js('(row, i, d) => ({ data: { field: ["row", "hp", "wt"],
+      value: [i, d.hp, d.wt] } })')
   )
 ```
 

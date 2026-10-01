@@ -42,17 +42,17 @@
 #'   it (double-clicking the edge fits the column to its content). Widening a
 #'   column widens the table, leaving the other columns as they are. Initial
 #'   widths can be set with [lt_width()].
-#' @param detail Row detail (drill-down): a JavaScript function that, given a
-#'   row's values (an object keyed by column name) and its index, returns a
-#'   table spec to render below that row. Pass the function inline as a string
-#'   wrapped in [js()] (e.g. `js('(row, i) => lt_spec_like_object')`), or pass a
-#'   plain string naming a function defined on the page. An expand caret is
-#'   added to each row; clicking it reveals the detail table (built on first
-#'   expand). The callback sees every column, including ones hidden from the
-#'   main table with [lt_hide()]. To make the detail table itself interactive,
-#'   give the spec it returns an `interactive` field (e.g.
-#'   `{ data: ..., interactive: { sort: true } }`). `NULL` (the default) adds no
-#'   row detail.
+#' @param detail Row detail (drill-down). An expand caret is added to each row;
+#'   clicking it reveals a table built from that row below it. Give the columns
+#'   to show, as a character vector of names or a one-sided formula (e.g.
+#'   `~ gear + carb`); their displayed (formatted) values are laid out as a
+#'   one-row table. The columns can be ones hidden from the main table with
+#'   [lt_hide()], a natural way to tuck extra fields into the detail. For full
+#'   control, pass a JavaScript callback instead, wrapped in [js()]: it is
+#'   called as `(row, index, display)` — `row` the raw values, `display` the
+#'   formatted text, each keyed by column name — and returns a table spec, which
+#'   may carry its own `interactive` field to make the detail table interactive.
+#'   `NULL` (the default) adds no row detail.
 #' @return `x` with interactivity enabled.
 #' @export
 #' @examples
@@ -67,18 +67,18 @@
 #' # forms: a character vector, or a formula)
 #' lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
 #' lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
-#' # expandable row detail, built by a JavaScript callback: given a row's
-#' # values and its index, return a (mini) table spec to show below it. Here
-#' # gear and carb are hidden from the main table (lt_hide()) but still reach
-#' # the callback, which surfaces them (with the row index) in the detail.
+#' # expandable row detail (drill-down): name the columns to show. Here gear and
+#' # carb are hidden from the main table but revealed in the detail that appears
+#' # when a row is expanded.
 #' lt(head(mtcars)) |>
 #'   lt_hide(~ gear + carb) |>
-#'   lt_interactive(
-#'     detail = js('(row, i) => ({ data: { metric: ["row", "gear", "carb"],
-#'       value: [i, row.gear, row.carb] } })')
-#'   )
-#' # or name a function defined elsewhere on the page
-#' lt(head(mtcars)) |> lt_interactive(detail = 'rowDetail')
+#'   lt_interactive(detail = ~ gear + carb)
+#' # for full control, pass a JavaScript callback yourself: (raw row, index,
+#' # displayed row); here showing the row number and mpg as the table displays it
+#' lt(head(mtcars)) |> lt_interactive(
+#'   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
+#'     value: [i, d.mpg] } })')
+#' )
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = FALSE, pager = c(10, 25, 50, 100),
   resize = FALSE, detail = NULL
@@ -94,7 +94,8 @@ lt_interactive = function(
     opts$pager = I(as.integer(sizes))
   }
   if (isTRUE(resize)) opts$resize = TRUE
-  if (!is.null(detail)) opts$detail = detail
+  if (!is.null(detail)) opts$detail = if (inherits(detail, 'JS_LITERAL'))
+    detail else I(as.character(f_cols(detail, x$data)))
   x$interactive = opts
   x
 }

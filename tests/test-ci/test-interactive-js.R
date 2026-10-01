@@ -411,17 +411,14 @@ assert("a table rendered on demand is enhanced like one rendered in place", {
 })
 
 assert("expanding a row reveals its detail, which follows the row", {
-  x = itbl(detail = 'mkDetail')
-  # a function on the page builds a one-cell detail table from the row's values
-  def = 'window.mkDetail = function(row) {
-           return { data: { d: [row.name + ":" + row.n] } };
-         };'
+  # an inline js() callback builds a one-cell detail table from the row's values
+  x = itbl(detail = js('(row) => ({ data: { d: [row.name + ":" + row.n] } })'))
   caret = function(i) sprintf('t.querySelectorAll("tbody .lti-expand")[%d].click()', i)
   # one caret per body row, nothing expanded yet
-  (lti_eval(x, 't.querySelectorAll("tbody .lti-expand").length', def) %==% '4')
-  (lti_eval(x, 't.querySelectorAll(".lti-detail").length', def) %==% '0')
+  (lti_eval(x, 't.querySelectorAll("tbody .lti-expand").length') %==% '4')
+  (lti_eval(x, 't.querySelectorAll(".lti-detail").length') %==% '0')
   # expanding the first row inserts a detail row carrying the built table
-  open0 = paste(def, caret(0), sep = ';')
+  open0 = caret(0)
   (lti_eval(x, 't.querySelectorAll(".lti-detail").length', open0) %==% '1')
   (lti_eval(x, 't.querySelector(".lti-detail .lt-table td").textContent', open0) %==% 'Rash:5')
   (lti_eval(x, 't.querySelector(".lti-detail td").colSpan', open0) %==% '2')
@@ -455,6 +452,23 @@ assert("row detail takes an inline js() callback and sees hidden columns", {
   open0 = 't.querySelectorAll("tbody .lti-expand")[0].click()'
   (lti_eval(x, 't.querySelector(".lti-detail .lt-table td").textContent', open0)
    %==% 'p')
+})
+
+assert("detail = column names builds a one-row table of displayed values", {
+  # name the columns to show; `secret` is hidden from the main table but still
+  # reachable in the detail, and `n` is formatted, so the detail shows that
+  # formatted text (5.0), not the raw value (5).
+  x = lt(data.frame(name = sym, n = c(5, 12, 3, 8),
+                    secret = c("p", "q", "r", "s"))) |>
+    lt_format(~ n, decimals = 1) |>
+    lt_hide("secret") |>
+    lt_interactive(detail = ~ n + secret)
+  open0 = 't.querySelectorAll("tbody .lti-expand")[0].click()'
+  # the named columns become headers, their displayed values a single row
+  (lti_eval(x, '[...t.querySelectorAll(".lti-detail .lt-table th")].map(c => c.textContent).join("|")', open0)
+   %==% 'n|secret')
+  (lti_eval(x, '[...t.querySelectorAll(".lti-detail .lt-table tbody td")].map(c => c.textContent).join("|")', open0)
+   %==% '5.0|p')
 })
 
 assert("a detail table is itself interactive when its spec opts in", {

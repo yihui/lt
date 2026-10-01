@@ -615,6 +615,9 @@
     // sort/filter without re-deriving it. Set as a side effect, never read by
     // core; harmless for the static/Node render path.
     spec._cols = cols;
+    // Also expose the formatted cell text (every column, including hidden ones),
+    // so plugins can show the displayed values (e.g. a row detail).
+    spec._display = display;
     // Wrap in a div so a wide table can scroll horizontally (`overflow-x`)
     // instead of overflowing the page.
     return `<div class="lt-wrap">${out.join("")}</div>`;

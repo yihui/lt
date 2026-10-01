@@ -305,9 +305,11 @@
     hrow.parentNode.appendChild(row);
   }
 
-  // Expandable row detail. `detailOpt` is a function (rowValues, index) => spec
-  // or the name of such a global one, called the first time a row is expanded
-  // (and cached) to build the spec for its drop-down detail table. Returns a
+  // Expandable row detail. `detailOpt` is either an array of column names (the
+  // detail is a one-row table of those columns' displayed values) or a callback
+  // `(rawRow, index, displayedRow) => spec` (or the name of such a global one),
+  // called the first time a row is expanded (and cached) to build the spec for
+  // its drop-down detail table. Returns a
   // `decorate(body, rows)` that each <tbody> re-render runs: it prepends an
   // expand caret to every row and, after each open row, inserts a full-width
   // detail row rendered through LT.render (so a detail table can itself be
@@ -317,17 +319,28 @@
   function addDetail(el, spec, cols, state, detailOpt, rerender) {
     const doc = el.ownerDocument, nCol = cols.length, cache = {};
     state.expanded = new Set();
-    // the full row (every data column, including ones hidden from the table),
-    // so a detail can surface columns the main table leaves out
-    const rowObj = r => {
-      const o = {}, data = spec.data || {};
-      for (const c in data) o[c] = data[c]?.[r - 1] ?? null;
-      return o;
+    // a row as an object keyed by column (every column, including ones hidden
+    // from the table), built from `src`: spec.data gives raw values, spec._display
+    // the formatted text the table shows
+    const pick = (src, r) => {
+      const o = {}; for (const c in src) o[c] = src[c]?.[r - 1] ?? null; return o;
     };
     const build = r => {
       if (r in cache) return cache[r];
-      const fn = typeof detailOpt === "function" ? detailOpt : root[detailOpt];
-      return cache[r] = typeof fn === "function" ? fn(rowObj(r), r) : null;
+      const disp = pick(spec._display || {}, r);
+      let out = null;
+      if (Array.isArray(detailOpt)) {
+        // a list of column names: show those columns' displayed values as a
+        // one-row table (the columns can be ones hidden from the main table)
+        const data = {};
+        for (const c of detailOpt) data[c] = [disp[c] ?? null];
+        out = { data };
+      } else {
+        // a callback (or the name of one): (raw row, index, displayed row)
+        const fn = typeof detailOpt === "function" ? detailOpt : root[detailOpt];
+        if (typeof fn === "function") out = fn(pick(spec.data || {}, r), r, disp);
+      }
+      return cache[r] = out;
     };
     const toggle = r => {
       state.expanded.has(r) ? state.expanded.delete(r) : state.expanded.add(r);
