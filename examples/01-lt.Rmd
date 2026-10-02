@@ -716,7 +716,7 @@ formula below; a `-` prefix (or a negated formula term) sorts a column
 descending.
 
 ```{r}
-lt(d) |> lt_interactive(sort = ~ cyl + -mpg, pager = 10)
+lt(d) |> lt_interactive(sort = ~ cyl + -mpg, pager = 10, search = FALSE)
 ```
 
 The extra controls (and the JavaScript that drives them) are only loaded
@@ -764,8 +764,11 @@ lt(d) |>
   lt_hide(~ hp + wt) |>
   lt_interactive(
     pager = 5,
-    detail = js('(row, i, d) => ({ data: { field: ["row", "hp", "wt"],
-      value: [i, d.hp, d.wt] }, interactive: { sort: true } })')
+    detail = js('(row, i, d) => ({
+      data: { field: ["row", "hp", "wt"],
+      value: [i, d.hp, d.wt] },
+      interactive: { sort: ["value"], search: false }
+    })')
   )
 ```
 
@@ -777,7 +780,7 @@ content. Widening a column widens the table, leaving the other columns
 as they are. Initial widths come from `lt_width()` as usual.
 
 ```{r}
-lt(head(d)) |> lt_interactive(resize = TRUE, pager = FALSE) |>
+lt(head(d)) |> lt_interactive(resize = TRUE, pager = FALSE, search = FALSE) |>
   lt_width(mpg = "8em")
 ```
 
