@@ -569,23 +569,40 @@ lt(d_eff) |>
   lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = "Effect (95% CI)")
 ```
 
-Give `columns` several value columns (with matching `lower`/`upper`) to draw
-one colored point and bar per group in each cell — a grouped forest / dot
-plot. Points are stacked vertically, so give taller cells more `height`.
+Give `columns` several value columns to draw one colored point per group in
+each cell — a grouped dot plot. By default the group points share one baseline
+and are told apart by `color`:
 
 ```{r}
 d_grp = data.frame(
+  Event   = c("Headache", "Nausea", "Rash"),
+  Placebo = c(12, 5, 8), `Low dose` = c(18, 9, 6), `High dose` = c(25, 14, 11),
+  check.names = FALSE
+)
+lt(d_grp) |>
+  lt_errorbar(
+    ~ Placebo + `Low dose` + `High dose`,
+    color = c("#888", "#1f77b4", "#d62728"), axis = "Incidence (%)"
+  )
+```
+
+Add matching `lower`/`upper` columns for confidence bars, and `dodge = TRUE` to
+split the groups onto separate rows within the cell (forest-style) — give such
+cells more `height`:
+
+```{r}
+d_eff2 = data.frame(
   Term    = c("Age", "Dose", "Baseline"),
   Est_tx  = c(0.22, -0.18, 0.40), Lo_tx = c(0.05, -0.36, 0.19),
   Hi_tx   = c(0.39, 0.00, 0.61),
   Est_ctl = c(0.05, -0.30, 0.28), Lo_ctl = c(-0.12, -0.48, 0.07),
   Hi_ctl  = c(0.22, -0.12, 0.49)
 )
-lt(d_grp) |>
+lt(d_eff2) |>
   lt_errorbar(
     ~ Est_tx + Est_ctl,
     lower = c("Lo_tx", "Lo_ctl"), upper = c("Hi_tx", "Hi_ctl"),
-    color = c("#1f77b4", "#d62728"), ref = 0, height = 30,
+    color = c("#1f77b4", "#d62728"), ref = 0, dodge = TRUE, height = 26,
     axis = "Effect by arm (treatment vs. control)"
   )
 ```

@@ -56,16 +56,22 @@
   // Inline SVG for an error-bar cell: one or more series, each a point at its
   // estimate plus a horizontal bar (with end caps) from its lower to its upper
   // bound, all on the column's shared [min,max] scale. Several series (e.g. one
-  // per treatment group) are stacked vertically so their points do not overlap,
-  // and each can carry its own color (eb.colors[i]) — a forest/dot plot in a
-  // cell. Only the numbers are shipped in the spec; the SVG is built here at
+  // per treatment group) share one baseline and are told apart by color
+  // (eb.colors[i]) — a grouped dot plot in a cell; set eb.dodge to split them
+  // onto separate rows instead. Only the numbers are shipped in the spec; the
+  // SVG is built here at
   // render time, so an interactive table (which rebuilds <tbody> from
   // spec._viewRows) draws it only for the rows on the current page. `u` carries
   // the core helpers (esc/isNum/str) passed in by lt.js.
   function svgErrorbar(eb, data, r, u) {
     const num = k => { const v = k == null ? null : data[k]?.[r - 1]; return u.isNum(v) ? v : null; };
-    const H = eb.height, n = eb.series.length, x = v => ebX(eb, v),
-          slot = H / n, cap = Math.min(4, (slot - 1) / 2);  // end-cap half-height
+    const H = eb.height, n = eb.series.length, x = v => ebX(eb, v);
+    // By default every series shares one center baseline (a grouped dot plot:
+    // group points, told apart by color, on the same line). With `dodge`, the
+    // series split the height into equal vertical slots instead (forest-style
+    // rows), each centered in its slot.
+    const dodge = n > 1 && eb.dodge, slot = dodge ? H / n : H,
+          cap = Math.min(4, (slot - 1) / 2);  // end-cap half-height
     let s = `<svg class="lt-eb" width="${eb.width}" height="${H}">`;
     if (eb.ref != null)
       s += `<line class="lt-eb-ref" x1="${x(eb.ref)}" y1="0" x2="${x(eb.ref)}" y2="${H}"/>`;
@@ -73,9 +79,7 @@
     eb.series.forEach((se, i) => {
       const est = num(se.v), lo = num(se.lo), hi = num(se.hi);
       if (est == null && lo == null && hi == null) return;
-      // one series centered (keeps the single-series look); several share the
-      // height in equal vertical slots, each series centered in its slot.
-      const y = n > 1 ? Math.round(slot * (i + 0.5)) : H / 2;
+      const y = dodge ? Math.round(slot * (i + 0.5)) : H / 2;
       const c = eb.colors?.[i],
             st = c ? ` stroke="${u.esc(c)}"` : "", fl = c ? ` fill="${u.esc(c)}"` : "";
       if (lo != null && hi != null) {
@@ -140,9 +144,9 @@
       const v = series[0]?.v;
       if (!v) return {};
       const eb = {
-        col: v, series, colors: op.colors, min: op.min, max: op.max,
-        ref: op.ref, axis: op.axis, axisLabel: op.axis_label,
-        width: op.width || 160, height: op.height || 16
+        col: v, series, colors: op.colors, dodge: op.dodge,
+        min: op.min, max: op.max, ref: op.ref, axis: op.axis,
+        axisLabel: op.axis_label, width: op.width || 160, height: op.height || 16
       };
       // When an axis is requested, the same nice ticks drive both the footer
       // axis and the faint in-cell gridlines; their count is capped so the

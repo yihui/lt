@@ -566,10 +566,12 @@ lt_hide = function(x, columns) {
 #' bound, drawn on a scale shared across the column so rows are comparable at a
 #' glance (a forest plot of effect sizes with confidence intervals). Several
 #' series can be drawn per cell -- one point (and optional bar) per group,
-#' stacked vertically and colored individually -- for a grouped forest / dot
-#' plot. It is lightweight: only the numbers travel to the client, and the SVG
-#' is drawn in the browser -- so for an interactive table ([lt_interactive()])
-#' only the rows on the current page are drawn.
+#' colored individually -- for a grouped dot plot: by default the group points
+#' share one baseline and are told apart by color; set `dodge = TRUE` to split
+#' them onto separate rows (forest-style). It is lightweight: only the numbers
+#' travel to the client, and the SVG is drawn in the browser -- so for an
+#' interactive table ([lt_interactive()]) only the rows on the current page are
+#' drawn.
 #'
 #' @inheritParams lt_align
 #' @param columns The value column(s) holding the point estimate(s): one column
@@ -589,9 +591,12 @@ lt_hide = function(x, columns) {
 #'   `0` for a risk difference, `1` for an odds ratio).
 #' @param color Optional CSS color(s) for the series: one per series (recycled
 #'   from a single value), coloring both the point and its bar. The default
-#'   uses the stylesheet's.
-#' @param width,height Pixel size of each cell's SVG. Give several series more
-#'   `height` so their stacked points stay legible.
+#'   uses the stylesheet's. Supply distinct colors to tell grouped series apart.
+#' @param dodge For several series, `FALSE` (default) overlays all group points
+#'   on one shared baseline (a grouped dot plot, distinguished by `color`);
+#'   `TRUE` splits the series onto separate stacked rows within the cell
+#'   (forest-style) -- give such cells more `height`.
+#' @param width,height Pixel size of each cell's SVG.
 #' @param hide If `TRUE` (default), every column drawn into the plot (the bound
 #'   columns, and the value columns of any series after the first) is hidden;
 #'   set to `FALSE` to keep them visible.
@@ -613,16 +618,20 @@ lt_hide = function(x, columns) {
 #' # equivalently, name the value column and its bounds separately
 #' lt(d) |> lt_errorbar(~ est, lower = "lo", upper = "hi", hide = FALSE,
 #'   axis = "Effect")
-#' # several groups per cell: one colored point + bar each (a grouped forest)
+#' # a grouped dot plot: one colored point per group, overlaid on one baseline
 #' g = data.frame(
-#'   term = c("A", "B"), e1 = c(0.2, 0.5), l1 = c(0.0, 0.3), u1 = c(0.4, 0.7),
-#'   e2 = c(-0.1, 0.3), l2 = c(-0.3, 0.1), u2 = c(0.1, 0.5)
+#'   term = c("A", "B", "C"), g1 = c(12, 5, 8), g2 = c(18, 9, 6),
+#'   g3 = c(25, 14, 11)
 #' )
-#' lt(g) |> lt_errorbar(~ e1 + e2, lower = c("l1", "l2"), upper = c("u1", "u2"),
-#'   color = c("#1f77b4", "#d62728"), ref = 0, height = 28)
+#' lt(g) |> lt_errorbar(~ g1 + g2 + g3,
+#'   color = c("#888", "#1f77b4", "#d62728"), axis = "Rate (%)")
+#' # dodge = TRUE splits the groups onto separate rows (forest-style); add bars
+#' lt(g) |> lt_errorbar(~ g1 + g2, lower = c("g1", "g1"), upper = c("g2", "g3"),
+#'   color = c("#1f77b4", "#d62728"), dodge = TRUE, height = 24)
 lt_errorbar = function(
   x, columns, lower = NULL, upper = NULL, limits = NULL, ref = NULL,
-  color = NULL, width = 160, height = 16, hide = TRUE, axis = FALSE
+  color = NULL, dodge = FALSE, width = 160, height = 16, hide = TRUE,
+  axis = FALSE
 ) {
   # a two-sided `value ~ lower + upper` is shorthand for a single series: take
   # the estimate from the left, the bounds from the right (overriding the args).
@@ -664,7 +673,8 @@ lt_errorbar = function(
   hidden = setdiff(all_cols, cols[1])
   if (hide && length(hidden)) x = add_op(x, 'hide', columns = I(hidden))
   add_op(x, 'errorbar', series = series, colors = if (!is.null(color)) I(color),
-    min = limits[1], max = limits[2], ref = ref, width = width, height = height,
+    dodge = if (isTRUE(dodge)) TRUE, min = limits[1], max = limits[2],
+    ref = ref, width = width, height = height,
     axis = if (isTRUE(axis) || is.character(axis)) TRUE,
     axis_label = if (is.character(axis)) axis)
 }

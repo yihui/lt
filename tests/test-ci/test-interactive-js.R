@@ -498,23 +498,24 @@ assert("lt_errorbar renders SVG only for the current page (deferred)", {
   (lti_eval(x, 't.querySelectorAll(".lt-eb").length', next_pg) %==% '3')
 })
 
-assert("lt_errorbar stacks several colored series in one cell", {
+assert("lt_errorbar draws grouped points, overlaid by default and dodged on request", {
   g = data.frame(
     term = c("A", "B"),
     e1 = c(0.2, 0.5), l1 = c(0, 0.3), u1 = c(0.4, 0.7),
     e2 = c(-0.1, 0.3), l2 = c(-0.3, 0.1), u2 = c(0.1, 0.5)
   )
-  x = lt(g) |> lt_errorbar(~ e1 + e2, lower = c("l1", "l2"),
-    upper = c("u1", "u2"), color = c("#1f77b4", "#d62728"))
-  # two groups per row x two rows = four points, drawn at distinct heights
-  (lti_eval(x, 't.querySelectorAll("tbody .lt-eb circle").length') %==% '4')
-  (lti_eval(x,
-    'new Set([...t.querySelectorAll("tbody .lt-eb circle")].map(c=>c.getAttribute("cy"))).size')
-   %==% '2')
-  # each series keeps its own color
-  (lti_eval(x,
+  eb = function(...) lt(g) |> lt_errorbar(~ e1 + e2, lower = c("l1", "l2"),
+    upper = c("u1", "u2"), color = c("#1f77b4", "#d62728"), ...)
+  cy = 'new Set([...t.querySelectorAll("tbody .lt-eb circle")].map(c=>c.getAttribute("cy"))).size'
+  # two groups per row x two rows = four points, each series its own color
+  (lti_eval(eb(), 't.querySelectorAll("tbody .lt-eb circle").length') %==% '4')
+  (lti_eval(eb(),
     'new Set([...t.querySelectorAll("tbody .lt-eb circle")].map(c=>c.getAttribute("fill"))).size')
    %==% '2')
+  # default: all groups share one baseline (a grouped dot plot) -> one cy
+  (lti_eval(eb(), cy) %==% '1')
+  # dodge = TRUE: groups split onto separate rows -> two distinct heights
+  (lti_eval(eb(dodge = TRUE), cy) %==% '2')
 })
 
 assert("lt_sparkline draws a line/bar SVG per row from the series", {

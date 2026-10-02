@@ -12,6 +12,7 @@ lt_errorbar(
   limits = NULL,
   ref = NULL,
   color = NULL,
+  dodge = FALSE,
   width = 160,
   height = 16,
   hide = TRUE,
@@ -42,10 +43,14 @@ outside the scale are clamped to the edges.}
 
 \item{color}{Optional CSS color(s) for the series: one per series (recycled
 from a single value), coloring both the point and its bar. The default
-uses the stylesheet's.}
+uses the stylesheet's. Supply distinct colors to tell grouped series apart.}
 
-\item{width, height}{Pixel size of each cell's SVG. Give several series more
-\code{height} so their stacked points stay legible.}
+\item{dodge}{For several series, \code{FALSE} (default) overlays all group points
+on one shared baseline (a grouped dot plot, distinguished by \code{color});
+\code{TRUE} splits the series onto separate stacked rows within the cell
+(forest-style) -- give such cells more \code{height}.}
+
+\item{width, height}{Pixel size of each cell's SVG.}
 
 \item{hide}{If \code{TRUE} (default), every column drawn into the plot (the bound
 columns, and the value columns of any series after the first) is hidden;
@@ -67,10 +72,12 @@ Render a column's cells as a small inline SVG: a point at the estimate and
 bound, drawn on a scale shared across the column so rows are comparable at a
 glance (a forest plot of effect sizes with confidence intervals). Several
 series can be drawn per cell -- one point (and optional bar) per group,
-stacked vertically and colored individually -- for a grouped forest / dot
-plot. It is lightweight: only the numbers travel to the client, and the SVG
-is drawn in the browser -- so for an interactive table (\code{\link[=lt_interactive]{lt_interactive()}})
-only the rows on the current page are drawn.
+colored individually -- for a grouped dot plot: by default the group points
+share one baseline and are told apart by color; set \code{dodge = TRUE} to split
+them onto separate rows (forest-style). It is lightweight: only the numbers
+travel to the client, and the SVG is drawn in the browser -- so for an
+interactive table (\code{\link[=lt_interactive]{lt_interactive()}}) only the rows on the current page are
+drawn.
 }
 \examples{
 d = data.frame(
@@ -82,11 +89,14 @@ lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
 # equivalently, name the value column and its bounds separately
 lt(d) |> lt_errorbar(~ est, lower = "lo", upper = "hi", hide = FALSE,
   axis = "Effect")
-# several groups per cell: one colored point + bar each (a grouped forest)
+# a grouped dot plot: one colored point per group, overlaid on one baseline
 g = data.frame(
-  term = c("A", "B"), e1 = c(0.2, 0.5), l1 = c(0.0, 0.3), u1 = c(0.4, 0.7),
-  e2 = c(-0.1, 0.3), l2 = c(-0.3, 0.1), u2 = c(0.1, 0.5)
+  term = c("A", "B", "C"), g1 = c(12, 5, 8), g2 = c(18, 9, 6),
+  g3 = c(25, 14, 11)
 )
-lt(g) |> lt_errorbar(~ e1 + e2, lower = c("l1", "l2"), upper = c("u1", "u2"),
-  color = c("#1f77b4", "#d62728"), ref = 0, height = 28)
+lt(g) |> lt_errorbar(~ g1 + g2 + g3,
+  color = c("#888", "#1f77b4", "#d62728"), axis = "Rate (\%)")
+# dodge = TRUE splits the groups onto separate rows (forest-style); add bars
+lt(g) |> lt_errorbar(~ g1 + g2, lower = c("g1", "g1"), upper = c("g2", "g3"),
+  color = c("#1f77b4", "#d62728"), dodge = TRUE, height = 24)
 }

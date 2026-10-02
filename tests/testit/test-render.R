@@ -47,6 +47,10 @@ assert("lt_errorbar() builds per-series triples and hides consumed columns", {
   (eb$series[[1]] %==% list(v = "e1", lo = "l1", hi = "u1"))
   (eb$series[[2]] %==% list(v = "e2", lo = "l2", hi = "u2"))
   (unclass(eb$colors) %==% c("red", "blue"))
+  # overlaid by default: no `dodge` field unless requested
+  (is.null(eb$dodge))
+  eb2 = (lt(g) |> lt_errorbar(~ e1 + e2, dodge = TRUE))$ops
+  (isTRUE(eb2[[length(eb2)]]$dodge))
   # the shared scale spans every value and bound column
   (c(eb$min, eb$max) %==% c(0, 4))
   # all columns drawn into the plot are hidden except the first value column

@@ -484,8 +484,28 @@ LT.build({
 });
 ```
 
-Several series stack in one cell (one colored point + bar per group) for a
-grouped forest / dot plot; give such cells more `height`.
+Give `series` several entries to draw one colored point per group in a cell —
+a grouped dot plot. By default they share one baseline (told apart by
+`colors`); `dodge: true` splits them onto separate rows (forest-style) and
+wants more `height`.
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Headache", "Nausea", "Rash"],
+    Placebo: [12, 5, 8], LowDose: [18, 9, 6], HighDose: [25, 14, 11]
+  },
+  ops: [
+    { type: "hide", columns: ["LowDose", "HighDose"] },
+    { type: "errorbar", min: 0, max: 30, axis: true, axis_label: "Incidence (%)",
+      colors: ["#888", "#1f77b4", "#d62728"],
+      series: [{ v: "Placebo" }, { v: "LowDose" }, { v: "HighDose" }] }
+  ]
+});
+```
+
+With bounds and `dodge: true`, each group gets its own row and a confidence
+bar:
 
 ```{js}
 LT.build({
@@ -496,7 +516,7 @@ LT.build({
   },
   ops: [
     { type: "hide", columns: ["Est_c", "Lo_tx", "Lo_c", "Hi_tx", "Hi_c"] },
-    { type: "errorbar", min: -0.5, max: 0.65, height: 30, ref: 0,
+    { type: "errorbar", min: -0.5, max: 0.65, height: 26, ref: 0, dodge: true,
       axis: true, axis_label: "Effect by arm", colors: ["#1f77b4", "#d62728"],
       series: [
         { v: "Est_tx", lo: "Lo_tx", hi: "Hi_tx" },
