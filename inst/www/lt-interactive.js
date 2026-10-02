@@ -14,8 +14,7 @@
   // Bail out if core is absent or too old, or the plugin already loaded.
   if (!LT?.onMount || LT.plugins.interactive) return;
 
-  const MIN_COL = 24,  // px: a dragged column never gets narrower than this
-        STUB = 16;     // px: the width a collapsed (hidden) column shrinks to
+  const MIN_COL = 24;  // px: a dragged column never gets narrower than this
   let coll;  // locale-aware comparator, built on first use and reused
   // A column is numeric if its first non-null value is a number (how core
   // lt.js decides alignment and formatting).
@@ -170,9 +169,9 @@
     let view,          // filtered + sorted indices, cached across page turns
         sync = () => {};  // pager readout, replaced by addPaginate()
     // hooks run on each freshly-built <tbody>, in order, to re-assert the state a
-    // swap drops: expand carets / detail rows (addDetail), the emptied cells of a
-    // collapsed column (addColumnToggle). Each gets the new <tbody> and its row
-    // indices. (Column widths need no hook — they live on the <colgroup>.)
+    // swap drops: expand carets / detail rows (addDetail), the hidden cells of a
+    // column turned off in the column menu (addColumnToggle). Each gets the new
+    // <tbody> and its row indices.
     const postSwap = [];
 
     // `stale` means the view itself changed (a term or the sort), as opposed to
@@ -191,18 +190,18 @@
       sync(view.length);
     };
 
-    if (opts.search !== false) addSearch(el, cols, state, refresh);
+    // the table-wide controls share one full-width head row: the column menu
+    // (if any) at its start, then the search box
+    const headCell = (opts.search !== false || opts.hide) ?
+      fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0) : null;
     // wire sort before adding the filter row, so it sees the header row only
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
     if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
-    // resize and column collapse share the fixed-layout machinery (widths on the
-    // <colgroup>); build it once if either is on, and wire collapse after resize
-    // so it wraps the resizer grip (and sort indicator) into the hideable header
-    const layout = (opts.resize || opts.hide)
-      ? fixedLayout(el, hrow, cols.length) : null;
+    const layout = opts.resize ? fixedLayout(el, hrow, cols.length) : null;
     if (opts.resize) addResize(el, layout);
     if (opts.hide)
-      addColumnToggle(el, cols, opts.hide, layout, () => refresh(false), postSwap);
+      addColumnToggle(headCell, el, hrow, cols, opts.hide, layout, postSwap);
+    if (opts.search !== false) addSearch(headCell, el, state, refresh);
     // row detail re-renders through the same seam: toggling a row only changes
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
@@ -248,10 +247,9 @@
     input.onchange = () => { clearTimeout(timer); go(); };
   }
 
-  // Table-wide search box, as the first row of <thead>.
-  function addSearch(el, cols, state, refresh) {
-    const cell = fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0),
-          input = cell.appendChild(searchInput(el.ownerDocument, "Search"));
+  // Table-wide search box, appended to the shared head cell.
+  function addSearch(cell, el, state, refresh) {
+    const input = cell.appendChild(searchInput(el.ownerDocument, "Search"));
     onType(input, v => { state.term = v; refresh(); });
   }
 
@@ -364,12 +362,12 @@
         "aria-expanded": String(open), "aria-label": "Toggle detail"
       });
       btn.onclick = () => toggle(r);
-      td0.insertBefore(btn, td0.firstChild);
+      td0.prepend(btn);
       const child = open && build(r);
       if (child) {
-        const cell = elem(doc, "td", { colSpan: nCol },
-          body.insertBefore(elem(doc, "tr", { className: "lti-detail" }),
-                            tr.nextSibling));
+        const row = elem(doc, "tr", { className: "lti-detail" });
+        tr.after(row);
+        const cell = elem(doc, "td", { colSpan: nCol }, row);
         LT.render(elem(doc, "div", {}, cell), child);
       }
     });
@@ -384,13 +382,13 @@
       g = elem(doc, "colgroup");
       for (let i = 0; i < nCol; i++) elem(doc, "col", {}, g);
       // <colgroup> comes after <caption> (the title), before <thead>
-      el.insertBefore(g, el.caption?.nextSibling || el.firstChild);
+      el.caption ? el.caption.after(g) : el.prepend(g);
     }
     return [...g.children];
   }
 
-  // Shared fixed-layout machinery, used by column resize and column collapse.
-  // The widths live on the <colgroup>, outside <tbody>, so they survive every
+  // Fixed-layout machinery for column resize. The widths live on the
+  // <colgroup>, outside <tbody>, so they survive every
   // re-render. `freeze()` switches the table to fixed layout once, pinning every
   // column at the width it has then, so a later width change moves that one
   // column instead of reflowing the whole table. `natural(i)` is column i's
@@ -460,54 +458,54 @@
     });
   }
 
-  // Per-column show/hide, driven from the header (no toolbar). Each hideable
-  // column's header carries a small affordance (‹, shown on hover); clicking it
-  // collapses the column to a thin stub showing a restore glyph (›). Collapsing
-  // reuses the fixed-layout widths, so it survives sort/filter/paging; the
-  // collapsed column's body cells are emptied after each <tbody> swap (postSwap).
-  // `opt` is `true` (every column) or `{ columns: [...] }` (those columns only).
-  function addColumnToggle(el, cols, opt, layout, refresh, postSwap) {
-    const doc = el.ownerDocument, { ths, cs, freeze, setWidth } = layout,
-          only = opt && opt.columns, hidden = new Set(), width = {};
-    // empty every collapsed column's cells on each freshly-built <tbody>
+  // Column-visibility menu: an icon button (▦) at the start of the head cell
+  // that opens a checklist, one box per column. Unchecking a column hides it
+  // outright — its header and every body cell take the `hidden` attribute (which
+  // a <tbody> swap drops, so it is re-applied via postSwap). Every column is
+  // listed; `opt` is `true` (all start shown) or `{ hidden: [...] }` (those names
+  // start hidden). `layout` is resize's fixed layout, used when present to drop a
+  // hidden column's <col> so the fixed table reflows too.
+  function addColumnToggle(cell, el, hrow, cols, opt, layout, postSwap) {
+    const doc = el.ownerDocument, ths = [...$$(hrow, "th")],
+          start = (opt && opt.hidden) || [], hidden = new Set();
+    // re-hide every hidden column's cells on each freshly-built <tbody>
     postSwap.push(body => hidden.forEach(i => {
-      for (const tr of body.rows)
-        if (tr.children[i]) tr.children[i].textContent = "";
+      for (const tr of body.rows) if (tr.children[i]) tr.children[i].hidden = true;
     }));
-    ths.forEach((th, i) => {
-      if (Array.isArray(only) && !only.includes(cols[i])) return;
-      // wrap the header's content so it hides as one unit; the stub sits beside
-      // it (outside the wrapper) and shows only while the column is collapsed
-      const inner = elem(doc, "span", { className: "lti-th" });
-      while (th.firstChild) inner.appendChild(th.firstChild);
-      th.appendChild(inner);
-      const stub = elem(doc, "span", {
-        className: "lti-stub", textContent: "❮", title: "Show column",
-        "aria-hidden": "true"
-      }, th);
-      // the hide affordance leads the header label (kept inside the wrapper so a
-      // collapse hides it too), away from the right-edge resizer
-      const hide = elem(doc, "button", {
-        type: "button", className: "lti-hide", textContent: "❯",
-        title: "Hide column", "aria-label": "Hide column"
-      });
-      inner.prepend(hide);
-      const toggle = show => {
-        if (show) {
-          hidden.delete(i);
-          setWidth(i, parseFloat(width[i]) || 0, 0);  // restore the stored width
-        } else {
-          freeze();
-          width[i] = cs[i].style.width;  // remember the width to restore to
-          hidden.add(i);
-          setWidth(i, STUB, STUB);
-        }
-        th.classList.toggle("lti-collapsed", !show);
-        refresh();  // rebuild <tbody>; postSwap empties the collapsed columns
+    // show/hide column i everywhere it lives: header, <col> (fixed layout only),
+    // and the current body cells
+    const apply = i => {
+      const on = hidden.has(i);
+      if (ths[i]) ths[i].hidden = on;
+      if (layout?.cs[i]) layout.cs[i].hidden = on;
+      for (const body of el.tBodies)
+        for (const tr of body.rows) if (tr.children[i]) tr.children[i].hidden = on;
+    };
+    const wrap = elem(doc, "span", { className: "lti-cols" }, cell),
+          btn = elem(doc, "button", {
+            type: "button", textContent: "▦", title: "Columns",
+            "aria-label": "Show or hide columns", "aria-expanded": "false"
+          }, wrap),
+          menu = elem(doc, "div", { className: "lti-menu", hidden: true }, wrap);
+    cols.forEach((c, i) => {
+      if (c == null) return;
+      const label = elem(doc, "label", {}, menu),
+            box = elem(doc, "input", { type: "checkbox", checked: true }, label);
+      label.append(c);
+      if (start.includes(c)) { box.checked = false; hidden.add(i); }
+      box.onchange = () => {
+        box.checked ? hidden.delete(i) : hidden.add(i);
+        apply(i);
       };
-      hide.onclick = e => { e.stopPropagation(); toggle(false); };
-      stub.onclick = e => { e.stopPropagation(); toggle(true); };
     });
+    cols.forEach((_, i) => apply(i));  // reflect any columns that start hidden
+    const open = on => {
+      menu.hidden = !on;
+      btn.setAttribute("aria-expanded", String(on));
+    };
+    btn.onclick = e => { e.stopPropagation(); open(menu.hidden); };
+    on(doc, "click", e => { if (!wrap.contains(e.target)) open(false); });
+    on(doc, "keydown", e => { if (e.key === "Escape") open(false); });
   }
 
   // Pager as the last row of <tfoot> (after any footnotes), with a page-size

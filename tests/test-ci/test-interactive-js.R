@@ -391,49 +391,55 @@ assert("resizing is off by default", {
   (lti_eval(itbl(), 't.className') %==% 'lt-table')
 })
 
-# the hide affordance / stub of header `ti` (0-based), as a click expression
-hide_btn = function(ti) sprintf(
-  't.querySelectorAll("thead th")[%d].querySelector(".lti-hide").click()', ti)
-stub_btn = function(ti) sprintf(
-  't.querySelectorAll("thead th")[%d].querySelector(".lti-stub").click()', ti)
-collapsed = function(ti) sprintf(
-  't.querySelectorAll("thead th")[%d].classList.contains("lti-collapsed")', ti)
-# the concatenated text of column `ci` (0-based) across tbody rows; '' iff every
-# cell is empty. (lti_col can't tell "all empty" from "fewer rows": join("|") on
-# empties yields "|||", and R's strsplit drops the trailing empty field.)
-col_text = function(x, ci, js = '') lti_eval(x, sprintf(
-  '[...t.querySelectorAll("tbody tr")].map(r => r.children[%d].textContent).join("")',
-  ci), js)
+# whether header `ti` (0-based) and its first body cell are hidden
+th_hidden = function(ti) sprintf('t.querySelectorAll("thead th")[%d].hidden', ti)
+cell_hidden = function(ti) sprintf(
+  't.querySelector("tbody tr").children[%d].hidden', ti)
+# toggle the menu box for column `ti` to `on`, as a single real click does. (A
+# scripted click() on a box nested in its <label> double-fires — the click
+# bubbles to the label, which re-dispatches to the control — so set + change.)
+set_box = function(ti, on) sprintf(
+  '{var b=t.querySelectorAll(".lti-menu input")[%d];b.checked=%s;b.dispatchEvent(new Event("change"))}',
+  ti, tolower(on))
 
-assert("a column collapses from its header and restores from its stub", {
+assert("the column menu lists every column and hides the unchecked ones", {
   x = itbl(hide = TRUE)
-  # every column is hideable: one hide affordance per header
-  (lti_eval(x, 't.querySelectorAll(".lti-hide").length') %==% '2')
-  # clicking it marks the header collapsed, pins the <col> to the stub width,
-  # and empties that column's cells; the other column is untouched
-  (lti_eval(x, collapsed(0), hide_btn(0)) %==% 'true')
-  (lti_eval(x, 't.querySelectorAll("col")[0].style.width', hide_btn(0)) %==% '16px')
-  (col_text(x, 0, hide_btn(0)) %==% '')
-  (lti_col(x, 1, hide_btn(0)) %==% c('5', '12', '3', '8'))
-  # a later re-render keeps it collapsed: sorting re-empties the cells (postSwap)
-  sortN = 'document.querySelectorAll("thead th")[1].click()'
-  (col_text(x, 0, paste(hide_btn(0), sortN, sep = ';')) %==% '')
-  # clicking the stub restores the column: marker gone, cells back
-  back = paste(hide_btn(0), stub_btn(0), sep = ';')
-  (lti_eval(x, collapsed(0), back) %==% 'false')
-  (lti_col(x, 0, back) %==% sym)
+  # an icon button opens a checklist with one box per column, all checked
+  (lti_eval(x, 't.querySelector(".lti-cols button") ? 1 : 0') %==% '1')
+  (lti_eval(x, 't.querySelectorAll(".lti-menu input").length') %==% '2')
+  (lti_eval(x, '[...t.querySelectorAll(".lti-menu input")].every(b => b.checked)')
+   %==% 'true')
+  # unchecking a box hides that column's header and cells; the other is untouched
+  off1 = set_box(1, FALSE)
+  (lti_eval(x, th_hidden(1), off1) %==% 'true')
+  (lti_eval(x, cell_hidden(1), off1) %==% 'true')
+  (lti_eval(x, cell_hidden(0), off1) %==% 'false')
+  # the hidden column stays hidden across a re-render (sorting the other column)
+  sortN = 'document.querySelectorAll("thead th")[0].click()'
+  (lti_eval(x, cell_hidden(1), paste(off1, sortN, sep = ';')) %==% 'true')
+  # re-checking restores it
+  (lti_eval(x, th_hidden(1), paste(off1, set_box(1, TRUE), sep = ';')) %==% 'false')
 })
 
-assert("hide = column names makes only those columns hideable", {
+assert("hide = column names starts those columns hidden; the menu still lists all", {
   x = itbl(hide = 'n')
-  (lti_eval(x, 't.querySelectorAll(".lti-hide").length') %==% '1')
-  # the affordance is on the named column (header 1), not the other (header 0)
-  (lti_eval(x, 't.querySelectorAll("thead th")[1].querySelector(".lti-hide") ? 1 : 0')
-   %==% '1')
-  (lti_eval(x, 't.querySelectorAll("thead th")[0].querySelector(".lti-hide") ? 1 : 0')
-   %==% '0')
-  # off by default
-  (lti_eval(itbl(), 't.querySelectorAll(".lti-hide").length') %==% '0')
+  (lti_eval(x, 't.querySelectorAll(".lti-menu input").length') %==% '2')
+  # the named column starts unchecked and hidden; the other starts shown
+  (lti_eval(x, 't.querySelectorAll(".lti-menu input")[1].checked') %==% 'false')
+  (lti_eval(x, th_hidden(1)) %==% 'true')
+  (lti_eval(x, cell_hidden(1)) %==% 'true')
+  (lti_eval(x, th_hidden(0)) %==% 'false')
+  # no menu at all by default
+  (lti_eval(itbl(), 't.querySelectorAll(".lti-cols").length') %==% '0')
+})
+
+assert("with resize on, hiding a column also drops its <col> (fixed layout)", {
+  # the body cells alone would leave a gap in a fixed-layout table; the <col>
+  # must be hidden too for the column to collapse
+  x = itbl(hide = TRUE, resize = TRUE)
+  off1 = set_box(1, FALSE)
+  (lti_eval(x, 't.querySelectorAll("col")[1].hidden', off1) %==% 'true')
+  (lti_eval(x, th_hidden(1), off1) %==% 'true')
 })
 
 assert("a table rendered on demand is enhanced like one rendered in place", {

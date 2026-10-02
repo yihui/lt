@@ -11,7 +11,7 @@ lt_interactive(
   filter = FALSE,
   pager = c(10, 25, 50, 100),
   resize = FALSE,
-  hide = FALSE,
+  hide = NULL,
   detail = NULL
 )
 }
@@ -49,10 +49,12 @@ it (double-clicking the edge fits the column to its content). Widening a
 column widens the table, leaving the other columns as they are. Initial
 widths can be set with \code{\link[=lt_width]{lt_width()}}.}
 
-\item{hide}{Whether to let the reader hide a column from its header: hovering
-a header shows a small affordance to collapse that column to a thin stub,
-which is clicked to restore it. Can also be a character vector of column
-names, to make only those columns hideable. All columns start visible.}
+\item{hide}{Column-visibility control: a small menu button at the start of
+the search row opens a checklist of every column, where unchecking a column
+hides it (header and cells) and re-checking restores it. \code{TRUE} adds the
+menu with all columns shown; a character vector of column names adds it with
+those columns hidden to begin with (every column is still listed, so any can
+be toggled). \code{NULL} (the default) adds no menu.}
 
 \item{detail}{Row detail (drill-down). An expand caret is added to each row;
 clicking it reveals a table built from that row below it. Give the columns
@@ -90,7 +92,7 @@ lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
 # resizable columns
 lt(head(mtcars)) |> lt_interactive(resize = TRUE)
-# let the reader hide columns from their headers (all, or only the named ones)
+# a column-visibility menu (all columns shown, or with some hidden to start)
 lt(head(mtcars)) |> lt_interactive(hide = TRUE)
 lt(head(mtcars)) |> lt_interactive(hide = c('hp', 'drat'))
 # an initial sort by cyl, then mpg descending within each (two equivalent

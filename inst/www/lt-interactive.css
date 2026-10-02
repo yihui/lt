@@ -87,34 +87,36 @@
     table-layout: fixed;
   }
 
-  /* the hide affordance (❯) leads a header, revealed only on hover so it adds no
-   * clutter; it carries its own glyph, so no border or background */
-  .lti-hide {
-    border: none;
-    background: none;
-    padding: 0;
-    margin-right: 0.3em;
-    cursor: pointer;
-    visibility: hidden;
-    th:hover & {
-      visibility: visible;
-    }
+  /* the head row carries the column menu (left) and the search box; lay them in
+   * a row so the search fills the width left over */
+  .lti-head td {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
   }
-  /* a collapsed column shrinks to a stub: its content (wrapped in .lti-th) is
-   * hidden and the restore glyph (❮) takes its place; the whole stub restores */
-  .lti-stub {
-    display: none;
-    cursor: pointer;
-  }
-  th.lti-collapsed {
-    cursor: pointer;
-    text-align: center;
-    overflow: hidden;
-    .lti-th {
-      display: none;
+
+  /* the column-visibility menu: an icon button and the checklist it pops up. The
+   * button carries its own glyph (▦), so no border or background */
+  .lti-cols {
+    position: relative;
+    button {
+      border: none;
+      background: none;
+      padding: 0;
     }
-    .lti-stub {
-      display: inline;
+    .lti-menu {
+      position: absolute;
+      z-index: 1;
+      top: 100%;
+      left: 0;
+      background: Canvas;
+      border: 1px solid;
+      padding: 0.3em 0.6em;
+      label {
+        display: block;
+        white-space: nowrap;
+        cursor: pointer;
+      }
     }
   }
 
