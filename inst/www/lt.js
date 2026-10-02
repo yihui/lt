@@ -390,14 +390,54 @@
       }
     }
 
+    // Error-bar columns: a value column drawn as an inline SVG (a point at the
+    // estimate and a horizontal bar from lower to upper, on a shared scale),
+    // from an lt_errorbar() op. columns = [value, lower, upper]; the plot
+    // replaces the value column's cells.
+    const errorbars = {};
+    onOp("errorbar", op => {
+      const [v, lo, hi] = op.columns || [];
+      if (v) errorbars[v] = {
+        lo, hi, min: op.min, max: op.max, ref: op.ref,
+        width: op.width || 80, height: op.height || 16
+      };
+    });
+
     return {
       visible, align, colLabels, colWidths, tableWidth, indent,
-      groups, rowSpans, styles, spanners,
+      groups, rowSpans, styles, spanners, errorbars,
       footnotes: spec.footnotes || [],
       notes: spec.notes || [],
       header: spec.header || {},
       nRow
     };
+  }
+
+  // Inline SVG for an error-bar cell: a point at the estimate and a horizontal
+  // bar from the lower to the upper bound, on the column's shared [min,max]
+  // scale. Only the numbers are shipped in the spec; the SVG is built here at
+  // render time, so an interactive table (which rebuilds <tbody> from
+  // spec._viewRows) draws it only for the rows on the current page.
+  function svgErrorbar(data, c, eb, r) {
+    const num = k => { const v = data[k]?.[r - 1]; return isNum(v) ? v : null; };
+    const est = num(c), lo = num(eb.lo), hi = num(eb.hi);
+    if (est == null && lo == null && hi == null) return "";
+    const W = eb.width, H = eb.height, y = H / 2, span = eb.max - eb.min,
+          // map to pixels, clamp into [0,W] (a degenerate scale centers), and
+          // round to 0.1px so coords stay short and free of float noise
+          x = v => {
+            const p = span > 0 ? (v - eb.min) / span * W : W / 2;
+            return Math.round(Math.max(0, Math.min(W, p)) * 10) / 10;
+          };
+    let s = `<svg class="lt-eb" width="${W}" height="${H}">`;
+    if (eb.ref != null)
+      s += `<line class="lt-eb-ref" x1="${x(eb.ref)}" y1="0" x2="${x(eb.ref)}" y2="${H}"/>`;
+    if (lo != null && hi != null)
+      s += `<line x1="${x(lo)}" y1="${y}" x2="${x(hi)}" y2="${y}"/>`;
+    if (est != null) s += `<circle cx="${x(est)}" cy="${y}" r="3"/>`;
+    const ci = lo != null && hi != null ? ` (${str(lo)}, ${str(hi)})` : "";
+    s += `<title>${esc((est != null ? str(est) : "") + ci)}</title></svg>`;
+    return s;
   }
 
   // Footnotes: dedup by text, assign 1..N in first-seen order.
@@ -462,7 +502,7 @@
     const data = spec.data || {},
           { display, nRow } = applyOps(spec),
           { visible: cols, align, colLabels, colWidths, tableWidth, indent,
-            groups, rowSpans, styles, spanners, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+            groups, rowSpans, styles, spanners, errorbars, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
           reg = indexFootnotes(fns),
           fIdx = matcher(fns, reg.idx),
           nGrp = rowSpans.length,
@@ -574,6 +614,11 @@
               cls = [colCls[ci], cc].filter(Boolean).join(" ");
         let s = styleMap[k] || "";
         if (ci === 0 && ind) s = (s ? s + ";" : "") + `padding-left:${ind + 1}em`;
+        const eb = errorbars[c];
+        if (eb) {
+          out.push(`<td${attr("class", cls)}${attr("style", s)}>${svgErrorbar(data, c, eb, r)}${m ? sup(m) : ""}</td>`);
+          continue;
+        }
         const raw = str(data[c][r - 1]), disp = display[c][r - 1],
               tip = raw !== disp ? ` title="${esc(raw)}"` : "";
         out.push(`<td${attr("class", cls)}${attr("style", s)}${tip}>${escIf(isRaw(c), disp)}${m ? sup(m) : ""}</td>`);

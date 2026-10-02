@@ -289,6 +289,23 @@ assert("lt_move() supports numeric column indices", {
   (m$ops %==% list(list(type = "move", columns = I("c"), after = "a")))
 })
 
+assert("lt_errorbar() records columns, scale, and reference line", {
+  e = lt_errorbar(x, ~ a, ~ b, ~ c)
+  op = e$ops[[1]]
+  (op$type %==% "errorbar")
+  (op$columns %==% I(c("a", "b", "c")))
+  # default scale is the range of all three columns' values (1:9 here)
+  (as.numeric(c(op$min, op$max)) %==% c(1, 9))
+  # ref is absent unless given
+  (is.null(op$ref) %==% TRUE)
+  # explicit limits override the data range; ref is recorded when given
+  op2 = lt_errorbar(x, ~ a, ~ b, ~ c, limits = c(0, 10), ref = 0)$ops[[1]]
+  (as.numeric(c(op2$min, op2$max)) %==% c(0, 10))
+  (op2$ref %==% 0)
+  # each of value/lower/upper must name exactly one column
+  (has_error(lt_errorbar(x, ~ a + b, ~ c, ~ c)) %==% TRUE)
+})
+
 assert("lt_group() supports numeric grouping column", {
   d2 = data.frame(g = c("A", "B", "A"), v = 1:3)
   g = lt(d2) |> lt_group(1)

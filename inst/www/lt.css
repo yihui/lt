@@ -47,6 +47,13 @@ th, td{ padding: 5px; }
   .al-r { text-align: right; }
   .al-c { text-align: center; }
 
+  .lt-eb {
+    vertical-align: middle;
+    line { stroke: #888; }
+    circle { fill: #333; }
+    .lt-eb-ref { stroke: #ccc; }
+  }
+
   .lt-fnref {
     color: #06c;
     &::before { content: "\00a0["; }

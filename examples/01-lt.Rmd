@@ -538,6 +538,31 @@ reads the whole row (e.g. an interactive table's row detail, below).
 tbl_iris |> lt_hide(~ Petal.Length + Petal.Width)
 ```
 
+### Inline error-bar plots
+
+`lt_errorbar()` renders a numeric column's cells as a small inline SVG — a
+point at the estimate with a horizontal bar from the lower to the upper
+bound — all drawn on a scale shared across the column, so rows are
+comparable at a glance (a forest plot of effect sizes with confidence
+intervals). The bound columns are usually hidden with `lt_hide()`. Pass
+`ref` to draw a vertical reference line (e.g. `0` for a risk difference).
+
+Only the numbers travel to the browser; the SVG is drawn there, so for an
+interactive table only the current page's rows are drawn.
+
+```{r}
+d_eff = data.frame(
+  Term = c("Age", "Dose", "Baseline", "Sex"),
+  Est  = c(0.12, -0.34, 0.45, -0.08),
+  Lo   = c(-0.05, -0.52, 0.21, -0.29),
+  Hi   = c(0.29, -0.16, 0.69, 0.13)
+)
+lt(d_eff) |>
+  lt_hide(~ Lo + Hi) |>
+  lt_errorbar(~ Est, ~ Lo, ~ Hi, ref = 0) |>
+  lt_align(~ Est, "center")
+```
+
 ## Styling
 
 ### Cell styling

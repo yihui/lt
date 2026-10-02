@@ -442,6 +442,32 @@ LT.build({
 });
 ```
 
+### Inline error-bar plots (`errorbar`)
+
+Render a value column's cells as a small inline SVG — a point at the
+estimate with a bar from the lower to the upper bound — on a scale shared
+across the column. `columns` is `[value, lower, upper]`; the plot replaces
+the value column's cells (hide the bound columns). `min`/`max` set the
+shared scale, `ref` draws a vertical reference line, and `width`/`height`
+size each SVG. The SVG is built in the browser from the numbers, so only
+the rows actually rendered (the current page, when interactive) are drawn.
+
+```{js}
+LT.build({
+  data: {
+    Term: ["Age", "Dose", "Baseline", "Sex"],
+    Est:  [0.12, -0.34, 0.45, -0.08],
+    Lo:   [-0.05, -0.52, 0.21, -0.29],
+    Hi:   [0.29, -0.16, 0.69, 0.13]
+  },
+  ops: [
+    { type: "hide", columns: ["Lo", "Hi"] },
+    { type: "errorbar", columns: ["Est", "Lo", "Hi"],
+      min: -0.6, max: 0.7, ref: 0 }
+  ]
+});
+```
+
 ## Row groups
 
 ### Group by column

@@ -558,6 +558,53 @@ lt_hide = function(x, columns) {
   add_op(x, 'hide', columns = I(as.character(columns)))
 }
 
+
+#' Draw an Inline Error-Bar Plot in a Column
+#'
+#' Render a numeric column's cells as a small inline SVG: a point at the
+#' estimate and a horizontal bar from the lower to the upper bound, drawn on a
+#' scale shared across the column so rows are comparable at a glance (handy for
+#' a forest plot of effect sizes with confidence intervals). It is lightweight:
+#' only the numbers travel to the client, and the SVG is drawn in the browser —
+#' so for an interactive table ([lt_interactive()]) only the rows on the current
+#' page are drawn.
+#'
+#' @inheritParams lt_align
+#' @param value,lower,upper The columns holding the point estimate and the lower
+#'   and upper bounds, each a column name, integer position, or one-sided
+#'   formula. The plot is drawn in the `value` column's cells; `lower` and
+#'   `upper` are typically hidden with [lt_hide()].
+#' @param limits Numeric `c(min, max)` for the shared horizontal scale. Defaults
+#'   to the range of all three columns' finite values. Values outside the scale
+#'   are clamped to the edges.
+#' @param ref Optional value at which to draw a vertical reference line (e.g.
+#'   `0` for a risk difference, `1` for an odds ratio).
+#' @param width,height Pixel size of each cell's SVG.
+#' @return `x` with the error-bar column recorded.
+#' @export
+#' @examples
+#' d = data.frame(
+#'   term = c("A", "B", "C"), est = c(0.2, -0.1, 0.4),
+#'   lo = c(0.0, -0.3, 0.1), hi = c(0.4, 0.1, 0.7)
+#' )
+#' lt(d) |> lt_hide(~ lo + hi) |> lt_errorbar(~ est, ~ lo, ~ hi, ref = 0)
+lt_errorbar = function(
+  x, value, lower, upper, limits = NULL, ref = NULL, width = 80, height = 16
+) {
+  cols = c(
+    f_cols(value, x$data), f_cols(lower, x$data), f_cols(upper, x$data)
+  )
+  if (length(cols) != 3)
+    stop('`value`, `lower`, and `upper` must each name exactly one column.')
+  if (is.null(limits)) {
+    v = unlist(x$data[cols], use.names = FALSE)
+    v = v[is.finite(v)]
+    limits = if (length(v)) range(v) else c(0, 1)
+  }
+  add_op(x, 'errorbar', columns = I(as.character(cols)),
+    min = limits[1], max = limits[2], ref = ref, width = width, height = height)
+}
+
 #' Attach Custom CSS
 #'
 #' Add user-supplied stylesheets or inline rules that render after the

@@ -3,6 +3,12 @@ build = function(spec) {
   as.character(lt_static(x, method = 'node', css = FALSE, fragment = TRUE))
 }
 
+# count non-overlapping occurrences of a fixed substring
+count_str = function(x, p) {
+  m = gregexpr(p, x, fixed = TRUE)[[1]]
+  if (m[1] == -1L) 0L else length(m)
+}
+
 assert("basic table renders correct cells", {
   html = build(list(data = list(x = 1:2, y = c("a", "b"))))
   (matches(html, ".*<table.*>x</th>.*>1</td>.*>b</td>.*") %==% "")
@@ -16,6 +22,27 @@ assert("lt_hide drops a column (header and cells) from the rendered table", {
   (grepl(">z</th>", html) %==% TRUE)
   (grepl(">y</th>", html) %==% FALSE)
   (grepl(">a</td>", html) %==% FALSE)
+})
+
+assert("lt_errorbar renders an inline SVG point-and-bar on a shared scale", {
+  spec = list(
+    data = list(est = c(0.5, 0.2), lo = c(0, 0.1), hi = c(1, 0.3)),
+    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
+      min = 0, max = 1, ref = 0, width = 80, height = 16))
+  )
+  html = build(spec)
+  # one SVG per row in the value column; the lo/hi columns still render as data
+  (count_str(html, '<svg class="lt-eb"') %==% 2L)
+  # row 1: est 0.5 -> cx 40 (cy = height/2 = 8); bar from lo 0 (x 0) to hi 1 (x 80)
+  (grepl('<circle cx="40" cy="8"', html, fixed = TRUE) %==% TRUE)
+  (grepl('x1="0" y1="8" x2="80" y2="8"', html, fixed = TRUE) %==% TRUE)
+  # row 2 lands on the same scale: est 0.2 -> cx 16, bar 0.1..0.3 -> x 8..24
+  (grepl('<circle cx="16" cy="8"', html, fixed = TRUE) %==% TRUE)
+  (grepl('x1="8" y1="8" x2="24" y2="8"', html, fixed = TRUE) %==% TRUE)
+  # a vertical reference line at ref = 0 (x 0, full height)
+  (grepl('class="lt-eb-ref" x1="0" y1="0" x2="0" y2="16"', html, fixed = TRUE) %==% TRUE)
+  # the numbers stay in the title tooltip, not shipped as inline SVG text
+  (grepl('<title>0.5 (0, 1)</title>', html, fixed = TRUE) %==% TRUE)
 })
 
 assert("table is wrapped in a div for horizontal scroll", {
