@@ -34,6 +34,34 @@ assert("format() ships the graphics module (before core) only for plot tables", 
   (grepl('lt-plot', plain, fixed = TRUE) %==% FALSE)
 })
 
+assert("lt_sparkline() records a sparkline op and hides extra columns", {
+  # a single list-column: the series lives in that column; nothing is hidden,
+  # and the chart type travels as `kind` (not `type`, which names the op itself)
+  d = data.frame(g = c("a", "b"))
+  d$s = list(c(1, 2, 3), c(4, 5, 6))
+  ops = (lt(d) |> lt_sparkline(~ s))$ops
+  sp = ops[[length(ops)]]
+  (sp$type %==% "sparkline")
+  (sp$kind %==% "line")
+  (unclass(sp$columns) %==% "s")
+  (any(vapply(ops, function(o) o$type == "hide", logical(1))) %==% FALSE)
+
+  # several columns: all but the first are hidden by default; limits set a
+  # shared scale and a non-default type is carried through
+  m = data.frame(a = 1, b = 2, c = 3)
+  ops = (lt(m) |> lt_sparkline(~ a + b + c, type = "bar", limits = c(0, 10)))$ops
+  sp = ops[[length(ops)]]
+  (sp$kind %==% "bar")
+  (unclass(sp$columns) %==% c("a", "b", "c"))
+  (c(sp$min, sp$max) %==% c(0, 10))
+  hid = Filter(function(o) o$type == "hide", ops)[[1]]
+  (unclass(hid$columns) %==% c("b", "c"))
+
+  # hide = FALSE keeps the extra columns
+  ops = (lt(m) |> lt_sparkline(~ a + b + c, hide = FALSE))$ops
+  (any(vapply(ops, function(o) o$type == "hide", logical(1))) %==% FALSE)
+})
+
 assert("inline_safe() escapes </script in content", {
   (matches(inline_safe("x</script>y"), ".*<\\\\/script.*") %==% "")
   (matches(inline_safe("x</SCRIPT>y"), ".*<\\\\/SCRIPT.*") %==% "")

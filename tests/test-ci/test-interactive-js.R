@@ -498,6 +498,22 @@ assert("lt_errorbar renders SVG only for the current page (deferred)", {
   (lti_eval(x, 't.querySelectorAll(".lt-eb").length', next_pg) %==% '3')
 })
 
+assert("lt_sparkline draws a line/bar SVG per row from the series", {
+  # a list-column of series: one <path> per row; a NULL in the series breaks the
+  # line into two subpaths (two "M" move commands)
+  d = data.frame(g = c("a", "b"))
+  d$s = list(c(1, 2, 3, 4), c(5, NA, 7, 8))
+  x = lt(d) |> lt_sparkline(~ s)
+  (lti_eval(x, 't.querySelectorAll(".lt-spark path").length') %==% '2')
+  (lti_eval(x,
+    '[...t.querySelectorAll(".lt-spark path")].map(p=>(p.getAttribute("d").match(/M/g)||[]).length).join(",")')
+   %==% '1,2')
+  # bars read across several columns: four values -> four <rect> per row
+  m = data.frame(a = c(1, 4), b = c(2, 3), c = c(3, 2), d = c(4, 1))
+  xb = lt(m) |> lt_sparkline(~ a + b + c + d, type = "bar")
+  (lti_eval(xb, 't.querySelectorAll("tbody .lt-spark rect").length') %==% '8')
+})
+
 assert("lt-plot.js re-renders a table core built before the module loaded", {
   # The litedown/knitr failure mode: an earlier plain table pulls in lt.js, so
   # it loads (and builds this table) before lt-plot.js registers the errorbar

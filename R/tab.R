@@ -623,6 +623,54 @@ lt_errorbar = function(
     axis_label = if (is.character(axis)) axis)
 }
 
+#' Draw an Inline Sparkline in a Column
+#'
+#' Render a per-row series of numbers as a small inline SVG line or bar chart (a
+#' sparkline). The series for each row can come from a single list-column (each
+#' element a numeric vector) or from several numeric columns read across the
+#' row. Like [lt_errorbar()], it is lightweight: only the numbers travel to the
+#' client and the SVG is drawn in the browser, so an interactive table
+#' ([lt_interactive()]) draws only the rows on the current page.
+#'
+#' @inheritParams lt_align
+#' @param columns The column(s) holding each row's series. Either a single
+#'   list-column (a one-sided formula `~ col`, a name, or a position) whose
+#'   cells are numeric vectors, or several numeric columns (`~ a + b + c`) whose
+#'   values are read left to right as the series. The sparkline is drawn in the
+#'   first column's cells.
+#' @param type `"line"` (default) for a line chart or `"bar"` for a bar chart.
+#' @param limits Numeric `c(min, max)` for a shared vertical scale across all
+#'   rows (so rows are comparable). The default (`NULL`) scales each row to its
+#'   own range.
+#' @param color CSS color for the line or bars (defaults to the stylesheet's).
+#' @param width,height Pixel size of each cell's SVG.
+#' @param hide If `TRUE` (default) and the series spans several columns, those
+#'   columns after the first are hidden (their values are drawn into the plot);
+#'   set to `FALSE` to keep them visible. Has no effect for a single
+#'   list-column.
+#' @return `x` with the sparkline column recorded.
+#' @export
+#' @examples
+#' # a list-column: each cell is a numeric vector
+#' d = data.frame(city = c("A", "B", "C"))
+#' d$temp = list(c(3, 5, 8, 6, 9), c(1, 2, 2, 4, 3), c(7, 6, 5, 6, 8))
+#' lt(d) |> lt_sparkline(~ temp)
+#' # several columns read across the row, as bars on a shared scale
+#' m = data.frame(name = c("X", "Y"), q1 = c(2, 5), q2 = c(4, 3),
+#'   q3 = c(6, 7), q4 = c(5, 2))
+#' lt(m) |> lt_sparkline(~ q1 + q2 + q3 + q4, type = "bar", limits = c(0, 8))
+lt_sparkline = function(
+  x, columns, type = c('line', 'bar'), limits = NULL, color = NULL,
+  width = 120, height = 20, hide = TRUE
+) {
+  type = match.arg(type)
+  cols = as.character(f_cols(columns, x$data))
+  if (length(cols) < 1) stop('`columns` must name at least one column.')
+  if (hide && length(cols) > 1) x = add_op(x, 'hide', columns = I(cols[-1]))
+  add_op(x, 'sparkline', columns = I(cols), kind = type, color = color,
+    min = limits[1], max = limits[2], width = width, height = height)
+}
+
 #' Attach Custom CSS
 #'
 #' Add user-supplied stylesheets or inline rules that render after the

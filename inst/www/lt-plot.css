@@ -25,4 +25,10 @@
     text { fill: #666; font-size: 11px; }
     .lt-eb-axis-label { fill: #333; font-size: 12px; }
   }
+  .lt-spark {
+    vertical-align: middle;
+    color: #4682b4;  /* line/bars inherit this via currentColor; override inline */
+    .lt-spark-line { fill: none; stroke: currentColor; stroke-width: 1; }
+    .lt-spark-bar { fill: currentColor; }
+  }
 }

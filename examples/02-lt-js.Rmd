@@ -483,6 +483,30 @@ LT.build({
 });
 ```
 
+### Sparklines (`sparkline`)
+
+Draw a per-row series as a small inline line or bar chart. `columns` is either
+a single list-column (each cell a numeric array) or several numeric columns
+read across the row (the plot replaces the first column's cells; hide the
+rest). `kind` is `"line"` (default) or `"bar"`; `min`/`max` set a shared
+vertical scale (the default scales each row to its own range); `color` styles
+the line or bars; `width`/`height` size each SVG. Like the error bar, it comes
+from the graphics module (`lt-plot.js`) and is drawn in the browser.
+
+```{js}
+LT.build({
+  data: {
+    City: ["Oslo", "Cairo", "Lima"],
+    Temp: [[-3, -2, 1, 6, 12, 16], [14, 15, 18, 23, 28, 31], [19, 19, 18, 16, 15, 15]],
+    Rain: [[49, 36, 47, 41, 53, 60], [5, 4, 4, 1, 0, 0], [8, 4, 2, 1, 1, 1]]
+  },
+  ops: [
+    { type: "sparkline", columns: ["Temp"] },
+    { type: "sparkline", columns: ["Rain"], kind: "bar", color: "#4caf50" }
+  ]
+});
+```
+
 ## Row groups
 
 ### Group by column
