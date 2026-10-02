@@ -757,7 +757,7 @@ For full control, pass a JavaScript callback yourself, wrapped in `js()`.
 It is called as `(row, index, display)`: `row` has the raw values,
 `display` the formatted text, each keyed by column name. Return a table
 spec; give it an `interactive` field to make the detail table itself
-interactive.
+interactive, as below where it is made sortable.
 
 ```{r}
 lt(d) |>
@@ -765,7 +765,7 @@ lt(d) |>
   lt_interactive(
     pager = 5,
     detail = js('(row, i, d) => ({ data: { field: ["row", "hp", "wt"],
-      value: [i, d.hp, d.wt] } })')
+      value: [i, d.hp, d.wt] }, interactive: { sort: true } })')
   )
 ```
 
