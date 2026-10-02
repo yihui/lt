@@ -83,6 +83,32 @@ assert("a default sort reaches the client spec as ordered name keys", {
          format(lt(d) |> lt_interactive(sort = FALSE), assets = FALSE)) %==% TRUE)
 })
 
+assert("crosstalk group and keys move into the interactive spec", {
+  # lt() stashes the group + per-row keys on the table (what lt.SharedData sets);
+  # lt_interactive() moves them into the client spec
+  x = lt(d)
+  x$crosstalk = list(group = 'grp', key = I(c('a', 'b', 'c')))
+  opts = lt_interactive(x)$interactive
+  (opts$crosstalk$group %==% 'grp')
+  (unclass(opts$crosstalk$key) %==% c('a', 'b', 'c'))
+  # not left at the top level, so the spec never carries it twice
+  (is.null(lt_interactive(x)$crosstalk) %==% TRUE)
+  # a crosstalk table that is never made interactive drops the metadata, so the
+  # (unused) keys do not ship
+  (is.null(lt_spec(x)$crosstalk) %==% TRUE)
+  (grepl('crosstalk', format(x, assets = FALSE)) %==% FALSE)
+})
+
+if (requireNamespace('crosstalk', quietly = TRUE))
+  assert("lt() accepts a crosstalk SharedData", {
+    sd = crosstalk::SharedData$new(d, key = ~ x, group = 'g1')
+    x = lt(sd)
+    (x$crosstalk$group %==% 'g1')
+    (unclass(x$crosstalk$key) %==% as.character(d$x))
+    # the shared data frame is the table's data
+    (x$data %==% d)
+  })
+
 assert("resizable columns are opt-in", {
   json = format(lt(d) |> lt_interactive(resize = TRUE), assets = FALSE)
   (grepl('"resize": true', json) %==% TRUE)

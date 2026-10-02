@@ -561,6 +561,76 @@ assert("lt-plot.js re-renders a table core built before the module loaded", {
   (m[2] %==% '2')  # one error-bar SVG per row, drawn by the late refresh
 })
 
+# Crosstalk is driven by an external global that its own filter controls ship.
+# Stub a minimal `window.crosstalk` whose two handles record their change
+# callbacks on `window`, so a test can fire a filter or a selection and read the
+# result back. The stub must exist before the plugin enhances the table, so it
+# goes in <head>, ahead of the inlined runtime.
+ct_eval = function(x, expr, fire = '') {
+  stub = '<script>window.crosstalk={
+    FilterHandle:function(){this.on=function(e,cb){window.__flt=cb}},
+    SelectionHandle:function(){this.on=function(e,cb){window.__sel=cb}}
+  }</script>'
+  html = sub(
+    '<meta charset="utf-8">', paste0('<meta charset="utf-8">', stub),
+    format(x, fragment = FALSE), fixed = TRUE
+  )
+  code = sprintf(
+    'var t=document.querySelector(".lt-table");%s;document.body.dataset.out=(%s)',
+    fire, expr
+  )
+  html = sub('</head>', sprintf(
+    '<script>addEventListener("load",function(){%s})</script></head>', code
+  ), html, fixed = TRUE)
+  f = tempfile(fileext = '.html'); on.exit(unlink(f), add = TRUE)
+  xfun::write_utf8(html, f)
+  dom = xfun::browser_dom(f)
+  m = regmatches(dom, regexec('data-out="([^"]*)"', dom))[[1]]
+  if (length(m) != 2L) stop('failed to read the probe value from the browser')
+  m[2]
+}
+
+# an interactive table carrying crosstalk keys (what lt(SharedData) produces),
+# built directly so the test needs no crosstalk R package
+ctbl = function(...) {
+  x = lt(data.frame(name = sym, n = c(5, 12, 3, 8)))
+  x$crosstalk = list(group = 'g', key = I(paste0('k', 1:4)))
+  lt_interactive(x, pager = FALSE, ...)
+}
+
+assert("an external crosstalk filter narrows the rendered rows", {
+  x = ctbl()
+  rows = '[...t.querySelectorAll("tbody tr")].map(r=>r.children[0].textContent).join("|")'
+  # no filter yet: every row shows
+  (ct_eval(x, rows) %==% paste(sym, collapse = '|'))
+  # a filter to keys k1 and k3 keeps rows 1 and 3 (Rash, Headache)
+  (ct_eval(x, rows, 'window.__flt({value:["k1","k3"]})') %==% 'Rash|Headache')
+  # a null value clears the filter again
+  (ct_eval(x, rows, 'window.__flt({value:["k1"]});window.__flt({value:null})')
+   %==% paste(sym, collapse = '|'))
+})
+
+assert("an external crosstalk selection highlights the matching rows", {
+  x = ctbl()
+  sel = '[...t.querySelectorAll("tbody tr")].map(r=>+r.classList.contains("lti-sel")).join("")'
+  # selecting key k2 marks row 2 (Nausea)
+  (ct_eval(x, sel, 'window.__sel({value:["k2"]})') %==% '0100')
+  # the highlight survives a filter re-render (post-swap re-assert): filtering to
+  # all four keys re-renders every row, and k2 stays marked
+  (ct_eval(x, sel, 'window.__sel({value:["k2"]});window.__flt({value:["k1","k2","k3","k4"]})')
+   %==% '0100')
+  # an empty selection clears the highlight
+  (ct_eval(x, sel, 'window.__sel({value:["k2"]});window.__sel({value:[]})') %==% '0000')
+})
+
+assert("crosstalk is inert without the crosstalk global", {
+  # the same table, but no stub: the plugin finds no crosstalk and leaves the
+  # rows untouched (it must not throw)
+  x = ctbl()
+  rows = '[...t.querySelectorAll("tbody tr")].map(r=>r.children[0].textContent).join("|")'
+  (lti_eval(x, rows) %==% paste(sym, collapse = '|'))
+})
+
 assert("a table whose row order carries meaning is left static", {
   d = data.frame(g = c("a", "a", "b"), v = 1:3)
   # row groups

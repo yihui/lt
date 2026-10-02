@@ -76,6 +76,17 @@ reorders and hides them. Tables with row groups (\code{\link[=lt_group]{lt_group
 browser). Column spanners (\code{\link[=lt_spanner]{lt_spanner()}}) are no obstacle, nor are
 row-specific styles or footnotes: those travel with their rows.
 }
+\section{Crosstalk}{
+
+When the table is built from a crosstalk \link[crosstalk:SharedData]{SharedData}
+object (pass it to \code{\link[=lt]{lt()}}), making it interactive also links it to any
+crosstalk controls sharing the same group: an external filter (e.g.
+\code{crosstalk::filter_select()}) narrows the rows live, and an external
+selection highlights the matching rows. The table is a receive-only client
+(it reflects the shared state, it does not set it). The crosstalk controls on
+the page load crosstalk's own JavaScript; \code{lt} ships none of it.
+}
+
 \examples{
 lt(head(mtcars)) |> lt_interactive()
 # search only, no click-to-sort or pagination
@@ -100,4 +111,10 @@ lt(head(mtcars)) |> lt_interactive(
   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
     value: [i, d.mpg] } })')
 )
+# link to crosstalk filter controls: build the table from a SharedData, then
+# make it interactive (an external filter_select on the same group filters it)
+if (requireNamespace('crosstalk', quietly = TRUE)) {
+  sd = crosstalk::SharedData$new(head(mtcars))
+  lt(sd) |> lt_interactive()
+}
 }

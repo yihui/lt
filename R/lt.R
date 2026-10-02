@@ -16,7 +16,10 @@
 #' object is rendered to HTML by [format()] (called automatically by the
 #' print method).
 #'
-#' @param data A data frame (or anything coercible to one).
+#' @param data A data frame (or anything coercible to one). A crosstalk
+#'   [SharedData][crosstalk::SharedData] object is also accepted: the table then
+#'   links to external crosstalk filter/selection controls once made interactive
+#'   with [lt_interactive()].
 #' @param ... Arguments passed to methods.
 #' @param auto_format Whether to automatically format numeric columns (rounding,
 #'   thousand separators, percentage detection). Set to `FALSE` to disable
@@ -70,6 +73,19 @@ lt.default = function(data, auto_format = TRUE, auto_label = TRUE, ...) {
   if (!auto_format) x$auto_format = FALSE
   if (!auto_label) x$auto_label = FALSE
   if (length(grp)) x$row_group = I(grp)
+  x
+}
+
+#' @rdname lt
+#' @export
+lt.SharedData = function(data, ...) {
+  x = lt(data$origData(), ...)
+  # carry the crosstalk group and per-row keys; lt_interactive() moves them into
+  # the client spec. Keys are indexed by original row, so they line up with the
+  # row indices the interactive view pipeline works in.
+  x$crosstalk = list(
+    group = data$groupName(), key = I(as.character(data$key()))
+  )
   x
 }
 

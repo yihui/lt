@@ -15,6 +15,15 @@
 #' browser). Column spanners ([lt_spanner()]) are no obstacle, nor are
 #' row-specific styles or footnotes: those travel with their rows.
 #'
+#' @section Crosstalk:
+#' When the table is built from a crosstalk [SharedData][crosstalk::SharedData]
+#' object (pass it to [lt()]), making it interactive also links it to any
+#' crosstalk controls sharing the same group: an external filter (e.g.
+#' `crosstalk::filter_select()`) narrows the rows live, and an external
+#' selection highlights the matching rows. The table is a receive-only client
+#' (it reflects the shared state, it does not set it). The crosstalk controls on
+#' the page load crosstalk's own JavaScript; `lt` ships none of it.
+#'
 #' @inheritParams lt_align
 #' @param sort Whether clicking a column header sorts the table by that column
 #'   (cycling ascending, descending, then unsorted); shift-clicking adds a
@@ -79,6 +88,12 @@
 #'   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
 #'     value: [i, d.mpg] } })')
 #' )
+#' # link to crosstalk filter controls: build the table from a SharedData, then
+#' # make it interactive (an external filter_select on the same group filters it)
+#' if (requireNamespace('crosstalk', quietly = TRUE)) {
+#'   sd = crosstalk::SharedData$new(head(mtcars))
+#'   lt(sd) |> lt_interactive()
+#' }
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = FALSE, pager = c(10, 25, 50, 100),
   resize = FALSE, detail = NULL
@@ -96,6 +111,10 @@ lt_interactive = function(
   if (isTRUE(resize)) opts$resize = TRUE
   if (!is.null(detail)) opts$detail = if (inherits(detail, 'JS_LITERAL'))
     detail else I(as.character(f_cols(detail, x$data)))
+  # a crosstalk table (built from a SharedData, see lt()) carries its group and
+  # per-row keys here, so the client can act as a crosstalk filter/selection
+  # client; move them off the top level so they are not serialized twice
+  if (!is.null(x$crosstalk)) { opts$crosstalk = x$crosstalk; x$crosstalk = NULL }
   x$interactive = opts
   x
 }

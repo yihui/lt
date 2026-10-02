@@ -58,6 +58,11 @@
     padding-left: 1.5em;
   }
 
+  /* a row linked-selected by an external crosstalk control (brushing) */
+  .lti-sel > * {
+    background: #fffbcc;
+  }
+
   /* the drag grip sits on a column's right edge, inside its header cell */
   th:has(.lti-resizer) {
     position: relative;

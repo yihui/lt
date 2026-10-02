@@ -116,8 +116,11 @@ js_block = function(files, inline = TRUE) {
 #' xfun::tojson(spec)  # ship this, then LT.render(container, spec) in the browser
 lt_spec = function(x) {
   # Drop css/rules (emitted separately as <link>/<style>, or attached via
-  # lt_dependency()) and prep exactly as the render/queue paths expect.
-  x$css = x$rules = NULL
+  # lt_dependency()) and prep exactly as the render/queue paths expect. Also drop
+  # any leftover crosstalk metadata: lt_interactive() moves it into the spec, so
+  # a top-level copy only lingers (unused) when the table was never made
+  # interactive.
+  x$css = x$rules = x$crosstalk = NULL
   x = with_missing(with_col_order(x))
   x[lengths(x) > 0L]
 }

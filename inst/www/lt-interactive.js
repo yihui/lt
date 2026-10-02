@@ -1,5 +1,6 @@
 /* lt-interactive.js — opt-in interactivity for lt tables (search, sort, column
- * filters, pagination, column resizing).
+ * filters, pagination, column resizing, expandable row detail, and crosstalk
+ * linking).
  *
  * A plugin on the existing LT global (see lt.js): it adds no new global. For a
  * table whose spec carries `interactive`, it adds the requested controls and
@@ -97,6 +98,11 @@
     const pred = matcher(state.term);
     if (pred) idx = idx.filter(r => pred(cols.map(c => cell(c, r))));
 
+    // crosstalk: an external filter narrows the rows to a set of keys (null =
+    // no filter). The keys ride in the spec indexed by original row, so they
+    // line up with the 1-based indices here.
+    if (state.ctKeys) idx = idx.filter(r => state.ctKeys.has(state.ctKey[r - 1]));
+
     // sort by each key in turn, falling through to the next on a tie; a key's
     // column (resolved once) carries its numeric test and direction. nulls sort
     // last regardless of direction, so the direction never applies to them.
@@ -167,23 +173,26 @@
             sort: Array.isArray(opts.sort) ? opts.sort.map(parseKey) : []
           };
     let view,          // filtered + sorted indices, cached across page turns
-        sync = () => {},  // pager readout, replaced by addPaginate()
-        // decorate the just-rendered <tbody> with expand carets / detail rows,
-        // set up by addDetail(); a no-op when row detail is off
-        decorate = () => {};
+        sync = () => {};  // pager readout, replaced by addPaginate()
+    // callbacks run on the freshly built <tbody> after each swap, so closure
+    // state the swap would discard is re-asserted: expand carets / detail rows
+    // (addDetail), the crosstalk highlight (addCrosstalk). Each is passed the
+    // new body and the page's 1-based original row indices.
+    const postSwap = [];
 
     // `stale` means the view itself changed (a term or the sort), as opposed to
     // only the page: recompute it and go back to the first page.
     const refresh = (stale = true) => {
       if (stale) { view = computeView(spec, disp, state); state.page = 0; }
-      const rows = pageSlice(view, state),
-            tmp = elem(el.ownerDocument, "template", {
+      const rows = pageSlice(view, state);
+      state._rows = rows;  // the page's row indices, for an out-of-band repaint
+      const tmp = elem(el.ownerDocument, "template", {
               innerHTML: LT.buildHtml({ ...spec, _viewRows: rows })
             });
       const body = $(tmp.content, "tbody");
       if (!rows.length)  // no matches: a neutral symbol spanning all columns
         body.innerHTML = `<tr class="lti-empty"><td colspan="${cols.length}">—</td></tr>`;
-      else decorate(body, rows);
+      else postSwap.forEach(f => f(body, rows));
       $(el, "tbody").replaceWith(body);
       sync(view.length);
     };
@@ -193,19 +202,23 @@
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
     if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
     if (opts.resize) addResize(el, hrow, cols.length);
+    // crosstalk before detail, so its highlight runs on a <tbody> whose rows
+    // still line up 1-to-1 with the view (detail rows are inserted after)
+    if (opts.crosstalk) addCrosstalk(el, opts.crosstalk, state, refresh, postSwap);
     // row detail re-renders through the same seam: toggling a row only changes
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
     if (opts.detail)
-      decorate = addDetail(el, spec, cols, state, opts.detail, () => refresh(false));
+      postSwap.push(addDetail(el, spec, cols, state, opts.detail, () => refresh(false)));
     // `pager` is the page sizes to offer, the first one being the initial
     if (opts.pager) {
       const sizes = Array.isArray(opts.pager) ? opts.pager : [10, 25, 50, 100];
       sync = addPaginate(el, cols, sizes, state, () => refresh(false));
       refresh();  // cut the full render down to the first page
-    } else if (state.sort.length || opts.detail) {
+    } else if (state.sort.length || opts.detail || opts.crosstalk) {
       // core rendered the rows in file order; re-render to apply an initial
-      // sort and/or to add the expand carets
+      // sort, add the expand carets, and/or seed `state._rows` so a crosstalk
+      // selection arriving before any other change can repaint the right rows
       refresh();
     }
   }
@@ -362,6 +375,45 @@
                             tr.nextSibling));
         LT.render(elem(doc, "div", {}, cell), child);
       }
+    });
+  }
+
+  // Wire the table as a crosstalk client. `ct` is `{ group, key }` with the key
+  // array indexed by original row, so it lines up with the view's 1-based
+  // indices. An external filter (filter_select / filter_slider) sends the set of
+  // passing keys — fed into computeView as an extra predicate — and an external
+  // selection highlights the matching rows. Receive-only: the table reflects the
+  // shared state, it does not set it. A no-op unless crosstalk's own global is on
+  // the page; its controls load it, so a lone lt table ships none of it.
+  function addCrosstalk(el, ct, state, refresh, postSwap) {
+    const cs = root.crosstalk;
+    if (!cs) return;
+    state.ctKey = ct.key || [];
+    // filter: `e.value` is the array of keys passing every control, or a falsy
+    // value (null / empty) for no filter at all — show every row
+    new cs.FilterHandle(ct.group).on("change", e => {
+      state.ctKeys = e.value ? new Set(e.value) : null;
+      refresh();
+    });
+    // selection: mark the chosen rows; an empty selection clears the highlight.
+    // Skips any detail / empty filler rows, matching the remaining rows to the
+    // page's original indices in order.
+    const paint = (body, rows) => {
+      let i = 0;
+      for (const tr of body.rows) {
+        if (tr.classList.contains("lti-detail") || tr.classList.contains("lti-empty"))
+          continue;
+        const r = rows[i++];
+        if (r != null) tr.classList.toggle(
+          "lti-sel", !!(state.ctSel && state.ctSel.has(state.ctKey[r - 1]))
+        );
+      }
+    };
+    postSwap.push(paint);  // re-assert the highlight after every tbody swap
+    new cs.SelectionHandle(ct.group).on("change", e => {
+      state.ctSel = e.value?.length ? new Set(e.value) : null;
+      const body = $(el, "tbody");  // repaint the live rows at once (no re-render)
+      if (body) paint(body, state._rows || []);
     });
   }
 
