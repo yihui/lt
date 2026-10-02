@@ -591,6 +591,12 @@ tbl_iris |&gt; lt_hide(~ Petal.Length + Petal.Width)
 
 ## Inline plots
 
+Two functions draw a tiny chart into a column's cells. Both are lightweight:
+only the numbers travel to the browser and the SVG is drawn there, so for an
+interactive table only the current page's rows are drawn.
+
+### Error bars
+
 `lt_errorbar()` renders a numeric column's cells as a small inline SVG — a
 point at the estimate with a horizontal bar (and end caps) from the lower to
 the upper bound — all drawn on a scale shared across the column, so rows are
@@ -603,9 +609,6 @@ a vertical reference line (e.g. `0` for a risk difference). Set `axis = TRUE`
 tick marks and labels at &quot;nice&quot; round values, matching faint gridlines inside
 each cell.
 
-Only the numbers travel to the browser; the SVG is drawn there, so for an
-interactive table only the current page's rows are drawn.
-
 ```{r}
 d_eff = data.frame(
   Term = c(&quot;Age&quot;, &quot;Dose&quot;, &quot;Baseline&quot;, &quot;Sex&quot;),
@@ -615,6 +618,28 @@ d_eff = data.frame(
 )
 lt(d_eff) |&gt;
   lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = &quot;Effect (95% CI)&quot;)
+```
+
+### Sparklines
+
+`lt_sparkline()` draws a per-row series as a small line or bar chart. The
+series can be a single list-column (each cell a numeric vector) or several
+numeric columns read across the row (`~ a + b + c`, all but the first hidden by
+default). Each row is scaled to its own range unless `limits` sets a shared
+scale; `type = &quot;bar&quot;` draws bars instead of a line.
+
+```{r}
+d_spark = data.frame(City = c(&quot;Oslo&quot;, &quot;Cairo&quot;, &quot;Lima&quot;))
+# a list-column: each cell is a vector of monthly values
+d_spark$Temp = list(
+  c(-3, -2, 1, 6, 12, 16), c(14, 15, 18, 23, 28, 31), c(19, 19, 18, 16, 15, 15)
+)
+d_spark$Rain = list(
+  c(49, 36, 47, 41, 53, 60), c(5, 4, 4, 1, 0, 0), c(8, 4, 2, 1, 1, 1)
+)
+lt(d_spark) |&gt;
+  lt_sparkline(~ Temp) |&gt;
+  lt_sparkline(~ Rain, type = &quot;bar&quot;, color = &quot;#4caf50&quot;)
 ```
 
 ## Styling
@@ -1354,6 +1379,30 @@ LT.build({
     { type: &quot;hide&quot;, columns: [&quot;Lo&quot;, &quot;Hi&quot;] },
     { type: &quot;errorbar&quot;, columns: [&quot;Est&quot;, &quot;Lo&quot;, &quot;Hi&quot;],
       min: -0.6, max: 0.7, ref: 0, axis: true, axis_label: &quot;Effect (95% CI)&quot; }
+  ]
+});
+```
+
+### Sparklines (`sparkline`)
+
+Draw a per-row series as a small inline line or bar chart. `columns` is either
+a single list-column (each cell a numeric array) or several numeric columns
+read across the row (the plot replaces the first column's cells; hide the
+rest). `kind` is `&quot;line&quot;` (default) or `&quot;bar&quot;`; `min`/`max` set a shared
+vertical scale (the default scales each row to its own range); `color` styles
+the line or bars; `width`/`height` size each SVG. Like the error bar, it comes
+from the graphics module (`lt-plot.js`) and is drawn in the browser.
+
+```{js}
+LT.build({
+  data: {
+    City: [&quot;Oslo&quot;, &quot;Cairo&quot;, &quot;Lima&quot;],
+    Temp: [[-3, -2, 1, 6, 12, 16], [14, 15, 18, 23, 28, 31], [19, 19, 18, 16, 15, 15]],
+    Rain: [[49, 36, 47, 41, 53, 60], [5, 4, 4, 1, 0, 0], [8, 4, 2, 1, 1, 1]]
+  },
+  ops: [
+    { type: &quot;sparkline&quot;, columns: [&quot;Temp&quot;] },
+    { type: &quot;sparkline&quot;, columns: [&quot;Rain&quot;], kind: &quot;bar&quot;, color: &quot;#4caf50&quot; }
   ]
 });
 ```

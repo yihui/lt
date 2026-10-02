@@ -48,11 +48,12 @@
 <li><a href="#sec:man-lt_note"><span class="section-number main-number">21</span> Add a Note</a></li>
 <li><a href="#sec:man-lt_output"><span class="section-number main-number">22</span> Shiny Bindings for lt</a></li>
 <li><a href="#sec:man-lt_spanner"><span class="section-number main-number">23</span> Add a Column Spanner</a></li>
-<li><a href="#sec:man-lt_spec"><span class="section-number main-number">24</span> Extract a table's render-ready spec</a></li>
-<li><a href="#sec:man-lt_style"><span class="section-number main-number">25</span> Style Cells</a></li>
-<li><a href="#sec:man-lt_sub"><span class="section-number main-number">26</span> Substitute Cell Values</a></li>
-<li><a href="#sec:man-lt_width"><span class="section-number main-number">27</span> Set Column and Table Widths</a></li>
-<li><a href="#sec:man-print.lt_tbl"><span class="section-number main-number">28</span> Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)</a></li>
+<li><a href="#sec:man-lt_sparkline"><span class="section-number main-number">24</span> Draw an Inline Sparkline in a Column</a></li>
+<li><a href="#sec:man-lt_spec"><span class="section-number main-number">25</span> Extract a table's render-ready spec</a></li>
+<li><a href="#sec:man-lt_style"><span class="section-number main-number">26</span> Style Cells</a></li>
+<li><a href="#sec:man-lt_sub"><span class="section-number main-number">27</span> Substitute Cell Values</a></li>
+<li><a href="#sec:man-lt_width"><span class="section-number main-number">28</span> Set Column and Table Widths</a></li>
+<li><a href="#sec:man-print.lt_tbl"><span class="section-number main-number">29</span> Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)</a></li>
 </ul>
 </div>
 <style type="text/css">
@@ -90,6 +91,7 @@ h2 {
 <a href="#sec:man-lt_note"><code>lt_note()</code></a>
 <a href="#sec:man-lt_output"><code>lt_output()</code></a>
 <a href="#sec:man-lt_spanner"><code>lt_spanner()</code></a>
+<a href="#sec:man-lt_sparkline"><code>lt_sparkline()</code></a>
 <a href="#sec:man-lt_spec"><code>lt_spec()</code></a>
 <a href="#sec:man-lt_style"><code>lt_style()</code></a>
 <a href="#sec:man-lt_sub"><code>lt_sub()</code></a>
@@ -178,7 +180,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
 <pre><code>&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;lt&lt;/title&gt;
 &lt;style&gt;body{font-family:system-ui,sans-serif;padding:1em}&lt;/style&gt;&lt;/head&gt;
 &lt;body&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.80/css/lt.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.81/css/lt.min.css&quot;&gt;
 &lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   &quot;data&quot;: {
@@ -196,7 +198,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
   }
 }
 })&lt;/script&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.80/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.81/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;
 </code></pre>
 <h2 id="sec:man-lt"><span class="section-number main-number">3</span> Create a Table Specification</h2>
@@ -454,7 +456,7 @@ Its script loads before the core runtime so plot cells render.</p>
 </code></pre>
 <pre><code>#&gt; List of 10
 #&gt;  $ name      : chr &quot;lt&quot;
-#&gt;  $ version   : chr &quot;0.4.14&quot;
+#&gt;  $ version   : chr &quot;0.4.15&quot;
 #&gt;  $ src       :List of 1
 #&gt;   ..$ file: chr &quot;/Users/runner/work/_temp/Library/lt/www&quot;
 #&gt;  $ meta      : NULL
@@ -664,7 +666,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmp3LU9RI/file129d6bd86b72.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpZota8V/file21562b026b63.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -778,7 +780,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmp3LU9RI/file129d329ebd43.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpZota8V/file2156197812ff.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -1444,8 +1446,81 @@ tbl |&gt; lt_spanner()
 # raw HTML label (wrap in I())
 tbl |&gt; lt_spanner(I(&quot;&lt;em&gt;Sepal&lt;/em&gt;&quot;), ~ Sepal.Length + Sepal.Width)
 </code></pre>
-<h2 id="sec:man-lt_spec"><span class="section-number main-number">24</span> Extract a table's render-ready spec</h2>
+<h2 id="sec:man-lt_sparkline"><span class="section-number main-number">24</span> Draw an Inline Sparkline in a Column</h2>
 <h3 id="sec:description_24" class="unnumbered unlisted">Description</h3>
+<p>Render a per-row series of numbers as a small inline SVG line or bar chart (a
+sparkline). The series for each row can come from a single list-column (each
+element a numeric vector) or from several numeric columns read across the
+row. Like <code><a href="#sec:man-lt-errorbar">lt_errorbar()</a></code>, it is lightweight: only the numbers travel to the
+client and the SVG is drawn in the browser, so an interactive table
+(<code><a href="#sec:man-lt-interactive">lt_interactive()</a></code>) draws only the rows on the current page.
+</p>
+<h3 id="sec:usage_23" class="unnumbered unlisted">Usage</h3>
+<pre><code class="language-r">lt_sparkline(
+  x,
+  columns,
+  type = c("line", "bar"),
+  limits = NULL,
+  color = NULL,
+  width = 120,
+  height = 20,
+  hide = TRUE
+)</code></pre>
+<h3 id="sec:arguments_23" class="unnumbered unlisted">Arguments</h3>
+<table role = "presentation">
+<tr><td><code>x</code></td>
+<td>
+<p>An <code><a href="#sec:man-lt">lt()</a></code> object.</p>
+</td></tr>
+<tr><td><code>columns</code></td>
+<td>
+<p>The column(s) holding each row's series. Either a single
+list-column (a one-sided formula <code>~ col</code>, a name, or a position) whose
+cells are numeric vectors, or several numeric columns (<code>~ a + b + c</code>) whose
+values are read left to right as the series. The sparkline is drawn in the
+first column's cells.</p>
+</td></tr>
+<tr><td><code>type</code></td>
+<td>
+<p><code>"line"</code> (default) for a line chart or <code>"bar"</code> for a bar chart.</p>
+</td></tr>
+<tr><td><code>limits</code></td>
+<td>
+<p>Numeric <code>c(min, max)</code> for a shared vertical scale across all
+rows (so rows are comparable). The default (<code>NULL</code>) scales each row to its
+own range.</p>
+</td></tr>
+<tr><td><code>color</code></td>
+<td>
+<p>CSS color for the line or bars (defaults to the stylesheet's).</p>
+</td></tr>
+<tr><td><code>width</code>, <code>height</code></td>
+<td>
+<p>Pixel size of each cell's SVG.</p>
+</td></tr>
+<tr><td><code>hide</code></td>
+<td>
+<p>If <code>TRUE</code> (default) and the series spans several columns, those
+columns after the first are hidden (their values are drawn into the plot);
+set to <code>FALSE</code> to keep them visible. Has no effect for a single
+list-column.</p>
+</td></tr>
+</table>
+<h3 id="sec:value_23" class="unnumbered unlisted">Value</h3>
+<p><code>x</code> with the sparkline column recorded.
+</p>
+<h3 id="sec:examples_23" class="unnumbered unlisted">Examples</h3>
+<pre><code class="language-r"># a list-column: each cell is a numeric vector
+d = data.frame(city = c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;))
+d$temp = list(c(3, 5, 8, 6, 9), c(1, 2, 2, 4, 3), c(7, 6, 5, 6, 8))
+lt(d) |&gt; lt_sparkline(~ temp)
+# several columns read across the row, as bars on a shared scale
+m = data.frame(name = c(&quot;X&quot;, &quot;Y&quot;), q1 = c(2, 5), q2 = c(4, 3),
+  q3 = c(6, 7), q4 = c(5, 2))
+lt(m) |&gt; lt_sparkline(~ q1 + q2 + q3 + q4, type = &quot;bar&quot;, limits = c(0, 8))
+</code></pre>
+<h2 id="sec:man-lt_spec"><span class="section-number main-number">25</span> Extract a table's render-ready spec</h2>
+<h3 id="sec:description_25" class="unnumbered unlisted">Description</h3>
 <p>Return the JSON-ready spec for an <code><a href="#sec:man-lt">lt()</a></code> table: the raw data plus the
 declarative ops (and any <code><a href="#sec:man-lt-interactive">lt_interactive()</a></code> options), prepared exactly as the
 JavaScript runtime expects. This is the payload the runtime consumes, so
@@ -1455,20 +1530,20 @@ another widget can embed an lt table by shipping this spec (e.g.
 <code><a href="#sec:man-lt-css">lt_css()</a></code> and CSS rules is dropped; attach the runtime assets separately
 (see <code><a href="#sec:man-lt-dependency">lt_dependency()</a></code>).
 </p>
-<h3 id="sec:usage_23" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_24" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_spec(x)</code></pre>
-<h3 id="sec:arguments_23" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_24" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
 <p>An <code>lt_tbl</code> object.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_23" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_24" class="unnumbered unlisted">Value</h3>
 <p>A named list of spec fields (<code>data</code>, <code>ops</code>, and any others set on the
 table), ready to serialize to JSON.
 </p>
-<h3 id="sec:examples_23" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_24" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">spec = lt_spec(lt(head(mtcars)) |&gt; lt_interactive())
 str(spec, max.level = 1)
 </code></pre>
@@ -1499,13 +1574,13 @@ str(spec, max.level = 1)
   }
 }
 </code></pre>
-<h2 id="sec:man-lt_style"><span class="section-number main-number">25</span> Style Cells</h2>
-<h3 id="sec:description_25" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_style"><span class="section-number main-number">26</span> Style Cells</h2>
+<h3 id="sec:description_26" class="unnumbered unlisted">Description</h3>
 <p>Apply CSS styling to specific cells. Target cells by column, row, or both.
 When <code>test</code> is provided, styles are applied conditionally based on cell
 values (evaluated in JavaScript).
 </p>
-<h3 id="sec:usage_24" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_25" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_style(
   x,
   columns = NULL,
@@ -1518,7 +1593,7 @@ values (evaluated in JavaScript).
   bg = NULL,
   ...
 )</code></pre>
-<h3 id="sec:arguments_24" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_25" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1568,10 +1643,10 @@ camelCase (e.g., <code>borderLeft</code>) or quoted dash-case (e.g.,
 <code>`border-left`</code>). Values are CSS strings.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_24" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_25" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the style recorded.
 </p>
-<h3 id="sec:examples_24" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_25" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">tbl = lt(head(mtcars))
 tbl |&gt;
   lt_style(&quot;mpg&quot;, rows = 1L, bold = TRUE, borderBottom = &quot;2px solid red&quot;)
@@ -1579,11 +1654,11 @@ tbl |&gt;
   lt_style(&quot;mpg&quot;, test = &quot;v =&gt; v &gt; 20&quot;, class = &quot;high&quot;) |&gt;
   lt_css(.high = list(background = &quot;#cfc&quot;))
 </code></pre>
-<h2 id="sec:man-lt_sub"><span class="section-number main-number">26</span> Substitute Cell Values</h2>
-<h3 id="sec:description_26" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_sub"><span class="section-number main-number">27</span> Substitute Cell Values</h2>
+<h3 id="sec:description_27" class="unnumbered unlisted">Description</h3>
 <p>Replace <code>NA</code>, zero, or small values with display text.
 </p>
-<h3 id="sec:usage_25" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_26" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_sub(
   x,
   columns = NULL,
@@ -1592,7 +1667,7 @@ tbl |&gt;
   small = NULL,
   small_text = NULL
 )</code></pre>
-<h3 id="sec:arguments_25" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_26" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1624,20 +1699,20 @@ replaced by <code>small_text</code>.</p>
 <p>Text shown for values below <code>small</code> (e.g., <code>"&lt;0.1"</code>).</p>
 </td></tr>
 </table>
-<h3 id="sec:value_25" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_26" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the substitution recorded.
 </p>
-<h3 id="sec:examples_25" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_26" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">d = data.frame(x = c(1, 0, NA, 0.001))
 lt(d) |&gt; lt_sub(missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.01, small_text = &quot;&lt;0.01&quot;)
 </code></pre>
-<h2 id="sec:man-lt_width"><span class="section-number main-number">27</span> Set Column and Table Widths</h2>
-<h3 id="sec:description_27" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-lt_width"><span class="section-number main-number">28</span> Set Column and Table Widths</h2>
+<h3 id="sec:description_28" class="unnumbered unlisted">Description</h3>
 <p>Set Column and Table Widths
 </p>
-<h3 id="sec:usage_26" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_27" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">lt_width(x, ...)</code></pre>
-<h3 id="sec:arguments_26" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_27" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1651,22 +1726,22 @@ of the whole table. Widths can be any CSS value (e.g., <code>"100px"</code>,
 <code>"20%"</code>, <code>"8em"</code>).</p>
 </td></tr>
 </table>
-<h3 id="sec:value_26" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_27" class="unnumbered unlisted">Value</h3>
 <p><code>x</code> with the widths recorded.
 </p>
-<h3 id="sec:examples_26" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_27" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">lt(head(mtcars)) |&gt; lt_width(mpg = &quot;100px&quot;, cyl = &quot;50px&quot;)
 # set the whole-table width, optionally with column widths
 lt(head(mtcars)) |&gt; lt_width(&quot;80%&quot;, mpg = &quot;100px&quot;)
 </code></pre>
-<h2 id="sec:man-print.lt_tbl"><span class="section-number main-number">28</span> Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)</h2>
-<h3 id="sec:description_28" class="unnumbered unlisted">Description</h3>
+<h2 id="sec:man-print.lt_tbl"><span class="section-number main-number">29</span> Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)</h2>
+<h3 id="sec:description_29" class="unnumbered unlisted">Description</h3>
 <p>Print an <code>lt_tbl</code> (Opens in the Viewer or Browser)
 </p>
-<h3 id="sec:usage_27" class="unnumbered unlisted">Usage</h3>
+<h3 id="sec:usage_28" class="unnumbered unlisted">Usage</h3>
 <pre><code class="language-r">## S3 method for class 'lt_tbl'
 print(x, ...)</code></pre>
-<h3 id="sec:arguments_27" class="unnumbered unlisted">Arguments</h3>
+<h3 id="sec:arguments_28" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1677,10 +1752,10 @@ print(x, ...)</code></pre>
 <p>Passed to <code><a href="https://rdrr.io/r/base/format.html">format()</a></code>.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_27" class="unnumbered unlisted">Value</h3>
+<h3 id="sec:value_28" class="unnumbered unlisted">Value</h3>
 <p><code>x</code>, invisibly.
 </p>
-<h3 id="sec:examples_27" class="unnumbered unlisted">Examples</h3>
+<h3 id="sec:examples_28" class="unnumbered unlisted">Examples</h3>
 <pre><code class="language-r">print(lt(head(mtcars)))
 </code></pre>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.80/css/manual.min.css">

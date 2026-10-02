@@ -71,7 +71,12 @@
 <li><a href="#sec:hiding-columns"><span class="section-number">6.6</span> Hiding columns</a></li>
 </ul>
 </li>
-<li><a href="#sec:inline-plots"><span class="section-number main-number">7</span> Inline plots</a></li>
+<li><a href="#sec:inline-plots"><span class="section-number main-number">7</span> Inline plots</a>
+<ul>
+<li><a href="#sec:error-bars"><span class="section-number">7.1</span> Error bars</a></li>
+<li><a href="#sec:sparklines"><span class="section-number">7.2</span> Sparklines</a></li>
+</ul>
+</li>
 <li><a href="#sec:styling"><span class="section-number main-number">8</span> Styling</a>
 <ul>
 <li><a href="#sec:cell-styling"><span class="section-number">8.1</span> Cell styling</a></li>
@@ -169,7 +174,7 @@ lt(d, auto_format = FALSE) |&gt;
   # lt_note(): the footer note names itself and lt_export()
   lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.80/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.81/css/lt.min.css">
 <style>.lt-table {
   .highlight { font-weight: bold; color: #c60; }
 }</style>
@@ -302,7 +307,7 @@ lt(d, auto_format = FALSE) |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.80/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.81/js/lt.min.js" defer></script>
 <h2 id="sec:basics"><span class="section-number main-number">2</span> Basics</h2>
 <h3 id="sec:a-simple-table"><span class="section-number">2.1</span> A simple table</h3>
 <p>Pass any data frame to <code>lt()</code>:</p>
@@ -1420,6 +1425,10 @@ reads the whole row (e.g. an interactive table’s row detail, below).</p>
 }
 })</script>
 <h2 id="sec:inline-plots"><span class="section-number main-number">7</span> Inline plots</h2>
+<p>Two functions draw a tiny chart into a column’s cells. Both are lightweight:
+only the numbers travel to the browser and the SVG is drawn there, so for an
+interactive table only the current page’s rows are drawn.</p>
+<h3 id="sec:error-bars"><span class="section-number">7.1</span> Error bars</h3>
 <p><code>lt_errorbar()</code> renders a numeric column’s cells as a small inline SVG — a
 point at the estimate with a horizontal bar (and end caps) from the lower to
 the upper bound — all drawn on a scale shared across the column, so rows are
@@ -1431,8 +1440,6 @@ a vertical reference line (e.g. <code>0</code> for a risk difference). Set <code
 (or a string caption) to add a shared axis in the footer — a baseline with
 tick marks and labels at “nice” round values, matching faint gridlines inside
 each cell.</p>
-<p>Only the numbers travel to the browser; the SVG is drawn there, so for an
-interactive table only the current page’s rows are drawn.</p>
 <pre><code class="language-r">d_eff = data.frame(
   Term = c(&quot;Age&quot;, &quot;Dose&quot;, &quot;Baseline&quot;, &quot;Sex&quot;),
   Est  = c(0.12, -0.34, 0.45, -0.08),
@@ -1442,7 +1449,7 @@ interactive table only the current page’s rows are drawn.</p>
 lt(d_eff) |&gt;
   lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = &quot;Effect (95% CI)&quot;)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.80/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.81/css/lt-plot.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -1470,7 +1477,59 @@ lt(d_eff) |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.80/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.81/js/lt-plot.min.js" defer></script>
+<h3 id="sec:sparklines"><span class="section-number">7.2</span> Sparklines</h3>
+<p><code>lt_sparkline()</code> draws a per-row series as a small line or bar chart. The
+series can be a single list-column (each cell a numeric vector) or several
+numeric columns read across the row (<code>~ a + b + c</code>, all but the first hidden by
+default). Each row is scaled to its own range unless <code>limits</code> sets a shared
+scale; <code>type = &quot;bar&quot;</code> draws bars instead of a line.</p>
+<pre><code class="language-r">d_spark = data.frame(City = c(&quot;Oslo&quot;, &quot;Cairo&quot;, &quot;Lima&quot;))
+# a list-column: each cell is a vector of monthly values
+d_spark$Temp = list(
+  c(-3, -2, 1, 6, 12, 16), c(14, 15, 18, 23, 28, 31), c(19, 19, 18, 16, 15, 15)
+)
+d_spark$Rain = list(
+  c(49, 36, 47, 41, 53, 60), c(5, 4, 4, 1, 0, 0), c(8, 4, 2, 1, 1, 1)
+)
+lt(d_spark) |&gt;
+  lt_sparkline(~ Temp) |&gt;
+  lt_sparkline(~ Rain, type = &quot;bar&quot;, color = &quot;#4caf50&quot;)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "City": ["Oslo", "Cairo", "Lima"],
+    "Temp": [
+      [-3, -2, 1, 6, 12, 16],
+      [14, 15, 18, 23, 28, 31],
+      [19, 19, 18, 16, 15, 15]
+    ],
+    "Rain": [
+      [49, 36, 47, 41, 53, 60],
+      [5, 4, 4, 1, 0, 0],
+      [8, 4, 2, 1, 1, 1]
+    ]
+  },
+  "ops": [
+    {
+      "type": "sparkline",
+      "columns": ["Temp"],
+      "kind": "line",
+      "width": 120,
+      "height": 20
+    },
+    {
+      "type": "sparkline",
+      "columns": ["Rain"],
+      "kind": "bar",
+      "color": "#4caf50",
+      "width": 120,
+      "height": 20
+    }
+  ]
+}
+})</script>
 <h2 id="sec:styling"><span class="section-number main-number">8</span> Styling</h2>
 <h3 id="sec:cell-styling"><span class="section-number">8.1</span> Cell styling</h3>
 <p>Highlight specific cells with bold, color, background, or any CSS
@@ -1826,7 +1885,7 @@ first of which is used initially.</p>
 <pre><code class="language-r">d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;)]
 lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf))
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.80/css/lt-interactive.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.81/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -1842,7 +1901,7 @@ lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf))
   }
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.80/js/lt-interactive.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.81/js/lt-interactive.min.js" defer></script>
 <p>Shift-click a second header to sort by it as a tie-breaker, so several
 columns sort at once (an ordinal in each header marks its place). An
 initial sort can be requested with <code>sort</code>, either as a character vector

@@ -540,6 +540,12 @@ tbl_iris |> lt_hide(~ Petal.Length + Petal.Width)
 
 ## Inline plots
 
+Two functions draw a tiny chart into a column's cells. Both are lightweight:
+only the numbers travel to the browser and the SVG is drawn there, so for an
+interactive table only the current page's rows are drawn.
+
+### Error bars
+
 `lt_errorbar()` renders a numeric column's cells as a small inline SVG — a
 point at the estimate with a horizontal bar (and end caps) from the lower to
 the upper bound — all drawn on a scale shared across the column, so rows are
@@ -552,9 +558,6 @@ a vertical reference line (e.g. `0` for a risk difference). Set `axis = TRUE`
 tick marks and labels at "nice" round values, matching faint gridlines inside
 each cell.
 
-Only the numbers travel to the browser; the SVG is drawn there, so for an
-interactive table only the current page's rows are drawn.
-
 ```{r}
 d_eff = data.frame(
   Term = c("Age", "Dose", "Baseline", "Sex"),
@@ -564,6 +567,28 @@ d_eff = data.frame(
 )
 lt(d_eff) |>
   lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = "Effect (95% CI)")
+```
+
+### Sparklines
+
+`lt_sparkline()` draws a per-row series as a small line or bar chart. The
+series can be a single list-column (each cell a numeric vector) or several
+numeric columns read across the row (`~ a + b + c`, all but the first hidden by
+default). Each row is scaled to its own range unless `limits` sets a shared
+scale; `type = "bar"` draws bars instead of a line.
+
+```{r}
+d_spark = data.frame(City = c("Oslo", "Cairo", "Lima"))
+# a list-column: each cell is a vector of monthly values
+d_spark$Temp = list(
+  c(-3, -2, 1, 6, 12, 16), c(14, 15, 18, 23, 28, 31), c(19, 19, 18, 16, 15, 15)
+)
+d_spark$Rain = list(
+  c(49, 36, 47, 41, 53, 60), c(5, 4, 4, 1, 0, 0), c(8, 4, 2, 1, 1, 1)
+)
+lt(d_spark) |>
+  lt_sparkline(~ Temp) |>
+  lt_sparkline(~ Rain, type = "bar", color = "#4caf50")
 ```
 
 ## Styling

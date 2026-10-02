@@ -60,6 +60,7 @@
 <li><a href="#sec:inline-plots"><span class="section-number main-number">5</span> Inline plots</a>
 <ul>
 <li><a href="#sec:error-bars-errorbar"><span class="section-number">5.1</span> Error bars (<code>errorbar</code>)</a></li>
+<li><a href="#sec:sparklines-sparkline"><span class="section-number">5.2</span> Sparklines (<code>sparkline</code>)</a></li>
 </ul>
 </li>
 <li><a href="#sec:row-groups"><span class="section-number main-number">6</span> Row groups</a>
@@ -678,6 +679,37 @@ interactive) are drawn. This cell type comes from the graphics module
     { type: "hide", columns: ["Lo", "Hi"] },
     { type: "errorbar", columns: ["Est", "Lo", "Hi"],
       min: -0.6, max: 0.7, ref: 0, axis: true, axis_label: "Effect (95% CI)" }
+  ]
+});</script>
+<h3 id="sec:sparklines-sparkline"><span class="section-number">5.2</span> Sparklines (<code>sparkline</code>)</h3>
+<p>Draw a per-row series as a small inline line or bar chart. <code>columns</code> is either
+a single list-column (each cell a numeric array) or several numeric columns
+read across the row (the plot replaces the first column’s cells; hide the
+rest). <code>kind</code> is <code>&quot;line&quot;</code> (default) or <code>&quot;bar&quot;</code>; <code>min</code>/<code>max</code> set a shared
+vertical scale (the default scales each row to its own range); <code>color</code> styles
+the line or bars; <code>width</code>/<code>height</code> size each SVG. Like the error bar, it comes
+from the graphics module (<code>lt-plot.js</code>) and is drawn in the browser.</p>
+<pre><code class="language-js">LT.build({
+  data: {
+    City: [&quot;Oslo&quot;, &quot;Cairo&quot;, &quot;Lima&quot;],
+    Temp: [[-3, -2, 1, 6, 12, 16], [14, 15, 18, 23, 28, 31], [19, 19, 18, 16, 15, 15]],
+    Rain: [[49, 36, 47, 41, 53, 60], [5, 4, 4, 1, 0, 0], [8, 4, 2, 1, 1, 1]]
+  },
+  ops: [
+    { type: &quot;sparkline&quot;, columns: [&quot;Temp&quot;] },
+    { type: &quot;sparkline&quot;, columns: [&quot;Rain&quot;], kind: &quot;bar&quot;, color: &quot;#4caf50&quot; }
+  ]
+});
+</code></pre>
+<script>LT.build({
+  data: {
+    City: ["Oslo", "Cairo", "Lima"],
+    Temp: [[-3, -2, 1, 6, 12, 16], [14, 15, 18, 23, 28, 31], [19, 19, 18, 16, 15, 15]],
+    Rain: [[49, 36, 47, 41, 53, 60], [5, 4, 4, 1, 0, 0], [8, 4, 2, 1, 1, 1]]
+  },
+  ops: [
+    { type: "sparkline", columns: ["Temp"] },
+    { type: "sparkline", columns: ["Rain"], kind: "bar", color: "#4caf50" }
   ]
 });</script>
 <h2 id="sec:row-groups"><span class="section-number main-number">6</span> Row groups</h2>
