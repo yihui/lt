@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_align}
 \alias{lt_align}
-\title{Set Column Alignment}
+\title{Set column alignment}
 \usage{
 lt_align(x, columns, align = c("left", "center", "right"))
 }

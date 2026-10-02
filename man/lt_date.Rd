@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_date}
 \alias{lt_date}
-\title{Format Date/Time Columns}
+\title{Format date/time columns}
 \usage{
 lt_date(x, columns, method = NULL, locale = NULL, options = NULL)
 }

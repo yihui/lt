@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_style}
 \alias{lt_style}
-\title{Style Cells}
+\title{Style cells}
 \usage{
 lt_style(
   x,

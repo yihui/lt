@@ -1,4 +1,4 @@
-#' Add a Title and Subtitle
+#' Add a title and subtitle
 #'
 #' @inheritParams lt_align
 #' @param title A character scalar. Wrap in [I()] to treat as raw HTML.
@@ -14,7 +14,7 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
   x
 }
 
-#' Add a Column Spanner
+#' Add a column spanner
 #'
 #' A spanner is a label rendered above a contiguous group of column headers.
 #'
@@ -56,7 +56,7 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
   x
 }
 
-#' Define Row Groups
+#' Define row groups
 #'
 #' Partition rows into labeled groups. Pass column names to group by those
 #' columns' values (the columns are removed from the body and rendered as
@@ -111,7 +111,7 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
   }
 }
 
-#' Add a Footnote
+#' Add a footnote
 #'
 #' Attaches a footnote `text` to a table region. Footnotes are numbered
 #' automatically in the order they are added (de-duplicated by text).
@@ -179,7 +179,7 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
   x
 }
 
-#' Add a Note
+#' Add a note
 #'
 #' Notes are rendered in the table footer below numbered footnotes.
 #'
@@ -196,7 +196,7 @@ lt_note = function(x, text) {
   x
 }
 
-#' Set Column Alignment
+#' Set column alignment
 #'
 #' Override the auto-detected alignment for specific columns. By default,
 #' numeric columns are right-aligned and character columns are left-aligned.
@@ -219,7 +219,7 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
   add_op(x, 'align', columns = I(as.character(columns)), align = align)
 }
 
-#' Format Numeric Columns
+#' Format numeric columns
 #'
 #' Control the number of decimal places and thousands separator for numeric
 #' columns. Columns passed to this function are excluded from automatic
@@ -267,7 +267,7 @@ lt_format = function(
   )
 }
 
-#' Format Date/Time Columns
+#' Format date/time columns
 #'
 #' Format date or datetime columns using JavaScript's native Date methods.
 #' The underlying data should be Date or POSIXt in R (serialized as
@@ -314,7 +314,7 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
   )
 }
 
-#' Rename Column Labels
+#' Rename column labels
 #'
 #' Override column headers without modifying the underlying data frame.
 #'
@@ -341,7 +341,7 @@ lt_label = function(x, ...) {
 }
 
 
-#' Render Column Cells as Raw HTML
+#' Render column cells as raw HTML
 #'
 #' Mark whole columns so their body cells are emitted as raw HTML instead of
 #' being escaped. By default every cell is HTML-escaped (so `<`, `>`, and `&`
@@ -370,7 +370,7 @@ lt_html = function(x, columns) {
 }
 
 
-#' Substitute Cell Values
+#' Substitute cell values
 #'
 #' Replace `NA`, zero, or small values with display text.
 #'
@@ -398,7 +398,7 @@ lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
     small = small, small_text = small_text)
 }
 
-#' Indent Rows
+#' Indent rows
 #'
 #' Add hierarchical indentation to the first column of specified rows.
 #'
@@ -415,7 +415,7 @@ lt_indent = function(x, rows, level = 1) {
   add_op(x, 'indent', rows = I(as.integer(rows)), level = as.integer(level))
 }
 
-#' Merge Columns
+#' Merge columns
 #'
 #' Combine values from multiple columns into a single display column using
 #' a pattern. Source columns (all except the first) are hidden by default.
@@ -444,7 +444,7 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
   add_op(x, 'merge', columns = I(columns), pattern = pattern, hide = hide)
 }
 
-#' Style Cells
+#' Style cells
 #'
 #' Apply CSS styling to specific cells. Target cells by column, row, or both.
 #' When `test` is provided, styles are applied conditionally based on cell
@@ -497,7 +497,7 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
     class = class, css = css)
 }
 
-#' Set Column and Table Widths
+#' Set column and table widths
 #'
 #' @inheritParams lt_align
 #' @param ... Named arguments of the form `col_name = "width"` set the
@@ -523,7 +523,7 @@ lt_width = function(x, ...) {
 }
 
 
-#' Move Columns
+#' Move columns
 #'
 #' Rearrange column display order without modifying the data frame.
 #'
@@ -541,7 +541,7 @@ lt_move = function(x, columns, after = NULL) {
     after = if (!is.null(after)) as.character(after))
 }
 
-#' Hide Columns
+#' Hide columns
 #'
 #' Drop columns from the rendered table without removing them from the data.
 #' The values still travel to the client in the spec, so they remain available
@@ -559,7 +559,7 @@ lt_hide = function(x, columns) {
 }
 
 
-#' Draw an Inline Error-Bar Plot in a Column
+#' Draw an inline error-bar plot in a column
 #'
 #' Render a numeric column's cells as a small inline SVG: a point at the
 #' estimate and a horizontal bar (with end caps) from the lower to the upper
@@ -623,7 +623,7 @@ lt_errorbar = function(
     axis_label = if (is.character(axis)) axis)
 }
 
-#' Draw an Inline Sparkline in a Column
+#' Draw an inline sparkline in a column
 #'
 #' Render a per-row series of numbers as a small inline SVG line or bar chart (a
 #' sparkline). The series for each row can come from a single list-column (each
@@ -671,7 +671,86 @@ lt_sparkline = function(
     min = limits[1], max = limits[2], width = width, height = height)
 }
 
-#' Attach Custom CSS
+#' Draw an inline dot plot in a column
+#'
+#' Render each row's values across one or more columns as inline dots on a
+#' shared horizontal scale: N columns give N dots per row, laid out by value. It
+#' is lightweight like [lt_errorbar()] and [lt_sparkline()] -- only the numbers
+#' travel to the client and the SVG is drawn in the browser, so an interactive
+#' table ([lt_interactive()]) draws only the rows on the current page.
+#'
+#' Since the cell shows every named column, the column header defaults to all
+#' their names joined by `" / "` (e.g. `"Before / After"`); override it with a
+#' later [lt_label()] on that column.
+#'
+#' @inheritParams lt_align
+#' @inheritParams lt_errorbar
+#' @param columns The value column(s): one dot is drawn per column, read left to
+#'   right across the row, all on a scale shared across the columns. The plot is
+#'   drawn in the first column's cells. A one-sided formula (`~ a + b + c`),
+#'   names, or integer positions.
+#' @param color Dot colors by column. `FALSE` (default) draws every dot in one
+#'   default color; `TRUE` assigns colors from the current palette
+#'   ([grDevices::palette()]); a character vector of CSS colors sets them
+#'   explicitly (recycled to the number of columns). When colored, a legend is
+#'   drawn below the plot in the footer.
+#' @param labels Legend labels, one per column, used when the plot is colored.
+#'   Defaults to the column names.
+#' @param hide If `TRUE` (default) and several columns are drawn, those after the
+#'   first are hidden (their values are drawn into the plot); set to `FALSE` to
+#'   keep them visible.
+#' @return `x` with the dot-plot column recorded.
+#' @export
+#' @examples
+#' d = data.frame(
+#'   group = c("A", "B", "C"), before = c(3, 5, 4), after = c(6, 7, 5)
+#' )
+#' # one dot per column, colored and keyed by a footer legend, with an axis
+#' lt(d) |> lt_dotplot(~ before + after, color = TRUE)
+#' # custom colors and labels
+#' lt(d) |> lt_dotplot(
+#'   ~ before + after, color = c("#999", "#1a9641"),
+#'   labels = c("Baseline", "Follow-up")
+#' )
+lt_dotplot = function(
+  x, columns, limits = NULL, color = FALSE, labels = NULL,
+  width = 160, height = 16, hide = TRUE, axis = TRUE
+) {
+  cols = as.character(f_cols(columns, x$data))
+  n = length(cols)
+  if (n < 1) stop('`columns` must name at least one column.')
+  if (is.null(limits)) {
+    v = unlist(x$data[cols], use.names = FALSE)
+    v = v[is.finite(v)]
+    limits = if (length(v)) range(v) else c(0, 1)
+  }
+  # resolve the per-column colors: TRUE pulls from the palette, a character
+  # vector is used verbatim (recycled), FALSE/NULL leaves the dots monochrome
+  colors = if (isTRUE(color)) rep_len(grDevices::palette(), n)
+    else if (is.character(color)) rep_len(color, n)
+  if (!is.null(labels)) {
+    labels = as.character(labels)
+    if (length(labels) != n)
+      stop('`labels` must have one entry per column (', n, ').')
+  } else if (!is.null(colors)) labels = cols
+  if (hide && n > 1) x = add_op(x, 'hide', columns = I(cols[-1]))
+  # the plot replaces the first column's cells but shows every column, so label
+  # that header with all the column names joined (not just the first, which is
+  # misleading). A later lt_label() on the same column overrides this.
+  if (n > 1) {
+    hdr = list(paste(cols, collapse = ' / '))
+    names(hdr) = cols[1]
+    x = add_op(x, 'label', labels = hdr)
+  }
+  add_op(x, 'dotplot', columns = I(cols),
+    colors = if (!is.null(colors)) I(colors),
+    labels = if (!is.null(labels)) I(labels),
+    min = limits[1], max = limits[2], width = width, height = height,
+    axis = if (isTRUE(axis) || is.character(axis)) TRUE,
+    axis_label = if (is.character(axis)) axis)
+}
+
+#' Attach custom CSS
 #'
 #' Add user-supplied stylesheets or inline rules that render after the
 #' built-in CSS, so rules can override the defaults.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_header}
 \alias{lt_header}
-\title{Add a Title and Subtitle}
+\title{Add a title and subtitle}
 \usage{
 lt_header(x, title = NULL, subtitle = NULL)
 }
@@ -17,7 +17,7 @@ lt_header(x, title = NULL, subtitle = NULL)
 \code{x} with the header recorded.
 }
 \description{
-Add a Title and Subtitle
+Add a title and subtitle
 }
 \examples{
 lt(head(mtcars)) |> lt_header("Motor Trend Cars", "First 6 rows")

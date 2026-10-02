@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_sparkline}
 \alias{lt_sparkline}
-\title{Draw an Inline Sparkline in a Column}
+\title{Draw an inline sparkline in a column}
 \usage{
 lt_sparkline(
   x,

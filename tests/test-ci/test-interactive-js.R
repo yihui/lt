@@ -514,6 +514,24 @@ assert("lt_sparkline draws a line/bar SVG per row from the series", {
   (lti_eval(xb, 't.querySelectorAll("tbody .lt-spark rect").length') %==% '8')
 })
 
+assert("lt_dotplot draws one colored dot per column with a footer legend", {
+  d = data.frame(g = c("a", "b"), x = c(1, 4), y = c(2, 3), z = c(3, 2))
+  x = lt(d) |> lt_dotplot(~ x + y + z, color = c("red", "green", "blue"))
+  # three columns over two rows -> six dots, each colored by its column. The
+  # color is a fill= attribute, which the default stylesheet leaves alone
+  # (:not([fill])) but user CSS can still override
+  (lti_eval(x, 't.querySelectorAll("tbody .lt-dot circle").length') %==% '6')
+  (lti_eval(x, 't.querySelector("tbody .lt-dot circle").getAttribute("fill")')
+   %==% 'red')
+  # a colored plot keys the colors in a footer legend (one swatch per column)
+  (lti_eval(x, 't.querySelectorAll(".lt-dot-legend i").length') %==% '3')
+  # monochrome by default: dots carry no fill override and no legend is drawn
+  xm = lt(d) |> lt_dotplot(~ x + y + z)
+  (lti_eval(xm, 't.querySelector("tbody .lt-dot circle").hasAttribute("fill")')
+   %==% 'false')
+  (lti_eval(xm, 't.querySelectorAll(".lt-dot-legend").length') %==% '0')
+})
+
 assert("lt-plot.js re-renders a table core built before the module loaded", {
   # The litedown/knitr failure mode: an earlier plain table pulls in lt.js, so
   # it loads (and builds this table) before lt-plot.js registers the errorbar

@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_hide}
 \alias{lt_hide}
-\title{Hide Columns}
+\title{Hide columns}
 \usage{
 lt_hide(x, columns)
 }

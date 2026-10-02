@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_note}
 \alias{lt_note}
-\title{Add a Note}
+\title{Add a note}
 \usage{
 lt_note(x, text)
 }

@@ -2,7 +2,7 @@
 # ride on a top-level `spec$interactive` object (not a body op) so the runtime
 # reads them once; the assets are wired in only when a table opts in (render.R).
 
-#' Enable Interactive Table Features
+#' Enable interactive table features
 #'
 #' Make a table interactive in the browser: pagination, a table-wide search box,
 #' click-to-sort column headers, per-column filter boxes, and resizable

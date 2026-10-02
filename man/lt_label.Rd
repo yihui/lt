@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_label}
 \alias{lt_label}
-\title{Rename Column Labels}
+\title{Rename column labels}
 \usage{
 lt_label(x, ...)
 }

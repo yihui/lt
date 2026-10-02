@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_spanner}
 \alias{lt_spanner}
-\title{Add a Column Spanner}
+\title{Add a column spanner}
 \usage{
 lt_spanner(x, label, columns, sep = "[._]")
 }

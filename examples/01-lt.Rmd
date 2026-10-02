@@ -540,7 +540,7 @@ tbl_iris |> lt_hide(~ Petal.Length + Petal.Width)
 
 ## Inline plots
 
-Two functions draw a tiny chart into a column's cells. Both are lightweight:
+These functions draw a tiny chart into a column's cells. All are lightweight:
 only the numbers travel to the browser and the SVG is drawn there, so for an
 interactive table only the current page's rows are drawn.
 
@@ -589,6 +589,25 @@ d_spark$Rain = list(
 lt(d_spark) |>
   lt_sparkline(~ Temp) |>
   lt_sparkline(~ Rain, type = "bar", color = "#4caf50")
+```
+
+### Dot plots
+
+`lt_dotplot()` draws one dot per column on a scale shared across them, so a row
+with N columns shows N dots laid out by value — handy for comparing a few
+measurements per row (e.g. before vs. after). Name the value columns with
+`~ a + b + c` (all but the first hidden by default). `color = TRUE` colors the
+dots from the palette and adds a footer legend; a vector of colors sets them
+explicitly. A shared axis is drawn in the footer by default (`axis = FALSE` to
+drop it, or a string for a caption).
+
+```{r}
+d_dot = data.frame(
+  Group = c("Control", "Low", "High"),
+  Before = c(3.1, 3.4, 3.0), After = c(3.3, 4.1, 5.2)
+)
+lt(d_dot) |>
+  lt_dotplot(~ Before + After, color = TRUE, axis = "Score")
 ```
 
 ## Styling

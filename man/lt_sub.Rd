@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_sub}
 \alias{lt_sub}
-\title{Substitute Cell Values}
+\title{Substitute cell values}
 \usage{
 lt_sub(
   x,

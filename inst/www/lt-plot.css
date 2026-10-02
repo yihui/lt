@@ -31,4 +31,26 @@
     .lt-spark-line { fill: none; stroke: currentColor; stroke-width: 1; }
     .lt-spark-bar { fill: currentColor; }
   }
+  .lt-dot {
+    position: relative;  /* paint above the absolutely-positioned gridlines */
+    vertical-align: middle;
+    color: #333;
+    /* default only the dots without a per-column fill= attribute, so that
+       attribute still shows; override either via `color` or `.lt-dot circle` */
+    circle:not([fill]) { fill: currentColor; }
+  }
+  .lt-dot-legend {
+    margin-top: 3px;  /* small gap below the axis, since the cell has no padding */
+    font-size: 11px;
+    color: #666;
+    i {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 2px;
+      border-radius: 50%;
+      vertical-align: middle;
+    }
+    span { margin-right: 6px; white-space: nowrap; }
+  }
 }

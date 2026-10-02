@@ -3,7 +3,7 @@
 \docType{package}
 \name{lt-package}
 \alias{lt-package}
-\title{lt: Lightweight Tables via JSON Specs and JavaScript}
+\title{lt: Lightweight tables via JSON specs and JavaScript}
 \description{
 A small grammar of tables. A table is a data frame plus a list of
 operations (title, spanner, footnote, ...); the operations are serialized to

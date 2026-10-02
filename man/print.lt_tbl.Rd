@@ -2,7 +2,7 @@
 % Please edit documentation in R/render.R
 \name{print.lt_tbl}
 \alias{print.lt_tbl}
-\title{Print an \code{lt_tbl} (Opens in the Viewer or Browser)}
+\title{Print an \code{lt_tbl} (opens in the viewer or browser)}
 \usage{
 \method{print}{lt_tbl}(x, ...)
 }
@@ -15,7 +15,7 @@
 \code{x}, invisibly.
 }
 \description{
-Print an \code{lt_tbl} (Opens in the Viewer or Browser)
+Print an \code{lt_tbl} (opens in the viewer or browser)
 }
 \examples{
 print(lt(head(mtcars)))

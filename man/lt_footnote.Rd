@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_footnote}
 \alias{lt_footnote}
-\title{Add a Footnote}
+\title{Add a footnote}
 \usage{
 lt_footnote(x, text, where, columns = NULL, rows = NULL, match = NULL)
 }

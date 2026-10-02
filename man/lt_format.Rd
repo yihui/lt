@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_format}
 \alias{lt_format}
-\title{Format Numeric Columns}
+\title{Format numeric columns}
 \usage{
 lt_format(
   x,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/interactive.R
 \name{lt_interactive}
 \alias{lt_interactive}
-\title{Enable Interactive Table Features}
+\title{Enable interactive table features}
 \usage{
 lt_interactive(
   x,

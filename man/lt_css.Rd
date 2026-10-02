@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_css}
 \alias{lt_css}
-\title{Attach Custom CSS}
+\title{Attach custom CSS}
 \usage{
 lt_css(x, ...)
 }
