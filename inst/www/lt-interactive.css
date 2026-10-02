@@ -87,12 +87,27 @@
     table-layout: fixed;
   }
 
-  /* the head row carries the column menu (left) and the search box; lay them in
-   * a row so the search fills the width left over */
-  .lti-head td {
+  /* the search row carries the column menu (left) and the search box, laid out
+   * as a flex bar. The flex sits on this inner div, not the <td>: a flex table
+   * cell drops out of the table's column sizing and shrinks to its content. On
+   * its own the search fills the bar; sharing it with the menu button, the two
+   * are pushed to opposite ends with the space between them. */
+  .lti-bar {
     display: flex;
     align-items: center;
     gap: 0.3em;
+    .lti-search {
+      flex: 1;
+    }
+    &:has(.lti-cols) {
+      justify-content: space-between;
+      /* width:auto overrides the base 100%, so the box takes its natural width
+       * and the free space falls between it and the menu button */
+      .lti-search {
+        flex: 0 1 auto;
+        width: auto;
+      }
+    }
   }
 
   /* the column-visibility menu: an icon button and the checklist it pops up. The

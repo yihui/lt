@@ -191,17 +191,20 @@
     };
 
     // the table-wide controls share one full-width head row: the column menu
-    // (if any) at its start, then the search box
-    const headCell = (opts.search !== false || opts.hide) ?
-      fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0) : null;
+    // (if any) at its start, then the search box. They sit in an inner flex bar
+    // rather than straight in the cell, because a flex table cell drops out of
+    // the table's column sizing and shrinks to its content.
+    const headBar = (opts.search !== false || opts.hide) ?
+      elem(el.ownerDocument, "div", { className: "lti-bar" },
+        fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0)) : null;
     // wire sort before adding the filter row, so it sees the header row only
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
     if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length) : null;
     if (opts.resize) addResize(el, layout);
     if (opts.hide)
-      addColumnToggle(headCell, el, hrow, cols, opts.hide, layout, postSwap);
-    if (opts.search !== false) addSearch(headCell, el, state, refresh);
+      addColumnToggle(headBar, el, hrow, cols, opts.hide, layout, postSwap);
+    if (opts.search !== false) addSearch(headBar, el, state, refresh);
     // row detail re-renders through the same seam: toggling a row only changes
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
