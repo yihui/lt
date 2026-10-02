@@ -68,6 +68,9 @@ for a "cheat table" as an overview of these functions.
   `NA` with `"n/a"`).
 - `lt_merge()` — merge several columns into one using a sprintf-style pattern.
 - `lt_indent()` — indent selected rows (useful for hierarchical row labels).
+- `lt_errorbar()` — draw an inline error-bar plot (point + confidence bar) in a
+  column, on a scale shared across rows (a forest plot of effect sizes). Only
+  the numbers travel to the client; the SVG is drawn in the browser.
 
 **Appearance**
 

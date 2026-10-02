@@ -52,6 +52,12 @@ th, td{ padding: 5px; }
     line { stroke: #888; }
     circle { fill: #333; }
     .lt-eb-ref { stroke: #ccc; }
+    .lt-eb-grid { stroke: #eee; }
+  }
+  .lt-eb-axis {
+    line { stroke: #888; }
+    text { fill: #666; font-size: 9px; }
+    .lt-eb-axis-label { fill: #333; }
   }
 
   .lt-fnref {

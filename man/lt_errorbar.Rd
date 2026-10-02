@@ -6,22 +6,23 @@
 \usage{
 lt_errorbar(
   x,
-  value,
-  lower,
-  upper,
+  columns,
   limits = NULL,
   ref = NULL,
   width = 80,
-  height = 16
+  height = 16,
+  hide = TRUE,
+  axis = FALSE
 )
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{value, lower, upper}{The columns holding the point estimate and the lower
-and upper bounds, each a column name, integer position, or one-sided
-formula. The plot is drawn in the \code{value} column's cells; \code{lower} and
-\code{upper} are typically hidden with \code{\link[=lt_hide]{lt_hide()}}.}
+\item{columns}{The three columns holding the point estimate, the lower bound,
+and the upper bound, in that order. Either a two-sided formula
+\code{value ~ lower + upper} (estimate on the left, bounds on the right) or a
+length-3 character vector / integer positions \code{c(value, lower, upper)}. The
+plot is drawn in the \code{value} column's cells.}
 
 \item{limits}{Numeric \code{c(min, max)} for the shared horizontal scale. Defaults
 to the range of all three columns' finite values. Values outside the scale
@@ -31,14 +32,25 @@ are clamped to the edges.}
 \code{0} for a risk difference, \code{1} for an odds ratio).}
 
 \item{width, height}{Pixel size of each cell's SVG.}
+
+\item{hide}{If \code{TRUE} (default), the \code{lower} and \code{upper} columns are hidden,
+since they are drawn into the plot; set to \code{FALSE} to keep them visible.}
+
+\item{axis}{Draw a shared horizontal axis (a baseline with tick marks and
+labels at "nice" round values) in the table footer under the plot column,
+plus faint vertical gridlines inside each cell at the same tick positions
+to help read the bars. \code{TRUE} draws the axis; a character string draws the
+axis with that string as a caption below it (e.g. \code{"Risk difference"});
+\code{FALSE} (default) draws no axis.}
 }
 \value{
 \code{x} with the error-bar column recorded.
 }
 \description{
 Render a numeric column's cells as a small inline SVG: a point at the
-estimate and a horizontal bar from the lower to the upper bound, drawn on a
-scale shared across the column so rows are comparable at a glance (handy for
+estimate and a horizontal bar (with end caps) from the lower to the upper
+bound, drawn on a scale shared across the column so rows are comparable at a
+glance (handy for
 a forest plot of effect sizes with confidence intervals). It is lightweight:
 only the numbers travel to the client, and the SVG is drawn in the browser —
 so for an interactive table (\code{\link[=lt_interactive]{lt_interactive()}}) only the rows on the current
@@ -49,5 +61,9 @@ d = data.frame(
   term = c("A", "B", "C"), est = c(0.2, -0.1, 0.4),
   lo = c(0.0, -0.3, 0.1), hi = c(0.4, 0.1, 0.7)
 )
-lt(d) |> lt_hide(~ lo + hi) |> lt_errorbar(~ est, ~ lo, ~ hi, ref = 0)
+# a two-sided formula names the estimate (LHS) and the bounds (RHS)
+lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
+# or a length-3 vector c(value, lower, upper); keep the bounds visible, add
+# a labeled axis
+lt(d) |> lt_errorbar(c("est", "lo", "hi"), hide = FALSE, axis = "Effect")
 }

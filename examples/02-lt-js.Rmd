@@ -445,12 +445,15 @@ LT.build({
 ### Inline error-bar plots (`errorbar`)
 
 Render a value column's cells as a small inline SVG — a point at the
-estimate with a bar from the lower to the upper bound — on a scale shared
-across the column. `columns` is `[value, lower, upper]`; the plot replaces
-the value column's cells (hide the bound columns). `min`/`max` set the
-shared scale, `ref` draws a vertical reference line, and `width`/`height`
-size each SVG. The SVG is built in the browser from the numbers, so only
-the rows actually rendered (the current page, when interactive) are drawn.
+estimate with a bar (end caps included) from the lower to the upper bound —
+on a scale shared across the column. `columns` is `[value, lower, upper]`;
+the plot replaces the value column's cells (hide the bound columns).
+`min`/`max` set the shared scale, `ref` draws a vertical reference line, and
+`width`/`height` size each SVG. `axis: true` adds a shared axis in the footer
+(tick marks + labels at "nice" round values, plus matching in-cell
+gridlines); `axis_label` captions it. The SVG is built in the browser from the
+numbers, so only the rows actually rendered (the current page, when
+interactive) are drawn.
 
 ```{js}
 LT.build({
@@ -463,7 +466,7 @@ LT.build({
   ops: [
     { type: "hide", columns: ["Lo", "Hi"] },
     { type: "errorbar", columns: ["Est", "Lo", "Hi"],
-      min: -0.6, max: 0.7, ref: 0 }
+      min: -0.6, max: 0.7, ref: 0, axis: true, axis_label: "Effect (95% CI)" }
   ]
 });
 ```

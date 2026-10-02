@@ -562,24 +562,34 @@ lt_hide = function(x, columns) {
 #' Draw an Inline Error-Bar Plot in a Column
 #'
 #' Render a numeric column's cells as a small inline SVG: a point at the
-#' estimate and a horizontal bar from the lower to the upper bound, drawn on a
-#' scale shared across the column so rows are comparable at a glance (handy for
+#' estimate and a horizontal bar (with end caps) from the lower to the upper
+#' bound, drawn on a scale shared across the column so rows are comparable at a
+#' glance (handy for
 #' a forest plot of effect sizes with confidence intervals). It is lightweight:
 #' only the numbers travel to the client, and the SVG is drawn in the browser —
 #' so for an interactive table ([lt_interactive()]) only the rows on the current
 #' page are drawn.
 #'
 #' @inheritParams lt_align
-#' @param value,lower,upper The columns holding the point estimate and the lower
-#'   and upper bounds, each a column name, integer position, or one-sided
-#'   formula. The plot is drawn in the `value` column's cells; `lower` and
-#'   `upper` are typically hidden with [lt_hide()].
+#' @param columns The three columns holding the point estimate, the lower bound,
+#'   and the upper bound, in that order. Either a two-sided formula
+#'   `value ~ lower + upper` (estimate on the left, bounds on the right) or a
+#'   length-3 character vector / integer positions `c(value, lower, upper)`. The
+#'   plot is drawn in the `value` column's cells.
 #' @param limits Numeric `c(min, max)` for the shared horizontal scale. Defaults
 #'   to the range of all three columns' finite values. Values outside the scale
 #'   are clamped to the edges.
 #' @param ref Optional value at which to draw a vertical reference line (e.g.
 #'   `0` for a risk difference, `1` for an odds ratio).
 #' @param width,height Pixel size of each cell's SVG.
+#' @param hide If `TRUE` (default), the `lower` and `upper` columns are hidden,
+#'   since they are drawn into the plot; set to `FALSE` to keep them visible.
+#' @param axis Draw a shared horizontal axis (a baseline with tick marks and
+#'   labels at "nice" round values) in the table footer under the plot column,
+#'   plus faint vertical gridlines inside each cell at the same tick positions
+#'   to help read the bars. `TRUE` draws the axis; a character string draws the
+#'   axis with that string as a caption below it (e.g. `"Risk difference"`);
+#'   `FALSE` (default) draws no axis.
 #' @return `x` with the error-bar column recorded.
 #' @export
 #' @examples
@@ -587,22 +597,30 @@ lt_hide = function(x, columns) {
 #'   term = c("A", "B", "C"), est = c(0.2, -0.1, 0.4),
 #'   lo = c(0.0, -0.3, 0.1), hi = c(0.4, 0.1, 0.7)
 #' )
-#' lt(d) |> lt_hide(~ lo + hi) |> lt_errorbar(~ est, ~ lo, ~ hi, ref = 0)
+#' # a two-sided formula names the estimate (LHS) and the bounds (RHS)
+#' lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
+#' # or a length-3 vector c(value, lower, upper); keep the bounds visible, add
+#' # a labeled axis
+#' lt(d) |> lt_errorbar(c("est", "lo", "hi"), hide = FALSE, axis = "Effect")
 lt_errorbar = function(
-  x, value, lower, upper, limits = NULL, ref = NULL, width = 80, height = 16
+  x, columns, limits = NULL, ref = NULL, width = 80, height = 16,
+  hide = TRUE, axis = FALSE
 ) {
-  cols = c(
-    f_cols(value, x$data), f_cols(lower, x$data), f_cols(upper, x$data)
-  )
+  cols = if (inherits(columns, 'formula') && length(columns) == 3)
+    c(all.vars(columns[[2]]), f_cols(columns, x$data))
+  else as.character(f_cols(columns, x$data))
   if (length(cols) != 3)
-    stop('`value`, `lower`, and `upper` must each name exactly one column.')
+    stop('`columns` must name exactly three columns: value, lower, upper.')
   if (is.null(limits)) {
     v = unlist(x$data[cols], use.names = FALSE)
     v = v[is.finite(v)]
     limits = if (length(v)) range(v) else c(0, 1)
   }
-  add_op(x, 'errorbar', columns = I(as.character(cols)),
-    min = limits[1], max = limits[2], ref = ref, width = width, height = height)
+  if (hide) x = add_op(x, 'hide', columns = I(cols[2:3]))
+  add_op(x, 'errorbar', columns = I(cols), min = limits[1], max = limits[2],
+    ref = ref, width = width, height = height,
+    axis = if (isTRUE(axis) || is.character(axis)) TRUE,
+    axis_label = if (is.character(axis)) axis)
 }
 
 #' Attach Custom CSS

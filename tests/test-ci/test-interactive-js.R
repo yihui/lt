@@ -490,8 +490,7 @@ assert("lt_errorbar renders SVG only for the current page (deferred)", {
     lo  = seq(0.0, 0.5, length.out = n),
     hi  = seq(0.2, 0.7, length.out = n)
   )) |>
-    lt_hide(~ lo + hi) |>
-    lt_errorbar(~ est, ~ lo, ~ hi, ref = 0) |>
+    lt_errorbar(est ~ lo + hi, ref = 0) |>
     lt_interactive(pager = 3)
   (lti_eval(x, 't.querySelectorAll(".lt-eb").length') %==% '3')
   # paging to the next page re-renders SVG for that page's rows, not all six

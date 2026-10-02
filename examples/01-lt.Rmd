@@ -541,11 +541,16 @@ tbl_iris |> lt_hide(~ Petal.Length + Petal.Width)
 ### Inline error-bar plots
 
 `lt_errorbar()` renders a numeric column's cells as a small inline SVG — a
-point at the estimate with a horizontal bar from the lower to the upper
-bound — all drawn on a scale shared across the column, so rows are
+point at the estimate with a horizontal bar (and end caps) from the lower to
+the upper bound — all drawn on a scale shared across the column, so rows are
 comparable at a glance (a forest plot of effect sizes with confidence
-intervals). The bound columns are usually hidden with `lt_hide()`. Pass
-`ref` to draw a vertical reference line (e.g. `0` for a risk difference).
+intervals). Name the three columns with a two-sided formula
+`value ~ lower + upper` or a vector `c(value, lower, upper)`; the bound
+columns are hidden by default (`hide = FALSE` keeps them). Pass `ref` to draw
+a vertical reference line (e.g. `0` for a risk difference). Set `axis = TRUE`
+(or a string caption) to add a shared axis in the footer — a baseline with
+tick marks and labels at "nice" round values, matching faint gridlines inside
+each cell.
 
 Only the numbers travel to the browser; the SVG is drawn there, so for an
 interactive table only the current page's rows are drawn.
@@ -558,8 +563,7 @@ d_eff = data.frame(
   Hi   = c(0.29, -0.16, 0.69, 0.13)
 )
 lt(d_eff) |>
-  lt_hide(~ Lo + Hi) |>
-  lt_errorbar(~ Est, ~ Lo, ~ Hi, ref = 0) |>
+  lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = "Effect (95% CI)") |>
   lt_align(~ Est, "center")
 ```
 
