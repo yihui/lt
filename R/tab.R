@@ -561,29 +561,40 @@ lt_hide = function(x, columns) {
 
 #' Draw an Inline Error-Bar Plot in a Column
 #'
-#' Render a numeric column's cells as a small inline SVG: a point at the
-#' estimate and a horizontal bar (with end caps) from the lower to the upper
+#' Render a column's cells as a small inline SVG: a point at the estimate and
+#' (optionally) a horizontal bar with end caps from the lower to the upper
 #' bound, drawn on a scale shared across the column so rows are comparable at a
-#' glance (handy for
-#' a forest plot of effect sizes with confidence intervals). It is lightweight:
-#' only the numbers travel to the client, and the SVG is drawn in the browser —
-#' so for an interactive table ([lt_interactive()]) only the rows on the current
-#' page are drawn.
+#' glance (a forest plot of effect sizes with confidence intervals). Several
+#' series can be drawn per cell -- one point (and optional bar) per group,
+#' stacked vertically and colored individually -- for a grouped forest / dot
+#' plot. It is lightweight: only the numbers travel to the client, and the SVG
+#' is drawn in the browser -- so for an interactive table ([lt_interactive()])
+#' only the rows on the current page are drawn.
 #'
 #' @inheritParams lt_align
-#' @param columns The three columns holding the point estimate, the lower bound,
-#'   and the upper bound, in that order. Either a two-sided formula
-#'   `value ~ lower + upper` (estimate on the left, bounds on the right) or a
-#'   length-3 character vector / integer positions `c(value, lower, upper)`. The
-#'   plot is drawn in the `value` column's cells.
+#' @param columns The value column(s) holding the point estimate(s): one column
+#'   per series. A one-sided formula (`~ est`, or `~ a + b` for several series),
+#'   a character vector, or integer positions. As a shorthand for a single
+#'   series with bounds, a two-sided formula `value ~ lower + upper` names the
+#'   estimate (left) and its bounds (right). The plot is drawn in the first
+#'   value column's cells.
+#' @param lower,upper The lower- and upper-bound columns, parallel to `columns`
+#'   (one each per series, or a single column recycled to all series). Omit both
+#'   (the default) to draw points only, with no bars. Ignored when `columns` is
+#'   a two-sided formula (which carries the bounds itself).
 #' @param limits Numeric `c(min, max)` for the shared horizontal scale. Defaults
-#'   to the range of all three columns' finite values. Values outside the scale
-#'   are clamped to the edges.
+#'   to the range of all the value and bound columns' finite values. Values
+#'   outside the scale are clamped to the edges.
 #' @param ref Optional value at which to draw a vertical reference line (e.g.
 #'   `0` for a risk difference, `1` for an odds ratio).
-#' @param width,height Pixel size of each cell's SVG.
-#' @param hide If `TRUE` (default), the `lower` and `upper` columns are hidden,
-#'   since they are drawn into the plot; set to `FALSE` to keep them visible.
+#' @param color Optional CSS color(s) for the series: one per series (recycled
+#'   from a single value), coloring both the point and its bar. The default
+#'   uses the stylesheet's.
+#' @param width,height Pixel size of each cell's SVG. Give several series more
+#'   `height` so their stacked points stay legible.
+#' @param hide If `TRUE` (default), every column drawn into the plot (the bound
+#'   columns, and the value columns of any series after the first) is hidden;
+#'   set to `FALSE` to keep them visible.
 #' @param axis Draw a shared horizontal axis (a baseline with tick marks and
 #'   labels at "nice" round values) in the table footer under the plot column,
 #'   plus faint vertical gridlines inside each cell at the same tick positions
@@ -599,26 +610,61 @@ lt_hide = function(x, columns) {
 #' )
 #' # a two-sided formula names the estimate (LHS) and the bounds (RHS)
 #' lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
-#' # or a length-3 vector c(value, lower, upper); keep the bounds visible, add
-#' # a labeled axis
-#' lt(d) |> lt_errorbar(c("est", "lo", "hi"), hide = FALSE, axis = "Effect")
+#' # equivalently, name the value column and its bounds separately
+#' lt(d) |> lt_errorbar(~ est, lower = "lo", upper = "hi", hide = FALSE,
+#'   axis = "Effect")
+#' # several groups per cell: one colored point + bar each (a grouped forest)
+#' g = data.frame(
+#'   term = c("A", "B"), e1 = c(0.2, 0.5), l1 = c(0.0, 0.3), u1 = c(0.4, 0.7),
+#'   e2 = c(-0.1, 0.3), l2 = c(-0.3, 0.1), u2 = c(0.1, 0.5)
+#' )
+#' lt(g) |> lt_errorbar(~ e1 + e2, lower = c("l1", "l2"), upper = c("u1", "u2"),
+#'   color = c("#1f77b4", "#d62728"), ref = 0, height = 28)
 lt_errorbar = function(
-  x, columns, limits = NULL, ref = NULL, width = 160, height = 16,
-  hide = TRUE, axis = FALSE
+  x, columns, lower = NULL, upper = NULL, limits = NULL, ref = NULL,
+  color = NULL, width = 160, height = 16, hide = TRUE, axis = FALSE
 ) {
-  cols = if (inherits(columns, 'formula') && length(columns) == 3)
-    c(all.vars(columns[[2]]), f_cols(columns, x$data))
-  else as.character(f_cols(columns, x$data))
-  if (length(cols) != 3)
-    stop('`columns` must name exactly three columns: value, lower, upper.')
+  # a two-sided `value ~ lower + upper` is shorthand for a single series: take
+  # the estimate from the left, the bounds from the right (overriding the args).
+  if (inherits(columns, 'formula') && length(columns) == 3) {
+    bounds = f_cols(columns, x$data)
+    if (length(bounds) != 2)
+      stop('`value ~ lower + upper` must name exactly two bound columns.')
+    cols = all.vars(columns[[2]]); lower = bounds[1]; upper = bounds[2]
+  } else {
+    cols = as.character(f_cols(columns, x$data))
+  }
+  n = length(cols)
+  if (n < 1) stop('`columns` must name at least one value column.')
+  # a bound/color vector must be absent, a single value (recycled), or one per
+  # series; resolve column selections and recycle to length `n`.
+  recycle = function(v, what, cast = identity) {
+    if (is.null(v)) return()
+    v = cast(v)
+    if (length(v) == 1L) v = rep(v, n)
+    if (length(v) != n)
+      stop('`', what, '` must have length 1 or ', n, ' (one per series).')
+    v
+  }
+  lower = recycle(lower, 'lower', function(v) as.character(f_cols(v, x$data)))
+  upper = recycle(upper, 'upper', function(v) as.character(f_cols(v, x$data)))
+  color = recycle(color, 'color')
+
+  all_cols = unique(c(cols, lower, upper))
   if (is.null(limits)) {
-    v = unlist(x$data[cols], use.names = FALSE)
+    v = unlist(x$data[all_cols], use.names = FALSE)
     v = v[is.finite(v)]
     limits = if (length(v)) range(v) else c(0, 1)
   }
-  if (hide) x = add_op(x, 'hide', columns = I(cols[2:3]))
-  add_op(x, 'errorbar', columns = I(cols), min = limits[1], max = limits[2],
-    ref = ref, width = width, height = height,
+  series = lapply(seq_len(n), function(i)
+    drop_null(list(v = cols[i], lo = lower[i], hi = upper[i])))
+
+  # hide every column consumed by the plot: the bounds and all but the first
+  # value column (the first is where the plot is drawn).
+  hidden = setdiff(all_cols, cols[1])
+  if (hide && length(hidden)) x = add_op(x, 'hide', columns = I(hidden))
+  add_op(x, 'errorbar', series = series, colors = if (!is.null(color)) I(color),
+    min = limits[1], max = limits[2], ref = ref, width = width, height = height,
     axis = if (isTRUE(axis) || is.character(axis)) TRUE,
     axis_label = if (is.character(axis)) axis)
 }

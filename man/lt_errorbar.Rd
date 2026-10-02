@@ -7,8 +7,11 @@
 lt_errorbar(
   x,
   columns,
+  lower = NULL,
+  upper = NULL,
   limits = NULL,
   ref = NULL,
+  color = NULL,
   width = 160,
   height = 16,
   hide = TRUE,
@@ -18,23 +21,35 @@ lt_errorbar(
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{The three columns holding the point estimate, the lower bound,
-and the upper bound, in that order. Either a two-sided formula
-\code{value ~ lower + upper} (estimate on the left, bounds on the right) or a
-length-3 character vector / integer positions \code{c(value, lower, upper)}. The
-plot is drawn in the \code{value} column's cells.}
+\item{columns}{The value column(s) holding the point estimate(s): one column
+per series. A one-sided formula (\code{~ est}, or \code{~ a + b} for several series),
+a character vector, or integer positions. As a shorthand for a single
+series with bounds, a two-sided formula \code{value ~ lower + upper} names the
+estimate (left) and its bounds (right). The plot is drawn in the first
+value column's cells.}
+
+\item{lower, upper}{The lower- and upper-bound columns, parallel to \code{columns}
+(one each per series, or a single column recycled to all series). Omit both
+(the default) to draw points only, with no bars. Ignored when \code{columns} is
+a two-sided formula (which carries the bounds itself).}
 
 \item{limits}{Numeric \code{c(min, max)} for the shared horizontal scale. Defaults
-to the range of all three columns' finite values. Values outside the scale
-are clamped to the edges.}
+to the range of all the value and bound columns' finite values. Values
+outside the scale are clamped to the edges.}
 
 \item{ref}{Optional value at which to draw a vertical reference line (e.g.
 \code{0} for a risk difference, \code{1} for an odds ratio).}
 
-\item{width, height}{Pixel size of each cell's SVG.}
+\item{color}{Optional CSS color(s) for the series: one per series (recycled
+from a single value), coloring both the point and its bar. The default
+uses the stylesheet's.}
 
-\item{hide}{If \code{TRUE} (default), the \code{lower} and \code{upper} columns are hidden,
-since they are drawn into the plot; set to \code{FALSE} to keep them visible.}
+\item{width, height}{Pixel size of each cell's SVG. Give several series more
+\code{height} so their stacked points stay legible.}
+
+\item{hide}{If \code{TRUE} (default), every column drawn into the plot (the bound
+columns, and the value columns of any series after the first) is hidden;
+set to \code{FALSE} to keep them visible.}
 
 \item{axis}{Draw a shared horizontal axis (a baseline with tick marks and
 labels at "nice" round values) in the table footer under the plot column,
@@ -47,14 +62,15 @@ axis with that string as a caption below it (e.g. \code{"Risk difference"});
 \code{x} with the error-bar column recorded.
 }
 \description{
-Render a numeric column's cells as a small inline SVG: a point at the
-estimate and a horizontal bar (with end caps) from the lower to the upper
+Render a column's cells as a small inline SVG: a point at the estimate and
+(optionally) a horizontal bar with end caps from the lower to the upper
 bound, drawn on a scale shared across the column so rows are comparable at a
-glance (handy for
-a forest plot of effect sizes with confidence intervals). It is lightweight:
-only the numbers travel to the client, and the SVG is drawn in the browser —
-so for an interactive table (\code{\link[=lt_interactive]{lt_interactive()}}) only the rows on the current
-page are drawn.
+glance (a forest plot of effect sizes with confidence intervals). Several
+series can be drawn per cell -- one point (and optional bar) per group,
+stacked vertically and colored individually -- for a grouped forest / dot
+plot. It is lightweight: only the numbers travel to the client, and the SVG
+is drawn in the browser -- so for an interactive table (\code{\link[=lt_interactive]{lt_interactive()}})
+only the rows on the current page are drawn.
 }
 \examples{
 d = data.frame(
@@ -63,7 +79,14 @@ d = data.frame(
 )
 # a two-sided formula names the estimate (LHS) and the bounds (RHS)
 lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
-# or a length-3 vector c(value, lower, upper); keep the bounds visible, add
-# a labeled axis
-lt(d) |> lt_errorbar(c("est", "lo", "hi"), hide = FALSE, axis = "Effect")
+# equivalently, name the value column and its bounds separately
+lt(d) |> lt_errorbar(~ est, lower = "lo", upper = "hi", hide = FALSE,
+  axis = "Effect")
+# several groups per cell: one colored point + bar each (a grouped forest)
+g = data.frame(
+  term = c("A", "B"), e1 = c(0.2, 0.5), l1 = c(0.0, 0.3), u1 = c(0.4, 0.7),
+  e2 = c(-0.1, 0.3), l2 = c(-0.3, 0.1), u2 = c(0.1, 0.5)
+)
+lt(g) |> lt_errorbar(~ e1 + e2, lower = c("l1", "l2"), upper = c("u1", "u2"),
+  color = c("#1f77b4", "#d62728"), ref = 0, height = 28)
 }
