@@ -231,27 +231,29 @@ print.lt_tbl = function(x, ...) {
 .int_flag = 'lt.interactive_added'
 .plot_flag = 'lt.plot_added'
 
+# TRUE the first time `flag` is seen in this knit (recording it, so later calls
+# return FALSE): the gate that emits each shared asset bundle once per document.
+knit_once = function(flag) {
+  first = !isTRUE(knitr::opts_knit$get(flag))
+  if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), flag))
+  first
+}
+
+# Wrap rendered table HTML with extra asset tags — used to attach a late
+# extension's tags around a table whose format() emitted no core assets.
+wrap_assets = function(html, before = NULL, after = NULL)
+  paste(c(before, html, after), collapse = '\n')
+
 knit_print.lt_tbl = function(x, ...) {
   if (is.list(opts <- getOption('lt.lt_static'))) return(structure(
     do.call(lt_static, c(list(x), opts)), class = 'knit_asis'
   ))
-  first = !isTRUE(knitr::opts_knit$get(.knit_flag))
-  if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), .knit_flag))
-  # Track the interactivity extension separately: the first interactive table
-  # need not be the first table overall, in which case format() has no assets
-  # left to attach it to and we emit it around the table below.
-  int_first = FALSE
-  if (!is.null(x$interactive)) {
-    int_first = !isTRUE(knitr::opts_knit$get(.int_flag))
-    if (int_first) knitr::opts_knit$set(stats::setNames(list(TRUE), .int_flag))
-  }
-  # The graphics module, like the interactivity one, is tracked separately: the
-  # first table that uses a plot need not be the first table overall.
-  plot_first = FALSE
-  if (has_plot(x)) {
-    plot_first = !isTRUE(knitr::opts_knit$get(.plot_flag))
-    if (plot_first) knitr::opts_knit$set(stats::setNames(list(TRUE), .plot_flag))
-  }
+  first = knit_once(.knit_flag)
+  # Each extension is gated on its own flag: the first table that uses it need
+  # not be the first table overall, so when it isn't, format() has no core
+  # assets to carry it and we wrap its tags around the table below.
+  int_first  = !is.null(x$interactive) && knit_once(.int_flag)
+  plot_first = has_plot(x) && knit_once(.plot_flag)
   # Dedup user CSS (from lt_css()) across the document: a stylesheet shared
   # by many tables (e.g. a package theme) should be emitted once. Identical
   # <link> hrefs would dedup in the browser, but inlined <style> blocks
@@ -261,16 +263,13 @@ knit_print.lt_tbl = function(x, ...) {
   if (length(x$css))
     knitr::opts_knit$set(stats::setNames(list(c(seen, x$css)), .css_flag))
   html = format(x, assets = first)
-  # The extension in the same places format() would put it: stylesheet before
-  # the table, script after it (so it runs after the core runtime).
-  if (int_first && !first) html = paste(c(
-    css_block('lt-interactive.css'), html, js_block('lt-interactive.js')
-  ), collapse = '\n')
-  # The graphics module ships before the table: its renderer must be registered
-  # before core (already loaded by an earlier table) builds this one.
-  if (plot_first && !first) html = paste(c(
-    css_block('lt-plot.css'), js_block('lt-plot.js'), html
-  ), collapse = '\n')
+  # A late extension goes where format() would: the interactivity script after
+  # the core runtime; the graphics module (whose renderer must exist before
+  # core builds) entirely before the table.
+  if (int_first && !first)
+    html = wrap_assets(html, css_block('lt-interactive.css'), js_block('lt-interactive.js'))
+  if (plot_first && !first)
+    html = wrap_assets(html, c(css_block('lt-plot.css'), js_block('lt-plot.js')))
   structure(xfun::raw_string(html), class = c('knit_asis', 'html'))
 }
 

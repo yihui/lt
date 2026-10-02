@@ -126,6 +126,23 @@ assert("lt_spec() is the payload spec_block() serializes", {
   (grepl(j, sb, fixed = TRUE))
 })
 
+if (requireNamespace("knitr", quietly = TRUE)) {
+  assert("knit_once() fires only on the first use of a flag per document", {
+    f = "lt.test_once"
+    knitr::opts_knit$set(stats::setNames(list(NULL), f))  # reset to unseen
+    on.exit(knitr::opts_knit$set(stats::setNames(list(NULL), f)))
+    (knit_once(f) %==% TRUE)   # first table emits the bundle
+    (knit_once(f) %==% FALSE)  # later tables skip it
+    (knit_once(f) %==% FALSE)
+  })
+
+  assert("wrap_assets() brackets html with before/after tags", {
+    (wrap_assets("T", "B", "A") %==% "B\nT\nA")
+    (wrap_assets("T", c("B1", "B2")) %==% "B1\nB2\nT")  # before-only
+    (wrap_assets("T") %==% "T")
+  })
+}
+
 if (requireNamespace("htmltools", quietly = TRUE)) {
   assert("lt_dependency() bundles core assets; opts add extension/binding", {
     dep = lt_dependency()
