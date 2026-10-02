@@ -793,8 +793,7 @@ lt(d) |>
   lt_interactive(
     pager = 5,
     detail = js('(row, i, d) => ({
-      data: { field: ["row", "hp", "wt"],
-      value: [i, d.hp, d.wt] },
+      data: { field: ["row", "hp", "wt"], value: [i, d.hp, d.wt] },
       interactive: { sort: ["value"], search: false }
     })')
   )
