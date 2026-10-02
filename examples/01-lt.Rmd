@@ -540,7 +540,7 @@ tbl_iris |> lt_hide(~ Petal.Length + Petal.Width)
 
 ## Inline plots
 
-Three functions draw a tiny chart into a column's cells. All are lightweight:
+These functions draw a tiny chart into a column's cells. All are lightweight:
 only the numbers travel to the browser and the SVG is drawn there, so for an
 interactive table only the current page's rows are drawn.
 
