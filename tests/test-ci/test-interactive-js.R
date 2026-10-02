@@ -481,6 +481,52 @@ assert("a detail table is itself interactive when its spec opts in", {
    %==% '2')
 })
 
+assert("lt_errorbar renders SVG only for the current page (deferred)", {
+  # six rows, paged three at a time: the SVG is drawn in the browser, so only
+  # the visible page's rows carry one -- the payload ships numbers, not SVG
+  n = 6
+  x = lt(data.frame(
+    est = seq(0.1, 0.6, length.out = n),
+    lo  = seq(0.0, 0.5, length.out = n),
+    hi  = seq(0.2, 0.7, length.out = n)
+  )) |>
+    lt_errorbar(est ~ lo + hi, ref = 0) |>
+    lt_interactive(pager = 3)
+  (lti_eval(x, 't.querySelectorAll(".lt-eb").length') %==% '3')
+  # paging to the next page re-renders SVG for that page's rows, not all six
+  next_pg = 't.querySelector(".lti-pager button[aria-label=\\"Next\\"]").click()'
+  (lti_eval(x, 't.querySelectorAll(".lt-eb").length', next_pg) %==% '3')
+})
+
+assert("lt-plot.js re-renders a table core built before the module loaded", {
+  # The litedown/knitr failure mode: an earlier plain table pulls in lt.js, so
+  # it loads (and builds this table) before lt-plot.js registers the errorbar
+  # renderer. Load core *before* the module here and confirm the module's
+  # on-load refresh draws the error bars that the first build lacked.
+  spec = list(
+    data = list(est = c(0.5, 0.2), lo = c(0, 0.1), hi = c(1, 0.3)),
+    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
+      min = 0, max = 1, width = 80, height = 16))
+  )
+  x = structure(spec, class = 'lt_tbl')
+  core = paste(read_asset('lt.js'), collapse = '\n')
+  plotjs = paste(read_asset('lt-plot.js'), collapse = '\n')
+  sb = paste(spec_block(x), collapse = '\n')
+  html = paste0(
+    "<!DOCTYPE html><html><head><meta charset='utf-8'>",
+    "<script>", core, "</script></head><body>", sb,
+    "<script>", plotjs, "</script>",
+    "<script>addEventListener('load',function(){",
+    "document.body.dataset.out=document.querySelectorAll('.lt-eb').length})",
+    "</script></body></html>"
+  )
+  f = tempfile(fileext = '.html'); on.exit(unlink(f), add = TRUE)
+  xfun::write_utf8(html, f)
+  dom = xfun::browser_dom(f)
+  m = regmatches(dom, regexec('data-out="([^"]*)"', dom))[[1]]
+  (m[2] %==% '2')  # one error-bar SVG per row, drawn by the late refresh
+})
+
 assert("a table whose row order carries meaning is left static", {
   d = data.frame(g = c("a", "a", "b"), v = 1:3)
   # row groups

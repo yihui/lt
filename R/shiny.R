@@ -14,6 +14,9 @@
 #'
 #' @param interactive Whether to also include the interactivity extension (the
 #'   assets behind [lt_interactive()]): its script and stylesheet.
+#' @param plot Whether to also include the graphics module (the assets behind
+#'   [lt_errorbar()] and other inline-plot cells): its script and stylesheet.
+#'   Its script loads before the core runtime so plot cells render.
 #' @param shiny Whether to include the Shiny output binding (only needed by
 #'   [lt_output()] / [render_lt()]).
 #' @return An `html_dependency` object.
@@ -21,13 +24,16 @@
 #' @examples
 #' if (requireNamespace('htmltools', quietly = TRUE))
 #'   lt_dependency(interactive = TRUE)
-lt_dependency = function(interactive = FALSE, shiny = FALSE)
+lt_dependency = function(interactive = FALSE, plot = FALSE, shiny = FALSE)
   htmltools::htmlDependency(
     'lt', as.character(utils::packageVersion('lt')),
     src = pkg_file('www'),
-    stylesheet = c('lt.css', if (interactive) 'lt-interactive.css'),
+    stylesheet = c(
+      'lt.css', if (plot) 'lt-plot.css', if (interactive) 'lt-interactive.css'
+    ),
     script = c(
-      'lt.js', if (interactive) 'lt-interactive.js', if (shiny) 'lt-binding.js'
+      if (plot) 'lt-plot.js', 'lt.js',
+      if (interactive) 'lt-interactive.js', if (shiny) 'lt-binding.js'
     )
   )
 
@@ -54,8 +60,10 @@ lt_dependency = function(interactive = FALSE, shiny = FALSE)
 #' }
 #' shinyApp(ui, server)
 #' }
+# Ship the graphics module too: render_lt()'s spec is produced on the server at
+# render time, so the UI cannot know whether it will contain a plot cell.
 lt_output = function(outputId, ...) shiny::tagList(
-  lt_dependency(shiny = TRUE),
+  lt_dependency(plot = TRUE, shiny = TRUE),
   shiny::div(id = outputId, class = 'lt-output')
 )
 

@@ -3,6 +3,12 @@ build = function(spec) {
   as.character(lt_static(x, method = 'node', css = FALSE, fragment = TRUE))
 }
 
+# count non-overlapping occurrences of a fixed substring
+count_str = function(x, p) {
+  m = gregexpr(p, x, fixed = TRUE)[[1]]
+  if (m[1] == -1L) 0L else length(m)
+}
+
 assert("basic table renders correct cells", {
   html = build(list(data = list(x = 1:2, y = c("a", "b"))))
   (matches(html, ".*<table.*>x</th>.*>1</td>.*>b</td>.*") %==% "")
@@ -16,6 +22,66 @@ assert("lt_hide drops a column (header and cells) from the rendered table", {
   (grepl(">z</th>", html) %==% TRUE)
   (grepl(">y</th>", html) %==% FALSE)
   (grepl(">a</td>", html) %==% FALSE)
+})
+
+assert("lt_errorbar renders an inline SVG point-and-bar on a shared scale", {
+  spec = list(
+    data = list(est = c(0.5, 0.2), lo = c(0, 0.1), hi = c(1, 0.3)),
+    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
+      min = 0, max = 1, ref = 0, width = 80, height = 16))
+  )
+  html = build(spec)
+  # one SVG per row in the value column; the lo/hi columns still render as data
+  (count_str(html, '<svg class="lt-eb"') %==% 2L)
+  # the scale is inset by a 4px pad on each side (W = 80 -> inner span 72), so
+  # points/bars never touch the cell edge.
+  # row 1: est 0.5 -> cx 40 (cy = height/2 = 8); bar from lo 0 (x 4) to hi 1 (x 76)
+  (grepl('<circle cx="40" cy="8"', html, fixed = TRUE) %==% TRUE)
+  (grepl('x1="4" y1="8" x2="76" y2="8"', html, fixed = TRUE) %==% TRUE)
+  # short vertical end caps at both ends of the bar (y = 8 ± cap, cap = 4)
+  (grepl('x1="4" y1="4" x2="4" y2="12"', html, fixed = TRUE) %==% TRUE)
+  (grepl('x1="76" y1="4" x2="76" y2="12"', html, fixed = TRUE) %==% TRUE)
+  # row 2 lands on the same scale: est 0.2 -> cx 18.4, bar 0.1..0.3 -> x 11.2..25.6
+  (grepl('<circle cx="18.4" cy="8"', html, fixed = TRUE) %==% TRUE)
+  (grepl('x1="11.2" y1="8" x2="25.6" y2="8"', html, fixed = TRUE) %==% TRUE)
+  # a vertical reference line at ref = 0 (x 4, full height)
+  (grepl('class="lt-eb-ref" x1="4" y1="0" x2="4" y2="16"', html, fixed = TRUE) %==% TRUE)
+  # the numbers stay in the title tooltip, not shipped as inline SVG text
+  (grepl('<title>0.5 (0, 1)</title>', html, fixed = TRUE) %==% TRUE)
+})
+
+assert("lt_errorbar axis = TRUE draws one shared axis in the footer", {
+  spec = list(
+    data = list(est = c(0.5, 0.2), lo = c(0, 0.1), hi = c(1, 0.3)),
+    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
+      min = 0, max = 1, ref = 0, width = 80, height = 16, axis = TRUE,
+      axis_label = "Effect"))
+  )
+  html = build(spec)
+  # one axis SVG total (not one per row), in the footer
+  (count_str(html, '<svg class="lt-eb-axis"') %==% 1L)
+  (grepl("<tfoot", html, fixed = TRUE) %==% TRUE)
+  # "nice" ticks for [0, 1] step at 0.2; end labels inset by the 4px pad, a
+  # mid tick (0.4 -> x 32.8) is middle-anchored
+  (grepl('<text x="4" y="15" text-anchor="start">0</text>', html, fixed = TRUE) %==% TRUE)
+  (grepl('<text x="76" y="15" text-anchor="end">1</text>', html, fixed = TRUE) %==% TRUE)
+  (grepl('<text x="32.8" y="15" text-anchor="middle">0.4</text>', html, fixed = TRUE) %==% TRUE)
+  # the same ticks drive a stretched in-cell gridline background (one per row)
+  (count_str(html, 'class="lt-eb-grid-bg"') %==% 2L)
+  # the axis caption is centered below the ticks
+  (grepl('class="lt-eb-axis-label" x="40" y="28" text-anchor="middle">Effect</text>',
+    html, fixed = TRUE) %==% TRUE)
+
+  # tick count adapts to width so labels do not crowd: a narrow axis keeps only
+  # the endpoints, a wide one shows the full 0.2 step
+  narrow = build(list(data = list(est = 0.5, lo = 0, hi = 1),
+    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
+      min = 0, max = 1, width = 40, height = 16, axis = TRUE))))
+  wide = build(list(data = list(est = 0.5, lo = 0, hi = 1),
+    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
+      min = 0, max = 1, width = 300, height = 16, axis = TRUE))))
+  (count_str(narrow, "</text>") %==% 2L)
+  (isTRUE(count_str(wide, "</text>") > count_str(narrow, "</text>")) %==% TRUE)
 })
 
 assert("table is wrapped in a div for horizontal scroll", {

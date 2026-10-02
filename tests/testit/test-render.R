@@ -19,6 +19,21 @@ assert("format(assets = FALSE) omits runtime", {
   (matches(html, ".*<script>.*") %==% "")
 })
 
+assert("format() ships the graphics module (before core) only for plot tables", {
+  op = options(lt.assets_url = "x/"); on.exit(options(op))
+  eb = lt(data.frame(est = 1, lo = 0, hi = 2)) |> lt_errorbar(est ~ lo + hi)
+  html = format(eb, inline_assets = FALSE)
+  (grepl('x/lt-plot.js', html, fixed = TRUE))
+  (grepl('x/lt-plot.css', html, fixed = TRUE))
+  # the plot module must precede the core runtime: core reads LT.cells when it
+  # drains the queue, so a renderer registered later would miss this table
+  (isTRUE(regexpr('x/lt-plot.js', html, fixed = TRUE) <
+            regexpr('"x/lt.js"', html, fixed = TRUE)))
+  # a plain table pulls in neither plot asset
+  plain = format(lt(d), inline_assets = FALSE)
+  (grepl('lt-plot', plain, fixed = TRUE) %==% FALSE)
+})
+
 assert("inline_safe() escapes </script in content", {
   (matches(inline_safe("x</script>y"), ".*<\\\\/script.*") %==% "")
   (matches(inline_safe("x</SCRIPT>y"), ".*<\\\\/SCRIPT.*") %==% "")
@@ -111,6 +126,23 @@ assert("lt_spec() is the payload spec_block() serializes", {
   (grepl(j, sb, fixed = TRUE))
 })
 
+if (requireNamespace("knitr", quietly = TRUE)) {
+  assert("knit_once() fires only on the first use of a flag per document", {
+    f = "lt.test_once"
+    knitr::opts_knit$set(stats::setNames(list(NULL), f))  # reset to unseen
+    on.exit(knitr::opts_knit$set(stats::setNames(list(NULL), f)))
+    (knit_once(f) %==% TRUE)   # first table emits the bundle
+    (knit_once(f) %==% FALSE)  # later tables skip it
+    (knit_once(f) %==% FALSE)
+  })
+
+  assert("wrap_assets() brackets html with before/after tags", {
+    (wrap_assets("T", "B", "A") %==% "B\nT\nA")
+    (wrap_assets("T", c("B1", "B2")) %==% "B1\nB2\nT")  # before-only
+    (wrap_assets("T") %==% "T")
+  })
+}
+
 if (requireNamespace("htmltools", quietly = TRUE)) {
   assert("lt_dependency() bundles core assets; opts add extension/binding", {
     dep = lt_dependency()
@@ -121,6 +153,10 @@ if (requireNamespace("htmltools", quietly = TRUE)) {
     ("lt-interactive.css" %in% di$stylesheet)
     ds = lt_dependency(shiny = TRUE)
     ("lt-binding.js" %in% ds$script)
+    dp = lt_dependency(plot = TRUE)
+    ("lt-plot.css" %in% dp$stylesheet)
+    # the plot script loads before core so its renderer is registered in time
+    (isTRUE(match("lt-plot.js", dp$script) < match("lt.js", dp$script)))
   })
 }
 

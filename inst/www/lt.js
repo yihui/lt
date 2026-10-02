@@ -9,6 +9,13 @@
 
   const $ = (el, sel) => el.querySelector(sel);
 
+  // Inline-graphics cell renderers (error bars, sparklines, …), keyed by op
+  // type and shipped by lt-plot.js (loaded before core). Captured as a live
+  // reference and re-exposed on root.LT below, so a plot module loaded either
+  // before or after core registers into the same object. Empty when no plot
+  // module is present; core itself contains no plot code (see LT.cells docs).
+  const cellRenderers = root.LT?.cells || {};
+
   // `[<]` (not `<`) avoids `</…` so this file is safe to inline in <script>.
   const esc = s => String(s)
     .replace(/&/g, "&amp;").replace(/[<]/g, "&lt;")
@@ -390,9 +397,22 @@
       }
     }
 
+    // Inline-graphics cells: an op whose type has a renderer registered on
+    // LT.cells (shipped by lt-plot.js) draws its value column as inline SVG
+    // (e.g. an error bar). The renderer maps the op to a per-column config
+    // here; pushRow and the footer consult cellMap[col] = { rnd, cfg }. Keeping
+    // the drawing in a module leaves core with no plot-specific code.
+    const cellMap = {};
+    for (const op of ops) {
+      const rnd = cellRenderers[op.type];
+      if (!rnd) continue;
+      const cfgs = rnd.resolve(op) || {};
+      for (const c of Object.keys(cfgs)) cellMap[c] = { rnd, cfg: cfgs[c] };
+    }
+
     return {
       visible, align, colLabels, colWidths, tableWidth, indent,
-      groups, rowSpans, styles, spanners,
+      groups, rowSpans, styles, spanners, cellMap,
       footnotes: spec.footnotes || [],
       notes: spec.notes || [],
       header: spec.header || {},
@@ -462,7 +482,9 @@
     const data = spec.data || {},
           { display, nRow } = applyOps(spec),
           { visible: cols, align, colLabels, colWidths, tableWidth, indent,
-            groups, rowSpans, styles, spanners, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+            groups, rowSpans, styles, spanners, cellMap, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+          // Core helpers passed to a cell renderer (see LT.cells / lt-plot.js).
+          U = { esc, isNum, str },
           reg = indexFootnotes(fns),
           fIdx = matcher(fns, reg.idx),
           nGrp = rowSpans.length,
@@ -574,6 +596,15 @@
               cls = [colCls[ci], cc].filter(Boolean).join(" ");
         let s = styleMap[k] || "";
         if (ci === 0 && ind) s = (s ? s + ";" : "") + `padding-left:${ind + 1}em`;
+        const cm = cellMap[c];
+        if (cm) {
+          // A plot cell: the renderer supplies the inner SVG and may add a <td>
+          // class (e.g. to zero padding so a gridline background runs unbroken).
+          const extra = cm.rnd.cellClass?.(cm.cfg) || "",
+                pcls = [cls, extra].filter(Boolean).join(" ");
+          out.push(`<td${attr("class", pcls)}${attr("style", s)}>${cm.rnd.cell(cm.cfg, data, r, U)}${m ? sup(m) : ""}</td>`);
+          continue;
+        }
         const raw = str(data[c][r - 1]), disp = display[c][r - 1],
               tip = raw !== disp ? ` title="${esc(raw)}"` : "";
         out.push(`<td${attr("class", cls)}${attr("style", s)}${tip}>${escIf(isRaw(c), disp)}${m ? sup(m) : ""}</td>`);
@@ -601,10 +632,28 @@
     }
     out.push(`</tbody>`);
 
-    // <tfoot>: footnotes then source notes, each a full-width row.
-    if (reg.order.length || notes.length) {
+    // <tfoot>: an optional plot-footer row (e.g. a shared error-bar axis), then
+    // footnotes and source notes. The footer row carries a per-column cell so
+    // each renderer's footer SVG lines up under its plot column; the footnote/
+    // note rows span the full width.
+    const footCells = cols.map(c =>
+      cellMap[c] ? (cellMap[c].rnd.foot?.(cellMap[c].cfg, U) || "") : "");
+    const hasFoot = footCells.some(h => h);
+    if (reg.order.length || notes.length || hasFoot) {
       const footRow = (cls, html) => `<tr class="${cls}"><td colspan="${nCol}">${html}</td></tr>`;
       out.push(`<tfoot class="lt-footer">`);
+      if (hasFoot) {
+        out.push(`<tr class="lt-plot-foot">`);
+        out.push(`<td></td>`.repeat(nGrp));
+        for (let i = 0; i < cols.length; i++) {
+          const cm = cellMap[cols[i]];
+          // reuse the renderer's cell class so the footer lines up with the plot
+          const extra = footCells[i] && cm ? (cm.rnd.cellClass?.(cm.cfg) || "") : "";
+          const ac = [colCls[i], extra].filter(Boolean).join(" ");
+          out.push(`<td${attr("class", ac)}>${footCells[i]}</td>`);
+        }
+        out.push(`</tr>`);
+      }
       reg.order.forEach((t, i) => out.push(footRow("lt-footnote", `${sup(i + 1)} ${txt(t)}`)));
       for (const n of notes) out.push(footRow("lt-source-note", txt(n)));
       out.push(`</tfoot>`);
@@ -626,6 +675,9 @@
   // Plugin seam (see lt-interactive.js): a plugin attaches its handle under
   // LT.plugins and pushes a callback onto LT.onMount, which core calls with
   // each table element and its spec right after the table is mounted.
+  // Cell-renderer seam (see lt-plot.js): a module registers an inline-graphics
+  // renderer under LT.cells, keyed by op type, which core consults *during*
+  // buildHtml (not post-mount) to draw a column's cells and an optional footer.
   const plugins = root.LT?.plugins || {}, onMount = root.LT?.onMount || [];
 
   // Alt-click toggles raw values in this table; alt-dblclick toggles page-wide.
@@ -660,11 +712,23 @@
     el.innerHTML = buildHtml(spec);
     return ready($(el, "table"), spec);
   };
+  // Rebuild an already-mounted table in place from its stashed spec. Used by a
+  // cell module (lt-plot.js) that loads *after* core has built a table (e.g. a
+  // litedown/knitr doc where an earlier plain table pulled in lt.js first): the
+  // module registers its renderer, then refreshes the tables that needed it.
+  const refresh = tbl => {
+    const spec = tbl?._ltSpec, wrap = tbl?.closest(".lt-wrap");
+    if (!spec || !wrap) return;
+    wrap.insertAdjacentHTML("afterend", buildHtml(spec));
+    const next = wrap.nextElementSibling;
+    wrap.remove();
+    return ready($(next, "table"), spec);
+  };
   // q.push renders immediately; replay any entries queued before we loaded.
   const q = { push: e => mount(e.s, e.d) };
   (root.LT?.q || []).forEach(q.push);
   root.LT = {
     build: spec => mount(document.currentScript, spec),
-    render, buildHtml, plugins, onMount, q,
+    render, refresh, buildHtml, plugins, onMount, cells: cellRenderers, q,
   };
 })(window);

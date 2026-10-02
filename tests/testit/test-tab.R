@@ -289,6 +289,38 @@ assert("lt_move() supports numeric column indices", {
   (m$ops %==% list(list(type = "move", columns = I("c"), after = "a")))
 })
 
+# find the single op of a given type
+op_of = function(x, type) Filter(function(o) o$type == type, x$ops)[[1]]
+
+assert("lt_errorbar() records columns, scale, and reference line", {
+  # a two-sided formula: estimate on the LHS, bounds on the RHS
+  e = lt_errorbar(x, a ~ b + c)
+  op = op_of(e, "errorbar")
+  (op$columns %==% I(c("a", "b", "c")))
+  # default scale is the range of all three columns' values (1:9 here)
+  (as.numeric(c(op$min, op$max)) %==% c(1, 9))
+  # ref/axis are absent unless requested
+  (is.null(op$ref) %==% TRUE)
+  (is.null(op$axis) %==% TRUE)
+  # a length-3 character vector names the same columns
+  (op_of(lt_errorbar(x, c("a", "b", "c")), "errorbar")$columns %==% I(c("a", "b", "c")))
+  # lower and upper are hidden by default, kept when hide = FALSE
+  (op_of(e, "hide")$columns %==% I(c("b", "c")))
+  (length(Filter(function(o) o$type == "hide", lt_errorbar(x, a ~ b + c, hide = FALSE)$ops)) %==% 0L)
+  # explicit limits override the data range; ref and axis recorded when set
+  op2 = op_of(lt_errorbar(x, a ~ b + c, limits = c(0, 10), ref = 0, axis = TRUE), "errorbar")
+  (as.numeric(c(op2$min, op2$max)) %==% c(0, 10))
+  (op2$ref %==% 0)
+  (op2$axis %==% TRUE)
+  (is.null(op2$axis_label) %==% TRUE)
+  # a string axis enables the axis and is recorded as its caption
+  op3 = op_of(lt_errorbar(x, a ~ b + c, axis = "Effect"), "errorbar")
+  (op3$axis %==% TRUE)
+  (op3$axis_label %==% "Effect")
+  # must name exactly three columns
+  (has_error(lt_errorbar(x, a ~ b)) %==% TRUE)
+})
+
 assert("lt_group() supports numeric grouping column", {
   d2 = data.frame(g = c("A", "B", "A"), v = 1:3)
   g = lt(d2) |> lt_group(1)
