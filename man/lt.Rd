@@ -3,14 +3,20 @@
 \name{lt}
 \alias{lt}
 \alias{lt.default}
+\alias{lt.SharedData}
 \title{Create a table specification}
 \usage{
 lt(data, ...)
 
 \method{lt}{default}(data, auto_format = TRUE, auto_label = TRUE, ...)
+
+\method{lt}{SharedData}(data, ...)
 }
 \arguments{
-\item{data}{A data frame (or anything coercible to one).}
+\item{data}{A data frame (or anything coercible to one). A crosstalk
+\link[crosstalk:SharedData]{SharedData} object is also accepted: the table then
+links to external crosstalk filter/selection controls once made interactive
+with \code{\link[=lt_interactive]{lt_interactive()}}.}
 
 \item{...}{Arguments passed to methods.}
 
