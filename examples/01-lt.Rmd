@@ -528,6 +528,16 @@ tbl_iris |> lt_width("100%", Species = "20em")
 tbl_iris |> lt_move(~ Petal.Length + Petal.Width, after = NULL)
 ```
 
+### Hiding columns
+
+`lt_hide()` drops columns from the table without dropping their data: the
+values still travel in the spec, so they stay available to anything that
+reads the whole row (e.g. an interactive table's row detail, below).
+
+```{r}
+tbl_iris |> lt_hide(~ Petal.Length + Petal.Width)
+```
+
 ## Styling
 
 ### Cell styling
@@ -706,7 +716,7 @@ formula below; a `-` prefix (or a negated formula term) sorts a column
 descending.
 
 ```{r}
-lt(d) |> lt_interactive(sort = ~ cyl + -mpg, pager = 10)
+lt(d) |> lt_interactive(sort = ~ cyl + -mpg, pager = 10, search = FALSE)
 ```
 
 The extra controls (and the JavaScript that drives them) are only loaded
@@ -727,6 +737,41 @@ only.
 lt(d) |> lt_interactive(filter = TRUE, search = FALSE, pager = 5)
 ```
 
+### Row detail (drill-down)
+
+`detail` adds an expand caret to each row; clicking it reveals a child
+table built on the spot from that row. The simplest form names the columns
+to show, as a character vector or a one-sided formula: their displayed
+(formatted) values are laid out as a one-row table. The columns can be ones
+hidden from the main table with `lt_hide()` — a natural way to tuck extra
+fields into the detail. Here `hp` and `wt` are hidden above but surfaced in
+the detail.
+
+```{r}
+lt(d) |>
+  lt_hide(~ hp + wt) |>
+  lt_interactive(pager = 5, detail = ~ hp + wt)
+```
+
+For full control, pass a JavaScript callback yourself, wrapped in `js()`.
+It is called as `(row, index, display)`: `row` has the raw values,
+`display` the formatted text, each keyed by column name. Return a table
+spec; give it an `interactive` field to make the detail table itself
+interactive, as below where it is made sortable.
+
+```{r}
+lt(d) |>
+  lt_hide(~ hp + wt) |>
+  lt_interactive(
+    pager = 5,
+    detail = js('(row, i, d) => ({
+      data: { field: ["row", "hp", "wt"],
+      value: [i, d.hp, d.wt] },
+      interactive: { sort: ["value"], search: false }
+    })')
+  )
+```
+
 ### Resizable columns
 
 With `resize = TRUE`, each column can be resized by dragging the right
@@ -735,7 +780,7 @@ content. Widening a column widens the table, leaving the other columns
 as they are. Initial widths come from `lt_width()` as usual.
 
 ```{r}
-lt(head(d)) |> lt_interactive(resize = TRUE, pager = FALSE) |>
+lt(head(d)) |> lt_interactive(resize = TRUE, pager = FALSE, search = FALSE) |>
   lt_width(mpg = "8em")
 ```
 

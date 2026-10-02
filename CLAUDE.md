@@ -26,6 +26,24 @@ When asked to "publish lt to npm":
 
 ## Test Instructions
 
+### When to run tests
+
+Don't run the test suite after every edit; that wastes time. Run tests only
+when you are about to push, or when a change is tricky enough that you are not
+confident it is correct. For small, obvious changes, skip the local run and let
+CI catch any regression. When you do run, prefer a `--filter` subset over the
+full suite.
+
+### What to test
+
+Test observable behavior, not implementation details. Don't write assertions
+that merely re-test a dependency (e.g. that `xfun::js()` emits a string
+verbatim) or that restate trivial pass-through (e.g. that an option appears in
+the serialized spec when set). A test earns its place only if it could
+plausibly catch a real regression in this package's own logic.
+
+### How to run
+
 ``` bash
 CI=true Rscript tests/test-all.R
 ```

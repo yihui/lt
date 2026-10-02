@@ -8,6 +8,16 @@ assert("basic table renders correct cells", {
   (matches(html, ".*<table.*>x</th>.*>1</td>.*>b</td>.*") %==% "")
 })
 
+assert("lt_hide drops a column (header and cells) from the rendered table", {
+  x = lt(data.frame(x = 1:2, y = c("a", "b"), z = 3:4)) |> lt_hide("y")
+  html = as.character(lt_static(x, method = 'node', css = FALSE, fragment = TRUE))
+  # the kept columns render, the hidden one leaves no header and no cells
+  (grepl(">x</th>", html) %==% TRUE)
+  (grepl(">z</th>", html) %==% TRUE)
+  (grepl(">y</th>", html) %==% FALSE)
+  (grepl(">a</td>", html) %==% FALSE)
+})
+
 assert("table is wrapped in a div for horizontal scroll", {
   html = build(list(data = list(x = 1:2)))
   (matches(html, '.*<div class="lt-wrap"><table.*</table></div>.*') %==% "")

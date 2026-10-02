@@ -89,6 +89,20 @@ assert("resizable columns are opt-in", {
   (grepl('resize', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
 })
 
+assert("detail = column names resolves to a name array; js() stays verbatim", {
+  # a formula / character vector of columns becomes a plain name array for the
+  # runtime to build a one-row detail table from
+  json = format(lt(d) |> lt_interactive(detail = ~ x + y), assets = FALSE)
+  (grepl('"detail": ["x", "y"]', json, fixed = TRUE) %==% TRUE)
+  json = format(lt(d) |> lt_interactive(detail = c('x', 'y')), assets = FALSE)
+  (grepl('"detail": ["x", "y"]', json, fixed = TRUE) %==% TRUE)
+  # a js() callback is emitted verbatim (unquoted), not as a string
+  json = format(
+    lt(d) |> lt_interactive(detail = js('(r, i, d) => ({})')), assets = FALSE
+  )
+  (grepl('"detail": (r, i, d) => ({})', json, fixed = TRUE) %==% TRUE)
+})
+
 count = function(p, x) sum(gregexpr(p, x)[[1]] > 0)
 
 # Emulate a document: knit the tables in order, after clearing the flags that

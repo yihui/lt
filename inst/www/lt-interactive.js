@@ -167,7 +167,10 @@
             sort: Array.isArray(opts.sort) ? opts.sort.map(parseKey) : []
           };
     let view,          // filtered + sorted indices, cached across page turns
-        sync = () => {};  // pager readout, replaced by addPaginate()
+        sync = () => {},  // pager readout, replaced by addPaginate()
+        // decorate the just-rendered <tbody> with expand carets / detail rows,
+        // set up by addDetail(); a no-op when row detail is off
+        decorate = () => {};
 
     // `stale` means the view itself changed (a term or the sort), as opposed to
     // only the page: recompute it and go back to the first page.
@@ -180,6 +183,7 @@
       const body = $(tmp.content, "tbody");
       if (!rows.length)  // no matches: a neutral symbol spanning all columns
         body.innerHTML = `<tr class="lti-empty"><td colspan="${cols.length}">—</td></tr>`;
+      else decorate(body, rows);
       $(el, "tbody").replaceWith(body);
       sync(view.length);
     };
@@ -189,13 +193,20 @@
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
     if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
     if (opts.resize) addResize(el, hrow, cols.length);
+    // row detail re-renders through the same seam: toggling a row only changes
+    // which rows carry a detail block, so a plain re-render (no new view) is
+    // enough
+    if (opts.detail)
+      decorate = addDetail(el, spec, cols, state, opts.detail, () => refresh(false));
     // `pager` is the page sizes to offer, the first one being the initial
     if (opts.pager) {
       const sizes = Array.isArray(opts.pager) ? opts.pager : [10, 25, 50, 100];
       sync = addPaginate(el, cols, sizes, state, () => refresh(false));
       refresh();  // cut the full render down to the first page
-    } else if (state.sort.length) {
-      refresh();  // core rendered the rows in file order; apply the initial sort
+    } else if (state.sort.length || opts.detail) {
+      // core rendered the rows in file order; re-render to apply an initial
+      // sort and/or to add the expand carets
+      refresh();
     }
   }
 
@@ -292,6 +303,66 @@
       onType(input, v => { state.filters[c] = v; refresh(); });
     });
     hrow.parentNode.appendChild(row);
+  }
+
+  // Expandable row detail. `detailOpt` is either an array of column names (the
+  // detail is a one-row table of those columns' displayed values) or a callback
+  // `(rawRow, index, displayedRow) => spec` (or the name of such a global one),
+  // called the first time a row is expanded (and cached) to build the spec for
+  // its drop-down detail table. Returns a
+  // `decorate(body, rows)` that each <tbody> re-render runs: it prepends an
+  // expand caret to every row and, after each open row, inserts a full-width
+  // detail row rendered through LT.render (so a detail table can itself be
+  // interactive). Expanded rows are tracked by their original index, so detail
+  // follows its row across sort/filter/page. Resolving `detailOpt` is deferred
+  // to the first expand, so a global built after the table still works.
+  function addDetail(el, spec, cols, state, detailOpt, rerender) {
+    const doc = el.ownerDocument, nCol = cols.length, cache = {};
+    state.expanded = new Set();
+    // a row as an object keyed by column (every column, including ones hidden
+    // from the table), built from `src`: spec.data gives raw values, spec._display
+    // the formatted text the table shows
+    const pick = (src, r) => {
+      const o = {}; for (const c in src) o[c] = src[c]?.[r - 1] ?? null; return o;
+    };
+    const build = r => {
+      if (r in cache) return cache[r];
+      const disp = pick(spec._display || {}, r);
+      let out = null;
+      if (Array.isArray(detailOpt)) {
+        // a list of column names: show those columns' displayed values as a
+        // one-row table (the columns can be ones hidden from the main table)
+        const data = {};
+        for (const c of detailOpt) data[c] = [disp[c] ?? null];
+        out = { data };
+      } else {
+        // a callback (or the name of one): (raw row, index, displayed row)
+        const fn = typeof detailOpt === "function" ? detailOpt : root[detailOpt];
+        if (typeof fn === "function") out = fn(pick(spec.data || {}, r), r, disp);
+      }
+      return cache[r] = out;
+    };
+    const toggle = r => {
+      state.expanded.has(r) ? state.expanded.delete(r) : state.expanded.add(r);
+      rerender();
+    };
+    return (body, rows) => [...body.rows].forEach((tr, i) => {
+      const r = rows[i], td0 = tr.cells[0], open = state.expanded.has(r);
+      if (!td0) return;
+      const btn = elem(doc, "button", {
+        type: "button", className: "lti-expand", textContent: open ? "▾" : "▸",
+        "aria-expanded": String(open), "aria-label": "Toggle detail"
+      });
+      btn.onclick = () => toggle(r);
+      td0.insertBefore(btn, td0.firstChild);
+      const child = open && build(r);
+      if (child) {
+        const cell = elem(doc, "td", { colSpan: nCol },
+          body.insertBefore(elem(doc, "tr", { className: "lti-detail" }),
+                            tr.nextSibling));
+        LT.render(elem(doc, "div", {}, cell), child);
+      }
+    });
   }
 
   // The table's <colgroup>, created (one <col> per column) when core emitted

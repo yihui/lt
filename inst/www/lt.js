@@ -255,13 +255,14 @@
         !numCol(data[rowGroupCols[0]]) &&
         data[rowGroupCols[0]]?.some(v => (v + "").length > 20)) rowGroupSep = true;
 
-    // Hidden columns: row_group, merge sources
+    // Hidden columns: row_group, merge sources, explicit hide op
     const hidden = new Set();
     for (const g of rowGroupCols) hidden.add(g);
     onOp("merge", op => {
       if (op.hide !== false && op.columns)
         op.columns.slice(1).forEach(c => hidden.add(c));
     });
+    onOp("hide", op => (op.columns || []).forEach(c => hidden.add(c)));
 
     // Visible columns after hiding
     let visible = colNames.filter(c => !hidden.has(c));
@@ -614,6 +615,9 @@
     // sort/filter without re-deriving it. Set as a side effect, never read by
     // core; harmless for the static/Node render path.
     spec._cols = cols;
+    // Also expose the formatted cell text (every column, including hidden ones),
+    // so plugins can show the displayed values (e.g. a row detail).
+    spec._display = display;
     // Wrap in a div so a wide table can scroll horizontally (`overflow-x`)
     // instead of overflowing the page.
     return `<div class="lt-wrap">${out.join("")}</div>`;

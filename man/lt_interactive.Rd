@@ -10,7 +10,8 @@ lt_interactive(
   search = TRUE,
   filter = FALSE,
   pager = c(10, 25, 50, 100),
-  resize = FALSE
+  resize = FALSE,
+  detail = NULL
 )
 }
 \arguments{
@@ -46,6 +47,18 @@ valid size (every row on one page), offered as \verb{∞} in the selector. Use
 it (double-clicking the edge fits the column to its content). Widening a
 column widens the table, leaving the other columns as they are. Initial
 widths can be set with \code{\link[=lt_width]{lt_width()}}.}
+
+\item{detail}{Row detail (drill-down). An expand caret is added to each row;
+clicking it reveals a table built from that row below it. Give the columns
+to show, as a character vector of names or a one-sided formula (e.g.
+\code{~ gear + carb}); their displayed (formatted) values are laid out as a
+one-row table. The columns can be ones hidden from the main table with
+\code{\link[=lt_hide]{lt_hide()}}, a natural way to tuck extra fields into the detail. For full
+control, pass a JavaScript callback instead, wrapped in \code{\link[=js]{js()}}: it is
+called as \verb{(row, index, display)} — \code{row} the raw values, \code{display} the
+formatted text, each keyed by column name — and returns a table spec, which
+may carry its own \code{interactive} field to make the detail table interactive.
+\code{NULL} (the default) adds no row detail.}
 }
 \value{
 \code{x} with interactivity enabled.
@@ -75,4 +88,16 @@ lt(head(mtcars)) |> lt_interactive(resize = TRUE)
 # forms: a character vector, or a formula)
 lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
 lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
+# expandable row detail (drill-down): name the columns to show. Here gear and
+# carb are hidden from the main table but revealed in the detail that appears
+# when a row is expanded.
+lt(head(mtcars)) |>
+  lt_hide(~ gear + carb) |>
+  lt_interactive(detail = ~ gear + carb)
+# for full control, pass a JavaScript callback yourself: (raw row, index,
+# displayed row); here showing the row number and mpg as the table displays it
+lt(head(mtcars)) |> lt_interactive(
+  detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
+    value: [i, d.mpg] } })')
+)
 }

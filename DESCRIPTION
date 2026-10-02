@@ -1,15 +1,17 @@
 Package: lt
 Type: Package
 Title: Lightweight Tables via JSON Specs and JavaScript
-Version: 0.4.12
+Version: 0.4.13
 Authors@R: person('Yihui', 'Xie', email = 'xie@yihui.name', role = c('aut', 'cre', 'cph'),
     comment = c(ORCID = '0000-0003-0645-5666', URL = 'https://yihui.org'))
 Description: A lightweight grammar of tables. Build a table by declaring a JSON
     spec (titles, spanners, row groups, footnotes, formatting functions, etc.); a tiny
     vanilla JavaScript runtime builds the HTML table from the spec on page
-    load. No 'sass', no 'V8', no 'htmlwidgets' — just base R and 'xfun'
-    ('htmltools' is used only for the optional Shiny binding and for embedding
-    tables in other HTML output).
+    load. Tables can optionally be made interactive (sorting, searching,
+    filtering, pagination, and expandable row detail) via a separate extension
+    loaded only when requested. No 'sass', no 'V8', no 'htmlwidgets' — just base
+    R and 'xfun' ('htmltools' is used only for the optional Shiny binding and
+    for embedding tables in other HTML output).
 License: MIT + file LICENSE
 URL: https://github.com/yihui/lt
 BugReports: https://github.com/yihui/lt/issues
@@ -26,5 +28,5 @@ Suggests:
     shiny,
     testit
 Roxygen: list(markdown = TRUE)
-Config/lt.js: 1.14.77
+Config/lt.js: 1.14.78
 Config/roxygen2/version: 8.1.0

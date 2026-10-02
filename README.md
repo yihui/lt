@@ -17,6 +17,11 @@ which keeps the implementation minimal: the entire runtime is a single
 vanilla-JS file ([about 10 KB
 minified](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)).
 
+Tables can also be made interactive — sorting, searching, per-column filtering,
+pagination, resizable columns, and expandable row detail — with
+`lt_interactive()`. The interactivity is a separate opt-in extension, loaded
+only for tables that ask for it, so static tables stay as light as ever.
+
 ## Installation
 
 ``` r
@@ -72,9 +77,18 @@ for a "cheat table" as an overview of these functions.
   unconditionally.
 - `lt_css()` — attach an external CSS file or URL to the table.
 
-**Column order**
+**Column order & visibility**
 
 - `lt_move()` — reorder columns.
+- `lt_hide()` — hide columns from the rendered table (still shipped in the
+  data, so an interactive row detail can surface them).
+
+**Interactivity**
+
+- `lt_interactive()` — opt a table into client-side sorting, a search box,
+  per-column filters, pagination, resizable columns, and expandable row detail
+  (drill-down). Features are handled by a small JavaScript extension loaded only
+  for interactive tables.
 
 **Export**
 
@@ -85,6 +99,13 @@ for a "cheat table" as an overview of these functions.
 **Shiny**
 
 - `lt_output()` / `render_lt()` — Shiny UI and server bindings.
+
+**Embedding**
+
+- `lt_spec()` — extract a table's render-ready spec (data plus ops), to ship to
+  the browser and render client-side with `LT.render()`.
+- `lt_dependency()` — the `htmlDependency` bundling lt's runtime assets, for
+  embedding lt tables in other HTML output (e.g. an htmlwidget).
 
 ## Examples
 
