@@ -418,11 +418,12 @@
       if (!v) return;
       const eb = {
         lo, hi, min: op.min, max: op.max, ref: op.ref, axis: op.axis,
-        axisLabel: op.axis_label, width: op.width || 80, height: op.height || 16
+        axisLabel: op.axis_label, width: op.width || 160, height: op.height || 16
       };
       // When an axis is requested, the same nice ticks drive both the footer
-      // axis and the faint in-cell gridlines.
-      if (op.axis) eb.ticks = niceTicks(eb.min, eb.max);
+      // axis and the faint in-cell gridlines; their count is capped so the
+      // labels do not crowd at the given width.
+      if (op.axis) eb.ticks = niceTicks(eb.min, eb.max, nAxisTicks(eb));
       errorbars[v] = eb;
     });
 
@@ -439,6 +440,18 @@
   // Horizontal padding (px) left/right inside an error-bar SVG, so points,
   // bars, and axis ticks never sit flush against the cell edge.
   const EB_PAD = 4;
+  // Axis tick-label font size (px); also drives how many ticks fit (see below)
+  // and must match the font-size for `.lt-eb-axis text` in lt.css.
+  const EB_AXIS_FONT = 11;
+
+  // How many axis ticks fit without the labels crowding: budget each label at
+  // ~0.6em per char (its widest value is at one of the ends) plus a one-em gap.
+  function nAxisTicks(eb) {
+    const inner = eb.width - 2 * EB_PAD,
+          chars = Math.max(String(eb.min).length, String(eb.max).length),
+          per = chars * EB_AXIS_FONT * 0.6 + EB_AXIS_FONT;
+    return Math.max(2, Math.min(8, Math.floor(inner / per) + 1));
+  }
   // Map a value to an x pixel on an error-bar's shared [min,max] scale: fit the
   // scale into [EB_PAD, W - EB_PAD], clamp into that range (a degenerate scale
   // centers), and round to 0.1px so coords stay short and free of float noise.
@@ -460,10 +473,6 @@
     const H = eb.height, y = H / 2, x = v => ebX(eb, v),
           cap = Math.min(4, (H - 1) / 2);  // half-height of the end caps
     let s = `<svg class="lt-eb" width="${eb.width}" height="${H}">`;
-    // faint vertical gridlines at the shared tick positions (behind the bar)
-    if (eb.ticks)
-      for (const t of eb.ticks)
-        s += `<line class="lt-eb-grid" x1="${x(t)}" y1="0" x2="${x(t)}" y2="${H}"/>`;
     if (eb.ref != null)
       s += `<line class="lt-eb-ref" x1="${x(eb.ref)}" y1="0" x2="${x(eb.ref)}" y2="${H}"/>`;
     if (lo != null && hi != null) {
@@ -479,22 +488,37 @@
     return s;
   }
 
+  // Full-cell background layer of faint vertical gridlines at the shared tick
+  // positions. Its width is fixed in px (matching the plot SVG, so the lines
+  // stay aligned with the bars), while height="100%" + preserveAspectRatio
+  // "none" stretch it to fill the whole <td> vertically — so the lines run
+  // continuously across the cell's (zeroed) padding and line up row-to-row. A
+  // per-cell fixed-height SVG could not: the cell padding leaves a gap it can't
+  // reach. Scaling only the vertical axis is harmless for vertical lines.
+  function svgGrid(eb) {
+    let s = `<svg class="lt-eb-grid-bg" width="${eb.width}" height="100%" ` +
+            `viewBox="0 0 ${eb.width} 10" preserveAspectRatio="none">`;
+    for (const t of eb.ticks)
+      s += `<line x1="${ebX(eb, t)}" y1="0" x2="${ebX(eb, t)}" y2="10"/>`;
+    return s + `</svg>`;
+  }
+
   // A shared horizontal axis for an error-bar column, drawn once in the footer:
   // a baseline with a tick mark + label at each nice tick (eb.ticks), and an
   // optional caption (eb.axisLabel) centered below. `overflow="visible"` lets a
   // caption slightly wider than the narrow column spill rather than clip.
   function svgAxis(eb) {
-    const W = eb.width, lbl = eb.axisLabel, H = lbl ? 28 : 16, x = v => ebX(eb, v);
+    const W = eb.width, lbl = eb.axisLabel, H = lbl ? 32 : 18, x = v => ebX(eb, v);
     let s = `<svg class="lt-eb-axis" width="${W}" height="${H}" overflow="visible">` +
             `<line x1="${EB_PAD}" y1="1" x2="${W - EB_PAD}" y2="1"/>`;
     for (const t of (eb.ticks || [])) {
       const xt = x(t),
             anchor = xt <= EB_PAD ? "start" : xt >= W - EB_PAD ? "end" : "middle";
-      s += `<line x1="${xt}" y1="0" x2="${xt}" y2="3"/>` +
-           `<text x="${xt}" y="12" text-anchor="${anchor}">${esc(str(t))}</text>`;
+      s += `<line x1="${xt}" y1="0" x2="${xt}" y2="4"/>` +
+           `<text x="${xt}" y="15" text-anchor="${anchor}">${esc(str(t))}</text>`;
     }
     if (lbl)
-      s += `<text class="lt-eb-axis-label" x="${W / 2}" y="${H - 2}" text-anchor="middle">${esc(lbl)}</text>`;
+      s += `<text class="lt-eb-axis-label" x="${W / 2}" y="${H - 4}" text-anchor="middle">${esc(lbl)}</text>`;
     return s + `</svg>`;
   }
 
@@ -674,7 +698,10 @@
         if (ci === 0 && ind) s = (s ? s + ";" : "") + `padding-left:${ind + 1}em`;
         const eb = errorbars[c];
         if (eb) {
-          out.push(`<td${attr("class", cls)}${attr("style", s)}>${svgErrorbar(data, c, eb, r)}${m ? sup(m) : ""}</td>`);
+          // lt-eb-cell zeroes the cell's vertical padding so the stretched
+          // gridline background can run unbroken from one row to the next.
+          const ebCls = [cls, eb.ticks ? "lt-eb-cell" : ""].filter(Boolean).join(" ");
+          out.push(`<td${attr("class", ebCls)}${attr("style", s)}>${eb.ticks ? svgGrid(eb) : ""}${svgErrorbar(data, c, eb, r)}${m ? sup(m) : ""}</td>`);
           continue;
         }
         const raw = str(data[c][r - 1]), disp = display[c][r - 1],
@@ -716,7 +743,9 @@
         out.push(`<td></td>`.repeat(nGrp));
         for (let i = 0; i < cols.length; i++) {
           const eb = errorbars[cols[i]];
-          out.push(`<td${attr("class", colCls[i])}>${eb?.axis ? svgAxis(eb) : ""}</td>`);
+          // left-align (lt-eb-cell) so the axis lines up with the plot/gridlines
+          const ac = [colCls[i], eb?.axis ? "lt-eb-cell" : ""].filter(Boolean).join(" ");
+          out.push(`<td${attr("class", ac)}>${eb?.axis ? svgAxis(eb) : ""}</td>`);
         }
         out.push(`</tr>`);
       }

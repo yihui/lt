@@ -603,7 +603,7 @@ lt_hide = function(x, columns) {
 #' # a labeled axis
 #' lt(d) |> lt_errorbar(c("est", "lo", "hi"), hide = FALSE, axis = "Effect")
 lt_errorbar = function(
-  x, columns, limits = NULL, ref = NULL, width = 80, height = 16,
+  x, columns, limits = NULL, ref = NULL, width = 160, height = 16,
   hide = TRUE, axis = FALSE
 ) {
   cols = if (inherits(columns, 'formula') && length(columns) == 3)

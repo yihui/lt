@@ -47,17 +47,30 @@ th, td{ padding: 5px; }
   .al-r { text-align: right; }
   .al-c { text-align: center; }
 
+  .lt-eb-cell {
+    position: relative;
+    padding: 0;  /* so the gridline background fills the whole cell */
+    text-align: left;  /* keep the plot flush left, aligned with the gridlines */
+  }
+  .lt-eb-grid-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    line { stroke: #eee; }
+  }
   .lt-eb {
+    position: relative;
     vertical-align: middle;
     line { stroke: #888; }
     circle { fill: #333; }
     .lt-eb-ref { stroke: #ccc; }
-    .lt-eb-grid { stroke: #eee; }
   }
   .lt-eb-axis {
+    display: block;
+    margin-top: 3px;  /* small gap below the body, since the cell has no padding */
     line { stroke: #888; }
-    text { fill: #666; font-size: 9px; }
-    .lt-eb-axis-label { fill: #333; }
+    text { fill: #666; font-size: 11px; }
+    .lt-eb-axis-label { fill: #333; font-size: 12px; }
   }
 
   .lt-fnref {

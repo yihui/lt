@@ -63,14 +63,25 @@ assert("lt_errorbar axis = TRUE draws one shared axis in the footer", {
   (grepl("<tfoot", html, fixed = TRUE) %==% TRUE)
   # "nice" ticks for [0, 1] step at 0.2; end labels inset by the 4px pad, a
   # mid tick (0.4 -> x 32.8) is middle-anchored
-  (grepl('<text x="4" y="12" text-anchor="start">0</text>', html, fixed = TRUE) %==% TRUE)
-  (grepl('<text x="76" y="12" text-anchor="end">1</text>', html, fixed = TRUE) %==% TRUE)
-  (grepl('<text x="32.8" y="12" text-anchor="middle">0.4</text>', html, fixed = TRUE) %==% TRUE)
-  # the same ticks become faint in-cell gridlines (6 ticks x 2 rows)
-  (count_str(html, 'class="lt-eb-grid"') %==% 12L)
+  (grepl('<text x="4" y="15" text-anchor="start">0</text>', html, fixed = TRUE) %==% TRUE)
+  (grepl('<text x="76" y="15" text-anchor="end">1</text>', html, fixed = TRUE) %==% TRUE)
+  (grepl('<text x="32.8" y="15" text-anchor="middle">0.4</text>', html, fixed = TRUE) %==% TRUE)
+  # the same ticks drive a stretched in-cell gridline background (one per row)
+  (count_str(html, 'class="lt-eb-grid-bg"') %==% 2L)
   # the axis caption is centered below the ticks
-  (grepl('class="lt-eb-axis-label" x="40" y="26" text-anchor="middle">Effect</text>',
+  (grepl('class="lt-eb-axis-label" x="40" y="28" text-anchor="middle">Effect</text>',
     html, fixed = TRUE) %==% TRUE)
+
+  # tick count adapts to width so labels do not crowd: a narrow axis keeps only
+  # the endpoints, a wide one shows the full 0.2 step
+  narrow = build(list(data = list(est = 0.5, lo = 0, hi = 1),
+    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
+      min = 0, max = 1, width = 40, height = 16, axis = TRUE))))
+  wide = build(list(data = list(est = 0.5, lo = 0, hi = 1),
+    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
+      min = 0, max = 1, width = 300, height = 16, axis = TRUE))))
+  (count_str(narrow, "</text>") %==% 2L)
+  (isTRUE(count_str(wide, "</text>") > count_str(narrow, "</text>")) %==% TRUE)
 })
 
 assert("table is wrapped in a div for horizontal scroll", {

@@ -563,8 +563,7 @@ d_eff = data.frame(
   Hi   = c(0.29, -0.16, 0.69, 0.13)
 )
 lt(d_eff) |>
-  lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = "Effect (95% CI)") |>
-  lt_align(~ Est, "center")
+  lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = "Effect (95% CI)")
 ```
 
 ## Styling

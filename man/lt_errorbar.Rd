@@ -9,7 +9,7 @@ lt_errorbar(
   columns,
   limits = NULL,
   ref = NULL,
-  width = 80,
+  width = 160,
   height = 16,
   hide = TRUE,
   axis = FALSE
