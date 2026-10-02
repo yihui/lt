@@ -4,11 +4,15 @@
 \alias{lt_dependency}
 \title{HTML dependency for lt tables}
 \usage{
-lt_dependency(interactive = FALSE, shiny = FALSE)
+lt_dependency(interactive = FALSE, plot = FALSE, shiny = FALSE)
 }
 \arguments{
 \item{interactive}{Whether to also include the interactivity extension (the
 assets behind \code{\link[=lt_interactive]{lt_interactive()}}): its script and stylesheet.}
+
+\item{plot}{Whether to also include the graphics module (the assets behind
+\code{\link[=lt_errorbar]{lt_errorbar()}} and other inline-plot cells): its script and stylesheet.
+Its script loads before the core runtime so plot cells render.}
 
 \item{shiny}{Whether to include the Shiny output binding (only needed by
 \code{\link[=lt_output]{lt_output()}} / \code{\link[=render_lt]{render_lt()}}).}

@@ -3,8 +3,8 @@ title: "lt.js — JavaScript API Reference"
 output:
   html:
     meta:
-      css: ["@default", "@lt", "@lt-interactive", "@key-buttons"]
-      js: ["@lt", "@lt-interactive", "@key-buttons"]
+      css: ["@default", "@lt", "@lt-plot", "@lt-interactive", "@key-buttons"]
+      js: ["@lt-plot", "@lt", "@lt-interactive", "@key-buttons"]
 ---
 
 This document demonstrates the lt.js runtime directly from JavaScript.
@@ -31,6 +31,15 @@ more stylesheet and script, loaded after the core ones:
 ``` html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt-interactive.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-interactive.min.js"></script>
+```
+
+Inline-graphics cells (error bars, and later sparklines) live in a separate
+graphics module. Load it **before** the core script, so its cell renderers
+are registered by the time the runtime builds a table:
+
+``` html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt-plot.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-plot.min.js"></script>
 ```
 
 ```{r, echo = FALSE}
@@ -453,7 +462,8 @@ the plot replaces the value column's cells (hide the bound columns).
 (tick marks + labels at "nice" round values, plus matching in-cell
 gridlines); `axis_label` captions it. The SVG is built in the browser from the
 numbers, so only the rows actually rendered (the current page, when
-interactive) are drawn.
+interactive) are drawn. This cell type comes from the graphics module
+(`lt-plot.js`), loaded before the core script.
 
 ```{js}
 LT.build({

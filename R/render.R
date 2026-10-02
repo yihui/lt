@@ -33,6 +33,14 @@ asset_url = function(file) {
   )
 }
 
+# Op types rendered as inline graphics by the lt-plot.js module (error bars,
+# and later sparklines). A table using any of them needs that module's assets
+# (lt-plot.js, lt-plot.css) in addition to the core runtime.
+.plot_ops = c('errorbar')
+has_plot = function(x) any(vapply(
+  x$ops, function(o) isTRUE(o$type %in% .plot_ops), logical(1)
+))
+
 # Anything inlined inside a <script>...</script> wrapper must not contain
 # the literal sequence `</script` (case-insensitive) — the HTML parser
 # would end the script there. `<\/script` is harmless inside JS strings,
@@ -184,14 +192,19 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
   if (isTRUE(assets)) assets = c('css', 'js')
   if (isFALSE(assets)) assets = character()
   int = !is.null(x$interactive)
+  plot = has_plot(x)
+  # lt-plot.js must load before core (core reads LT.cells when it drains the
+  # queue), so it leads the script list.
   body = c(
-    css_block(if ('css' %in% assets) c('lt.css', if (int) 'lt-interactive.css'),
-              inline_assets),
+    css_block(if ('css' %in% assets)
+      c('lt.css', if (plot) 'lt-plot.css', if (int) 'lt-interactive.css'),
+      inline_assets),
     user_css_block(x$css),
     rules_block(x$rules),
     spec_block(x),
-    js_block(if ('js' %in% assets) c('lt.js', if (int) 'lt-interactive.js'),
-             inline_assets)
+    js_block(if ('js' %in% assets)
+      c(if (plot) 'lt-plot.js', 'lt.js', if (int) 'lt-interactive.js'),
+      inline_assets)
   )
   if (!fragment) body = html_doc(body)
   xfun::raw_string(paste(body, collapse = '\n'))
@@ -216,6 +229,7 @@ print.lt_tbl = function(x, ...) {
 .knit_flag = 'lt.assets_added'
 .css_flag = 'lt.css_added'
 .int_flag = 'lt.interactive_added'
+.plot_flag = 'lt.plot_added'
 
 knit_print.lt_tbl = function(x, ...) {
   if (is.list(opts <- getOption('lt.lt_static'))) return(structure(
@@ -231,6 +245,13 @@ knit_print.lt_tbl = function(x, ...) {
     int_first = !isTRUE(knitr::opts_knit$get(.int_flag))
     if (int_first) knitr::opts_knit$set(stats::setNames(list(TRUE), .int_flag))
   }
+  # The graphics module, like the interactivity one, is tracked separately: the
+  # first table that uses a plot need not be the first table overall.
+  plot_first = FALSE
+  if (has_plot(x)) {
+    plot_first = !isTRUE(knitr::opts_knit$get(.plot_flag))
+    if (plot_first) knitr::opts_knit$set(stats::setNames(list(TRUE), .plot_flag))
+  }
   # Dedup user CSS (from lt_css()) across the document: a stylesheet shared
   # by many tables (e.g. a package theme) should be emitted once. Identical
   # <link> hrefs would dedup in the browser, but inlined <style> blocks
@@ -244,6 +265,11 @@ knit_print.lt_tbl = function(x, ...) {
   # the table, script after it (so it runs after the core runtime).
   if (int_first && !first) html = paste(c(
     css_block('lt-interactive.css'), html, js_block('lt-interactive.js')
+  ), collapse = '\n')
+  # The graphics module ships before the table: its renderer must be registered
+  # before core (already loaded by an earlier table) builds this one.
+  if (plot_first && !first) html = paste(c(
+    css_block('lt-plot.css'), js_block('lt-plot.js'), html
   ), collapse = '\n')
   structure(xfun::raw_string(html), class = c('knit_asis', 'html'))
 }
@@ -259,11 +285,14 @@ record_print.lt_tbl = function(x, ...) {
   # litedown dedups identical linked tags across the document, so the
   # extension's <link>/<script src> can be emitted for every interactive table.
   int = !is.null(x$interactive)
+  plot = has_plot(x)
   xfun::new_record(c(
-    css_block(c('lt.css', if (int) 'lt-interactive.css'), inline = FALSE),
+    css_block(c('lt.css', if (plot) 'lt-plot.css', if (int) 'lt-interactive.css'),
+      inline = FALSE),
     user_css_block(x$css, local = TRUE),
     rules_block(x$rules), spec_block(x),
-    js_block(c('lt.js', if (int) 'lt-interactive.js'), inline = FALSE), ''
+    js_block(c(if (plot) 'lt-plot.js', 'lt.js', if (int) 'lt-interactive.js'),
+      inline = FALSE), ''
   ), 'asis')
 }
 
@@ -352,18 +381,20 @@ lt_static_browser = function(x, css = TRUE) {
 }
 
 lt_static_node = function(x, css = TRUE) {
-  js = pkg_file('www', 'lt.js')
   runner = pkg_file('js', 'run-lt.js')
+  plot = has_plot(x)
+  # lt-plot.js before lt.js so its renderer is registered when core builds.
+  js = pkg_file('www', c(if (plot) 'lt-plot.js', 'lt.js'))
   spec = x; spec$css = spec$rules = NULL
   if (!length(spec$ops)) spec$ops = NULL
   spec = with_missing(with_col_order(spec))
   json = xfun::tojson(spec)
-  out = system2('node', c(shQuote(runner), shQuote(js)), input = json, stdout = TRUE)
+  out = system2('node', shQuote(c(runner, js)), input = json, stdout = TRUE)
   if (!is.null(attr(out, 'status'))) stop('Node.js failed to render the lt table.')
   Encoding(out) = 'UTF-8'
   c(
-    css_block(if (css) 'lt.css'), user_css_block(x$css), rules_block(x$rules),
-    out
+    css_block(c(if (css) 'lt.css', if (css && plot) 'lt-plot.css')),
+    user_css_block(x$css), rules_block(x$rules), out
   )
 }
 

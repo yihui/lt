@@ -9,6 +9,13 @@
 
   const $ = (el, sel) => el.querySelector(sel);
 
+  // Inline-graphics cell renderers (error bars, sparklines, …), keyed by op
+  // type and shipped by lt-plot.js (loaded before core). Captured as a live
+  // reference and re-exposed on root.LT below, so a plot module loaded either
+  // before or after core registers into the same object. Empty when no plot
+  // module is present; core itself contains no plot code (see LT.cells docs).
+  const cellRenderers = root.LT?.cells || {};
+
   // `[<]` (not `<`) avoids `</…` so this file is safe to inline in <script>.
   const esc = s => String(s)
     .replace(/&/g, "&amp;").replace(/[<]/g, "&lt;")
@@ -35,24 +42,6 @@
   const isNumInf = v => isNum(v) || Math.abs(v) === Infinity;
   // A column is "numeric" if its first non-null value is a number.
   const numCol = col => col?.length && typeof col.find(v => v != null) === "number";
-
-  // "Nice" axis ticks for [lo, hi] (~n of them), à la base R's pretty(): snap
-  // the step to 1/2/5 × 10^k so labels are round numbers. Returns tick values
-  // rounded to the step's own precision (so no float noise like 0.30000001).
-  function niceTicks(lo, hi, n = 5) {
-    if (!(hi > lo)) return [lo];
-    const niceNum = (x, round) => {
-      const e = Math.floor(Math.log10(x)), f = x / 10 ** e,
-            nf = round ? (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10)
-                       : (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10);
-      return nf * 10 ** e;
-    };
-    const d = niceNum(niceNum(hi - lo, false) / (n - 1), true),
-          dec = Math.max(0, -Math.floor(Math.log10(d))), ticks = [];
-    for (let v = Math.ceil(lo / d) * d; v <= hi + d / 2; v += d)
-      ticks.push(+v.toFixed(dec));
-    return ticks;
-  }
 
   // Column order. Prefer the explicit `spec.columns` sent by R: a JSON object
   // reorders integer-like keys (e.g. "1", "2") ahead of string keys, so
@@ -408,118 +397,27 @@
       }
     }
 
-    // Error-bar columns: a value column drawn as an inline SVG (a point at the
-    // estimate and a horizontal bar from lower to upper, on a shared scale),
-    // from an lt_errorbar() op. columns = [value, lower, upper]; the plot
-    // replaces the value column's cells.
-    const errorbars = {};
-    onOp("errorbar", op => {
-      const [v, lo, hi] = op.columns || [];
-      if (!v) return;
-      const eb = {
-        lo, hi, min: op.min, max: op.max, ref: op.ref, axis: op.axis,
-        axisLabel: op.axis_label, width: op.width || 160, height: op.height || 16
-      };
-      // When an axis is requested, the same nice ticks drive both the footer
-      // axis and the faint in-cell gridlines; their count is capped so the
-      // labels do not crowd at the given width.
-      if (op.axis) eb.ticks = niceTicks(eb.min, eb.max, nAxisTicks(eb));
-      errorbars[v] = eb;
-    });
+    // Inline-graphics cells: an op whose type has a renderer registered on
+    // LT.cells (shipped by lt-plot.js) draws its value column as inline SVG
+    // (e.g. an error bar). The renderer maps the op to a per-column config
+    // here; pushRow and the footer consult cellMap[col] = { rnd, cfg }. Keeping
+    // the drawing in a module leaves core with no plot-specific code.
+    const cellMap = {};
+    for (const op of ops) {
+      const rnd = cellRenderers[op.type];
+      if (!rnd) continue;
+      const cfgs = rnd.resolve(op) || {};
+      for (const c of Object.keys(cfgs)) cellMap[c] = { rnd, cfg: cfgs[c] };
+    }
 
     return {
       visible, align, colLabels, colWidths, tableWidth, indent,
-      groups, rowSpans, styles, spanners, errorbars,
+      groups, rowSpans, styles, spanners, cellMap,
       footnotes: spec.footnotes || [],
       notes: spec.notes || [],
       header: spec.header || {},
       nRow
     };
-  }
-
-  // Horizontal padding (px) left/right inside an error-bar SVG, so points,
-  // bars, and axis ticks never sit flush against the cell edge.
-  const EB_PAD = 4;
-  // Axis tick-label font size (px); also drives how many ticks fit (see below)
-  // and must match the font-size for `.lt-eb-axis text` in lt.css.
-  const EB_AXIS_FONT = 11;
-
-  // How many axis ticks fit without the labels crowding: budget each label at
-  // ~0.6em per char (its widest value is at one of the ends) plus a one-em gap.
-  function nAxisTicks(eb) {
-    const inner = eb.width - 2 * EB_PAD,
-          chars = Math.max(String(eb.min).length, String(eb.max).length),
-          per = chars * EB_AXIS_FONT * 0.6 + EB_AXIS_FONT;
-    return Math.max(2, Math.min(8, Math.floor(inner / per) + 1));
-  }
-  // Map a value to an x pixel on an error-bar's shared [min,max] scale: fit the
-  // scale into [EB_PAD, W - EB_PAD], clamp into that range (a degenerate scale
-  // centers), and round to 0.1px so coords stay short and free of float noise.
-  const ebX = (eb, v) => {
-    const inner = eb.width - 2 * EB_PAD, span = eb.max - eb.min,
-          p = span > 0 ? EB_PAD + (v - eb.min) / span * inner : eb.width / 2;
-    return Math.round(Math.max(EB_PAD, Math.min(eb.width - EB_PAD, p)) * 10) / 10;
-  };
-
-  // Inline SVG for an error-bar cell: a point at the estimate and a horizontal
-  // bar (with end caps) from the lower to the upper bound, on the column's
-  // shared [min,max] scale. Only the numbers are shipped in the spec; the SVG
-  // is built here at render time, so an interactive table (which rebuilds
-  // <tbody> from spec._viewRows) draws it only for the rows on the current page.
-  function svgErrorbar(data, c, eb, r) {
-    const num = k => { const v = data[k]?.[r - 1]; return isNum(v) ? v : null; };
-    const est = num(c), lo = num(eb.lo), hi = num(eb.hi);
-    if (est == null && lo == null && hi == null) return "";
-    const H = eb.height, y = H / 2, x = v => ebX(eb, v),
-          cap = Math.min(4, (H - 1) / 2);  // half-height of the end caps
-    let s = `<svg class="lt-eb" width="${eb.width}" height="${H}">`;
-    if (eb.ref != null)
-      s += `<line class="lt-eb-ref" x1="${x(eb.ref)}" y1="0" x2="${x(eb.ref)}" y2="${H}"/>`;
-    if (lo != null && hi != null) {
-      // horizontal bar plus short vertical end caps at both ends
-      const xl = x(lo), xh = x(hi);
-      s += `<line x1="${xl}" y1="${y}" x2="${xh}" y2="${y}"/>` +
-           `<line x1="${xl}" y1="${y - cap}" x2="${xl}" y2="${y + cap}"/>` +
-           `<line x1="${xh}" y1="${y - cap}" x2="${xh}" y2="${y + cap}"/>`;
-    }
-    if (est != null) s += `<circle cx="${x(est)}" cy="${y}" r="3"/>`;
-    const ci = lo != null && hi != null ? ` (${str(lo)}, ${str(hi)})` : "";
-    s += `<title>${esc((est != null ? str(est) : "") + ci)}</title></svg>`;
-    return s;
-  }
-
-  // Full-cell background layer of faint vertical gridlines at the shared tick
-  // positions. Its width is fixed in px (matching the plot SVG, so the lines
-  // stay aligned with the bars), while height="100%" + preserveAspectRatio
-  // "none" stretch it to fill the whole <td> vertically — so the lines run
-  // continuously across the cell's (zeroed) padding and line up row-to-row. A
-  // per-cell fixed-height SVG could not: the cell padding leaves a gap it can't
-  // reach. Scaling only the vertical axis is harmless for vertical lines.
-  function svgGrid(eb) {
-    let s = `<svg class="lt-eb-grid-bg" width="${eb.width}" height="100%" ` +
-            `viewBox="0 0 ${eb.width} 10" preserveAspectRatio="none">`;
-    for (const t of eb.ticks)
-      s += `<line x1="${ebX(eb, t)}" y1="0" x2="${ebX(eb, t)}" y2="10"/>`;
-    return s + `</svg>`;
-  }
-
-  // A shared horizontal axis for an error-bar column, drawn once in the footer:
-  // a baseline with a tick mark + label at each nice tick (eb.ticks), and an
-  // optional caption (eb.axisLabel) centered below. `overflow="visible"` lets a
-  // caption slightly wider than the narrow column spill rather than clip.
-  function svgAxis(eb) {
-    const W = eb.width, lbl = eb.axisLabel, H = lbl ? 32 : 18, x = v => ebX(eb, v);
-    let s = `<svg class="lt-eb-axis" width="${W}" height="${H}" overflow="visible">` +
-            `<line x1="${EB_PAD}" y1="1" x2="${W - EB_PAD}" y2="1"/>`;
-    for (const t of (eb.ticks || [])) {
-      const xt = x(t),
-            anchor = xt <= EB_PAD ? "start" : xt >= W - EB_PAD ? "end" : "middle";
-      s += `<line x1="${xt}" y1="0" x2="${xt}" y2="4"/>` +
-           `<text x="${xt}" y="15" text-anchor="${anchor}">${esc(str(t))}</text>`;
-    }
-    if (lbl)
-      s += `<text class="lt-eb-axis-label" x="${W / 2}" y="${H - 4}" text-anchor="middle">${esc(lbl)}</text>`;
-    return s + `</svg>`;
   }
 
   // Footnotes: dedup by text, assign 1..N in first-seen order.
@@ -584,7 +482,9 @@
     const data = spec.data || {},
           { display, nRow } = applyOps(spec),
           { visible: cols, align, colLabels, colWidths, tableWidth, indent,
-            groups, rowSpans, styles, spanners, errorbars, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+            groups, rowSpans, styles, spanners, cellMap, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+          // Core helpers passed to a cell renderer (see LT.cells / lt-plot.js).
+          U = { esc, isNum, str },
           reg = indexFootnotes(fns),
           fIdx = matcher(fns, reg.idx),
           nGrp = rowSpans.length,
@@ -696,12 +596,13 @@
               cls = [colCls[ci], cc].filter(Boolean).join(" ");
         let s = styleMap[k] || "";
         if (ci === 0 && ind) s = (s ? s + ";" : "") + `padding-left:${ind + 1}em`;
-        const eb = errorbars[c];
-        if (eb) {
-          // lt-eb-cell zeroes the cell's vertical padding so the stretched
-          // gridline background can run unbroken from one row to the next.
-          const ebCls = [cls, eb.ticks ? "lt-eb-cell" : ""].filter(Boolean).join(" ");
-          out.push(`<td${attr("class", ebCls)}${attr("style", s)}>${eb.ticks ? svgGrid(eb) : ""}${svgErrorbar(data, c, eb, r)}${m ? sup(m) : ""}</td>`);
+        const cm = cellMap[c];
+        if (cm) {
+          // A plot cell: the renderer supplies the inner SVG and may add a <td>
+          // class (e.g. to zero padding so a gridline background runs unbroken).
+          const extra = cm.rnd.cellClass?.(cm.cfg) || "",
+                pcls = [cls, extra].filter(Boolean).join(" ");
+          out.push(`<td${attr("class", pcls)}${attr("style", s)}>${cm.rnd.cell(cm.cfg, data, r, U)}${m ? sup(m) : ""}</td>`);
           continue;
         }
         const raw = str(data[c][r - 1]), disp = display[c][r - 1],
@@ -731,21 +632,25 @@
     }
     out.push(`</tbody>`);
 
-    // <tfoot>: an optional error-bar axis row, then footnotes and source notes.
-    // The axis row carries a per-column cell so each axis SVG lines up under its
-    // plot column; the footnote/note rows span the full width.
-    const axisCols = cols.filter(c => errorbars[c]?.axis);
-    if (reg.order.length || notes.length || axisCols.length) {
+    // <tfoot>: an optional plot-footer row (e.g. a shared error-bar axis), then
+    // footnotes and source notes. The footer row carries a per-column cell so
+    // each renderer's footer SVG lines up under its plot column; the footnote/
+    // note rows span the full width.
+    const footCells = cols.map(c =>
+      cellMap[c] ? (cellMap[c].rnd.foot?.(cellMap[c].cfg, U) || "") : "");
+    const hasFoot = footCells.some(h => h);
+    if (reg.order.length || notes.length || hasFoot) {
       const footRow = (cls, html) => `<tr class="${cls}"><td colspan="${nCol}">${html}</td></tr>`;
       out.push(`<tfoot class="lt-footer">`);
-      if (axisCols.length) {
-        out.push(`<tr class="lt-eb-axis-row">`);
+      if (hasFoot) {
+        out.push(`<tr class="lt-plot-foot">`);
         out.push(`<td></td>`.repeat(nGrp));
         for (let i = 0; i < cols.length; i++) {
-          const eb = errorbars[cols[i]];
-          // left-align (lt-eb-cell) so the axis lines up with the plot/gridlines
-          const ac = [colCls[i], eb?.axis ? "lt-eb-cell" : ""].filter(Boolean).join(" ");
-          out.push(`<td${attr("class", ac)}>${eb?.axis ? svgAxis(eb) : ""}</td>`);
+          const cm = cellMap[cols[i]];
+          // reuse the renderer's cell class so the footer lines up with the plot
+          const extra = footCells[i] && cm ? (cm.rnd.cellClass?.(cm.cfg) || "") : "";
+          const ac = [colCls[i], extra].filter(Boolean).join(" ");
+          out.push(`<td${attr("class", ac)}>${footCells[i]}</td>`);
         }
         out.push(`</tr>`);
       }
@@ -770,6 +675,9 @@
   // Plugin seam (see lt-interactive.js): a plugin attaches its handle under
   // LT.plugins and pushes a callback onto LT.onMount, which core calls with
   // each table element and its spec right after the table is mounted.
+  // Cell-renderer seam (see lt-plot.js): a module registers an inline-graphics
+  // renderer under LT.cells, keyed by op type, which core consults *during*
+  // buildHtml (not post-mount) to draw a column's cells and an optional footer.
   const plugins = root.LT?.plugins || {}, onMount = root.LT?.onMount || [];
 
   // Alt-click toggles raw values in this table; alt-dblclick toggles page-wide.
@@ -809,6 +717,6 @@
   (root.LT?.q || []).forEach(q.push);
   root.LT = {
     build: spec => mount(document.currentScript, spec),
-    render, buildHtml, plugins, onMount, q,
+    render, buildHtml, plugins, onMount, cells: cellRenderers, q,
   };
 })(window);
