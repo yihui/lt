@@ -451,7 +451,9 @@ LT.build({
 });
 ```
 
-### Inline error-bar plots (`errorbar`)
+## Inline plots
+
+### Error bars (`errorbar`)
 
 Render a value column's cells as a small inline SVG — a point at the
 estimate with a bar (end caps included) from the lower to the upper bound —

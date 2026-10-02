@@ -538,7 +538,7 @@ reads the whole row (e.g. an interactive table's row detail, below).
 tbl_iris |> lt_hide(~ Petal.Length + Petal.Width)
 ```
 
-### Inline error-bar plots
+## Inline plots
 
 `lt_errorbar()` renders a numeric column's cells as a small inline SVG — a
 point at the estimate with a horizontal bar (and end caps) from the lower to
