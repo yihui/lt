@@ -141,6 +141,77 @@
     foot: (eb, u) => eb.axis ? svgAxis(eb, u) : ""
   };
 
+  // Padding (px) inside a sparkline SVG, so the line/bars never touch the edge.
+  const SP_PAD = 2;
+  const round1 = n => Math.round(n * 10) / 10;  // 0.1px, to keep coords short
+  const q = v => `"${v}"`;  // double-quote an SVG attribute value
+
+  // A row's series for a sparkline: when a single column is named and its cell
+  // is an array (a list-column), that array is the series; otherwise each named
+  // column contributes one point, read left to right across the row. Non-finite
+  // entries become null (a gap in the line, a skipped bar). `u` carries the core
+  // helpers (esc/isNum/str).
+  function spSeries(sp, data, r, u) {
+    const cell = data[sp.cols[0]]?.[r - 1];
+    const raw = sp.cols.length === 1 && Array.isArray(cell)
+      ? cell : sp.cols.map(c => data[c]?.[r - 1]);
+    return raw.map(v => u.isNum(v) ? +v : null);
+  }
+
+  // Inline SVG sparkline (line or bar) for a cell. The series is scaled to the
+  // shared [min,max] when the spec gives one, else to the row's own finite
+  // range; a flat series sits on the mid-line. Points are spaced evenly across
+  // the width. Nulls break the line into separate subpaths (and drop bars).
+  function svgSparkline(sp, data, r, u) {
+    const vals = spSeries(sp, data, r, u), fin = vals.filter(v => v != null);
+    if (!fin.length) return "";
+    const W = sp.width, H = sp.height, n = vals.length;
+    const lo = sp.min != null ? sp.min : Math.min(...fin),
+          hi = sp.max != null ? sp.max : Math.max(...fin);
+    const xAt = i => round1(n > 1 ? SP_PAD + i / (n - 1) * (W - 2 * SP_PAD) : W / 2),
+          yAt = v => round1(hi > lo
+            ? H - SP_PAD - (v - lo) / (hi - lo) * (H - 2 * SP_PAD) : H / 2);
+    // the line/bars inherit `currentColor`, so one color prop styles either
+    const style = sp.color ? ` style="color:${u.esc(sp.color)}"` : "";
+    let body;
+    if (sp.kind === "bar") {
+      // one equal-width slot per value; each bar is centered in its slot and
+      // grows from a zero baseline when the scale straddles 0, else the bottom.
+      const slot = (W - 2 * SP_PAD) / n, bw = round1(Math.max(1, slot * 0.8)),
+            base = yAt(lo < 0 && hi > 0 ? 0 : lo);
+      body = vals.map((v, i) => {
+        if (v == null) return "";
+        const yv = yAt(v), x = round1(SP_PAD + i * slot + (slot - bw) / 2);
+        return `<rect class="lt-spark-bar" x=${q(x)} y=${q(Math.min(yv, base))} ` +
+               `width=${q(bw)} height=${q(Math.max(1, Math.abs(base - yv)))}/>`;
+      }).join("");
+    } else {
+      let d = "", pen = false;
+      vals.forEach((v, i) => {
+        if (v == null) { pen = false; return; }
+        d += `${pen ? "L" : "M"}${xAt(i)} ${yAt(v)}`;
+        pen = true;
+      });
+      body = `<path class="lt-spark-line" d="${d}"/>`;
+    }
+    return `<svg class="lt-spark" width="${W}" height="${H}"${style}>${body}` +
+           `<title>${u.esc(fin.map(u.str).join(", "))}</title></svg>`;
+  }
+
+  // Sparkline cell renderer. columns = one list-column, or several numeric
+  // columns read across the row; the plot is drawn in the first column's cells.
+  cells.sparkline = {
+    resolve(op) {
+      const cols = op.columns || [], v = cols[0];
+      if (!v) return {};
+      return { [v]: {
+        col: v, cols, kind: op.kind, min: op.min, max: op.max,
+        color: op.color, width: op.width || 120, height: op.height || 20
+      } };
+    },
+    cell: (sp, data, r, u) => svgSparkline(sp, data, r, u)
+  };
+
   // If core already built a table before this module loaded (a doc where an
   // earlier plain table pulled in lt.js first, so its renderer was missing),
   // re-render any mounted table that uses a renderer we just registered. Tables
