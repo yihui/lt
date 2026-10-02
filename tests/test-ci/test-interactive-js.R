@@ -395,12 +395,8 @@ assert("resizing is off by default", {
 th_hidden = function(ti) sprintf('t.querySelectorAll("thead th")[%d].hidden', ti)
 cell_hidden = function(ti) sprintf(
   't.querySelector("tbody tr").children[%d].hidden', ti)
-# toggle the menu box for column `ti` to `on`, as a single real click does. (A
-# scripted click() on a box nested in its <label> double-fires — the click
-# bubbles to the label, which re-dispatches to the control — so set + change.)
-set_box = function(ti, on) sprintf(
-  '{var b=t.querySelectorAll(".lti-menu input")[%d];b.checked=%s;b.dispatchEvent(new Event("change"))}',
-  ti, tolower(on))
+# click column `ti`'s menu checkbox (toggles it)
+box_click = function(ti) sprintf('t.querySelectorAll(".lti-menu input")[%d].click()', ti)
 
 assert("the column menu lists every column and hides the unchecked ones", {
   x = itbl(hide = TRUE)
@@ -410,7 +406,7 @@ assert("the column menu lists every column and hides the unchecked ones", {
   (lti_eval(x, '[...t.querySelectorAll(".lti-menu input")].every(b => b.checked)')
    %==% 'true')
   # unchecking a box hides that column's header and cells; the other is untouched
-  off1 = set_box(1, FALSE)
+  off1 = box_click(1)
   (lti_eval(x, th_hidden(1), off1) %==% 'true')
   (lti_eval(x, cell_hidden(1), off1) %==% 'true')
   (lti_eval(x, cell_hidden(0), off1) %==% 'false')
@@ -418,7 +414,7 @@ assert("the column menu lists every column and hides the unchecked ones", {
   sortN = 'document.querySelectorAll("thead th")[0].click()'
   (lti_eval(x, cell_hidden(1), paste(off1, sortN, sep = ';')) %==% 'true')
   # re-checking restores it
-  (lti_eval(x, th_hidden(1), paste(off1, set_box(1, TRUE), sep = ';')) %==% 'false')
+  (lti_eval(x, th_hidden(1), paste(off1, box_click(1), sep = ';')) %==% 'false')
 })
 
 assert("hide = column names starts those columns hidden; the menu still lists all", {
@@ -437,7 +433,7 @@ assert("with resize on, hiding a column also drops its <col> (fixed layout)", {
   # the body cells alone would leave a gap in a fixed-layout table; the <col>
   # must be hidden too for the column to collapse
   x = itbl(hide = TRUE, resize = TRUE)
-  off1 = set_box(1, FALSE)
+  off1 = box_click(1)
   (lti_eval(x, 't.querySelectorAll("col")[1].hidden', off1) %==% 'true')
   (lti_eval(x, th_hidden(1), off1) %==% 'true')
 })

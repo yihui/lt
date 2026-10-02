@@ -681,10 +681,13 @@
   const plugins = root.LT?.plugins || {}, onMount = root.LT?.onMount || [];
 
   // Alt-click toggles raw values in this table; alt-dblclick toggles page-wide.
+  // The handlers must not *return* false (a false return from a DOM0 handler
+  // cancels the click's default action — which would, e.g., stop a checkbox
+  // inside the table from toggling), so they use statement bodies.
   const wireRaw = tbl => {
-    const raw = (e, el) => e.altKey && el.classList.toggle("lt-raw");
-    tbl.onclick = e => e.detail === 1 && raw(e, tbl);
-    tbl.ondblclick = e => raw(e, tbl.ownerDocument.documentElement);
+    const raw = (e, el) => { if (e.altKey) el.classList.toggle("lt-raw"); };
+    tbl.onclick = e => { if (e.detail === 1) raw(e, tbl); };
+    tbl.ondblclick = e => { raw(e, tbl.ownerDocument.documentElement); };
   };
 
   // Finish a freshly inserted table: remember its spec, wire the raw-value
