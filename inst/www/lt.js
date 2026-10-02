@@ -712,11 +712,23 @@
     el.innerHTML = buildHtml(spec);
     return ready($(el, "table"), spec);
   };
+  // Rebuild an already-mounted table in place from its stashed spec. Used by a
+  // cell module (lt-plot.js) that loads *after* core has built a table (e.g. a
+  // litedown/knitr doc where an earlier plain table pulled in lt.js first): the
+  // module registers its renderer, then refreshes the tables that needed it.
+  const refresh = tbl => {
+    const spec = tbl?._ltSpec, wrap = tbl?.closest(".lt-wrap");
+    if (!spec || !wrap) return;
+    wrap.insertAdjacentHTML("afterend", buildHtml(spec));
+    const next = wrap.nextElementSibling;
+    wrap.remove();
+    return ready($(next, "table"), spec);
+  };
   // q.push renders immediately; replay any entries queued before we loaded.
   const q = { push: e => mount(e.s, e.d) };
   (root.LT?.q || []).forEach(q.push);
   root.LT = {
     build: spec => mount(document.currentScript, spec),
-    render, buildHtml, plugins, onMount, cells: cellRenderers, q,
+    render, refresh, buildHtml, plugins, onMount, cells: cellRenderers, q,
   };
 })(window);

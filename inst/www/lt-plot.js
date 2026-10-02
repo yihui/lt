@@ -140,4 +140,15 @@
     cell: (eb, data, r, u) => (eb.ticks ? svgGrid(eb) : "") + svgErrorbar(eb, data, r, u),
     foot: (eb, u) => eb.axis ? svgAxis(eb, u) : ""
   };
+
+  // If core already built a table before this module loaded (a doc where an
+  // earlier plain table pulled in lt.js first, so its renderer was missing),
+  // re-render any mounted table that uses a renderer we just registered. Tables
+  // mounted after us need no help — the renderer is already in place. No-op
+  // when nothing is mounted yet (we loaded first) or outside a browser (the
+  // Node bake controls load order).
+  const doc = root.document;
+  if (doc) for (const tbl of doc.querySelectorAll(".lt-table")) {
+    if ((tbl._ltSpec?.ops || []).some(o => cells[o.type])) LT.refresh?.(tbl);
+  }
 })(window);
