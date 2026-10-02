@@ -87,6 +87,37 @@
     table-layout: fixed;
   }
 
+  /* the hide affordance (❯) leads a header, revealed only on hover so it adds no
+   * clutter; it carries its own glyph, so no border or background */
+  .lti-hide {
+    border: none;
+    background: none;
+    padding: 0;
+    margin-right: 0.3em;
+    cursor: pointer;
+    visibility: hidden;
+    th:hover & {
+      visibility: visible;
+    }
+  }
+  /* a collapsed column shrinks to a stub: its content (wrapped in .lti-th) is
+   * hidden and the restore glyph (❮) takes its place; the whole stub restores */
+  .lti-stub {
+    display: none;
+    cursor: pointer;
+  }
+  th.lti-collapsed {
+    cursor: pointer;
+    text-align: center;
+    overflow: hidden;
+    .lti-th {
+      display: none;
+    }
+    .lti-stub {
+      display: inline;
+    }
+  }
+
   .lti-pager {
     display: flex;
     align-items: center;

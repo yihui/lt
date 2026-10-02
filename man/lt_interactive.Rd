@@ -11,6 +11,7 @@ lt_interactive(
   filter = FALSE,
   pager = c(10, 25, 50, 100),
   resize = FALSE,
+  hide = FALSE,
   detail = NULL
 )
 }
@@ -48,6 +49,11 @@ it (double-clicking the edge fits the column to its content). Widening a
 column widens the table, leaving the other columns as they are. Initial
 widths can be set with \code{\link[=lt_width]{lt_width()}}.}
 
+\item{hide}{Whether to let the reader hide a column from its header: hovering
+a header shows a small affordance to collapse that column to a thin stub,
+which is clicked to restore it. Can also be a character vector of column
+names, to make only those columns hideable. All columns start visible.}
+
 \item{detail}{Row detail (drill-down). An expand caret is added to each row;
 clicking it reveals a table built from that row below it. Give the columns
 to show, as a character vector of names or a one-sided formula (e.g.
@@ -84,6 +90,9 @@ lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
 # resizable columns
 lt(head(mtcars)) |> lt_interactive(resize = TRUE)
+# let the reader hide columns from their headers (all, or only the named ones)
+lt(head(mtcars)) |> lt_interactive(hide = TRUE)
+lt(head(mtcars)) |> lt_interactive(hide = c('hp', 'drat'))
 # an initial sort by cyl, then mpg descending within each (two equivalent
 # forms: a character vector, or a formula)
 lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))

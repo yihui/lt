@@ -42,6 +42,10 @@
 #'   it (double-clicking the edge fits the column to its content). Widening a
 #'   column widens the table, leaving the other columns as they are. Initial
 #'   widths can be set with [lt_width()].
+#' @param hide Whether to let the reader hide a column from its header: hovering
+#'   a header shows a small affordance to collapse that column to a thin stub,
+#'   which is clicked to restore it. Can also be a character vector of column
+#'   names, to make only those columns hideable. All columns start visible.
 #' @param detail Row detail (drill-down). An expand caret is added to each row;
 #'   clicking it reveals a table built from that row below it. Give the columns
 #'   to show, as a character vector of names or a one-sided formula (e.g.
@@ -63,6 +67,9 @@
 #' lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
 #' # resizable columns
 #' lt(head(mtcars)) |> lt_interactive(resize = TRUE)
+#' # let the reader hide columns from their headers (all, or only the named ones)
+#' lt(head(mtcars)) |> lt_interactive(hide = TRUE)
+#' lt(head(mtcars)) |> lt_interactive(hide = c('hp', 'drat'))
 #' # an initial sort by cyl, then mpg descending within each (two equivalent
 #' # forms: a character vector, or a formula)
 #' lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
@@ -81,7 +88,7 @@
 #' )
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = FALSE, pager = c(10, 25, 50, 100),
-  resize = FALSE, detail = NULL
+  resize = FALSE, hide = FALSE, detail = NULL
 ) {
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
@@ -94,6 +101,8 @@ lt_interactive = function(
     opts$pager = I(as.integer(sizes))
   }
   if (isTRUE(resize)) opts$resize = TRUE
+  if (!isFALSE(hide)) opts$hide = if (is.character(hide))
+    list(columns = I(hide)) else TRUE
   if (!is.null(detail)) opts$detail = if (inherits(detail, 'JS_LITERAL'))
     detail else I(as.character(f_cols(detail, x$data)))
   x$interactive = opts

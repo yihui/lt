@@ -89,6 +89,18 @@ assert("resizable columns are opt-in", {
   (grepl('resize', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
 })
 
+assert("hideable columns reach the client spec", {
+  # TRUE makes every column hideable
+  (grepl('"hide": true',
+         format(lt(d) |> lt_interactive(hide = TRUE), assets = FALSE)) %==% TRUE)
+  # a character vector restricts to those columns, as a {columns: [...]} object
+  (grepl('"hide": {"columns": ["y"]}',
+         format(lt(d) |> lt_interactive(hide = 'y'), assets = FALSE),
+         fixed = TRUE) %==% TRUE)
+  # off by default
+  (grepl('hide', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
+})
+
 assert("detail = column names resolves to a name array; js() stays verbatim", {
   # a formula / character vector of columns becomes a plain name array for the
   # runtime to build a one-row detail table from

@@ -391,6 +391,51 @@ assert("resizing is off by default", {
   (lti_eval(itbl(), 't.className') %==% 'lt-table')
 })
 
+# the hide affordance / stub of header `ti` (0-based), as a click expression
+hide_btn = function(ti) sprintf(
+  't.querySelectorAll("thead th")[%d].querySelector(".lti-hide").click()', ti)
+stub_btn = function(ti) sprintf(
+  't.querySelectorAll("thead th")[%d].querySelector(".lti-stub").click()', ti)
+collapsed = function(ti) sprintf(
+  't.querySelectorAll("thead th")[%d].classList.contains("lti-collapsed")', ti)
+# the concatenated text of column `ci` (0-based) across tbody rows; '' iff every
+# cell is empty. (lti_col can't tell "all empty" from "fewer rows": join("|") on
+# empties yields "|||", and R's strsplit drops the trailing empty field.)
+col_text = function(x, ci, js = '') lti_eval(x, sprintf(
+  '[...t.querySelectorAll("tbody tr")].map(r => r.children[%d].textContent).join("")',
+  ci), js)
+
+assert("a column collapses from its header and restores from its stub", {
+  x = itbl(hide = TRUE)
+  # every column is hideable: one hide affordance per header
+  (lti_eval(x, 't.querySelectorAll(".lti-hide").length') %==% '2')
+  # clicking it marks the header collapsed, pins the <col> to the stub width,
+  # and empties that column's cells; the other column is untouched
+  (lti_eval(x, collapsed(0), hide_btn(0)) %==% 'true')
+  (lti_eval(x, 't.querySelectorAll("col")[0].style.width', hide_btn(0)) %==% '16px')
+  (col_text(x, 0, hide_btn(0)) %==% '')
+  (lti_col(x, 1, hide_btn(0)) %==% c('5', '12', '3', '8'))
+  # a later re-render keeps it collapsed: sorting re-empties the cells (postSwap)
+  sortN = 'document.querySelectorAll("thead th")[1].click()'
+  (col_text(x, 0, paste(hide_btn(0), sortN, sep = ';')) %==% '')
+  # clicking the stub restores the column: marker gone, cells back
+  back = paste(hide_btn(0), stub_btn(0), sep = ';')
+  (lti_eval(x, collapsed(0), back) %==% 'false')
+  (lti_col(x, 0, back) %==% sym)
+})
+
+assert("hide = column names makes only those columns hideable", {
+  x = itbl(hide = 'n')
+  (lti_eval(x, 't.querySelectorAll(".lti-hide").length') %==% '1')
+  # the affordance is on the named column (header 1), not the other (header 0)
+  (lti_eval(x, 't.querySelectorAll("thead th")[1].querySelector(".lti-hide") ? 1 : 0')
+   %==% '1')
+  (lti_eval(x, 't.querySelectorAll("thead th")[0].querySelector(".lti-hide") ? 1 : 0')
+   %==% '0')
+  # off by default
+  (lti_eval(itbl(), 't.querySelectorAll(".lti-hide").length') %==% '0')
+})
+
 assert("a table rendered on demand is enhanced like one rendered in place", {
   # forestly's lazy path: a spec turned into a table long after the page loaded
   x = itbl(pager = 2)
