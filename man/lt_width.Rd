@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_width}
 \alias{lt_width}
-\title{Set Column and Table Widths}
+\title{Set column and table widths}
 \usage{
 lt_width(x, ...)
 }
@@ -18,7 +18,7 @@ of the whole table. Widths can be any CSS value (e.g., \code{"100px"},
 \code{x} with the widths recorded.
 }
 \description{
-Set Column and Table Widths
+Set column and table widths
 }
 \examples{
 lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")

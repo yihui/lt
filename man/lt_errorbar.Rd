@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_errorbar}
 \alias{lt_errorbar}
-\title{Draw an Inline Error-Bar Plot in a Column}
+\title{Draw an inline error-bar plot in a column}
 \usage{
 lt_errorbar(
   x,

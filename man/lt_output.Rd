@@ -3,7 +3,7 @@
 \name{lt_output}
 \alias{lt_output}
 \alias{render_lt}
-\title{Shiny Bindings for lt}
+\title{Shiny bindings for lt}
 \usage{
 lt_output(outputId, ...)
 

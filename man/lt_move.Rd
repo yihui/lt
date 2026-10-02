@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_move}
 \alias{lt_move}
-\title{Move Columns}
+\title{Move columns}
 \usage{
 lt_move(x, columns, after = NULL)
 }

@@ -210,7 +210,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
   xfun::raw_string(paste(body, collapse = '\n'))
 }
 
-#' Print an `lt_tbl` (Opens in the Viewer or Browser)
+#' Print an `lt_tbl` (opens in the viewer or browser)
 #'
 #' @param x An `lt_tbl` object.
 #' @param ... Passed to [format()].

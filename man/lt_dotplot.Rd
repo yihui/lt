@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_dotplot}
 \alias{lt_dotplot}
-\title{Draw an Inline Dot Plot in a Column}
+\title{Draw an inline dot plot in a column}
 \usage{
 lt_dotplot(
   x,

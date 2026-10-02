@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_indent}
 \alias{lt_indent}
-\title{Indent Rows}
+\title{Indent rows}
 \usage{
 lt_indent(x, rows, level = 1)
 }

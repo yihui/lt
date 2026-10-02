@@ -1,4 +1,4 @@
-#' lt: Lightweight Tables via JSON Specs and JavaScript
+#' lt: Lightweight tables via JSON specs and JavaScript
 #'
 #' A small grammar of tables. A table is a data frame plus a list of
 #' operations (title, spanner, footnote, ...); the operations are serialized to
@@ -9,7 +9,7 @@
 #' @keywords internal
 '_PACKAGE'
 
-#' Create a Table Specification
+#' Create a table specification
 #'
 #' Entry point of the lightweight grammar of tables. Returns an object (a
 #' list) that records the data plus a list of table-modifying operations. The

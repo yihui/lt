@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_html}
 \alias{lt_html}
-\title{Render Column Cells as Raw HTML}
+\title{Render column cells as raw HTML}
 \usage{
 lt_html(x, columns)
 }

@@ -3,7 +3,7 @@
 \name{lt}
 \alias{lt}
 \alias{lt.default}
-\title{Create a Table Specification}
+\title{Create a table specification}
 \usage{
 lt(data, ...)
 

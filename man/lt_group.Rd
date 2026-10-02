@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_group}
 \alias{lt_group}
-\title{Define Row Groups}
+\title{Define row groups}
 \usage{
 lt_group(x, ..., sep = "auto", sort = TRUE)
 }

@@ -37,7 +37,7 @@ lt_dependency = function(interactive = FALSE, plot = FALSE, shiny = FALSE)
     )
   )
 
-#' Shiny Bindings for lt
+#' Shiny bindings for lt
 #'
 #' `lt_output()` creates a UI placeholder; `render_lt()` supplies the table
 #' spec from the server. Together they render an [lt()] table as a custom

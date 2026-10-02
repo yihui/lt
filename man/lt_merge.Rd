@@ -2,7 +2,7 @@
 % Please edit documentation in R/tab.R
 \name{lt_merge}
 \alias{lt_merge}
-\title{Merge Columns}
+\title{Merge columns}
 \usage{
 lt_merge(x, columns, pattern = NULL, hide = TRUE)
 }
