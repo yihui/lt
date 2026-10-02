@@ -33,7 +33,7 @@ more stylesheet and script, loaded after the core ones:
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-interactive.min.js"></script>
 ```
 
-Inline-graphics cells (error bars, and later sparklines) live in a separate
+Inline-graphics cells (error bars, sparklines, dot plots) live in a separate
 graphics module. Load it **before** the core script, so its cell renderers
 are registered by the time the runtime builds a table:
 
@@ -455,12 +455,11 @@ LT.build({
 
 ### Error bars (`errorbar`)
 
-Render a column's cells as a small inline SVG — a point at each estimate with
-a bar (end caps included) from its lower to its upper bound — on a scale
-shared across the column. `series` is an array of `{ v, lo, hi }` column-name
-triples (`lo`/`hi` optional), one per group; the plot replaces the first
-series' value column (hide the rest). `min`/`max` set the shared scale, `ref`
-draws a vertical reference line, `colors` sets a per-series color, and
+Render a value column's cells as a small inline SVG — a point at the
+estimate with a bar (end caps included) from the lower to the upper bound —
+on a scale shared across the column. `columns` is `[value, lower, upper]`;
+the plot replaces the value column's cells (hide the bound columns).
+`min`/`max` set the shared scale, `ref` draws a vertical reference line, and
 `width`/`height` size each SVG. `axis: true` adds a shared axis in the footer
 (tick marks + labels at "nice" round values, plus matching in-cell
 gridlines); `axis_label` captions it. The SVG is built in the browser from the
@@ -478,50 +477,8 @@ LT.build({
   },
   ops: [
     { type: "hide", columns: ["Lo", "Hi"] },
-    { type: "errorbar", series: [{ v: "Est", lo: "Lo", hi: "Hi" }],
+    { type: "errorbar", columns: ["Est", "Lo", "Hi"],
       min: -0.6, max: 0.7, ref: 0, axis: true, axis_label: "Effect (95% CI)" }
-  ]
-});
-```
-
-Give `series` several entries to draw one colored point per group in a cell —
-a grouped dot plot. By default they share one baseline (told apart by
-`colors`); `dodge: true` splits them onto separate rows (forest-style) and
-wants more `height`.
-
-```{js}
-LT.build({
-  data: {
-    Event: ["Headache", "Nausea", "Rash"],
-    Placebo: [12, 5, 8], LowDose: [18, 9, 6], HighDose: [25, 14, 11]
-  },
-  ops: [
-    { type: "hide", columns: ["LowDose", "HighDose"] },
-    { type: "errorbar", min: 0, max: 30, axis: true, axis_label: "Incidence (%)",
-      colors: ["#888", "#1f77b4", "#d62728"],
-      series: [{ v: "Placebo" }, { v: "LowDose" }, { v: "HighDose" }] }
-  ]
-});
-```
-
-With bounds and `dodge: true`, each group gets its own row and a confidence
-bar:
-
-```{js}
-LT.build({
-  data: {
-    Term:   ["Age", "Dose", "Baseline"],
-    Est_tx: [0.22, -0.18, 0.40], Lo_tx: [0.05, -0.36, 0.19], Hi_tx: [0.39, 0, 0.61],
-    Est_c:  [0.05, -0.30, 0.28], Lo_c:  [-0.12, -0.48, 0.07], Hi_c:  [0.22, -0.12, 0.49]
-  },
-  ops: [
-    { type: "hide", columns: ["Est_c", "Lo_tx", "Lo_c", "Hi_tx", "Hi_c"] },
-    { type: "errorbar", min: -0.5, max: 0.65, height: 26, ref: 0, dodge: true,
-      axis: true, axis_label: "Effect by arm", colors: ["#1f77b4", "#d62728"],
-      series: [
-        { v: "Est_tx", lo: "Lo_tx", hi: "Hi_tx" },
-        { v: "Est_c",  lo: "Lo_c",  hi: "Hi_c" }
-      ] }
   ]
 });
 ```
@@ -546,6 +503,36 @@ LT.build({
   ops: [
     { type: "sparkline", columns: ["Temp"] },
     { type: "sparkline", columns: ["Rain"], kind: "bar", color: "#4caf50" }
+  ]
+});
+```
+
+### Dot plots (`dotplot`)
+
+Draw one dot per column on a scale shared across them, so a row with N columns
+shows N dots laid out by value. `columns` lists the value columns (the plot
+replaces the first column's cells; hide the rest). `colors` is an array of one
+color per column — when present, a footer legend keys them, labeled by `labels`
+(defaults to the column names). `min`/`max` set the shared scale; `axis: true`
+adds the footer axis (and in-cell gridlines), `axis_label` captions it. Since
+the cell shows every column, label its header with all the names joined (a
+`label` op) rather than leaving the first column's name alone. Like the other
+plots, it comes from the graphics module (`lt-plot.js`) and is drawn in the
+browser.
+
+```{js}
+LT.build({
+  data: {
+    Group:  ["Control", "Low", "High"],
+    Before: [3.1, 3.4, 3.0],
+    After:  [3.3, 4.1, 5.2]
+  },
+  ops: [
+    { type: "hide", columns: ["After"] },
+    { type: "label", labels: { Before: "Before / After" } },
+    { type: "dotplot", columns: ["Before", "After"],
+      colors: ["#999999", "#1a9641"], labels: ["Baseline", "Follow-up"],
+      min: 2.5, max: 5.5, axis: true, axis_label: "Score" }
   ]
 });
 ```

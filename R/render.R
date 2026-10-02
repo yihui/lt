@@ -36,7 +36,7 @@ asset_url = function(file) {
 # Op types rendered as inline graphics by the lt-plot.js module (error bars,
 # and later sparklines). A table using any of them needs that module's assets
 # (lt-plot.js, lt-plot.css) in addition to the core runtime.
-.plot_ops = c('errorbar', 'sparkline')
+.plot_ops = c('errorbar', 'sparkline', 'dotplot')
 has_plot = function(x) any(vapply(
   x$ops, function(o) isTRUE(o$type %in% .plot_ops), logical(1)
 ))

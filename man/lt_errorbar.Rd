@@ -7,12 +7,8 @@
 lt_errorbar(
   x,
   columns,
-  lower = NULL,
-  upper = NULL,
   limits = NULL,
   ref = NULL,
-  color = NULL,
-  dodge = FALSE,
   width = 160,
   height = 16,
   hide = TRUE,
@@ -22,39 +18,23 @@ lt_errorbar(
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{The value column(s) holding the point estimate(s): one column
-per series. A one-sided formula (\code{~ est}, or \code{~ a + b} for several series),
-a character vector, or integer positions. As a shorthand for a single
-series with bounds, a two-sided formula \code{value ~ lower + upper} names the
-estimate (left) and its bounds (right). The plot is drawn in the first
-value column's cells.}
-
-\item{lower, upper}{The lower- and upper-bound columns, parallel to \code{columns}
-(one each per series, or a single column recycled to all series). Omit both
-(the default) to draw points only, with no bars. Ignored when \code{columns} is
-a two-sided formula (which carries the bounds itself).}
+\item{columns}{The three columns holding the point estimate, the lower bound,
+and the upper bound, in that order. Either a two-sided formula
+\code{value ~ lower + upper} (estimate on the left, bounds on the right) or a
+length-3 character vector / integer positions \code{c(value, lower, upper)}. The
+plot is drawn in the \code{value} column's cells.}
 
 \item{limits}{Numeric \code{c(min, max)} for the shared horizontal scale. Defaults
-to the range of all the value and bound columns' finite values. Values
-outside the scale are clamped to the edges.}
+to the range of all three columns' finite values. Values outside the scale
+are clamped to the edges.}
 
 \item{ref}{Optional value at which to draw a vertical reference line (e.g.
 \code{0} for a risk difference, \code{1} for an odds ratio).}
 
-\item{color}{Optional CSS color(s) for the series: one per series (recycled
-from a single value), coloring both the point and its bar. The default
-uses the stylesheet's. Supply distinct colors to tell grouped series apart.}
-
-\item{dodge}{For several series, \code{FALSE} (default) overlays all group points
-on one shared baseline (a grouped dot plot, distinguished by \code{color});
-\code{TRUE} splits the series onto separate stacked rows within the cell
-(forest-style) -- give such cells more \code{height}.}
-
 \item{width, height}{Pixel size of each cell's SVG.}
 
-\item{hide}{If \code{TRUE} (default), every column drawn into the plot (the bound
-columns, and the value columns of any series after the first) is hidden;
-set to \code{FALSE} to keep them visible.}
+\item{hide}{If \code{TRUE} (default), the \code{lower} and \code{upper} columns are hidden,
+since they are drawn into the plot; set to \code{FALSE} to keep them visible.}
 
 \item{axis}{Draw a shared horizontal axis (a baseline with tick marks and
 labels at "nice" round values) in the table footer under the plot column,
@@ -67,17 +47,14 @@ axis with that string as a caption below it (e.g. \code{"Risk difference"});
 \code{x} with the error-bar column recorded.
 }
 \description{
-Render a column's cells as a small inline SVG: a point at the estimate and
-(optionally) a horizontal bar with end caps from the lower to the upper
+Render a numeric column's cells as a small inline SVG: a point at the
+estimate and a horizontal bar (with end caps) from the lower to the upper
 bound, drawn on a scale shared across the column so rows are comparable at a
-glance (a forest plot of effect sizes with confidence intervals). Several
-series can be drawn per cell -- one point (and optional bar) per group,
-colored individually -- for a grouped dot plot: by default the group points
-share one baseline and are told apart by color; set \code{dodge = TRUE} to split
-them onto separate rows (forest-style). It is lightweight: only the numbers
-travel to the client, and the SVG is drawn in the browser -- so for an
-interactive table (\code{\link[=lt_interactive]{lt_interactive()}}) only the rows on the current page are
-drawn.
+glance (handy for
+a forest plot of effect sizes with confidence intervals). It is lightweight:
+only the numbers travel to the client, and the SVG is drawn in the browser —
+so for an interactive table (\code{\link[=lt_interactive]{lt_interactive()}}) only the rows on the current
+page are drawn.
 }
 \examples{
 d = data.frame(
@@ -86,17 +63,7 @@ d = data.frame(
 )
 # a two-sided formula names the estimate (LHS) and the bounds (RHS)
 lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
-# equivalently, name the value column and its bounds separately
-lt(d) |> lt_errorbar(~ est, lower = "lo", upper = "hi", hide = FALSE,
-  axis = "Effect")
-# a grouped dot plot: one colored point per group, overlaid on one baseline
-g = data.frame(
-  term = c("A", "B", "C"), g1 = c(12, 5, 8), g2 = c(18, 9, 6),
-  g3 = c(25, 14, 11)
-)
-lt(g) |> lt_errorbar(~ g1 + g2 + g3,
-  color = c("#888", "#1f77b4", "#d62728"), axis = "Rate (\%)")
-# dodge = TRUE splits the groups onto separate rows (forest-style); add bars
-lt(g) |> lt_errorbar(~ g1 + g2, lower = c("g1", "g1"), upper = c("g2", "g3"),
-  color = c("#1f77b4", "#d62728"), dodge = TRUE, height = 24)
+# or a length-3 vector c(value, lower, upper); keep the bounds visible, add
+# a labeled axis
+lt(d) |> lt_errorbar(c("est", "lo", "hi"), hide = FALSE, axis = "Effect")
 }

@@ -292,22 +292,19 @@ assert("lt_move() supports numeric column indices", {
 # find the single op of a given type
 op_of = function(x, type) Filter(function(o) o$type == type, x$ops)[[1]]
 
-assert("lt_errorbar() records series, scale, and reference line", {
-  # a two-sided formula: estimate on the LHS, bounds on the RHS -> one series
+assert("lt_errorbar() records columns, scale, and reference line", {
+  # a two-sided formula: estimate on the LHS, bounds on the RHS
   e = lt_errorbar(x, a ~ b + c)
   op = op_of(e, "errorbar")
-  (length(op$series) %==% 1L)
-  (op$series[[1]] %==% list(v = "a", lo = "b", hi = "c"))
+  (op$columns %==% I(c("a", "b", "c")))
   # default scale is the range of all three columns' values (1:9 here)
   (as.numeric(c(op$min, op$max)) %==% c(1, 9))
   # ref/axis are absent unless requested
   (is.null(op$ref) %==% TRUE)
   (is.null(op$axis) %==% TRUE)
-  # a character vector names one value series per column (no bounds)
-  op1 = op_of(lt_errorbar(x, c("a", "b", "c")), "errorbar")
-  (length(op1$series) %==% 3L)
-  (vapply(op1$series, `[[`, character(1), "v") %==% c("a", "b", "c"))
-  # bound columns are hidden by default, kept when hide = FALSE
+  # a length-3 character vector names the same columns
+  (op_of(lt_errorbar(x, c("a", "b", "c")), "errorbar")$columns %==% I(c("a", "b", "c")))
+  # lower and upper are hidden by default, kept when hide = FALSE
   (op_of(e, "hide")$columns %==% I(c("b", "c")))
   (length(Filter(function(o) o$type == "hide", lt_errorbar(x, a ~ b + c, hide = FALSE)$ops)) %==% 0L)
   # explicit limits override the data range; ref and axis recorded when set
@@ -322,6 +319,42 @@ assert("lt_errorbar() records series, scale, and reference line", {
   (op3$axis_label %==% "Effect")
   # must name exactly three columns
   (has_error(lt_errorbar(x, a ~ b)) %==% TRUE)
+})
+
+assert("lt_dotplot() records one dot per column, colors, and a legend", {
+  # the plot keeps every named column; the scale spans all their values (1:9)
+  op = op_of(lt_dotplot(x, ~ a + b + c), "dotplot")
+  (op$columns %==% I(c("a", "b", "c")))
+  (as.numeric(c(op$min, op$max)) %==% c(1, 9))
+  # an axis is drawn by default; monochrome (no colors/labels) unless requested
+  (op$axis %==% TRUE)
+  (is.null(op$colors) %==% TRUE)
+  (is.null(op$labels) %==% TRUE)
+  # the first column's header is labeled with all the column names joined, since
+  # the plot shows them all (not just the first)
+  (op_of(lt_dotplot(x, ~ a + b + c), "label")$labels %==% list(a = "a / b / c"))
+  # columns after the first are hidden by default, kept when hide = FALSE
+  (op_of(lt_dotplot(x, ~ a + b + c), "hide")$columns %==% I(c("b", "c")))
+  (length(Filter(function(o) o$type == "hide",
+    lt_dotplot(x, ~ a + b + c, hide = FALSE)$ops)) %==% 0L)
+
+  # color = TRUE pulls one palette color per column and labels the legend with
+  # the column names
+  pal = op_of(lt_dotplot(x, ~ a + b + c, color = TRUE), "dotplot")
+  (unclass(pal$colors) %==% rep_len(grDevices::palette(), 3))
+  (unclass(pal$labels) %==% c("a", "b", "c"))
+
+  # a character vector sets colors verbatim (recycled); labels can be overridden
+  cus = op_of(lt_dotplot(x, ~ a + b, color = c("red", "blue"),
+    labels = c("X", "Y")), "dotplot")
+  (unclass(cus$colors) %==% c("red", "blue"))
+  (unclass(cus$labels) %==% c("X", "Y"))
+  # a mismatched labels length errors
+  (has_error(lt_dotplot(x, ~ a + b, color = TRUE, labels = "only-one")) %==% TRUE)
+
+  # axis = FALSE drops the axis; a string axis is recorded as its caption
+  (is.null(op_of(lt_dotplot(x, ~ a, axis = FALSE), "dotplot")$axis) %==% TRUE)
+  (op_of(lt_dotplot(x, ~ a, axis = "Score"), "dotplot")$axis_label %==% "Score")
 })
 
 assert("lt_group() supports numeric grouping column", {

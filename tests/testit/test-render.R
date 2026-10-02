@@ -34,44 +34,6 @@ assert("format() ships the graphics module (before core) only for plot tables", 
   (grepl('lt-plot', plain, fixed = TRUE) %==% FALSE)
 })
 
-assert("lt_errorbar() builds per-series triples and hides consumed columns", {
-  g = data.frame(
-    term = c("A", "B"), e1 = 1, l1 = 0, u1 = 2, e2 = 3, l2 = 2, u2 = 4
-  )
-  ops = (lt(g) |> lt_errorbar(~ e1 + e2, lower = c("l1", "l2"),
-    upper = c("u1", "u2"), color = c("red", "blue")))$ops
-  eb = ops[[length(ops)]]
-  (eb$type %==% "errorbar")
-  # one { v, lo, hi } per series, in column order
-  (length(eb$series) %==% 2L)
-  (eb$series[[1]] %==% list(v = "e1", lo = "l1", hi = "u1"))
-  (eb$series[[2]] %==% list(v = "e2", lo = "l2", hi = "u2"))
-  (unclass(eb$colors) %==% c("red", "blue"))
-  # overlaid by default: no `dodge` field unless requested
-  (is.null(eb$dodge))
-  eb2 = (lt(g) |> lt_errorbar(~ e1 + e2, dodge = TRUE))$ops
-  (isTRUE(eb2[[length(eb2)]]$dodge))
-  # the shared scale spans every value and bound column
-  (c(eb$min, eb$max) %==% c(0, 4))
-  # all columns drawn into the plot are hidden except the first value column
-  hid = Filter(function(o) o$type == "hide", ops)[[1]]
-  (sort(unclass(hid$columns)) %==% c("e2", "l1", "l2", "u1", "u2"))
-
-  # a single bound column is recycled across series; a length mismatch errors
-  ops = (lt(g) |> lt_errorbar(~ e1 + e2, lower = "l1", upper = "u1"))$ops
-  eb = ops[[length(ops)]]
-  (eb$series[[1]]$lo %==% "l1")
-  (eb$series[[2]]$lo %==% "l1")
-  (has_error(lt(g) |> lt_errorbar(~ e1 + e2, lower = c("l1", "l2", "u1"))))
-
-  # the two-sided formula is still a single series carrying its own bounds
-  d = data.frame(est = 1, lo = 0, hi = 2)
-  eb = (lt(d) |> lt_errorbar(est ~ lo + hi))$ops
-  eb = eb[[length(eb)]]
-  (length(eb$series) %==% 1L)
-  (eb$series[[1]] %==% list(v = "est", lo = "lo", hi = "hi"))
-})
-
 assert("lt_sparkline() records a sparkline op and hides extra columns", {
   # a single list-column: the series lives in that column; nothing is hidden,
   # and the chart type travels as `kind` (not `type`, which names the op itself)

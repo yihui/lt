@@ -561,45 +561,29 @@ lt_hide = function(x, columns) {
 
 #' Draw an Inline Error-Bar Plot in a Column
 #'
-#' Render a column's cells as a small inline SVG: a point at the estimate and
-#' (optionally) a horizontal bar with end caps from the lower to the upper
+#' Render a numeric column's cells as a small inline SVG: a point at the
+#' estimate and a horizontal bar (with end caps) from the lower to the upper
 #' bound, drawn on a scale shared across the column so rows are comparable at a
-#' glance (a forest plot of effect sizes with confidence intervals). Several
-#' series can be drawn per cell -- one point (and optional bar) per group,
-#' colored individually -- for a grouped dot plot: by default the group points
-#' share one baseline and are told apart by color; set `dodge = TRUE` to split
-#' them onto separate rows (forest-style). It is lightweight: only the numbers
-#' travel to the client, and the SVG is drawn in the browser -- so for an
-#' interactive table ([lt_interactive()]) only the rows on the current page are
-#' drawn.
+#' glance (handy for
+#' a forest plot of effect sizes with confidence intervals). It is lightweight:
+#' only the numbers travel to the client, and the SVG is drawn in the browser —
+#' so for an interactive table ([lt_interactive()]) only the rows on the current
+#' page are drawn.
 #'
 #' @inheritParams lt_align
-#' @param columns The value column(s) holding the point estimate(s): one column
-#'   per series. A one-sided formula (`~ est`, or `~ a + b` for several series),
-#'   a character vector, or integer positions. As a shorthand for a single
-#'   series with bounds, a two-sided formula `value ~ lower + upper` names the
-#'   estimate (left) and its bounds (right). The plot is drawn in the first
-#'   value column's cells.
-#' @param lower,upper The lower- and upper-bound columns, parallel to `columns`
-#'   (one each per series, or a single column recycled to all series). Omit both
-#'   (the default) to draw points only, with no bars. Ignored when `columns` is
-#'   a two-sided formula (which carries the bounds itself).
+#' @param columns The three columns holding the point estimate, the lower bound,
+#'   and the upper bound, in that order. Either a two-sided formula
+#'   `value ~ lower + upper` (estimate on the left, bounds on the right) or a
+#'   length-3 character vector / integer positions `c(value, lower, upper)`. The
+#'   plot is drawn in the `value` column's cells.
 #' @param limits Numeric `c(min, max)` for the shared horizontal scale. Defaults
-#'   to the range of all the value and bound columns' finite values. Values
-#'   outside the scale are clamped to the edges.
+#'   to the range of all three columns' finite values. Values outside the scale
+#'   are clamped to the edges.
 #' @param ref Optional value at which to draw a vertical reference line (e.g.
 #'   `0` for a risk difference, `1` for an odds ratio).
-#' @param color Optional CSS color(s) for the series: one per series (recycled
-#'   from a single value), coloring both the point and its bar. The default
-#'   uses the stylesheet's. Supply distinct colors to tell grouped series apart.
-#' @param dodge For several series, `FALSE` (default) overlays all group points
-#'   on one shared baseline (a grouped dot plot, distinguished by `color`);
-#'   `TRUE` splits the series onto separate stacked rows within the cell
-#'   (forest-style) -- give such cells more `height`.
 #' @param width,height Pixel size of each cell's SVG.
-#' @param hide If `TRUE` (default), every column drawn into the plot (the bound
-#'   columns, and the value columns of any series after the first) is hidden;
-#'   set to `FALSE` to keep them visible.
+#' @param hide If `TRUE` (default), the `lower` and `upper` columns are hidden,
+#'   since they are drawn into the plot; set to `FALSE` to keep them visible.
 #' @param axis Draw a shared horizontal axis (a baseline with tick marks and
 #'   labels at "nice" round values) in the table footer under the plot column,
 #'   plus faint vertical gridlines inside each cell at the same tick positions
@@ -615,65 +599,25 @@ lt_hide = function(x, columns) {
 #' )
 #' # a two-sided formula names the estimate (LHS) and the bounds (RHS)
 #' lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
-#' # equivalently, name the value column and its bounds separately
-#' lt(d) |> lt_errorbar(~ est, lower = "lo", upper = "hi", hide = FALSE,
-#'   axis = "Effect")
-#' # a grouped dot plot: one colored point per group, overlaid on one baseline
-#' g = data.frame(
-#'   term = c("A", "B", "C"), g1 = c(12, 5, 8), g2 = c(18, 9, 6),
-#'   g3 = c(25, 14, 11)
-#' )
-#' lt(g) |> lt_errorbar(~ g1 + g2 + g3,
-#'   color = c("#888", "#1f77b4", "#d62728"), axis = "Rate (%)")
-#' # dodge = TRUE splits the groups onto separate rows (forest-style); add bars
-#' lt(g) |> lt_errorbar(~ g1 + g2, lower = c("g1", "g1"), upper = c("g2", "g3"),
-#'   color = c("#1f77b4", "#d62728"), dodge = TRUE, height = 24)
+#' # or a length-3 vector c(value, lower, upper); keep the bounds visible, add
+#' # a labeled axis
+#' lt(d) |> lt_errorbar(c("est", "lo", "hi"), hide = FALSE, axis = "Effect")
 lt_errorbar = function(
-  x, columns, lower = NULL, upper = NULL, limits = NULL, ref = NULL,
-  color = NULL, dodge = FALSE, width = 160, height = 16, hide = TRUE,
-  axis = FALSE
+  x, columns, limits = NULL, ref = NULL, width = 160, height = 16,
+  hide = TRUE, axis = FALSE
 ) {
-  # a two-sided `value ~ lower + upper` is shorthand for a single series: take
-  # the estimate from the left, the bounds from the right (overriding the args).
-  if (inherits(columns, 'formula') && length(columns) == 3) {
-    bounds = f_cols(columns, x$data)
-    if (length(bounds) != 2)
-      stop('`value ~ lower + upper` must name exactly two bound columns.')
-    cols = all.vars(columns[[2]]); lower = bounds[1]; upper = bounds[2]
-  } else {
-    cols = as.character(f_cols(columns, x$data))
-  }
-  n = length(cols)
-  if (n < 1) stop('`columns` must name at least one value column.')
-  # a bound/color vector must be absent, a single value (recycled), or one per
-  # series; resolve column selections and recycle to length `n`.
-  recycle = function(v, what, cast = identity) {
-    if (is.null(v)) return()
-    v = cast(v)
-    if (length(v) == 1L) v = rep(v, n)
-    if (length(v) != n)
-      stop('`', what, '` must have length 1 or ', n, ' (one per series).')
-    v
-  }
-  lower = recycle(lower, 'lower', function(v) as.character(f_cols(v, x$data)))
-  upper = recycle(upper, 'upper', function(v) as.character(f_cols(v, x$data)))
-  color = recycle(color, 'color')
-
-  all_cols = unique(c(cols, lower, upper))
+  cols = if (inherits(columns, 'formula') && length(columns) == 3)
+    c(all.vars(columns[[2]]), f_cols(columns, x$data))
+  else as.character(f_cols(columns, x$data))
+  if (length(cols) != 3)
+    stop('`columns` must name exactly three columns: value, lower, upper.')
   if (is.null(limits)) {
-    v = unlist(x$data[all_cols], use.names = FALSE)
+    v = unlist(x$data[cols], use.names = FALSE)
     v = v[is.finite(v)]
     limits = if (length(v)) range(v) else c(0, 1)
   }
-  series = lapply(seq_len(n), function(i)
-    drop_null(list(v = cols[i], lo = lower[i], hi = upper[i])))
-
-  # hide every column consumed by the plot: the bounds and all but the first
-  # value column (the first is where the plot is drawn).
-  hidden = setdiff(all_cols, cols[1])
-  if (hide && length(hidden)) x = add_op(x, 'hide', columns = I(hidden))
-  add_op(x, 'errorbar', series = series, colors = if (!is.null(color)) I(color),
-    dodge = if (isTRUE(dodge)) TRUE, min = limits[1], max = limits[2],
+  if (hide) x = add_op(x, 'hide', columns = I(cols[2:3]))
+  add_op(x, 'errorbar', columns = I(cols), min = limits[1], max = limits[2],
     ref = ref, width = width, height = height,
     axis = if (isTRUE(axis) || is.character(axis)) TRUE,
     axis_label = if (is.character(axis)) axis)
@@ -725,6 +669,86 @@ lt_sparkline = function(
   if (hide && length(cols) > 1) x = add_op(x, 'hide', columns = I(cols[-1]))
   add_op(x, 'sparkline', columns = I(cols), kind = type, color = color,
     min = limits[1], max = limits[2], width = width, height = height)
+}
+
+#' Draw an Inline Dot Plot in a Column
+#'
+#' Render each row's values across one or more columns as inline dots on a
+#' shared horizontal scale: N columns give N dots per row, laid out by value. It
+#' is lightweight like [lt_errorbar()] and [lt_sparkline()] -- only the numbers
+#' travel to the client and the SVG is drawn in the browser, so an interactive
+#' table ([lt_interactive()]) draws only the rows on the current page.
+#'
+#' The plot replaces the first column's cells but shows every named column, so
+#' its header is labeled with all the column names joined by `" / "` (e.g.
+#' `"Before / After"`) rather than just the first; override it with a later
+#' [lt_label()] on that column.
+#'
+#' @inheritParams lt_align
+#' @inheritParams lt_errorbar
+#' @param columns The value column(s): one dot is drawn per column, read left to
+#'   right across the row, all on a scale shared across the columns. The plot is
+#'   drawn in the first column's cells. A one-sided formula (`~ a + b + c`),
+#'   names, or integer positions.
+#' @param color Dot colors by column. `FALSE` (default) draws every dot in one
+#'   default color; `TRUE` assigns colors from the current palette
+#'   ([grDevices::palette()]); a character vector of CSS colors sets them
+#'   explicitly (recycled to the number of columns). When colored, a legend is
+#'   drawn below the plot in the footer.
+#' @param labels Legend labels, one per column, used when the plot is colored.
+#'   Defaults to the column names.
+#' @param hide If `TRUE` (default) and several columns are drawn, those after the
+#'   first are hidden (their values are drawn into the plot); set to `FALSE` to
+#'   keep them visible.
+#' @return `x` with the dot-plot column recorded.
+#' @export
+#' @examples
+#' d = data.frame(
+#'   group = c("A", "B", "C"), before = c(3, 5, 4), after = c(6, 7, 5)
+#' )
+#' # one dot per column, colored and keyed by a footer legend, with an axis
+#' lt(d) |> lt_dotplot(~ before + after, color = TRUE)
+#' # custom colors and labels
+#' lt(d) |> lt_dotplot(
+#'   ~ before + after, color = c("#999", "#1a9641"),
+#'   labels = c("Baseline", "Follow-up")
+#' )
+lt_dotplot = function(
+  x, columns, limits = NULL, color = FALSE, labels = NULL,
+  width = 160, height = 16, hide = TRUE, axis = TRUE
+) {
+  cols = as.character(f_cols(columns, x$data))
+  n = length(cols)
+  if (n < 1) stop('`columns` must name at least one column.')
+  if (is.null(limits)) {
+    v = unlist(x$data[cols], use.names = FALSE)
+    v = v[is.finite(v)]
+    limits = if (length(v)) range(v) else c(0, 1)
+  }
+  # resolve the per-column colors: TRUE pulls from the palette, a character
+  # vector is used verbatim (recycled), FALSE/NULL leaves the dots monochrome
+  colors = if (isTRUE(color)) rep_len(grDevices::palette(), n)
+    else if (is.character(color)) rep_len(color, n)
+  if (!is.null(labels)) {
+    labels = as.character(labels)
+    if (length(labels) != n)
+      stop('`labels` must have one entry per column (', n, ').')
+  } else if (!is.null(colors)) labels = cols
+  if (hide && n > 1) x = add_op(x, 'hide', columns = I(cols[-1]))
+  # the plot replaces the first column's cells but shows every column, so label
+  # that header with all the column names joined (not just the first, which is
+  # misleading). A later lt_label() on the same column overrides this.
+  if (n > 1) {
+    hdr = list(paste(cols, collapse = ' / '))
+    names(hdr) = cols[1]
+    x = add_op(x, 'label', labels = hdr)
+  }
+  add_op(x, 'dotplot', columns = I(cols),
+    colors = if (!is.null(colors)) I(colors),
+    labels = if (!is.null(labels)) I(labels),
+    min = limits[1], max = limits[2], width = width, height = height,
+    axis = if (isTRUE(axis) || is.character(axis)) TRUE,
+    axis_label = if (is.character(axis)) axis)
 }
 
 #' Attach Custom CSS

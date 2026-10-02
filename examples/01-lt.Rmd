@@ -540,7 +540,7 @@ tbl_iris |> lt_hide(~ Petal.Length + Petal.Width)
 
 ## Inline plots
 
-Two functions draw a tiny chart into a column's cells. Both are lightweight:
+Three functions draw a tiny chart into a column's cells. All are lightweight:
 only the numbers travel to the browser and the SVG is drawn there, so for an
 interactive table only the current page's rows are drawn.
 
@@ -550,13 +550,13 @@ interactive table only the current page's rows are drawn.
 point at the estimate with a horizontal bar (and end caps) from the lower to
 the upper bound — all drawn on a scale shared across the column, so rows are
 comparable at a glance (a forest plot of effect sizes with confidence
-intervals). Name the estimate and its bounds with a two-sided formula
-`value ~ lower + upper` (or give the value column to `columns` and the bound
-columns to `lower`/`upper`); the bound columns are hidden by default
-(`hide = FALSE` keeps them). Pass `ref` to draw a vertical reference line (e.g.
-`0` for a risk difference). Set `axis = TRUE` (or a string caption) to add a
-shared axis in the footer — a baseline with tick marks and labels at "nice"
-round values, matching faint gridlines inside each cell.
+intervals). Name the three columns with a two-sided formula
+`value ~ lower + upper` or a vector `c(value, lower, upper)`; the bound
+columns are hidden by default (`hide = FALSE` keeps them). Pass `ref` to draw
+a vertical reference line (e.g. `0` for a risk difference). Set `axis = TRUE`
+(or a string caption) to add a shared axis in the footer — a baseline with
+tick marks and labels at "nice" round values, matching faint gridlines inside
+each cell.
 
 ```{r}
 d_eff = data.frame(
@@ -567,44 +567,6 @@ d_eff = data.frame(
 )
 lt(d_eff) |>
   lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = "Effect (95% CI)")
-```
-
-Give `columns` several value columns to draw one colored point per group in
-each cell — a grouped dot plot. By default the group points share one baseline
-and are told apart by `color`:
-
-```{r}
-d_grp = data.frame(
-  Event   = c("Headache", "Nausea", "Rash"),
-  Placebo = c(12, 5, 8), `Low dose` = c(18, 9, 6), `High dose` = c(25, 14, 11),
-  check.names = FALSE
-)
-lt(d_grp) |>
-  lt_errorbar(
-    ~ Placebo + `Low dose` + `High dose`,
-    color = c("#888", "#1f77b4", "#d62728"), axis = "Incidence (%)"
-  )
-```
-
-Add matching `lower`/`upper` columns for confidence bars, and `dodge = TRUE` to
-split the groups onto separate rows within the cell (forest-style) — give such
-cells more `height`:
-
-```{r}
-d_eff2 = data.frame(
-  Term    = c("Age", "Dose", "Baseline"),
-  Est_tx  = c(0.22, -0.18, 0.40), Lo_tx = c(0.05, -0.36, 0.19),
-  Hi_tx   = c(0.39, 0.00, 0.61),
-  Est_ctl = c(0.05, -0.30, 0.28), Lo_ctl = c(-0.12, -0.48, 0.07),
-  Hi_ctl  = c(0.22, -0.12, 0.49)
-)
-lt(d_eff2) |>
-  lt_errorbar(
-    ~ Est_tx + Est_ctl,
-    lower = c("Lo_tx", "Lo_ctl"), upper = c("Hi_tx", "Hi_ctl"),
-    color = c("#1f77b4", "#d62728"), ref = 0, dodge = TRUE, height = 26,
-    axis = "Effect by arm (treatment vs. control)"
-  )
 ```
 
 ### Sparklines
@@ -627,6 +589,25 @@ d_spark$Rain = list(
 lt(d_spark) |>
   lt_sparkline(~ Temp) |>
   lt_sparkline(~ Rain, type = "bar", color = "#4caf50")
+```
+
+### Dot plots
+
+`lt_dotplot()` draws one dot per column on a scale shared across them, so a row
+with N columns shows N dots laid out by value — handy for comparing a few
+measurements per row (e.g. before vs. after). Name the value columns with
+`~ a + b + c` (all but the first hidden by default). `color = TRUE` colors the
+dots from the palette and adds a footer legend; a vector of colors sets them
+explicitly. A shared axis is drawn in the footer by default (`axis = FALSE` to
+drop it, or a string for a caption).
+
+```{r}
+d_dot = data.frame(
+  Group = c("Control", "Low", "High"),
+  Before = c(3.1, 3.4, 3.0), After = c(3.3, 4.1, 5.2)
+)
+lt(d_dot) |>
+  lt_dotplot(~ Before + After, color = TRUE, axis = "Score")
 ```
 
 ## Styling
