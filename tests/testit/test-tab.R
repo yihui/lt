@@ -292,19 +292,22 @@ assert("lt_move() supports numeric column indices", {
 # find the single op of a given type
 op_of = function(x, type) Filter(function(o) o$type == type, x$ops)[[1]]
 
-assert("lt_errorbar() records columns, scale, and reference line", {
-  # a two-sided formula: estimate on the LHS, bounds on the RHS
+assert("lt_errorbar() records series, scale, and reference line", {
+  # a two-sided formula: estimate on the LHS, bounds on the RHS -> one series
   e = lt_errorbar(x, a ~ b + c)
   op = op_of(e, "errorbar")
-  (op$columns %==% I(c("a", "b", "c")))
+  (length(op$series) %==% 1L)
+  (op$series[[1]] %==% list(v = "a", lo = "b", hi = "c"))
   # default scale is the range of all three columns' values (1:9 here)
   (as.numeric(c(op$min, op$max)) %==% c(1, 9))
   # ref/axis are absent unless requested
   (is.null(op$ref) %==% TRUE)
   (is.null(op$axis) %==% TRUE)
-  # a length-3 character vector names the same columns
-  (op_of(lt_errorbar(x, c("a", "b", "c")), "errorbar")$columns %==% I(c("a", "b", "c")))
-  # lower and upper are hidden by default, kept when hide = FALSE
+  # a character vector names one value series per column (no bounds)
+  op1 = op_of(lt_errorbar(x, c("a", "b", "c")), "errorbar")
+  (length(op1$series) %==% 3L)
+  (vapply(op1$series, `[[`, character(1), "v") %==% c("a", "b", "c"))
+  # bound columns are hidden by default, kept when hide = FALSE
   (op_of(e, "hide")$columns %==% I(c("b", "c")))
   (length(Filter(function(o) o$type == "hide", lt_errorbar(x, a ~ b + c, hide = FALSE)$ops)) %==% 0L)
   # explicit limits override the data range; ref and axis recorded when set
