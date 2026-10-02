@@ -516,9 +516,8 @@ color per column — when present, a footer legend keys them, labeled by `labels
 (defaults to the column names). `min`/`max` set the shared scale; `axis: true`
 adds the footer axis (and in-cell gridlines), `axis_label` captions it. Since
 the cell shows every column, label its header with all the names joined (a
-`label` op) rather than leaving the first column's name alone. Like the other
-plots, it comes from the graphics module (`lt-plot.js`) and is drawn in the
-browser.
+`label` op). Like the other plots, it comes from the graphics module
+(`lt-plot.js`) and is drawn in the browser.
 
 ```{js}
 LT.build({

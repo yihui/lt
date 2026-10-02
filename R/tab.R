@@ -679,10 +679,9 @@ lt_sparkline = function(
 #' travel to the client and the SVG is drawn in the browser, so an interactive
 #' table ([lt_interactive()]) draws only the rows on the current page.
 #'
-#' The plot replaces the first column's cells but shows every named column, so
-#' its header is labeled with all the column names joined by `" / "` (e.g.
-#' `"Before / After"`) rather than just the first; override it with a later
-#' [lt_label()] on that column.
+#' Since the cell shows every named column, the column header defaults to all
+#' their names joined by `" / "` (e.g. `"Before / After"`); override it with a
+#' later [lt_label()] on that column.
 #'
 #' @inheritParams lt_align
 #' @inheritParams lt_errorbar

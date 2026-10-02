@@ -61,10 +61,9 @@ travel to the client and the SVG is drawn in the browser, so an interactive
 table (\code{\link[=lt_interactive]{lt_interactive()}}) draws only the rows on the current page.
 }
 \details{
-The plot replaces the first column's cells but shows every named column, so
-its header is labeled with all the column names joined by \code{" / "} (e.g.
-\code{"Before / After"}) rather than just the first; override it with a later
-\code{\link[=lt_label]{lt_label()}} on that column.
+Since the cell shows every named column, the column header defaults to all
+their names joined by \code{" / "} (e.g. \code{"Before / After"}); override it with a
+later \code{\link[=lt_label]{lt_label()}} on that column.
 }
 \examples{
 d = data.frame(
