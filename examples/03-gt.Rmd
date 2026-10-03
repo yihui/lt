@@ -189,15 +189,7 @@ and negate, or list the ones you do.
 **gt** turns on client-side interactivity with `opt_interactive()`, and hides
 columns with the unrelated `cols_hide()`. **lt** folds all of it into
 `lt_interactive()`: sorting, searching, filtering, paging, resizing, row detail,
-and a reader-togglable column menu (`hide`). `hide` accepts the same column
-spec as everywhere else — names, positions, or a formula — and the menu lists
-each column by its displayed label, so `lt_label()` carries through.
-
-```{r}
-lt(mtcars[, c("mpg", "cyl", "hp", "wt")]) |>
-  lt_label(mpg = "Miles/gal") |>
-  lt_interactive(filter = TRUE, hide = ~ hp + wt, pager = 5)
-```
+and a reader-togglable column menu.
 
 ### Footnotes vs. source notes are two different functions
 
