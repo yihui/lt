@@ -906,6 +906,19 @@ lt(head(d)) |&gt; lt_interactive(resize = TRUE, pager = FALSE, search = FALSE) |
   lt_width(mpg = &quot;8em&quot;)
 ```
 
+### Column visibility
+
+`hide` adds an eye button at the start of the search row that opens a
+checklist of every column; unchecking one hides it (header and cells),
+re-checking brings it back. Use `hide = TRUE` to start with all columns
+shown, or name columns (a character vector or a one-sided formula) to
+start with those hidden (they are still listed, so the reader can bring
+them back). The checklist shows each column's displayed label.
+
+```{r}
+lt(d) |&gt; lt_interactive(hide = ~ hp + wt, pager = 5)
+```
+
 Interactive features need the rows to be independent of one another,
 since sorting and filtering reorder and hide them: a table with row
 groups or indentation is rendered static instead (with a warning in the
@@ -1796,6 +1809,11 @@ optional:
   pager;
 - `resize`: drag a column's right edge to resize it (double-click that
   edge to fit the column to its content);
+- `hide`: a column-visibility menu. An eye button at the start of the
+  search row opens a checklist of every column, listed by its displayed
+  label; unchecking one hides it (header and cells), re-checking restores
+  it. `true` starts with all columns shown, `{ hidden: [...] }` starts
+  the named columns hidden (all are still listed, so any can be toggled);
 - `detail`: row detail (drill-down). An expand caret is added to each row,
   and a table is built below it on first expand. Give either an array of
   column names (the detail is a one-row table of those columns' displayed
@@ -1815,6 +1833,15 @@ instead.
 LT.build({
   data: mtcars,
   interactive: { filter: { columns: [&quot;mpg&quot;] }, pager: [3, 6, 0], resize: true }
+});
+```
+
+Open the eye menu to toggle columns; `hp` and `wt` start hidden here:
+
+```{js}
+LT.build({
+  data: mtcars,
+  interactive: { hide: { hidden: [&quot;hp&quot;, &quot;wt&quot;] }, pager: 5 }
 });
 ```
 
@@ -1964,6 +1991,18 @@ placeholder.
 | `tab_style(style=, locations=)` | `lt_style(columns=, rows=, ...)` |
 | `opt_css(css=)` | `lt_css(...)` |
 
+**Interactivity** (**gt** splits these across `opt_interactive()` and
+`cols_hide()`; **lt** gathers them into one `lt_interactive()`)
+
+| gt | lt |
+|------------------------------------|--------------------------------------------|
+| `opt_interactive(use_sorting=, use_search=)` | `lt_interactive(sort=, search=)` |
+| `opt_interactive(use_filters = TRUE)` | `lt_interactive(filter = TRUE)` |
+| `opt_interactive(use_pagination=, page_size_default = n)` | `lt_interactive(pager = c(n, ...))` |
+| `opt_interactive(use_resizers = TRUE)` | `lt_interactive(resize = TRUE)` |
+| `cols_hide(columns)` (always hidden) | `lt_hide(columns)` |
+| — (reader toggles columns) | `lt_interactive(hide=)` (an eye menu) |
+
 **Output and Shiny**
 
 | gt                    | lt                 |
@@ -2021,6 +2060,13 @@ column's *values* (its type), whereas the **lt** formula sees only the column
 *names* in `.`. There is no name-based way to say &quot;the numeric ones&quot;, so pick
 out the columns you don't want to format by name (often the single label column)
 and negate, or list the ones you do.
+
+### Interactivity is one function, not a separate step
+
+**gt** turns on client-side interactivity with `opt_interactive()`, and hides
+columns with the unrelated `cols_hide()`. **lt** folds all of it into
+`lt_interactive()`: sorting, searching, filtering, paging, resizing, row detail,
+and a reader-togglable column menu.
 
 ### Footnotes vs. source notes are two different functions
 

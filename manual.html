@@ -182,7 +182,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
 <pre><code>&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;lt&lt;/title&gt;
 &lt;style&gt;body{font-family:system-ui,sans-serif;padding:1em}&lt;/style&gt;&lt;/head&gt;
 &lt;body&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/css/lt.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/css/lt.min.css&quot;&gt;
 &lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   &quot;data&quot;: {
@@ -200,7 +200,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
   }
 }
 })&lt;/script&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;
 </code></pre>
 <h2 id="sec:man-lt"><span class="section-number main-number">3</span> Create a table specification</h2>
@@ -458,7 +458,7 @@ Its script loads before the core runtime so plot cells render.</p>
 </code></pre>
 <pre><code>#&gt; List of 10
 #&gt;  $ name      : chr &quot;lt&quot;
-#&gt;  $ version   : chr &quot;0.4.16&quot;
+#&gt;  $ version   : chr &quot;0.4.17&quot;
 #&gt;  $ src       :List of 1
 #&gt;   ..$ file: chr &quot;/Users/runner/work/_temp/Library/lt/www&quot;
 #&gt;  $ meta      : NULL
@@ -760,7 +760,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpHA0UiT/fileb9a3b013325.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmp7uHOzb/filef05ce30166.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -874,7 +874,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpHA0UiT/fileb9a6e69c81d.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmp7uHOzb/filef053b037675.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -1213,6 +1213,7 @@ extension, loaded only for tables that call this function.
   filter = FALSE,
   pager = c(10, 25, 50, 100),
   resize = FALSE,
+  hide = NULL,
   detail = NULL
 )</code></pre>
 <h3 id="sec:arguments_17" class="unnumbered unlisted">Arguments</h3>
@@ -1262,6 +1263,16 @@ it (double-clicking the edge fits the column to its content). Widening a
 column widens the table, leaving the other columns as they are. Initial
 widths can be set with <code><a href="#sec:man-lt-width">lt_width()</a></code>.</p>
 </td></tr>
+<tr><td><code>hide</code></td>
+<td>
+<p>Column-visibility control: an eye button at the start of the
+search row opens a checklist of every column, where unchecking a column
+hides it (header and cells) and re-checking restores it. <code>TRUE</code> adds the
+menu with all columns shown; column names (a character vector or a one-sided
+formula, e.g. <code>~ x + y</code>) adds it with those columns hidden to begin with
+(every column is still listed, so any can be toggled). <code>NULL</code> (the default)
+adds no menu.</p>
+</td></tr>
 <tr><td><code>detail</code></td>
 <td>
 <p>Row detail (drill-down). An expand caret is added to each row;
@@ -1295,6 +1306,10 @@ lt(head(mtcars)) |&gt; lt_interactive(sort = FALSE, pager = FALSE)
 lt(mtcars) |&gt; lt_interactive(filter = 'cyl', pager = c(5, Inf))
 # resizable columns
 lt(head(mtcars)) |&gt; lt_interactive(resize = TRUE)
+# a column-visibility menu (all columns shown, or with some hidden to start)
+lt(head(mtcars)) |&gt; lt_interactive(hide = TRUE)
+lt(head(mtcars)) |&gt; lt_interactive(hide = c('hp', 'drat'))
+lt(head(mtcars)) |&gt; lt_interactive(hide = ~ hp + drat)  # same, as a formula
 # an initial sort by cyl, then mpg descending within each (two equivalent
 # forms: a character vector, or a formula)
 lt(mtcars) |&gt; lt_interactive(sort = c('cyl', '-mpg'))

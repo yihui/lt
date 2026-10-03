@@ -114,6 +114,18 @@ placeholder.
 | `tab_style(style=, locations=)` | `lt_style(columns=, rows=, ...)` |
 | `opt_css(css=)` | `lt_css(...)` |
 
+**Interactivity** (**gt** splits these across `opt_interactive()` and
+`cols_hide()`; **lt** gathers them into one `lt_interactive()`)
+
+| gt | lt |
+|------------------------------------|--------------------------------------------|
+| `opt_interactive(use_sorting=, use_search=)` | `lt_interactive(sort=, search=)` |
+| `opt_interactive(use_filters = TRUE)` | `lt_interactive(filter = TRUE)` |
+| `opt_interactive(use_pagination=, page_size_default = n)` | `lt_interactive(pager = c(n, ...))` |
+| `opt_interactive(use_resizers = TRUE)` | `lt_interactive(resize = TRUE)` |
+| `cols_hide(columns)` (always hidden) | `lt_hide(columns)` |
+| — (reader toggles columns) | `lt_interactive(hide=)` (an eye menu) |
+
 **Output and Shiny**
 
 | gt                    | lt                 |
@@ -171,6 +183,13 @@ column's *values* (its type), whereas the **lt** formula sees only the column
 *names* in `.`. There is no name-based way to say "the numeric ones", so pick
 out the columns you don't want to format by name (often the single label column)
 and negate, or list the ones you do.
+
+### Interactivity is one function, not a separate step
+
+**gt** turns on client-side interactivity with `opt_interactive()`, and hides
+columns with the unrelated `cols_hide()`. **lt** folds all of it into
+`lt_interactive()`: sorting, searching, filtering, paging, resizing, row detail,
+and a reader-togglable column menu.
 
 ### Footnotes vs. source notes are two different functions
 

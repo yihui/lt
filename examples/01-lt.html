@@ -94,6 +94,7 @@
 <li><a href="#sec:sorting-searching-filtering-and-paging"><span class="section-number">11.2</span> Sorting, searching, filtering, and paging</a></li>
 <li><a href="#sec:row-detail-drill-down"><span class="section-number">11.3</span> Row detail (drill-down)</a></li>
 <li><a href="#sec:resizable-columns"><span class="section-number">11.4</span> Resizable columns</a></li>
+<li><a href="#sec:column-visibility"><span class="section-number">11.5</span> Column visibility</a></li>
 </ul>
 </li>
 </ul>
@@ -175,7 +176,7 @@ lt(d, auto_format = FALSE) |&gt;
   # lt_note(): the footer note names itself and lt_export()
   lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/css/lt.min.css">
 <style>.lt-table {
   .highlight { font-weight: bold; color: #c60; }
 }</style>
@@ -308,7 +309,7 @@ lt(d, auto_format = FALSE) |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/js/lt.min.js" defer></script>
 <h2 id="sec:basics"><span class="section-number main-number">2</span> Basics</h2>
 <h3 id="sec:a-simple-table"><span class="section-number">2.1</span> A simple table</h3>
 <p>Pass any data frame to <code>lt()</code>:</p>
@@ -1450,7 +1451,7 @@ each cell.</p>
 lt(d_eff) |&gt;
   lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = &quot;Effect (95% CI)&quot;)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/css/lt-plot.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -1478,7 +1479,7 @@ lt(d_eff) |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/js/lt-plot.min.js" defer></script>
 <h3 id="sec:sparklines"><span class="section-number">7.2</span> Sparklines</h3>
 <p><code>lt_sparkline()</code> draws a per-row series as a small line or bar chart. The
 series can be a single list-column (each cell a numeric vector) or several
@@ -1934,7 +1935,7 @@ first of which is used initially.</p>
 <pre><code class="language-r">d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;)]
 lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf))
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/css/lt-interactive.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -1950,7 +1951,7 @@ lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf))
   }
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/js/lt-interactive.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/js/lt-interactive.min.js" defer></script>
 <p>Shift-click a second header to sort by it as a tie-breaker, so several
 columns sort at once (an ordinal in each header marks its place). An
 initial sort can be requested with <code>sort</code>, either as a character vector
@@ -2105,6 +2106,33 @@ as they are. Initial widths come from <code>lt_width()</code> as usual.</p>
     "sort": true,
     "search": false,
     "resize": true
+  }
+}
+})</script>
+<h3 id="sec:column-visibility"><span class="section-number">11.5</span> Column visibility</h3>
+<p><code>hide</code> adds an eye button at the start of the search row that opens a
+checklist of every column; unchecking one hides it (header and cells),
+re-checking brings it back. Use <code>hide = TRUE</code> to start with all columns
+shown, or name columns (a character vector or a one-sided formula) to
+start with those hidden (they are still listed, so the reader can bring
+them back). The checklist shows each column’s displayed label.</p>
+<pre><code class="language-r">lt(d) |&gt; lt_interactive(hide = ~ hp + wt, pager = 5)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "mpg": [21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 24.4, 22.8, 19.2, 17.8, 16.4, 17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 30.4, 33.9, 21.5, 15.5, 15.2, 13.3, 19.2, 27.3, 26, 30.4, 15.8, 19.7, 15, 21.4],
+    "cyl": [6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 8, 6, 8, 4],
+    "hp": [110, 110, 93, 110, 175, 105, 245, 62, 95, 123, 123, 180, 180, 180, 205, 215, 230, 66, 52, 65, 97, 150, 150, 245, 175, 66, 91, 113, 264, 175, 335, 109],
+    "wt": [2.62, 2.875, 2.32, 3.215, 3.44, 3.46, 3.57, 3.19, 3.15, 3.44, 3.44, 4.07, 3.73, 3.78, 5.25, 5.424, 5.345, 2.2, 1.615, 1.835, 2.465, 3.52, 3.435, 3.84, 3.845, 1.935, 2.14, 1.513, 3.17, 2.77, 3.57, 2.78]
+  },
+  "interactive": {
+    "sort": true,
+    "search": true,
+    "pager": [5],
+    "hide": {
+      "hidden": ["hp", "wt"]
+    }
   }
 }
 })</script>

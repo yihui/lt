@@ -1208,6 +1208,11 @@ the default sizes, or set it to <code>false</code> to show all rows with no
 pager;</li>
 <li><code>resize</code>: drag a column’s right edge to resize it (double-click that
 edge to fit the column to its content);</li>
+<li><code>hide</code>: a column-visibility menu. An eye button at the start of the
+search row opens a checklist of every column, listed by its displayed
+label; unchecking one hides it (header and cells), re-checking restores
+it. <code>true</code> starts with all columns shown, <code>{ hidden: [...] }</code> starts
+the named columns hidden (all are still listed, so any can be toggled);</li>
 <li><code>detail</code>: row detail (drill-down). An expand caret is added to each row,
 and a table is built below it on first expand. Give either an array of
 column names (the detail is a one-row table of those columns’ displayed
@@ -1229,6 +1234,16 @@ instead.</p>
 <script>LT.build({
   data: mtcars,
   interactive: { filter: { columns: ["mpg"] }, pager: [3, 6, 0], resize: true }
+});</script>
+<p>Open the eye menu to toggle columns; <code>hp</code> and <code>wt</code> start hidden here:</p>
+<pre><code class="language-js">LT.build({
+  data: mtcars,
+  interactive: { hide: { hidden: [&quot;hp&quot;, &quot;wt&quot;] }, pager: 5 }
+});
+</code></pre>
+<script>LT.build({
+  data: mtcars,
+  interactive: { hide: { hidden: ["hp", "wt"] }, pager: 5 }
 });</script>
 <p>Sorting and filtering reorder and hide rows, so a spec with <code>row_group</code>
 or an <code>indent</code> op is rendered as a static table (with a warning in the

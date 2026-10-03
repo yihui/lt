@@ -30,11 +30,12 @@
 <li><a href="#sec:notable-differences-from-gt"><span class="section-number main-number">2</span> Notable differences from gt</a>
 <ul>
 <li><a href="#sec:column-selection-strings-or-positions-not-tidy-select"><span class="section-number">2.1</span> Column selection: strings or positions, not tidy-select</a></li>
-<li><a href="#sec:footnotes-vs-source-notes-are-two-different-functions"><span class="section-number">2.2</span> Footnotes vs. source notes are two different functions</a></li>
-<li><a href="#sec:row-groups-lt-group-col-and-two-rendering-styles"><span class="section-number">2.3</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</a></li>
-<li><a href="#sec:extend-lt-with-s3-methods-don-t-reinvent-a-generic"><span class="section-number">2.4</span> Extend <code>lt()</code> with S3 methods, don’t reinvent a generic</a></li>
-<li><a href="#sec:styling-you-probably-don-t-need-css"><span class="section-number">2.5</span> Styling — you probably don’t need CSS</a></li>
-<li><a href="#sec:generating-a-static-html-table"><span class="section-number">2.6</span> Generating a static HTML table</a></li>
+<li><a href="#sec:interactivity-is-one-function-not-a-separate-step"><span class="section-number">2.2</span> Interactivity is one function, not a separate step</a></li>
+<li><a href="#sec:footnotes-vs-source-notes-are-two-different-functions"><span class="section-number">2.3</span> Footnotes vs. source notes are two different functions</a></li>
+<li><a href="#sec:row-groups-lt-group-col-and-two-rendering-styles"><span class="section-number">2.4</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</a></li>
+<li><a href="#sec:extend-lt-with-s3-methods-don-t-reinvent-a-generic"><span class="section-number">2.5</span> Extend <code>lt()</code> with S3 methods, don’t reinvent a generic</a></li>
+<li><a href="#sec:styling-you-probably-don-t-need-css"><span class="section-number">2.6</span> Styling — you probably don’t need CSS</a></li>
+<li><a href="#sec:generating-a-static-html-table"><span class="section-number">2.7</span> Generating a static HTML table</a></li>
 </ul>
 </li>
 <li><a href="#sec:a-runnable-example"><span class="section-number main-number">3</span> A runnable example</a></li>
@@ -236,6 +237,42 @@ placeholder.</p>
 </tr>
 </tbody>
 </table>
+<p><strong>Interactivity</strong> (<strong>gt</strong> splits these across <code>opt_interactive()</code> and
+<code>cols_hide()</code>; <strong>lt</strong> gathers them into one <code>lt_interactive()</code>)</p>
+<table>
+<thead>
+<tr>
+<th>gt</th>
+<th>lt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>opt_interactive(use_sorting=, use_search=)</code></td>
+<td><code>lt_interactive(sort=, search=)</code></td>
+</tr>
+<tr>
+<td><code>opt_interactive(use_filters = TRUE)</code></td>
+<td><code>lt_interactive(filter = TRUE)</code></td>
+</tr>
+<tr>
+<td><code>opt_interactive(use_pagination=, page_size_default = n)</code></td>
+<td><code>lt_interactive(pager = c(n, ...))</code></td>
+</tr>
+<tr>
+<td><code>opt_interactive(use_resizers = TRUE)</code></td>
+<td><code>lt_interactive(resize = TRUE)</code></td>
+</tr>
+<tr>
+<td><code>cols_hide(columns)</code> (always hidden)</td>
+<td><code>lt_hide(columns)</code></td>
+</tr>
+<tr>
+<td>— (reader toggles columns)</td>
+<td><code>lt_interactive(hide=)</code> (an eye menu)</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Output and Shiny</strong></p>
 <table>
 <thead>
@@ -298,7 +335,12 @@ column’s <em>values</em> (its type), whereas the <strong>lt</strong> formula s
 <em>names</em> in <code>.</code>. There is no name-based way to say “the numeric ones”, so pick
 out the columns you don’t want to format by name (often the single label column)
 and negate, or list the ones you do.</p>
-<h3 id="sec:footnotes-vs-source-notes-are-two-different-functions"><span class="section-number">2.2</span> Footnotes vs. source notes are two different functions</h3>
+<h3 id="sec:interactivity-is-one-function-not-a-separate-step"><span class="section-number">2.2</span> Interactivity is one function, not a separate step</h3>
+<p><strong>gt</strong> turns on client-side interactivity with <code>opt_interactive()</code>, and hides
+columns with the unrelated <code>cols_hide()</code>. <strong>lt</strong> folds all of it into
+<code>lt_interactive()</code>: sorting, searching, filtering, paging, resizing, row detail,
+and a reader-togglable column menu.</p>
+<h3 id="sec:footnotes-vs-source-notes-are-two-different-functions"><span class="section-number">2.3</span> Footnotes vs. source notes are two different functions</h3>
 <p><code>gt::tab_footnote()</code> does double duty: with a location it attaches a footnote to
 cells; without one it adds a general note. <strong>lt</strong> splits these:</p>
 <ul>
@@ -311,7 +353,7 @@ gets a marker. <code>text</code> is the <em>first</em> positional argument (not 
 <li><code>lt_note(text)</code> — a plain table note at the bottom (this is also the
 replacement for <code>tab_source_note()</code>).</li>
 </ul>
-<h3 id="sec:row-groups-lt-group-col-and-two-rendering-styles"><span class="section-number">2.3</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</h3>
+<h3 id="sec:row-groups-lt-group-col-and-two-rendering-styles"><span class="section-number">2.4</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</h3>
 <p><strong>gt</strong> groups either via <code>gt(groupname_col=)</code> or a preceding
 <code>dplyr::group_by()</code>. In <strong>lt</strong> grouping is a separate step, <code>lt_group(~ col)</code>,
 using a one-sided formula for the grouping column.</p>
@@ -362,7 +404,7 @@ lt(df) |&gt; lt_group(~ Group, sep = TRUE, sort = FALSE)
 <p><code>sort = FALSE</code> is the key: by default <code>lt_group()</code> sorts rows by the grouping
 value, which would discard the factor order you set. With it off, groups appear
 in first-seen row order — i.e. the factor-level order you sorted into.</p>
-<h3 id="sec:extend-lt-with-s3-methods-don-t-reinvent-a-generic"><span class="section-number">2.4</span> Extend <code>lt()</code> with S3 methods, don’t reinvent a generic</h3>
+<h3 id="sec:extend-lt-with-s3-methods-don-t-reinvent-a-generic"><span class="section-number">2.5</span> Extend <code>lt()</code> with S3 methods, don’t reinvent a generic</h3>
 <p><code>gt::gt()</code> is not an S3 generic — it is a plain function. A package that wants
 <code>gt()</code>-style output for its own object classes therefore has nowhere to hang a
 method. Both <strong>gsDesign</strong> and <strong>gsDesign2</strong> worked around this the same way:
@@ -394,7 +436,7 @@ collisions, and <code>summary() |&gt; lt()</code> reads the same everywhere.
 If your package currently exports <code>as_gt()</code>, keep it as a thin deprecated
 wrapper that calls <code>lt::lt()</code> and move the real logic into <code>lt.*</code> methods (this
 is exactly what <strong>gsDesign2</strong> and <strong>gsDesign</strong> now do; sketch below).</p>
-<h3 id="sec:styling-you-probably-don-t-need-css"><span class="section-number">2.5</span> Styling — you probably don’t need CSS</h3>
+<h3 id="sec:styling-you-probably-don-t-need-css"><span class="section-number">2.6</span> Styling — you probably don’t need CSS</h3>
 <p><strong>lt</strong>’s default look is close to <strong>gt</strong>’s out of the box, so you rarely need
 CSS just to reproduce <strong>gt</strong>‘s base appearance. The whole stylesheet
 (<a href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css"><code>lt.min.css</code></a>) is
@@ -407,7 +449,7 @@ CSS rules — no need to fight a heavy default. Add them with <code>lt_css()</co
 <code>lt_style()</code>, or just drop a <code>&lt;style&gt;</code>/chunk into your document, e.g.:</p>
 <pre><code class="language-css">.lt-table { font-size: 0.9em; width: 100%; }
 </code></pre>
-<h3 id="sec:generating-a-static-html-table"><span class="section-number">2.6</span> Generating a static HTML table</h3>
+<h3 id="sec:generating-a-static-html-table"><span class="section-number">2.7</span> Generating a static HTML table</h3>
 <p>By default an <strong>lt</strong> table is built in the browser by <a href="02-lt-js.html"><code>lt.js</code></a>
 at view time, which is perfect for HTML pages but useless for output that must
 already contain the finished <code>&lt;table&gt;</code> (a GitHub <code>README.md</code>, an email, a cached
@@ -462,7 +504,7 @@ lt(df) |&gt;
   lt_footnote(&quot;Interval bounds.&quot;, &quot;spanner&quot;, &quot;Probability&quot;) |&gt;  # tab_footnote
   lt_note(&quot;Source: synthetic data.&quot;)                   # gt: tab_source_note
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/css/lt.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -511,7 +553,7 @@ lt(df) |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.82/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.84/js/lt.min.js" defer></script>
 <h2 id="sec:shipping-lt-methods-from-your-package"><span class="section-number main-number">4</span> Shipping <strong>lt</strong> methods from your package</h2>
 <p>The pattern <strong>gsDesign2</strong> and <strong>gsDesign</strong> settled on: because <code>lt()</code> is an S3
 generic, a package defines <code>lt.&lt;class&gt;()</code> methods for its summary/result
