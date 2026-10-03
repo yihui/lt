@@ -472,9 +472,15 @@
   function addColumnToggle(cell, el, hrow, cols, labels, opt, layout, postSwap) {
     const doc = el.ownerDocument, ths = [...$$(hrow, "th")],
           start = (opt && opt.hidden) || [], hidden = new Set();
+    // show/hide column i's cell in one row, skipping the single colspan cell of
+    // a detail or empty row (which spans every column and is no column's own)
+    const setCell = (tr, i, on) => {
+      const c = tr.children[i];
+      if (c && c.colSpan === 1) c.hidden = on;
+    };
     // re-hide every hidden column's cells on each freshly-built <tbody>
     postSwap.push(body => hidden.forEach(i => {
-      for (const tr of body.rows) if (tr.children[i]) tr.children[i].hidden = true;
+      for (const tr of body.rows) setCell(tr, i, true);
     }));
     // show/hide column i everywhere it lives: header, <col> (fixed layout only),
     // and the current body cells
@@ -483,7 +489,7 @@
       if (ths[i]) ths[i].hidden = on;
       if (layout?.cs[i]) layout.cs[i].hidden = on;
       for (const body of el.tBodies)
-        for (const tr of body.rows) if (tr.children[i]) tr.children[i].hidden = on;
+        for (const tr of body.rows) setCell(tr, i, on);
     };
     const wrap = elem(doc, "span", { className: "lti-cols" }, cell),
           btn = elem(doc, "button", {

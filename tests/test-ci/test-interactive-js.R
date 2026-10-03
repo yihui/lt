@@ -450,6 +450,18 @@ assert("hide accepts a formula, and the menu lists displayed labels", {
   (lti_eval(y, labels) %==% 'name|Count')
 })
 
+assert("hiding a column leaves an open detail row's full-width cell alone", {
+  # the hide loop keys cells by column index, but a detail row has one cell
+  # spanning every column; it must skip that cell, not take it for column 0's
+  x = itbl(hide = TRUE, detail = ~ n, pager = FALSE)
+  expand = 't.querySelector(".lti-expand").click()'
+  off0 = paste(expand, box_click(0), sep = ';')
+  (lti_eval(x, 't.querySelector("tr.lti-detail td").hidden', off0) %==% 'false')
+  (lti_eval(x, 't.querySelector("tr.lti-detail td").colSpan', off0) %==% '2')
+  # the real first-column cell is still hidden, as asked
+  (lti_eval(x, cell_hidden(0), off0) %==% 'true')
+})
+
 assert("a table rendered on demand is enhanced like one rendered in place", {
   # forestly's lazy path: a spec turned into a table long after the page loaded
   x = itbl(pager = 2)
