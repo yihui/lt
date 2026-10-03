@@ -75,13 +75,14 @@
     );
   }
 
-  // The view pipeline (pure — no DOM): per-column filters, then the table-wide
-  // search, then sort, yielding the 1-based original row indices for
-  // `spec._viewRows`. `disp[col][i]` is a cell's displayed text (what substring
-  // search matches); `state` holds the filter terms (`filters[col]`), the
-  // search term, and the sort keys (`sort`, an array of `{col, dir}` applied in
-  // order). Filters and the search are combined with AND: a row must pass all
-  // of them.
+  // The view pipeline (pure — no DOM): per-column filters, the table-wide
+  // search, then any externally registered predicates, then sort, yielding the
+  // 1-based original row indices for `spec._viewRows`. `disp[col][i]` is a
+  // cell's displayed text (what substring search matches); `state` holds the
+  // filter terms (`filters[col]`), the search term, the predicates
+  // (`predicates`, keyed by id — see el._lt.filter), and the sort keys (`sort`,
+  // an array of `{col, dir}` applied in order). Filters, the search, and the
+  // predicates are combined with AND: a row must pass all of them.
   function computeView(spec, disp, state) {
     const cols = spec._cols || [], data = spec.data || {},
           cell = (c, r) => ({
@@ -96,6 +97,14 @@
     }
     const pred = matcher(state.term);
     if (pred) idx = idx.filter(r => pred(cols.map(c => cell(c, r))));
+
+    // predicates registered from outside (el._lt.filter) run last, each a
+    // function of the row's raw values keyed by column; combined with AND
+    const fns = Object.values(state.predicates || {});
+    if (fns.length) {
+      const row = r => Object.fromEntries(cols.map(c => [c, data[c]?.[r - 1] ?? null]));
+      idx = idx.filter(r => { const o = row(r); return fns.every(f => f(o)); });
+    }
 
     // sort by each key in turn, falling through to the next on a tie; a key's
     // column (resolved once) carries its numeric test and direction. nulls sort
@@ -163,7 +172,7 @@
           // an array `sort` on the options is an initial sort (a list of key
           // strings or objects, see parseKey); `true` just turns sorting on
           state = {
-            filters: {}, page: 0, pageSize: 0,
+            filters: {}, predicates: {}, page: 0, pageSize: 0,
             sort: Array.isArray(opts.sort) ? opts.sort.map(parseKey) : []
           };
     let view,          // filtered + sorted indices, cached across page turns
@@ -188,6 +197,20 @@
       else postSwap.forEach(f => f(body, rows));
       $(el, "tbody").replaceWith(body);
       sync(view.length);
+    };
+
+    // a small controller for driving the table from outside (e.g. forestly's
+    // own dropdown and range-slider widgets): register a predicate over a row's
+    // raw values (`{col: value}`) under an id, replacing or (with a null `fn`)
+    // removing it, then re-render. `spec`/`state` are exposed for reading (the
+    // column values for a widget's choices come from `el._ltSpec.data`).
+    el._lt = {
+      spec, state,
+      refresh: () => refresh(),
+      filter(id, fn) {
+        fn ? (state.predicates[id] = fn) : (delete state.predicates[id]);
+        refresh();
+      }
     };
 
     // the table-wide controls share one full-width head row: the column menu
