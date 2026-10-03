@@ -87,11 +87,8 @@
     table-layout: fixed;
   }
 
-  /* the search row carries the column menu (left) and the search box, laid out
-   * as a flex bar. The flex sits on this inner div, not the <td>: a flex table
-   * cell drops out of the table's column sizing and shrinks to its content. On
-   * its own the search fills the bar; sharing it with the menu button, the two
-   * are pushed to opposite ends with the space between them. */
+  /* the column menu and search box share this flex bar: alone, the search fills
+   * it; with the menu button, they sit at opposite ends */
   .lti-bar {
     display: flex;
     align-items: center;
@@ -110,14 +107,15 @@
     }
   }
 
-  /* the column-visibility menu: an icon button and the checklist it pops up. The
-   * button carries its own glyph (▦), so no border or background */
+  /* the column-visibility menu: an eye button and the checklist it pops up */
   .lti-cols {
     position: relative;
     button {
       border: none;
-      background: none;
       padding: 0;
+      width: 1.2em;
+      height: 1.2em;
+      background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="1.5"><path d="M1 8s2.5-4.5 7-4.5 7 4.5 7 4.5-2.5 4.5-7 4.5-7-4.5-7-4.5z"/><circle cx="8" cy="8" r="2"/></svg>');
     }
     .lti-menu {
       position: absolute;

@@ -438,6 +438,18 @@ assert("with resize on, hiding a column also drops its <col> (fixed layout)", {
   (lti_eval(x, th_hidden(1), off1) %==% 'true')
 })
 
+assert("hide accepts a formula, and the menu lists displayed labels", {
+  # a formula selects which columns start hidden, same as a character vector
+  x = itbl(hide = ~ n)
+  (lti_eval(x, 't.querySelectorAll(".lti-menu input")[1].checked') %==% 'false')
+  (lti_eval(x, th_hidden(1)) %==% 'true')
+  # the checklist shows each column by its displayed label, not its raw name
+  y = lt(data.frame(name = sym, n = c(5, 12, 3, 8))) |>
+    lt_label(n = "Count") |> lt_interactive(hide = TRUE)
+  labels = '[...t.querySelectorAll(".lti-menu label")].map(l => l.textContent).join("|")'
+  (lti_eval(y, labels) %==% 'name|Count')
+})
+
 assert("a table rendered on demand is enhanced like one rendered in place", {
   # forestly's lazy path: a spec turned into a table long after the page loaded
   x = itbl(pager = 2)

@@ -42,12 +42,13 @@
 #'   it (double-clicking the edge fits the column to its content). Widening a
 #'   column widens the table, leaving the other columns as they are. Initial
 #'   widths can be set with [lt_width()].
-#' @param hide Column-visibility control: a small menu button at the start of
-#'   the search row opens a checklist of every column, where unchecking a column
+#' @param hide Column-visibility control: an eye button at the start of the
+#'   search row opens a checklist of every column, where unchecking a column
 #'   hides it (header and cells) and re-checking restores it. `TRUE` adds the
-#'   menu with all columns shown; a character vector of column names adds it with
-#'   those columns hidden to begin with (every column is still listed, so any can
-#'   be toggled). `NULL` (the default) adds no menu.
+#'   menu with all columns shown; column names (a character vector or a one-sided
+#'   formula, e.g. `~ x + y`) adds it with those columns hidden to begin with
+#'   (every column is still listed, so any can be toggled). `NULL` (the default)
+#'   adds no menu.
 #' @param detail Row detail (drill-down). An expand caret is added to each row;
 #'   clicking it reveals a table built from that row below it. Give the columns
 #'   to show, as a character vector of names or a one-sided formula (e.g.
@@ -72,6 +73,7 @@
 #' # a column-visibility menu (all columns shown, or with some hidden to start)
 #' lt(head(mtcars)) |> lt_interactive(hide = TRUE)
 #' lt(head(mtcars)) |> lt_interactive(hide = c('hp', 'drat'))
+#' lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)  # same, as a formula
 #' # an initial sort by cyl, then mpg descending within each (two equivalent
 #' # forms: a character vector, or a formula)
 #' lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
@@ -103,8 +105,8 @@ lt_interactive = function(
     opts$pager = I(as.integer(sizes))
   }
   if (isTRUE(resize)) opts$resize = TRUE
-  if (!is.null(hide) && !isFALSE(hide)) opts$hide = if (is.character(hide))
-    list(hidden = I(hide)) else TRUE
+  if (!is.null(hide) && !isFALSE(hide)) opts$hide = if (isTRUE(hide)) TRUE else
+    list(hidden = I(as.character(f_cols(hide, x$data))))
   if (!is.null(detail)) opts$detail = if (inherits(detail, 'JS_LITERAL'))
     detail else I(as.character(f_cols(detail, x$data)))
   x$interactive = opts

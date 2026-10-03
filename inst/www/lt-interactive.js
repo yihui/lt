@@ -191,19 +191,20 @@
     };
 
     // the table-wide controls share one full-width head row: the column menu
-    // (if any) at its start, then the search box. They sit in an inner flex bar
-    // rather than straight in the cell, because a flex table cell drops out of
-    // the table's column sizing and shrinks to its content.
+    // (if any) at its start, then the search box, laid out in an inner flex bar
     const headBar = (opts.search !== false || opts.hide) ?
       elem(el.ownerDocument, "div", { className: "lti-bar" },
         fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0)) : null;
+    // the header labels, read before sort/resize decorate the cells, so the
+    // column menu can list the displayed labels rather than the raw names
+    const labels = [...$$(hrow, "th")].map(th => th.textContent);
     // wire sort before adding the filter row, so it sees the header row only
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
     if (opts.filter) addFilter(hrow, cols, opts.filter, state, refresh);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length) : null;
     if (opts.resize) addResize(el, layout);
     if (opts.hide)
-      addColumnToggle(headBar, el, hrow, cols, opts.hide, layout, postSwap);
+      addColumnToggle(headBar, el, hrow, cols, labels, opts.hide, layout, postSwap);
     if (opts.search !== false) addSearch(headBar, el, state, refresh);
     // row detail re-renders through the same seam: toggling a row only changes
     // which rows carry a detail block, so a plain re-render (no new view) is
@@ -461,14 +462,14 @@
     });
   }
 
-  // Column-visibility menu: an icon button (▦) at the start of the head cell
-  // that opens a checklist, one box per column. Unchecking a column hides it
+  // Column-visibility menu: an eye button at the start of the head cell that
+  // opens a checklist, one box per column. Unchecking a column hides it
   // outright — its header and every body cell take the `hidden` attribute (which
   // a <tbody> swap drops, so it is re-applied via postSwap). Every column is
   // listed; `opt` is `true` (all start shown) or `{ hidden: [...] }` (those names
   // start hidden). `layout` is resize's fixed layout, used when present to drop a
   // hidden column's <col> so the fixed table reflows too.
-  function addColumnToggle(cell, el, hrow, cols, opt, layout, postSwap) {
+  function addColumnToggle(cell, el, hrow, cols, labels, opt, layout, postSwap) {
     const doc = el.ownerDocument, ths = [...$$(hrow, "th")],
           start = (opt && opt.hidden) || [], hidden = new Set();
     // re-hide every hidden column's cells on each freshly-built <tbody>
@@ -486,7 +487,7 @@
     };
     const wrap = elem(doc, "span", { className: "lti-cols" }, cell),
           btn = elem(doc, "button", {
-            type: "button", textContent: "▦", title: "Columns",
+            type: "button", title: "Columns",
             "aria-label": "Show or hide columns", "aria-expanded": "false"
           }, wrap),
           menu = elem(doc, "div", { className: "lti-menu", hidden: true }, wrap);
@@ -494,7 +495,7 @@
       if (c == null) return;
       const label = elem(doc, "label", {}, menu),
             box = elem(doc, "input", { type: "checkbox", checked: true }, label);
-      label.append(c);
+      label.append(labels[i] ?? c);
       if (start.includes(c)) { box.checked = false; hidden.add(i); }
       box.onchange = () => {
         box.checked ? hidden.delete(i) : hidden.add(i);
