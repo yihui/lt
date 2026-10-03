@@ -43,7 +43,7 @@ are registered by the time the runtime builds a table:
 ```
 
 ```{r, echo = FALSE}
-iris5 = head(iris, 5)
+iris5 = iris[c(1, 2, 51, 52, 101), ]  # span all three species
 mtcars6 = head(mtcars[, 1:6], 6)
 ```
 
@@ -960,15 +960,18 @@ Predicates live in the table's state, so they survive sorting and paging.
 Here an outside `<select>` filters the table by `Species`:
 
 ```{js}
-const t = LT.render(
-  document.currentScript.parentElement.appendChild(document.createElement("div")),
-  { data: iris, interactive: { search: false, pager: [5] } }
+// An outside widget wires up once the page (and lt.js) has loaded.
+const host = document.currentScript.parentElement.appendChild(
+  document.createElement("div")
 );
-const sel = document.createElement("select");
-sel.innerHTML = '<option value="">All species</option>' +
-  [...new Set(t._lt.spec.data.Species)].map(s => `<option>${s}</option>`).join("");
-sel.onchange = () => t._lt.filter(
-  "species", sel.value ? row => row.Species === sel.value : null
-);
-t.before(sel);
+addEventListener("load", () => {
+  const t = LT.render(host, { data: iris, interactive: { search: false, pager: [5] } });
+  const sel = document.createElement("select");
+  sel.innerHTML = '<option value="">All species</option>' +
+    [...new Set(t._lt.spec.data.Species)].map(s => "<option>" + s + "</option>").join("");
+  sel.onchange = () => t._lt.filter(
+    "species", sel.value ? row => row.Species === sel.value : null
+  );
+  t.before(sel);
+});
 ```
