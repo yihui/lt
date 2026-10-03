@@ -87,6 +87,52 @@
     table-layout: fixed;
   }
 
+  /* the column menu and search box share this flex bar: alone, the search fills
+   * it; with the menu button, they sit at opposite ends */
+  .lti-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    .lti-search {
+      flex: 1;
+    }
+    &:has(.lti-cols) {
+      justify-content: space-between;
+      /* width:auto overrides the base 100%, so the box takes its natural width
+       * and the free space falls between it and the menu button */
+      .lti-search {
+        flex: 0 1 auto;
+        width: auto;
+      }
+    }
+  }
+
+  /* the column-visibility menu: an eye button and the checklist it pops up */
+  .lti-cols {
+    position: relative;
+    button {
+      border: none;
+      padding: 0;
+      width: 1.2em;
+      height: 1.2em;
+      background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="1.5"><path d="M1 8s2.5-4.5 7-4.5 7 4.5 7 4.5-2.5 4.5-7 4.5-7-4.5-7-4.5z"/><circle cx="8" cy="8" r="2"/></svg>');
+    }
+    .lti-menu {
+      position: absolute;
+      z-index: 1;
+      top: 100%;
+      left: 0;
+      background: Canvas;
+      border: 1px solid;
+      padding: 0.3em 0.6em;
+      label {
+        display: block;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+    }
+  }
+
   .lti-pager {
     display: flex;
     align-items: center;

@@ -877,6 +877,11 @@ optional:
   pager;
 - `resize`: drag a column's right edge to resize it (double-click that
   edge to fit the column to its content);
+- `hide`: a column-visibility menu. An eye button at the start of the
+  search row opens a checklist of every column, listed by its displayed
+  label; unchecking one hides it (header and cells), re-checking restores
+  it. `true` starts with all columns shown, `{ hidden: [...] }` starts
+  the named columns hidden (all are still listed, so any can be toggled);
 - `detail`: row detail (drill-down). An expand caret is added to each row,
   and a table is built below it on first expand. Give either an array of
   column names (the detail is a one-row table of those columns' displayed
@@ -896,6 +901,15 @@ instead.
 LT.build({
   data: mtcars,
   interactive: { filter: { columns: ["mpg"] }, pager: [3, 6, 0], resize: true }
+});
+```
+
+Open the eye menu to toggle columns; `hp` and `wt` start hidden here:
+
+```{js}
+LT.build({
+  data: mtcars,
+  interactive: { hide: { hidden: ["hp", "wt"] }, pager: 5 }
 });
 ```
 
