@@ -855,6 +855,19 @@ lt(head(d)) |> lt_interactive(resize = TRUE, pager = FALSE, search = FALSE) |>
   lt_width(mpg = "8em")
 ```
 
+### Column visibility
+
+`hide` adds an eye button at the start of the search row that opens a
+checklist of every column; unchecking one hides it (header and cells),
+re-checking brings it back. Use `hide = TRUE` to start with all columns
+shown, or name columns (a character vector or a one-sided formula) to
+start with those hidden (they are still listed, so the reader can bring
+them back). The checklist shows each column's displayed label.
+
+```{r}
+lt(d) |> lt_interactive(hide = ~ hp + wt, pager = 5)
+```
+
 Interactive features need the rows to be independent of one another,
 since sorting and filtering reorder and hide them: a table with row
 groups or indentation is rendered static instead (with a warning in the
