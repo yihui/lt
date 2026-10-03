@@ -944,10 +944,10 @@ Every enhanced table carries a small controller at `el._lt`, so widgets
 outside the table — a dropdown, a range slider — can filter it without
 using the built-in boxes:
 
-- `el._lt.filter(id, fn)` registers a predicate `fn(row)` under `id`,
+- `el._lt.filter(id, func)` registers a predicate `func(row)` under `id`,
   where `row` is the row's raw values keyed by column; the rows kept are
-  those for which `fn` returns a truthy value. Call it again with the same
-  `id` to replace that predicate, or with a `null` `fn` to remove it. The
+  those for which `func` returns a truthy value. Call it again with the same
+  `id` to replace that predicate, or with a `null` `func` to remove it. The
   predicates from every id — together with the built-in column filters and
   the search — combine with AND.
 - `el._lt.refresh()` re-renders the body; `filter()` calls it for you, so
@@ -961,9 +961,8 @@ Here an outside `<select>` filters the table by `Species`:
 
 ```{js}
 // An outside widget wires up once the page (and lt.js) has loaded.
-const host = document.currentScript.parentElement.appendChild(
-  document.createElement("div")
-);
+const host = document.createElement("div");
+document.currentScript.after(host);
 addEventListener("load", () => {
   const t = LT.render(host, { data: iris, interactive: { search: false, pager: [5] } });
   const sel = document.createElement("select");
