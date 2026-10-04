@@ -3,9 +3,19 @@ title: "lt.js — JavaScript API Reference"
 output:
   html:
     meta:
-      css: ["@default", "@lt", "@lt-plot", "@lt-interactive", "@key-buttons"]
-      js: ["@lt-plot", "@lt", "@lt-interactive", "@key-buttons"]
+      css: ["@default", "@key-buttons"]
+      js: ["@key-buttons"]
 ---
+
+```{r assets, echo = FALSE, results = 'asis'}
+# Pin jsdelivr URLs to the lt.js version in DESCRIPTION (not litedown's
+# latest-tracking @-shortcuts). lt-plot loads before the core runtime.
+cat(
+  lt:::css_block(c('lt.css', 'lt-plot.css', 'lt-interactive.css'), inline = FALSE),
+  lt:::js_block(c('lt-plot.js', 'lt.js', 'lt-interactive.js'), inline = FALSE),
+  sep = '\n'
+)
+```
 
 This document demonstrates the lt.js runtime directly from JavaScript.
 Each example shows a JSON spec and renders the table with `LT.build()`.
