@@ -328,7 +328,7 @@ assert("lt_errorbar() stacks several series with colors and a legend", {
   # one triple per series via ...: one point-and-bar per series, stacked in each
   # cell. The first value column holds the plot; the rest are hidden; headers
   # merge.
-  x3 = data.frame(a = 1:3, b = 4:6, c = 7:9, d = 2:4, e = 1:3, f = 5:7)
+  x3 = lt(data.frame(a = 1:3, b = 4:6, c = 7:9, d = 2:4, e = 1:3, f = 5:7))
   e = lt_errorbar(x3, a ~ b + c, d ~ e + f, color = TRUE,
     labels = c("Arm 1", "Arm 2"))
   op = op_of(e, "errorbar")
