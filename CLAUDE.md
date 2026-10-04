@@ -10,19 +10,10 @@ tags are identical across tables.
 
 ## Publish lt to npm
 
-When asked to "publish lt to npm":
-
-1.  If `../lite.js/` doesn't exist, clone it from
-    <https://github.com/yihui/lite.js>.
-2.  Copy `lt.js` to `../lite.js/js/` and `lt.css` to `../lite.js/css/`.
-3.  In `../lite.js/`: pull the latest (`git pull --rebase`), then check the
-    existing tags to determine the next version (`git tag | sort -V | tail
-    -1`). Bump `package.json` to a version that does not already exist.
-    Commit, create a git tag, and push. **Never delete or override an
-    existing remote tag.** If a tag already exists on the remote, bump to a
-    higher version instead.
-4.  In this lt package: update the lt.js version reference to match the newly
-    published version.
+When asked to "publish lt to npm", run `tools/publish-npm.sh`. It copies lt's
+assets to the lite.js (`@xiee/utils`) repo, bumps and tags the next version,
+pushes, and pins `Config/lt.js` in `DESCRIPTION`. After it runs, review and
+commit the `DESCRIPTION` change in lt.
 
 ## Test Instructions
 
