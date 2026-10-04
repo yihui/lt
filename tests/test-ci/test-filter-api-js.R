@@ -18,3 +18,12 @@ assert("el._lt.filter lets outside widgets filter the table, composing with AND"
   sortN = paste(big, 'document.querySelector("thead th").click()', sep = ';')
   (lti_eval(x, rows, sortN) %==% '2')
 })
+
+assert("external predicates see hidden columns too (not just the visible ones)", {
+  # forestly's slider/dropdown filter on helper columns that are hidden from the
+  # table; the row object handed to a predicate must still carry them
+  x = lt(data.frame(name = sym, n = c(5, 12, 3, 8), g = c("a", "b", "a", "b"))) |>
+    lt_hide("g") |> lt_interactive(pager = FALSE)
+  rows = 't.querySelectorAll("tbody tr").length'
+  (lti_eval(x, rows, 't._lt.filter("g", row => row.g === "a")') %==% '2')
+})

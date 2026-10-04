@@ -99,10 +99,14 @@
     if (pred) idx = idx.filter(r => pred(cols.map(c => cell(c, r))));
 
     // predicates registered from outside (el._lt.filter) run last, each a
-    // function of the row's raw values keyed by column; combined with AND
+    // function of the row's raw values keyed by column; combined with AND. The
+    // row carries *every* column (not just the visible `cols`), so a widget can
+    // filter on a hidden helper column — e.g. forestly's incidence slider reads
+    // the hidden `hide_prop`, its parameter dropdown the hidden `parameter`.
     const fns = Object.values(state.predicates || {});
     if (fns.length) {
-      const row = r => Object.fromEntries(cols.map(c => [c, data[c]?.[r - 1] ?? null]));
+      const all = Object.keys(data);
+      const row = r => Object.fromEntries(all.map(c => [c, data[c]?.[r - 1] ?? null]));
       idx = idx.filter(r => { const o = row(r); return fns.every(f => f(o)); });
     }
 
@@ -201,9 +205,9 @@
 
     // a small controller for driving the table from outside (e.g. forestly's
     // own dropdown and range-slider widgets): register a predicate over a row's
-    // raw values (`{col: value}`) under an id, replacing or (with a null `fn`)
-    // removing it, then re-render. `spec`/`state` are exposed for reading (the
-    // column values for a widget's choices come from `el._ltSpec.data`).
+    // raw values (`{col: value}`, including hidden columns) under an id,
+    // replacing or (with a null `fn`) removing it, then re-render. `spec`/`state`
+    // are exposed for reading (a widget's choices come from `el._ltSpec.data`).
     el._lt = {
       spec, state,
       refresh: () => refresh(),
