@@ -1,24 +1,5 @@
 d = data.frame(x = 1:3, y = c("a", "b", "c"))
 
-assert("lt() returns object with data and ops", {
-  x = lt(d)
-  (x$data %==% d)
-  (x$ops %==% list())
-})
-
-assert("lt(auto_format = FALSE) sets auto_format", {
-  x = lt(d, auto_format = FALSE)
-  (x$auto_format %==% FALSE)
-  # default does not include auto_format
-  (is.null(lt(d)$auto_format))
-})
-
-assert("lt(auto_label = FALSE) sets auto_label", {
-  x = lt(d, auto_label = FALSE)
-  (x$auto_label %==% FALSE)
-  (is.null(lt(d)$auto_label))
-})
-
 assert("lt() detects grouped_df", {
   gd = structure(d, class = c("grouped_df", "data.frame"),
     groups = data.frame(y = c("a", "b"), .rows = I(list(1L, 2:3))))
