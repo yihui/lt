@@ -6,35 +6,40 @@
 \usage{
 lt_errorbar(
   x,
-  columns,
+  ...,
   limits = NULL,
   ref = NULL,
   width = 160,
-  height = 16,
+  height = NULL,
   hide = TRUE,
-  axis = FALSE
+  axis = FALSE,
+  color = FALSE,
+  labels = NULL
 )
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{columns}{The three columns holding the point estimate, the lower bound,
-and the upper bound, in that order. Either a two-sided formula
+\item{...}{One or more error-bar series, each naming the point estimate, the
+lower bound, and the upper bound, in that order: either a two-sided formula
 \code{value ~ lower + upper} (estimate on the left, bounds on the right) or a
-length-3 character vector / integer positions \code{c(value, lower, upper)}. The
-plot is drawn in the \code{value} column's cells.}
+length-3 character vector / integer positions \code{c(value, lower, upper)}.
+Give several to stack several series per cell. The plot is drawn in the
+first series' \code{value} column's cells.}
 
 \item{limits}{Numeric \code{c(min, max)} for the shared horizontal scale. Defaults
-to the range of all three columns' finite values. Values outside the scale
+to the range of all the columns' finite values. Values outside the scale
 are clamped to the edges.}
 
 \item{ref}{Optional value at which to draw a vertical reference line (e.g.
 \code{0} for a risk difference, \code{1} for an odds ratio).}
 
-\item{width, height}{Pixel size of each cell's SVG.}
+\item{width, height}{Pixel size of each cell's SVG. \code{height} defaults to a
+size that fits the number of series (taller for more).}
 
-\item{hide}{If \code{TRUE} (default), the \code{lower} and \code{upper} columns are hidden,
-since they are drawn into the plot; set to \code{FALSE} to keep them visible.}
+\item{hide}{If \code{TRUE} (default), every column except the first series' value
+column is hidden, since they are drawn into the plot; set to \code{FALSE} to
+keep them visible.}
 
 \item{axis}{Draw a shared horizontal axis (a baseline with tick marks and
 labels at "nice" round values) in the table footer under the plot column,
@@ -42,6 +47,15 @@ plus faint vertical gridlines inside each cell at the same tick positions
 to help read the bars. \code{TRUE} draws the axis; a character string draws the
 axis with that string as a caption below it (e.g. \code{"Risk difference"});
 \code{FALSE} (default) draws no axis.}
+
+\item{color}{Series colors. \code{FALSE} (default) draws every series in one
+default color; \code{TRUE} assigns colors from the current palette
+(\code{\link[grDevices:palette]{grDevices::palette()}}); a character vector of CSS colors sets them
+explicitly (recycled to the number of series). When colored, a legend is
+drawn below the plot in the footer.}
+
+\item{labels}{Legend labels, one per series, used when colored. Defaults to
+the series' value-column names.}
 }
 \value{
 \code{x} with the error-bar column recorded.
@@ -56,6 +70,12 @@ only the numbers travel to the client, and the SVG is drawn in the browser —
 so for an interactive table (\code{\link[=lt_interactive]{lt_interactive()}}) only the rows on the current
 page are drawn.
 }
+\details{
+Several series can share one cell: pass one triple per series and each row
+shows one point-and-bar per series, stacked vertically on the same shared
+scale (e.g. a risk difference for each of several treatment arms). Color the
+series and a legend is drawn in the footer, as for \code{\link[=lt_dotplot]{lt_dotplot()}}.
+}
 \examples{
 d = data.frame(
   term = c("A", "B", "C"), est = c(0.2, -0.1, 0.4),
@@ -66,4 +86,13 @@ lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
 # or a length-3 vector c(value, lower, upper); keep the bounds visible, add
 # a labeled axis
 lt(d) |> lt_errorbar(c("est", "lo", "hi"), hide = FALSE, axis = "Effect")
+# several series stacked in each cell, colored with a footer legend
+d2 = data.frame(
+  term = c("A", "B"), e1 = c(0.2, 0.4), l1 = c(0, 0.2), u1 = c(0.4, 0.6),
+  e2 = c(-0.1, 0.1), l2 = c(-0.3, -0.1), u2 = c(0.1, 0.3)
+)
+lt(d2) |> lt_errorbar(
+  e1 ~ l1 + u1, e2 ~ l2 + u2, ref = 0, color = TRUE,
+  labels = c("Drug A", "Drug B")
+)
 }

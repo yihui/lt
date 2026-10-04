@@ -14,8 +14,10 @@
   .lt-eb {
     position: relative;
     vertical-align: middle;
-    line { stroke: #888; }
-    circle { fill: #333; }
+    /* default only series without a per-series stroke=/fill= attribute, so that
+       attribute still shows; override either via that attr or a `.lt-eb` rule */
+    line:not([stroke]):not(.lt-eb-ref) { stroke: #888; }
+    circle:not([fill]) { fill: #333; }
     .lt-eb-ref { stroke: #ccc; }
   }
   .lt-eb-axis {
@@ -39,7 +41,7 @@
        attribute still shows; override either via `color` or `.lt-dot circle` */
     circle:not([fill]) { fill: currentColor; }
   }
-  .lt-dot-legend {
+  .lt-plot-legend {
     margin-top: 3px;  /* small gap below the axis, since the cell has no padding */
     font-size: 11px;
     color: #666;
