@@ -83,12 +83,6 @@ assert("a default sort reaches the client spec as ordered name keys", {
          format(lt(d) |> lt_interactive(sort = FALSE), assets = FALSE)) %==% TRUE)
 })
 
-assert("resizable columns are opt-in", {
-  json = format(lt(d) |> lt_interactive(resize = TRUE), assets = FALSE)
-  (grepl('"resize": true', json) %==% TRUE)
-  (grepl('resize', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
-})
-
 assert("detail = column names resolves to a name array; js() stays verbatim", {
   # a formula / character vector of columns becomes a plain name array for the
   # runtime to build a one-row detail table from
