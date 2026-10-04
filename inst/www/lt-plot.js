@@ -54,32 +54,52 @@
     return Math.round(Math.max(EB_PAD, Math.min(eb.width - EB_PAD, p)) * 10) / 10;
   };
 
-  // Inline SVG for an error-bar cell: a point at the estimate and a horizontal
-  // bar (with end caps) from the lower to the upper bound, on the column's
-  // shared [min,max] scale. Only the numbers are shipped in the spec; the SVG
-  // is built here at render time, so an interactive table (which rebuilds
-  // <tbody> from spec._viewRows) draws it only for the rows on the current
-  // page. `u` carries the core helpers (esc/isNum/str) passed in by lt.js.
+  // y pixel of series i of n within a cell of height H: a lone series on the
+  // mid-line, else evenly spaced tracks so stacked points/bars do not overlap.
+  // Shared by the stacked error bar and the staggered dot plot.
+  const stackY = (i, n, H) => n <= 1 ? H / 2 : Math.round((i + 1) / (n + 1) * H);
+
+  // Inline SVG for an error-bar cell: one series per triple (value, lower,
+  // upper) — a point at the estimate and a horizontal bar (with end caps) from
+  // the lower to the upper bound, on the column's shared [min,max] scale. A
+  // single series sits on the mid-line; several series stack at evenly spaced
+  // rows, each optionally colored (see the footer legend). Only the numbers are
+  // shipped in the spec; the SVG is built here at render time, so an
+  // interactive table (which rebuilds <tbody> from spec._viewRows) draws it
+  // only for the rows on the current page. `u` carries the core helpers
+  // (esc/isNum/str) passed in by lt.js.
   function svgErrorbar(eb, data, r, u) {
     const num = k => { const v = data[k]?.[r - 1]; return u.isNum(v) ? v : null; };
-    const est = num(eb.col), lo = num(eb.lo), hi = num(eb.hi);
-    if (est == null && lo == null && hi == null) return "";
-    const H = eb.height, y = H / 2, x = v => ebX(eb, v),
-          cap = Math.min(4, (H - 1) / 2);  // half-height of the end caps
+    const H = eb.height, n = eb.cols.length, x = v => ebX(eb, v),
+          yOf = i => stackY(i, n, H),  // one track per series, stacked
+          cap = Math.min(4, (H / n - 1) / 2);  // half-height of the end caps
     let s = `<svg class="lt-eb" width="${eb.width}" height="${H}">`;
     if (eb.ref != null)
       s += `<line class="lt-eb-ref" x1="${x(eb.ref)}" y1="0" x2="${x(eb.ref)}" y2="${H}"/>`;
-    if (lo != null && hi != null) {
-      // horizontal bar plus short vertical end caps at both ends
-      const xl = x(lo), xh = x(hi);
-      s += `<line x1="${xl}" y1="${y}" x2="${xh}" y2="${y}"/>` +
-           `<line x1="${xl}" y1="${y - cap}" x2="${xl}" y2="${y + cap}"/>` +
-           `<line x1="${xh}" y1="${y - cap}" x2="${xh}" y2="${y + cap}"/>`;
-    }
-    if (est != null) s += `<circle cx="${x(est)}" cy="${y}" r="3"/>`;
-    const ci = lo != null && hi != null ? ` (${u.str(lo)}, ${u.str(hi)})` : "";
-    s += `<title>${u.esc((est != null ? u.str(est) : "") + ci)}</title></svg>`;
-    return s;
+    const titles = [];
+    eb.cols.forEach((c, i) => {
+      const est = num(c), lo = num(eb.los[i]), hi = num(eb.his[i]);
+      if (est == null && lo == null && hi == null) return;
+      const y = yOf(i), col = eb.colors?.[i],
+            // per-series color via stroke=/fill= attributes; the stylesheet only
+            // defaults series that lack them (:not([stroke])/:not([fill])), so a
+            // color shows but a user CSS rule can still override it
+            st = col ? ` stroke="${u.esc(col)}"` : "",
+            fl = col ? ` fill="${u.esc(col)}"` : "";
+      if (lo != null && hi != null) {
+        // horizontal bar plus short vertical end caps at both ends
+        const xl = x(lo), xh = x(hi);
+        s += `<line${st} x1="${xl}" y1="${y}" x2="${xh}" y2="${y}"/>` +
+             `<line${st} x1="${xl}" y1="${y - cap}" x2="${xl}" y2="${y + cap}"/>` +
+             `<line${st} x1="${xh}" y1="${y - cap}" x2="${xh}" y2="${y + cap}"/>`;
+      }
+      if (est != null) s += `<circle${fl} cx="${x(est)}" cy="${y}" r="3"/>`;
+      const ci = lo != null && hi != null ? ` (${u.str(lo)}, ${u.str(hi)})` : "";
+      titles.push((eb.labels?.[i] ? eb.labels[i] + ": " : "") +
+                  (est != null ? u.str(est) : "") + ci);
+    });
+    if (!titles.length) return "";
+    return s + `<title>${u.esc(titles.join("\n"))}</title></svg>`;
   }
 
   // Full-cell background layer of faint vertical gridlines at the shared tick
@@ -123,10 +143,12 @@
   // r, u) -> body-cell HTML; foot(cfg, u) -> footer (axis) HTML or "".
   cells.errorbar = {
     resolve(op) {
-      const [v, lo, hi] = op.columns || [];
+      const cols = op.columns || [], v = cols[0];
       if (!v) return {};
       const eb = {
-        col: v, lo, hi, min: op.min, max: op.max, ref: op.ref, axis: op.axis,
+        col: v, cols, los: op.lowers || [], his: op.uppers || [],
+        colors: op.colors, labels: op.labels,
+        min: op.min, max: op.max, ref: op.ref, axis: op.axis,
         axisLabel: op.axis_label, width: op.width || 160, height: op.height || 16
       };
       // When an axis is requested, the same nice ticks drive both the footer
@@ -139,7 +161,7 @@
     // background can run unbroken from one row to the next.
     cellClass: eb => eb.ticks ? "lt-eb-cell" : "",
     cell: (eb, data, r, u) => (eb.ticks ? svgGrid(eb) : "") + svgErrorbar(eb, data, r, u),
-    foot: (eb, u) => eb.axis ? svgAxis(eb, u) : ""
+    foot: (eb, u) => (eb.ticks ? svgAxis(eb, u) : "") + legend(eb, u)
   };
 
   // Padding (px) inside a sparkline SVG, so the line/bars never touch the edge.
@@ -216,10 +238,14 @@
   // Inline SVG dot plot for a cell: one dot per column, each at its value on the
   // column group's shared [min,max] scale, so a row with N columns shows N dots
   // laid out horizontally on one baseline. When colors are given, each dot takes
-  // its column's color (see dotLegend for the key). Non-finite values draw no
+  // its column's color (see legend() for the key). Non-finite values draw no
   // dot. Reuses the error-bar scale (ebX) and padding.
   function svgDotplot(dp, data, r, u) {
-    const H = dp.height, y = H / 2, x = v => ebX(dp, v);
+    const H = dp.height, n = dp.cols.length, x = v => ebX(dp, v),
+          // all dots on the mid-line by default; stagger puts each column on its
+          // own track (like the stacked error bar) so near-equal values do not
+          // overlap — the vertical position is cosmetic, only x carries a value
+          yOf = i => dp.stagger ? stackY(i, n, H) : H / 2;
     let s = `<svg class="lt-dot" width="${dp.width}" height="${H}">`;
     const titles = [];
     dp.cols.forEach((c, i) => {
@@ -229,20 +255,22 @@
       // only defaults dots that lack it (:not([fill])), so this color shows but
       // user CSS (a stylesheet rule) can still override it
       const col = dp.colors?.[i], fl = col ? ` fill="${u.esc(col)}"` : "";
-      s += `<circle${fl} cx="${x(v)}" cy="${y}" r="3"/>`;
+      s += `<circle${fl} cx="${x(v)}" cy="${yOf(i)}" r="3"/>`;
       titles.push((dp.labels?.[i] ? dp.labels[i] + ": " : "") + u.str(v));
     });
     return s + `<title>${u.esc(titles.join("\n"))}</title></svg>`;
   }
 
-  // Color key for a colored dot plot, drawn once in the footer under the axis: a
-  // swatch + label per column. "" when the plot is monochrome (no colors).
-  function dotLegend(dp, u) {
-    if (!dp.colors) return "";
-    const items = dp.cols.map((c, i) =>
-      `<span><i style="background:${u.esc(dp.colors[i])}"></i>` +
-      `${u.esc(dp.labels?.[i] ?? c)}</span>`).join("");
-    return `<div class="lt-dot-legend">${items}</div>`;
+  // Color key for a colored dot/error-bar plot, drawn once in the footer under
+  // the axis: a swatch + label per series. "" when the plot is monochrome (no
+  // colors). Shared by the dot-plot and error-bar renderers (cfg.cols/colors/
+  // labels have the same shape in both).
+  function legend(cfg, u) {
+    if (!cfg.colors) return "";
+    const items = cfg.cols.map((c, i) =>
+      `<span><i style="background:${u.esc(cfg.colors[i])}"></i>` +
+      `${u.esc(cfg.labels?.[i] ?? c)}</span>`).join("");
+    return `<div class="lt-plot-legend">${items}</div>`;
   }
 
   // Dot-plot cell renderer. columns = the value columns (one dot each); the plot
@@ -253,7 +281,7 @@
       const cols = op.columns || [], v = cols[0];
       if (!v) return {};
       const dp = {
-        col: v, cols, colors: op.colors, labels: op.labels,
+        col: v, cols, colors: op.colors, labels: op.labels, stagger: op.stagger,
         min: op.min, max: op.max, axisLabel: op.axis_label,
         width: op.width || 160, height: op.height || 16
       };
@@ -262,7 +290,7 @@
     },
     cellClass: dp => dp.ticks ? "lt-eb-cell" : "",
     cell: (dp, data, r, u) => (dp.ticks ? svgGrid(dp) : "") + svgDotplot(dp, data, r, u),
-    foot: (dp, u) => (dp.ticks ? svgAxis(dp, u) : "") + dotLegend(dp, u)
+    foot: (dp, u) => (dp.ticks ? svgAxis(dp, u) : "") + legend(dp, u)
   };
 
   // If core already built a table before this module loaded (a doc where an

@@ -569,6 +569,24 @@ lt(d_eff) |>
   lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = "Effect (95% CI)")
 ```
 
+Several series can share one cell: pass one `value ~ lower + upper` per series
+and each row stacks one point-and-bar on the same scale (e.g. a risk difference
+for each of several treatment arms). `color` and `labels` key the series in a
+footer legend, as for `lt_dotplot()`.
+
+```{r}
+d_grp = data.frame(
+  Term = c("Headache", "Nausea", "Fatigue"),
+  D1 = c(2.1, -1.4, 3.3), L1 = c(-1.0, -4.2, 0.1), U1 = c(5.2, 1.4, 6.5),
+  D2 = c(-0.5, 0.8, 1.2), L2 = c(-3.6, -2.1, -1.9), U2 = c(2.6, 3.7, 4.3)
+)
+lt(d_grp) |>
+  lt_errorbar(
+    D1 ~ L1 + U1, D2 ~ L2 + U2, ref = 0, color = TRUE,
+    labels = c("Drug A", "Drug B"), axis = "Risk difference (%)"
+  )
+```
+
 ### Sparklines
 
 `lt_sparkline()` draws a per-row series as a small line or bar chart. The

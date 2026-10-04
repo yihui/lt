@@ -614,12 +614,12 @@ assert("lt_dotplot draws one colored dot per column with a footer legend", {
   (lti_eval(x, 't.querySelector("tbody .lt-dot circle").getAttribute("fill")')
    %==% 'red')
   # a colored plot keys the colors in a footer legend (one swatch per column)
-  (lti_eval(x, 't.querySelectorAll(".lt-dot-legend i").length') %==% '3')
+  (lti_eval(x, 't.querySelectorAll(".lt-plot-legend i").length') %==% '3')
   # monochrome by default: dots carry no fill override and no legend is drawn
   xm = lt(d) |> lt_dotplot(~ x + y + z)
   (lti_eval(xm, 't.querySelector("tbody .lt-dot circle").hasAttribute("fill")')
    %==% 'false')
-  (lti_eval(xm, 't.querySelectorAll(".lt-dot-legend").length') %==% '0')
+  (lti_eval(xm, 't.querySelectorAll(".lt-plot-legend").length') %==% '0')
 })
 
 assert("lt-plot.js re-renders a table core built before the module loaded", {

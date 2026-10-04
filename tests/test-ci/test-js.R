@@ -27,8 +27,8 @@ assert("lt_hide drops a column (header and cells) from the rendered table", {
 assert("lt_errorbar renders an inline SVG point-and-bar on a shared scale", {
   spec = list(
     data = list(est = c(0.5, 0.2), lo = c(0, 0.1), hi = c(1, 0.3)),
-    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
-      min = 0, max = 1, ref = 0, width = 80, height = 16))
+    ops = list(list(type = "errorbar", columns = I("est"), lowers = I("lo"),
+      uppers = I("hi"), min = 0, max = 1, ref = 0, width = 80, height = 16))
   )
   html = build(spec)
   # one SVG per row in the value column; the lo/hi columns still render as data
@@ -53,9 +53,9 @@ assert("lt_errorbar renders an inline SVG point-and-bar on a shared scale", {
 assert("lt_errorbar axis = TRUE draws one shared axis in the footer", {
   spec = list(
     data = list(est = c(0.5, 0.2), lo = c(0, 0.1), hi = c(1, 0.3)),
-    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
-      min = 0, max = 1, ref = 0, width = 80, height = 16, axis = TRUE,
-      axis_label = "Effect"))
+    ops = list(list(type = "errorbar", columns = I("est"), lowers = I("lo"),
+      uppers = I("hi"), min = 0, max = 1, ref = 0, width = 80, height = 16,
+      axis = TRUE, axis_label = "Effect"))
   )
   html = build(spec)
   # one axis SVG total (not one per row), in the footer
@@ -75,13 +75,52 @@ assert("lt_errorbar axis = TRUE draws one shared axis in the footer", {
   # tick count adapts to width so labels do not crowd: a narrow axis keeps only
   # the endpoints, a wide one shows the full 0.2 step
   narrow = build(list(data = list(est = 0.5, lo = 0, hi = 1),
-    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
-      min = 0, max = 1, width = 40, height = 16, axis = TRUE))))
+    ops = list(list(type = "errorbar", columns = I("est"), lowers = I("lo"),
+      uppers = I("hi"), min = 0, max = 1, width = 40, height = 16, axis = TRUE))))
   wide = build(list(data = list(est = 0.5, lo = 0, hi = 1),
-    ops = list(list(type = "errorbar", columns = c("est", "lo", "hi"),
-      min = 0, max = 1, width = 300, height = 16, axis = TRUE))))
+    ops = list(list(type = "errorbar", columns = I("est"), lowers = I("lo"),
+      uppers = I("hi"), min = 0, max = 1, width = 300, height = 16, axis = TRUE))))
   (count_str(narrow, "</text>") %==% 2L)
   (isTRUE(count_str(wide, "</text>") > count_str(narrow, "</text>")) %==% TRUE)
+})
+
+assert("lt_errorbar stacks several colored series with a footer legend", {
+  spec = list(
+    data = list(e1 = 0.5, l1 = 0.2, u1 = 0.8, e2 = 0.3, l2 = 0.1, u2 = 0.5),
+    ops = list(list(type = "errorbar", columns = c("e1", "e2"),
+      lowers = c("l1", "l2"), uppers = c("u1", "u2"),
+      colors = c("#1b9e77", "#d95f02"), labels = c("A", "B"),
+      min = 0, max = 1, width = 80, height = 28, axis = TRUE))
+  )
+  html = build(spec)
+  # one SVG for the single row, holding both series stacked at distinct y
+  # (n = 2 at H = 28 -> rows at round(28/3) = 9 and round(56/3) = 19)
+  (count_str(html, '<svg class="lt-eb"') %==% 1L)
+  # each series takes its own color, as a fill= (point) / stroke= (bar) attr
+  (grepl('<circle fill="#1b9e77" cx="40" cy="9"', html, fixed = TRUE) %==% TRUE)
+  (grepl('<circle fill="#d95f02" cx="25.6" cy="19"', html, fixed = TRUE) %==% TRUE)
+  (grepl('<line stroke="#1b9e77" x1="18.4" y1="9" x2="61.6" y2="9"', html, fixed = TRUE) %==% TRUE)
+  (grepl('<line stroke="#d95f02" x1="11.2" y1="19" x2="40" y2="19"', html, fixed = TRUE) %==% TRUE)
+  # the tooltip keys each series by its label
+  (grepl('A: 0.5 (0.2, 0.8)', html, fixed = TRUE) %==% TRUE)
+  # a single footer legend keyed by color + label (not one per row)
+  (count_str(html, 'class="lt-plot-legend"') %==% 1L)
+  (grepl('background:#1b9e77"></i>A</span>', html, fixed = TRUE) %==% TRUE)
+  (grepl('background:#d95f02"></i>B</span>', html, fixed = TRUE) %==% TRUE)
+})
+
+assert("lt_dotplot stagger puts each column's dot on its own vertical track", {
+  base = list(data = list(a = 1, b = 2, c = 3))
+  op = list(type = "dotplot", columns = c("a", "b", "c"),
+    min = 0, max = 4, width = 80, height = 40)
+  # default: all three dots share the mid-line (cy = height/2 = 20)
+  flat = build(c(base, list(ops = list(op))))
+  (count_str(flat, 'cy="20"') %==% 3L)
+  # stagger: evenly spaced tracks round((i+1)/(n+1)*H) -> 10, 20, 30
+  staggered = build(c(base, list(ops = list(c(op, list(stagger = TRUE))))))
+  (grepl('cy="10"', staggered, fixed = TRUE) %==% TRUE)
+  (grepl('cy="30"', staggered, fixed = TRUE) %==% TRUE)
+  (count_str(staggered, 'cy="20"') %==% 1L)
 })
 
 assert("table is wrapped in a div for horizontal scroll", {

@@ -10,8 +10,9 @@ lt_dotplot(
   limits = NULL,
   color = FALSE,
   labels = NULL,
+  stagger = FALSE,
   width = 160,
-  height = 16,
+  height = NULL,
   hide = TRUE,
   axis = TRUE
 )
@@ -25,7 +26,7 @@ drawn in the first column's cells. A one-sided formula (\code{~ a + b + c}),
 names, or integer positions.}
 
 \item{limits}{Numeric \code{c(min, max)} for the shared horizontal scale. Defaults
-to the range of all three columns' finite values. Values outside the scale
+to the range of all the columns' finite values. Values outside the scale
 are clamped to the edges.}
 
 \item{color}{Dot colors by column. \code{FALSE} (default) draws every dot in one
@@ -37,7 +38,14 @@ drawn below the plot in the footer.}
 \item{labels}{Legend labels, one per column, used when the plot is colored.
 Defaults to the column names.}
 
-\item{width, height}{Pixel size of each cell's SVG.}
+\item{stagger}{If \code{TRUE}, spread the dots onto separate vertical tracks (one
+per column) instead of a single baseline, so near-equal values do not
+overlap. The vertical position is only cosmetic separation; the value is
+still read horizontally. The cell is made taller to fit the tracks (unless
+\code{height} is set). \code{FALSE} (default) draws all dots on one line.}
+
+\item{width, height}{Pixel size of each cell's SVG. \code{height} defaults to a
+size that fits the tracks when \code{stagger} is set, else a single line.}
 
 \item{hide}{If \code{TRUE} (default) and several columns are drawn, those after the
 first are hidden (their values are drawn into the plot); set to \code{FALSE} to

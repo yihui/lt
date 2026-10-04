@@ -293,17 +293,20 @@ assert("lt_move() supports numeric column indices", {
 op_of = function(x, type) Filter(function(o) o$type == type, x$ops)[[1]]
 
 assert("lt_errorbar() records columns, scale, and reference line", {
-  # a two-sided formula: estimate on the LHS, bounds on the RHS
+  # a two-sided formula: estimate on the LHS, bounds on the RHS. The value
+  # column is recorded in `columns`; the bounds in `lowers`/`uppers`.
   e = lt_errorbar(x, a ~ b + c)
   op = op_of(e, "errorbar")
-  (op$columns %==% I(c("a", "b", "c")))
+  (op$columns %==% I("a"))
+  (op$lowers %==% I("b"))
+  (op$uppers %==% I("c"))
   # default scale is the range of all three columns' values (1:9 here)
   (as.numeric(c(op$min, op$max)) %==% c(1, 9))
   # ref/axis are absent unless requested
   (is.null(op$ref) %==% TRUE)
   (is.null(op$axis) %==% TRUE)
   # a length-3 character vector names the same columns
-  (op_of(lt_errorbar(x, c("a", "b", "c")), "errorbar")$columns %==% I(c("a", "b", "c")))
+  (op_of(lt_errorbar(x, c("a", "b", "c")), "errorbar")$columns %==% I("a"))
   # lower and upper are hidden by default, kept when hide = FALSE
   (op_of(e, "hide")$columns %==% I(c("b", "c")))
   (length(Filter(function(o) o$type == "hide", lt_errorbar(x, a ~ b + c, hide = FALSE)$ops)) %==% 0L)
@@ -317,8 +320,32 @@ assert("lt_errorbar() records columns, scale, and reference line", {
   op3 = op_of(lt_errorbar(x, a ~ b + c, axis = "Effect"), "errorbar")
   (op3$axis %==% TRUE)
   (op3$axis_label %==% "Effect")
-  # must name exactly three columns
+  # each series must name exactly three columns
   (has_error(lt_errorbar(x, a ~ b)) %==% TRUE)
+})
+
+assert("lt_errorbar() stacks several series with colors and a legend", {
+  # one triple per series via ...: one point-and-bar per series, stacked in each
+  # cell. The first value column holds the plot; the rest are hidden; headers
+  # merge.
+  x3 = data.frame(a = 1:3, b = 4:6, c = 7:9, d = 2:4, e = 1:3, f = 5:7)
+  e = lt_errorbar(x3, a ~ b + c, d ~ e + f, color = TRUE,
+    labels = c("Arm 1", "Arm 2"))
+  op = op_of(e, "errorbar")
+  (op$columns %==% I(c("a", "d")))
+  (op$lowers %==% I(c("b", "e")))
+  (op$uppers %==% I(c("c", "f")))
+  (op$labels %==% I(c("Arm 1", "Arm 2")))
+  (length(op$colors) %==% 2L)
+  # scale spans every column's values; default height grows with series count
+  (as.numeric(c(op$min, op$max)) %==% c(1, 9))
+  (op$height %==% (2 * 12 + 4))
+  # every column but the first value column is hidden
+  (op_of(e, "hide")$columns %==% I(c("b", "c", "d", "e", "f")))
+  # the merged header labels the first value column with all value names
+  (op_of(e, "label")$labels[["a"]] %==% "a / d")
+  # labels must match the series count
+  (has_error(lt_errorbar(x3, a ~ b + c, d ~ e + f, labels = "one")) %==% TRUE)
 })
 
 assert("lt_dotplot() records one dot per column, colors, and a legend", {
@@ -355,6 +382,16 @@ assert("lt_dotplot() records one dot per column, colors, and a legend", {
   # axis = FALSE drops the axis; a string axis is recorded as its caption
   (is.null(op_of(lt_dotplot(x, ~ a, axis = FALSE), "dotplot")$axis) %==% TRUE)
   (op_of(lt_dotplot(x, ~ a, axis = "Score"), "dotplot")$axis_label %==% "Score")
+
+  # stagger is off by default (absent) and grows the default height when on
+  (is.null(op_of(lt_dotplot(x, ~ a + b + c), "dotplot")$stagger) %==% TRUE)
+  (op_of(lt_dotplot(x, ~ a + b + c), "dotplot")$height %==% 16)
+  st = op_of(lt_dotplot(x, ~ a + b + c, stagger = TRUE), "dotplot")
+  (st$stagger %==% TRUE)
+  (st$height %==% (3 * 12 + 4))
+  # an explicit height overrides the staggered default
+  (op_of(lt_dotplot(x, ~ a + b + c, stagger = TRUE, height = 20),
+    "dotplot")$height %==% 20)
 })
 
 assert("lt_group() supports numeric grouping column", {
