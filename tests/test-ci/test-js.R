@@ -1,6 +1,10 @@
 build = function(spec) {
   x = structure(spec, class = 'lt_tbl')
-  as.character(lt_static(x, method = 'node', css = FALSE, fragment = TRUE))
+  # collapse to one string: a multi-value cell <title> embeds "\n" between
+  # entries, which would otherwise split the (single-line) HTML into a vector
+  # and hide anything after it (e.g. the footer legend) from count_str().
+  paste(as.character(lt_static(x, method = 'node', css = FALSE, fragment = TRUE)),
+    collapse = '\n')
 }
 
 # count non-overlapping occurrences of a fixed substring
