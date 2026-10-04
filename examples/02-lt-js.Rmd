@@ -457,15 +457,16 @@ LT.build({
 
 Render a value column's cells as a small inline SVG — a point at the
 estimate with a bar (end caps included) from the lower to the upper bound —
-on a scale shared across the column. `columns` is `[value, lower, upper]`;
-the plot replaces the value column's cells (hide the bound columns).
-`min`/`max` set the shared scale, `ref` draws a vertical reference line, and
-`width`/`height` size each SVG. `axis: true` adds a shared axis in the footer
-(tick marks + labels at "nice" round values, plus matching in-cell
-gridlines); `axis_label` captions it. The SVG is built in the browser from the
-numbers, so only the rows actually rendered (the current page, when
-interactive) are drawn. This cell type comes from the graphics module
-(`lt-plot.js`), loaded before the core script.
+on a scale shared across the column. `columns` lists the value column(s),
+`lowers` and `uppers` the matching bound columns (one entry each per series);
+the plot replaces the first value column's cells (hide the others). `min`/`max`
+set the shared scale, `ref` draws a vertical reference line, and `width`/
+`height` size each SVG. `axis: true` adds a shared axis in the footer (tick
+marks + labels at "nice" round values, plus matching in-cell gridlines);
+`axis_label` captions it. The SVG is built in the browser from the numbers, so
+only the rows actually rendered (the current page, when interactive) are drawn.
+This cell type comes from the graphics module (`lt-plot.js`), loaded before the
+core script.
 
 ```{js}
 LT.build({
@@ -477,8 +478,29 @@ LT.build({
   },
   ops: [
     { type: "hide", columns: ["Lo", "Hi"] },
-    { type: "errorbar", columns: ["Est", "Lo", "Hi"],
+    { type: "errorbar", columns: ["Est"], lowers: ["Lo"], uppers: ["Hi"],
       min: -0.6, max: 0.7, ref: 0, axis: true, axis_label: "Effect (95% CI)" }
+  ]
+});
+```
+
+Several series stack in one cell: give `columns`/`lowers`/`uppers` one entry
+per series, and `colors`/`labels` to key them in a footer legend. Each row then
+draws one point-and-bar per series on the shared scale.
+
+```{js}
+LT.build({
+  data: {
+    Term: ["Headache", "Nausea", "Fatigue"],
+    D1: [2.1, -1.4, 3.3], L1: [-1.0, -4.2, 0.1], U1: [5.2, 1.4, 6.5],
+    D2: [-0.5, 0.8, 1.2], L2: [-3.6, -2.1, -1.9], U2: [2.6, 3.7, 4.3]
+  },
+  ops: [
+    { type: "hide", columns: ["L1", "U1", "D2", "L2", "U2"] },
+    { type: "errorbar",
+      columns: ["D1", "D2"], lowers: ["L1", "L2"], uppers: ["U1", "U2"],
+      colors: ["#5b8ff9", "#f6903d"], labels: ["Drug A", "Drug B"],
+      min: -5, max: 7, ref: 0, axis: true, axis_label: "Risk difference (%)" }
   ]
 });
 ```
