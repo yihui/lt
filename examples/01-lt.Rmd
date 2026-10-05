@@ -886,8 +886,44 @@ them back). The checklist shows each column's displayed label.
 lt(d) |> lt_interactive(hide = ~ hp + wt, pager = 5)
 ```
 
-Interactive features need the rows to be independent of one another,
-since sorting and filtering reorder and hide them: a table with row
-groups or indentation is rendered static instead (with a warning in the
-browser console). Column spanners, styles, and footnotes are no
-obstacle.
+### Row groups and indentation
+
+Row structure is honored: sorting and filtering happen *within* each
+group or subtree, never across it, so a group header never parts from
+its rows and an indented child never loses its parent. Separator row
+groups keep their order, and a group whose rows all filter out drops its
+header. Paging works too: a group split across a page boundary re-shows
+its header at the top of the next page.
+
+```{r}
+d2 = data.frame(
+  Region = rep(c("East", "West", "South"), each = 3),
+  City = c("NYC", "Boston", "Philly", "LA", "Reno", "Boise",
+           "Austin", "Miami", "Atlanta"),
+  Sales = c(42, 17, 23, 55, 9, 14, 31, 48, 26)
+)
+lt(d2) |> lt_group(~ Region, sep = TRUE) |> lt_interactive(pager = 5)
+```
+
+Rowspan row groups (the default `lt_group()` rendering) sort and filter
+within each run too; clicking a group header reorders whole blocks, and
+with several group columns the view stays nested (an inner column
+reorders only within its parent block). The spanning cells are redrawn
+to match.
+
+```{r}
+lt(d2) |> lt_group(~ Region) |> lt_interactive(pager = 5)
+```
+
+Indentation sorts siblings under each parent, carrying each subtree
+along; filtering a descendant keeps its ancestors visible for context.
+
+```{r}
+d3 = data.frame(
+  Item = c("Fruit", "Apple", "Pear", "Berry", "Grain", "Rice", "Oat", "Wheat"),
+  Qty = c(0, 12, 7, 5, 0, 30, 8, 19)
+)
+lt(d3) |> lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |> lt_interactive(pager = 5)
+```
+
+Column spanners, styles, and footnotes are no obstacle to interactivity.

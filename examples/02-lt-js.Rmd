@@ -945,9 +945,22 @@ LT.build({
 });
 ```
 
-Sorting and filtering reorder and hide rows, so a spec with `row_group`
-or an `indent` op is rendered as a static table (with a warning in the
-browser console); spanners, styles, and footnotes are no obstacle.
+Row structure is honored: sorting and filtering happen *within* each
+group or subtree, never across it. A `row_group` op sorts and filters
+within each group — a separator group (a string column) whose rows all
+filter out drops its header, while a rowspan group (an array of columns)
+reorders its blocks when its header is clicked and stays nested with
+several columns. An `indent` op sorts siblings under each parent and
+keeps a match's ancestors visible. Spanners, styles, and footnotes are
+no obstacle.
+
+```{js}
+LT.build({
+  data: mtcars,
+  row_group: ["cyl"],
+  interactive: { pager: [8] }
+});
+```
 
 ### Rendering on demand
 
