@@ -108,6 +108,11 @@ assert('expectation message', {
 
 1.  **Never force push** unless explicitly told to.
 2.  **Never create a new branch or PR** without confirming with the user first.
+3.  **Batch pushes**: Commits are cheap, but every push triggers GHA (slow).
+    Commit locally as you go, but push only once everything is ready (all
+    related changes, including any npm publish and the resulting DESCRIPTION
+    pin). Never push several times in quick succession for one logical unit of
+    work.
 
 ### Check list
 
