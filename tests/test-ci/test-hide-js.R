@@ -20,7 +20,7 @@ assert("the column menu lists every column and hides the unchecked ones", {
   (lti_eval(x, cell_hidden(1), off1) %==% 'true')
   (lti_eval(x, cell_hidden(0), off1) %==% 'false')
   # the hidden column stays hidden across a re-render (sorting the other column)
-  sortN = 'document.querySelectorAll("thead th")[0].click()'
+  sortN = 'document.querySelector("thead th .lti-label").click()'
   (lti_eval(x, cell_hidden(1), paste(off1, sortN, sep = ';')) %==% 'true')
   # re-checking restores it
   (lti_eval(x, th_hidden(1), paste(off1, box_click(1), sep = ';')) %==% 'false')
@@ -78,7 +78,7 @@ assert("hiding a column also hides its filter-row and plot-axis-footer cells", {
   (lti_eval(x, foot, off0) %==% 'true')
   (lti_eval(x, cell_hidden(0), off0) %==% 'true')
   # and it stays hidden across a re-render (sorting another column)
-  sortA = 'document.querySelectorAll("thead th")[1].click()'
+  sortA = 'document.querySelectorAll("thead th .lti-label")[1].click()'
   (lti_eval(x, foot, paste(off0, sortA, sep = ';')) %==% 'true')
 })
 

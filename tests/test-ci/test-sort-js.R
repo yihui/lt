@@ -4,7 +4,7 @@
 assert("clicking a header sorts the rendered rows", {
   x = itbl()
   (lti_rows(x) %==% sym)  # no sort applied yet
-  click = 'document.querySelectorAll("thead th")[1].click()'
+  click = 'document.querySelectorAll("thead th .lti-label")[1].click()'
   (lti_rows(x, click) %==% c("Headache", "Rash", "Itch", "Nausea"))       # n asc
   (lti_rows(x, paste(click, click, sep = ';')) %==%
      c("Nausea", "Itch", "Rash", "Headache"))                             # n desc
@@ -16,9 +16,9 @@ assert("clicking a header sorts the rendered rows", {
 assert("shift-clicking adds a sort key, so columns sort together", {
   d = data.frame(g = c("a", "a", "b", "b"), v = c(2, 1, 1, 2))
   x = lt(d) |> lt_interactive(pager = FALSE)
-  gc = 'document.querySelectorAll("thead th")[0].click()'
-  vs = 'document.querySelectorAll("thead th")[1].dispatchEvent(
-          new MouseEvent("click", {bubbles: true, shiftKey: true}))'
+  gc = 'document.querySelector("thead th .lti-label").click()'
+  vs = 'document.querySelectorAll("thead th .lti-label")[1]
+          .dispatchEvent(new MouseEvent("click", {bubbles: true, shiftKey: true}))'
   # g ascending, then v ascending as a tie-breaker within each g: v reads 1,2,1,2
   (lti_col(x, 1, paste(gc, vs, sep = ';')) %==% c("1", "2", "1", "2"))
   # both headers are announced, with an ordinal marking each key's place
@@ -57,7 +57,7 @@ assert("column spanners stay interactive: they are header rows, not body rows", 
   spans = 'sel => [...t.querySelectorAll(sel)].map(e => e.textContent).join(",")'
   # sorting is wired to the column labels, not the spanner labels above them
   (lti_eval(x, sprintf('(%s)("thead .lti-sortable")', spans)) %==% 'x,y,b')
-  click = 'document.querySelectorAll("thead tr:nth-child(3) th")[0].click()'
+  click = 'document.querySelector("thead tr:nth-child(3) th .lti-label").click()'
   (lti_rows(x, click) %==% c('1', '2', '3'))
   # the spanner row survives the re-render of <tbody>
   (lti_eval(x, sprintf('(%s)(".lt-spanner")', spans), click) %==% 'a')
@@ -65,6 +65,6 @@ assert("column spanners stay interactive: they are header rows, not body rows", 
   y = lt(data.frame(p = c(2L, 1L), q = c("b", "a"))) |> lt_spanner(both ~ p + q) |>
     lt_interactive()
   (lti_eval(y, sprintf('(%s)(".lt-spanner")', spans)) %==% 'both')
-  (lti_rows(y, 'document.querySelectorAll("thead tr:nth-child(3) th")[0].click()') %==%
+  (lti_rows(y, 'document.querySelector("thead tr:nth-child(3) th .lti-label").click()') %==%
      c('1', '2'))
 })

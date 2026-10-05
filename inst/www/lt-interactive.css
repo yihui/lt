@@ -85,6 +85,13 @@
   /* column widths are authoritative once frozen, so a drag moves one edge only */
   &.lti-fixed {
     table-layout: fixed;
+    /* a shrunk column hides its overflow rather than spilling into the next
+     * column or out under the resize grip, so the grip can shrink it freely;
+     * the detail row (full width, possibly tall) and the popover-bearing
+     * filter/bar cells (<td>) are left to overflow */
+    thead th, tbody tr:not(.lti-detail) td {
+      overflow: hidden;
+    }
   }
 
   /* the column menu and search box share this flex bar: alone, the search fills
