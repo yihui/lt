@@ -36,7 +36,8 @@ assert("a table rendered on demand is enhanced like one rendered in place", {
   rows = '[...t2.querySelectorAll("tbody tr")].map(r => r.children[0].textContent).join("|")'
   (lti_eval(x, rows, make) %==% 'Rash|Nausea')
   # its state is its own: sorting it leaves the table it was built from alone
-  sort2 = paste(make, 't2.querySelectorAll("thead th")[1].click()', sep = ';')
+  sort2 = paste(make,
+    't2.querySelectorAll("thead th .lti-label")[1].click()', sep = ';')
   (lti_eval(x, rows, sort2) %==% 'Headache|Rash')
   (lti_eval(
     x, '[...t.querySelectorAll("tbody tr")].map(r => r.children[0].textContent).join("|")',

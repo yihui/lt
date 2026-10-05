@@ -81,13 +81,47 @@ by = function(...) list(sort = list(...))
 # End-to-end in a headless browser: the extension must find the table lt.js
 # already mounted, wire the controls, and re-render <tbody> on interaction.
 
+# Reuse one headless Chrome across all probes (navigate per call) instead of
+# launching chromium per probe. Created lazily, closed when R exits. Falls back
+# to the one-shot dump only where chromote is unavailable.
+.browser = new.env(parent = emptyenv())
+
+lti_session = function() {
+  if (is.null(.browser$b)) {
+    .browser$b = chromote::ChromoteSession$new()
+    reg.finalizer(.browser, function(e) try(e$b$close(), silent = TRUE), onexit = TRUE)
+  }
+  .browser$b
+}
+
+# data-ready is set only after data-out, so an empty data-out (a legitimate
+# result, e.g. no rows) is not mistaken for "not loaded yet"
+lti_eval_cdp = function(f) {
+  b = lti_session()
+  b$Page$navigate(paste0('file://', normalizePath(f)), wait_ = FALSE)
+  probe = 'document.body.dataset.ready === "1" ? (document.body.dataset.out ?? "") : null'
+  for (i in 1:2000) {
+    v = tryCatch(b$Runtime$evaluate(probe)$result$value, error = function(e) NULL)
+    if (!is.null(v)) return(v)
+    Sys.sleep(0.005)
+  }
+  stop('failed to read the probe value from the browser')
+}
+
+lti_eval_dump = function(f) {
+  dom = xfun::browser_dom(f)
+  m = regmatches(dom, regexec('data-out="([^"]*)"', dom))[[1]]
+  if (length(m) != 2L) stop('failed to read the probe value from the browser')
+  m[2]
+}
+
 # Render `x`, run `js` once the page has loaded (with the table element bound to
-# `t`), then read `expr` back: the browser stamps it on <body> and we parse it
-# out of the DOM dump. All assets are inlined, so lt.js builds the table and
-# lt-interactive.js enhances it before the load event fires.
+# `t`), then read `expr` back: the browser stamps it on <body> and we read it
+# back. All assets are inlined, so lt.js builds the table and lt-interactive.js
+# enhances it before the load event fires.
 lti_eval = function(x, expr, js = '') {
   code = sprintf(
-    'var t = document.querySelector(".lt-table");%s;document.body.dataset.out = (%s)',
+    'var t = document.querySelector(".lt-table");%s;document.body.dataset.out = (%s);document.body.dataset.ready = "1"',
     js, expr
   )
   html = sub('</head>', sprintf(
@@ -97,10 +131,7 @@ lti_eval = function(x, expr, js = '') {
   on.exit(unlink(f), add = TRUE)
   xfun::write_utf8(html, f)
   # the full document, not a fragment: the value is stamped on <body> itself
-  dom = xfun::browser_dom(f)
-  m = regmatches(dom, regexec('data-out="([^"]*)"', dom))[[1]]
-  if (length(m) != 2L) stop('failed to read the probe value from the browser')
-  m[2]
+  if (xfun::loadable('chromote')) lti_eval_cdp(f) else lti_eval_dump(f)
 }
 
 # the first-column text of each rendered body row, in rendered order

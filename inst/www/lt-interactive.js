@@ -438,8 +438,12 @@
       const col = cols[ci];
       if (col == null) return;
       th.classList.add("lti-sortable");
-      marks[col] = { th, ind: elem(doc, "span", { className: "lti-sort" }, th) };
-      th.onclick = e => { cycle(state, col, e.shiftKey); paint(); refresh(); };
+      // sort on the label only, not the whole cell, so the resize grip (a <th>
+      // child outside the label) stays unclickable for sorting
+      const lab = elem(doc, "span", { className: "lti-label" }, th);
+      while (th.firstChild !== lab) lab.append(th.firstChild);
+      marks[col] = { th, ind: elem(doc, "span", { className: "lti-sort" }, lab) };
+      lab.onclick = e => { cycle(state, col, e.shiftKey); paint(); refresh(); };
     });
     paint();  // reflect any initial sort carried on the spec
   }
@@ -585,13 +589,9 @@
   // that dragging one edge moves it alone. A double-click fits the column to its
   // content.
   function addResize(el, layout) {
-    const doc = el.ownerDocument,
-          { ths, cs, freeze, natural, setWidth } = layout;
+    const doc = el.ownerDocument, { ths, cs, freeze, natural, setWidth } = layout;
     ths.forEach((th, i) => {
       const grip = elem(doc, "div", { className: "lti-resizer" }, th);
-      // the grip sits in a header cell that may sort on click: its own events
-      // stop here, or a drag would sort the column as well
-      grip.onclick = e => e.stopPropagation();
       grip.ondblclick = e => {
         e.stopPropagation();
         freeze();
@@ -602,6 +602,8 @@
         freeze();
         const x0 = e.clientX, w0 = parseFloat(cs[i].style.width);
         el.classList.add("lti-resizing");
+        // no label floor: omit setWidth's min arg to take its default, and the
+        // cell clips its overflow (CSS) instead of spilling when shrunk
         drag(e, ev => setWidth(i, w0 + ev.clientX - x0),
           () => el.classList.remove("lti-resizing"));
       };
