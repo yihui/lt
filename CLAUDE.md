@@ -81,28 +81,18 @@ assert('expectation message', {
 
 ### R Code Style
 
-1.  **Assignment**: Use `=` instead of `<-` for assignment
-2.  **Strings**: Use single quotes for strings (e.g., `'text'`)
-3.  **Indentation**: Use 2 spaces (not 4 spaces or tabs)
-4.  **Compact code**: Avoid `{}` for single-expression if statements; prefer
-    compact forms when possible
-5.  **Examples**: Avoid `\dontrun{}` unless absolutely necessary. Prefer
-    runnable examples that can be tested automatically.
-6.  **Function definitions**: For functions with many arguments, break the line
-    right after the opening `(`, indent arguments by 2 spaces, and try to wrap
-    them at 80-char width.
-7.  **Re-wrap code**: Always re-wrap the code after making changes to maintain
-    consistent formatting and line length.
-8.  **Implicit NULL**: Don't write `if (cond) foo else NULL`; the `else NULL` is
-    unnecessary since R's `if` without `else` already returns `NULL`. Never
-    write `return(NULL)`; use `return()` instead since R functions return `NULL`
-    by default when no value is given.
-9.  **US spelling**: Use US spelling throughout all documentation, code
-    comments, and example text (e.g., "color" not "colour", "center" not
-    "centre", "summarize" not "summarise").
-10. **DRY (Don't Repeat Yourself)**: Never duplicate code. When the same logic
-    appears more than once, factor it into a shared helper function. This
-    applies to expressions, patterns, and multi-line blocks alike.
+Match the surrounding code for formatting: single quotes, 2-space indent,
+compact `if` without braces, many-argument definitions wrapped at 80 chars
+(break after the opening `(`), and re-wrap lines you touch. Beyond what the
+code already shows:
+
+1.  **Assignment**: use `=`, not `<-`.
+2.  **Avoid `\dontrun{}`** unless absolutely necessary; prefer runnable examples
+    that can be tested automatically.
+3.  **Implicit NULL**: no `else NULL` (a bare `if` already returns `NULL`); use
+    `return()`, never `return(NULL)`.
+4.  **US spelling** in all docs, comments, and example text (e.g., "color" not
+    "colour", "center" not "centre").
 
 ### Git workflow
 
