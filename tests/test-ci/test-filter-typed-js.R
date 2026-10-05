@@ -16,11 +16,31 @@ assert('lt_select filters by a column value and defaults to the first choice', {
   (lti_eval(x, 't.querySelector(".lti-chip-cur").textContent', pick) %==% 'b')
 })
 
+assert('el._lt.view() reports the filtered rows a typed filter keeps', {
+  # a download-what-is-shown button reads the current view; typed filters live in
+  # state.filters (not external predicates), so view() must reflect them
+  x = lt(tdf()) |> lt_interactive(filter = list(grp = lt_select()), pager = FALSE)
+  # the default grp == "a" keeps rows 1 and 3 (every row, not just a page)
+  (lti_eval(x, 't._lt.view().join(",")') %==% '1,3')
+})
+
 assert('lt_select can target a column hidden from the table', {
   x = lt(tdf()) |> lt_hide(~ grp) |>
     lt_interactive(filter = list(grp = lt_select(selected = 'b')), pager = FALSE)
   # grp is not a visible column, yet its filter still keeps only grp == "b" rows
   (lti_rows(x) %==% c('Nausea', 'Itch'))
+})
+
+assert('a typed-filter list can mix chips with plain per-column boxes', {
+  # name gets a plain filter box; grp a dropdown chip -- both at once
+  x = lt(tdf()) |> lt_interactive(
+    filter = list(name = TRUE, grp = lt_select()), pager = FALSE)
+  (lti_eval(x, 't.querySelectorAll(".lti-filters input").length') %==% '1')
+  (lti_eval(x, 't.querySelectorAll(".lti-chip select").length') %==% '1')
+  # the box filters its own column, composing with the chip's default (grp "a")
+  box = 'var i = t.querySelectorAll(".lti-filters input")[0];
+         i.value = "Rash"; i.dispatchEvent(new Event("change"))'
+  (lti_rows(x, box) %==% c('Rash'))
 })
 
 assert('lt_range renders a two-thumb slider whose box filters numerically', {

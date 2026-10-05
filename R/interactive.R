@@ -31,9 +31,10 @@
 #' @param filter Whether to show a filter box under each column header, matching
 #'   terms the same way as `search` but against that column only. A row is kept
 #'   when it passes every filter and the search. Can also be a character vector
-#'   of column names, to filter on those columns only, or a named list of typed
-#'   filters ([lt_select()] / [lt_range()]) for dropdown and range-slider
-#'   controls shown in the control bar rather than a box per column.
+#'   of column names, to filter on those columns only, or a named list mapping a
+#'   column to a typed filter ([lt_select()] / [lt_range()]) for a dropdown or
+#'   range-slider control shown in the control bar, or to `TRUE` for a plain
+#'   filter box on that column — the two can be mixed in one list.
 #' @param pager The page sizes to offer, as a vector of row counts; the
 #'   first one is used initially. Paging shows that many of the filtered and
 #'   sorted rows at a time, with a pager (first, previous, next, last), the row
@@ -100,8 +101,9 @@ lt_interactive = function(
   # survive serialization); the rest only when asked for
   opts = list(sort = sort_keys(sort), search = search)
   if (!isFALSE(filter)) opts$filter = if (is.list(filter) && length(filter) &&
-    all(vapply(filter, inherits, logical(1), 'lt_filter')))
-    list(cols = Map(resolve_filter, filter, x$data[names(filter)])) else
+    !is.null(names(filter)) && all(vapply(filter, function(e)
+      inherits(e, 'lt_filter') || isTRUE(e), logical(1))))
+    typed_filter(filter, x$data) else
     if (is.character(filter)) list(columns = I(filter)) else TRUE
   if (!isFALSE(pager) && length(pager)) {
     sizes = unique(pager)
@@ -159,6 +161,19 @@ lt_select = function(choices = NULL, selected = NULL, label = NULL)
 lt_range = function(min = NULL, max = NULL, step = NULL, value = NULL, label = NULL)
   structure(list(type = 'range', min = min, max = max, step = step,
     value = value, label = label), class = 'lt_filter')
+
+# Shape a named list of typed filters (lt_select / lt_range) and/or `TRUE`
+# entries for the client: the typed ones become control-bar chips (`cols`), each
+# resolved against its column's data; a `TRUE` entry asks for a plain per-column
+# filter box (`columns`), so chips and boxes can be mixed in one call.
+typed_filter = function(filter, data) {
+  typed = Filter(function(e) inherits(e, 'lt_filter'), filter)
+  boxes = names(filter)[vapply(filter, isTRUE, logical(1))]
+  out = list()
+  if (length(typed)) out$cols = Map(resolve_filter, typed, data[names(typed)])
+  if (length(boxes)) out$columns = I(boxes)
+  out
+}
 
 # Fill a typed filter's unset fields from its column's data, and shape it for the
 # client: a select carries its choices as {value, label} objects; a range its

@@ -223,6 +223,10 @@
     el._lt = {
       spec, state,
       refresh: () => refresh(),
+      // the current filtered + sorted row indices (1-based, every row, not just
+      // the page) — e.g. for a "download what's shown" button that must honor the
+      // typed filters (which live in state.filters, not external predicates)
+      view: () => view || computeView(spec, disp, state),
       filter(id, fn) {
         fn ? (state.predicates[id] = fn) : (delete state.predicates[id]);
         refresh();
@@ -239,7 +243,10 @@
     const labels = [...$$(hrow, "th")].map(th => th.textContent);
     // wire sort before adding the filter row, so it sees the header row only
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
-    if (opts.filter && !opts.filter.cols) addFilter(hrow, cols, opts.filter, state, refresh);
+    // per-column boxes: on by default (filter=TRUE / a column vector), and also
+    // when a typed-filter list names columns for boxes alongside its chips
+    if (opts.filter && (opts.filter.columns || !opts.filter.cols))
+      addFilter(hrow, cols, opts.filter, state, refresh);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length) : null;
     if (opts.resize) addResize(el, layout);
     if (opts.hide)

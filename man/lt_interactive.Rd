@@ -35,9 +35,10 @@ as a JavaScript expression against each cell's value.}
 \item{filter}{Whether to show a filter box under each column header, matching
 terms the same way as \code{search} but against that column only. A row is kept
 when it passes every filter and the search. Can also be a character vector
-of column names, to filter on those columns only, or a named list of typed
-filters (\code{\link[=lt_select]{lt_select()}} / \code{\link[=lt_range]{lt_range()}}) for dropdown and range-slider
-controls shown in the control bar rather than a box per column.}
+of column names, to filter on those columns only, or a named list mapping a
+column to a typed filter (\code{\link[=lt_select]{lt_select()}} / \code{\link[=lt_range]{lt_range()}}) for a dropdown or
+range-slider control shown in the control bar, or to \code{TRUE} for a plain
+filter box on that column — the two can be mixed in one list.}
 
 \item{pager}{The page sizes to offer, as a vector of row counts; the
 first one is used initially. Paging shows that many of the filtered and
