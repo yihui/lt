@@ -31,7 +31,9 @@
 #' @param filter Whether to show a filter box under each column header, matching
 #'   terms the same way as `search` but against that column only. A row is kept
 #'   when it passes every filter and the search. Can also be a character vector
-#'   of column names, to filter on those columns only.
+#'   of column names, to filter on those columns only, or a named list of typed
+#'   filters ([lt_select()] / [lt_range()]) for dropdown and range-slider
+#'   controls shown in the control bar rather than a box per column.
 #' @param pager The page sizes to offer, as a vector of row counts; the
 #'   first one is used initially. Paging shows that many of the filtered and
 #'   sorted rows at a time, with a pager (first, previous, next, last), the row
@@ -97,8 +99,10 @@ lt_interactive = function(
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
   opts = list(sort = sort_keys(sort), search = search)
-  if (!isFALSE(filter)) opts$filter = if (is.character(filter))
-    list(columns = I(filter)) else TRUE
+  if (!isFALSE(filter)) opts$filter = if (is.list(filter) && length(filter) &&
+    all(vapply(filter, inherits, logical(1), 'lt_filter')))
+    list(cols = Map(resolve_filter, filter, x$data[names(filter)])) else
+    if (is.character(filter)) list(columns = I(filter)) else TRUE
   if (!isFALSE(pager) && length(pager)) {
     sizes = unique(pager)
     sizes[!is.finite(sizes)] = 0  # the runtime reads 0 as "every row"
@@ -111,6 +115,72 @@ lt_interactive = function(
     detail else I(as.character(f_cols(detail, x$data)))
   x$interactive = opts
   x
+}
+
+#' Typed column filters
+#'
+#' Richer filters for [lt_interactive()], as an alternative to its plain
+#' per-column filter boxes. Pass `filter` a named list mapping a column to one of
+#' these: `lt_select()` for a value dropdown, `lt_range()` for a two-thumb range
+#' slider. Each is shown as a chip in the table's control bar (where the search
+#' box lives), with a funnel that opens a popover holding the widget *and* an
+#' expression box — both edit the same underlying filter and stay in sync, so the
+#' widget is a friendly face on an expression the reader could also type (see the
+#' `search` term syntax in [lt_interactive()]).
+#'
+#' The target column may be one hidden from the table with [lt_hide()]: the
+#' filter still works (it reads the raw values, which travel to the client
+#' regardless), a natural way to offer a control for a value you don't show.
+#'
+#' @param choices The dropdown's options, as a vector of the column's values;
+#'   names, if any, are used as the labels. Defaults to the column's sorted
+#'   distinct values.
+#' @param selected The option selected initially (filtering the table at once).
+#'   Defaults to the first choice.
+#' @param min,max The ends of the slider's range. Default to the column's range.
+#' @param step The slider's granularity. Defaults to a hundredth of the range.
+#' @param value The thumbs' initial `c(low, high)` positions. Default to the full
+#'   range (no initial filtering).
+#' @param label The chip's label. Defaults to the column's displayed name.
+#' @return A filter spec for `lt_interactive(filter = )`.
+#' @seealso [lt_interactive()]
+#' @export
+#' @examples
+#' lt(mtcars) |> lt_interactive(filter = list(
+#'   cyl = lt_select(label = "Cylinders"),
+#'   mpg = lt_range(label = "Miles / gallon")
+#' ))
+lt_select = function(choices = NULL, selected = NULL, label = NULL)
+  structure(list(type = 'select', choices = choices, selected = selected,
+    label = label), class = 'lt_filter')
+
+#' @rdname lt_select
+#' @export
+lt_range = function(min = NULL, max = NULL, step = NULL, value = NULL, label = NULL)
+  structure(list(type = 'range', min = min, max = max, step = step,
+    value = value, label = label), class = 'lt_filter')
+
+# Fill a typed filter's unset fields from its column's data, and shape it for the
+# client: a select carries its choices as {value, label} objects; a range its
+# numeric ends (and optional step / initial thumbs).
+resolve_filter = function(cfg, column) {
+  if (cfg$type == 'select') {
+    ch = cfg$choices
+    if (is.null(ch)) ch = sort(unique(column[!is.na(column)]))
+    labs = names(ch)
+    if (is.null(labs)) labs = as.character(ch)
+    out = list(type = 'select', choices = lapply(seq_along(ch), function(i)
+      list(value = as.character(ch[[i]]), label = labs[i])))
+    if (!is.null(cfg$selected)) out$selected = as.character(cfg$selected)
+  } else {
+    out = list(type = 'range',
+      min = if (is.null(cfg$min)) min(column, na.rm = TRUE) else cfg$min,
+      max = if (is.null(cfg$max)) max(column, na.rm = TRUE) else cfg$max)
+    if (!is.null(cfg$step)) out$step = cfg$step
+    if (!is.null(cfg$value)) out$value = I(cfg$value)
+  }
+  if (!is.null(cfg$label)) out$label = cfg$label
+  out
 }
 
 # Normalize the `sort` argument. A logical passes through (enable or disable
