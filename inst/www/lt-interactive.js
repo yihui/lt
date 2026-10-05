@@ -497,7 +497,7 @@
   // start hidden). `layout` is resize's fixed layout, used when present to drop a
   // hidden column's <col> so the fixed table reflows too.
   function addColumnToggle(cell, el, hrow, cols, labels, opt, layout, postSwap) {
-    const doc = el.ownerDocument, ths = [...$$(hrow, "th")],
+    const doc = el.ownerDocument,
           start = (opt && opt.hidden) || [], hidden = new Set();
     // show/hide column i's cell in one row, skipping the single colspan cell of
     // a detail or empty row (which spans every column and is no column's own)
@@ -509,14 +509,18 @@
     postSwap.push(body => hidden.forEach(i => {
       for (const tr of body.rows) setCell(tr, i, true);
     }));
-    // show/hide column i everywhere it lives: header, <col> (fixed layout only),
-    // and the current body cells
+    // show/hide column i everywhere it lives: the <col> (fixed layout only) and,
+    // one row at a time, every per-column cell — the header labels, the filter
+    // boxes, the body cells, and a plot's axis footer. The spanner row is the one
+    // row whose merged cells break the 1:1 column-to-cell index, so skip it; the
+    // setCell colspan guard skips the other full-width rows (search bar, detail,
+    // footnotes, pager). <thead>/<tfoot> survive a <tbody> swap, so this one pass
+    // keeps them in sync; only the fresh <tbody> is re-hidden (via postSwap).
     const apply = i => {
       const on = hidden.has(i);
-      if (ths[i]) ths[i].hidden = on;
       if (layout?.cs[i]) layout.cs[i].hidden = on;
-      for (const body of el.tBodies)
-        for (const tr of body.rows) setCell(tr, i, on);
+      for (const tr of el.rows)
+        if (!tr.classList.contains("lt-spanner-row")) setCell(tr, i, on);
     };
     const wrap = elem(doc, "span", { className: "lti-cols" }, cell),
           btn = elem(doc, "button", {
