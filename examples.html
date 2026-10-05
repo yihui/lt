@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 0.11.6">
+<meta name="generator" content="litedown 0.11.7">
 <title>Examples</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/prism-xcode.min.css">
 </head>
 <body>
 <nav><p><a href="index.html">Home</a>
@@ -679,6 +679,14 @@ lt(d_dot) |&gt;
   lt_dotplot(~ Before + After, color = TRUE, axis = &quot;Score&quot;)
 ```
 
+When two dots fall at nearly the same value they overlap; `stagger = TRUE`
+spreads near-equal dots onto separate tracks so each stays visible.
+
+```{r}
+lt(d_dot) |&gt;
+  lt_dotplot(~ Before + After, color = TRUE, stagger = TRUE, axis = &quot;Score&quot;)
+```
+
 ## Styling
 
 ### Cell styling
@@ -878,6 +886,20 @@ only.
 lt(d) |&gt; lt_interactive(filter = TRUE, search = FALSE, pager = 5)
 ```
 
+A column can take a *typed* control instead of a plain box: pass a named
+list where each column maps to `&quot;select&quot;` (a value dropdown) or `&quot;range&quot;`
+(a two-thumb slider). The dropdown's choices and the slider's ends are
+read from the column's data. The control renders as a funnel under the
+header, paired with an expression box that stays in sync. One *unnamed*
+entry is the default for every other column.
+
+```{r}
+lt(d) |&gt; lt_interactive(
+  filter = list(TRUE, cyl = &quot;select&quot;, wt = &quot;range&quot;),
+  search = FALSE, pager = 5
+)
+```
+
 ### Row detail (drill-down)
 
 `detail` adds an expand caret to each row; clicking it reveals a child
@@ -937,11 +959,47 @@ them back). The checklist shows each column's displayed label.
 lt(d) |&gt; lt_interactive(hide = ~ hp + wt, pager = 5)
 ```
 
-Interactive features need the rows to be independent of one another,
-since sorting and filtering reorder and hide them: a table with row
-groups or indentation is rendered static instead (with a warning in the
-browser console). Column spanners, styles, and footnotes are no
-obstacle.
+### Row groups and indentation
+
+Row structure is honored: sorting and filtering happen *within* each
+group or subtree, never across it, so a group header never parts from
+its rows and an indented child never loses its parent. Separator row
+groups keep their order, and a group whose rows all filter out drops its
+header. Paging works too: a group split across a page boundary re-shows
+its header at the top of the next page.
+
+```{r}
+d2 = data.frame(
+  Region = rep(c(&quot;East&quot;, &quot;West&quot;, &quot;South&quot;), each = 3),
+  City = c(&quot;NYC&quot;, &quot;Boston&quot;, &quot;Philly&quot;, &quot;LA&quot;, &quot;Reno&quot;, &quot;Boise&quot;,
+           &quot;Austin&quot;, &quot;Miami&quot;, &quot;Atlanta&quot;),
+  Sales = c(42, 17, 23, 55, 9, 14, 31, 48, 26)
+)
+lt(d2) |&gt; lt_group(~ Region, sep = TRUE) |&gt; lt_interactive(pager = 5)
+```
+
+Rowspan row groups (the default `lt_group()` rendering) sort and filter
+within each run too; clicking a group header reorders whole blocks, and
+with several group columns the view stays nested (an inner column
+reorders only within its parent block). The spanning cells are redrawn
+to match.
+
+```{r}
+lt(d2) |&gt; lt_group(~ Region) |&gt; lt_interactive(pager = 5)
+```
+
+Indentation sorts siblings under each parent, carrying each subtree
+along; filtering a descendant keeps its ancestors visible for context.
+
+```{r}
+d3 = data.frame(
+  Item = c(&quot;Fruit&quot;, &quot;Apple&quot;, &quot;Pear&quot;, &quot;Berry&quot;, &quot;Grain&quot;, &quot;Rice&quot;, &quot;Oat&quot;, &quot;Wheat&quot;),
+  Qty = c(0, 12, 7, 5, 0, 30, 8, 19)
+)
+lt(d3) |&gt; lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |&gt; lt_interactive(pager = 5)
+```
+
+Column spanners, styles, and footnotes are no obstacle to interactivity.
 </code></pre>
 </div>
 <div class="box">
@@ -1518,6 +1576,26 @@ LT.build({
 });
 ```
 
+`stagger: true` spreads near-equal dots onto separate vertical tracks so
+they do not overlap (the cell grows taller to fit one track per column):
+
+```{js}
+LT.build({
+  data: {
+    Group:  [&quot;Control&quot;, &quot;Low&quot;, &quot;High&quot;],
+    Before: [3.1, 3.4, 3.0],
+    After:  [3.2, 4.1, 5.2]
+  },
+  ops: [
+    { type: &quot;hide&quot;, columns: [&quot;After&quot;] },
+    { type: &quot;label&quot;, labels: { Before: &quot;Before / After&quot; } },
+    { type: &quot;dotplot&quot;, columns: [&quot;Before&quot;, &quot;After&quot;], stagger: true,
+      colors: [&quot;#999999&quot;, &quot;#1a9641&quot;], labels: [&quot;Baseline&quot;, &quot;Follow-up&quot;],
+      min: 2.5, max: 5.5, axis: true, axis_label: &quot;Score&quot; }
+  ]
+});
+```
+
 ## Row groups
 
 ### Group by column
@@ -1851,8 +1929,14 @@ optional:
   name string, `&quot;-name&quot;` for descending (or a `{ col, dir }` object);
 - `search`: a search box above the table, matching any cell (`false` to
   turn off);
-- `filter`: a box under each column header, matching that column only —
-  `true` for every column, or `{ columns: [...] }` for some of them;
+- `filter`: per-column filters, as `{ default?, cols? }`. `default` is a
+  spec applied to every visible column left unnamed; `cols` maps a column
+  to its own spec. A spec is `true` for a plain box (matching that column
+  the same way as the search), or `{ type: &quot;select&quot; }` / `{ type: &quot;range&quot; }`
+  for a value dropdown or a two-thumb slider (its choices / ends read from
+  the column data, or set explicitly with `choices` / `min`+`max`). So
+  `{ default: true }` boxes every column, `{ cols: { mpg: true } }` boxes
+  one, and `{ cols: { cyl: { type: &quot;select&quot; } } }` gives `cyl` a dropdown;
 - `pager`: the page sizes to offer, as an array whose first element is
   the initial size; `0` means every row on one page. Omit the field for
   the default sizes, or set it to `false` to show all rows with no
@@ -1882,7 +1966,20 @@ instead.
 ```{js}
 LT.build({
   data: mtcars,
-  interactive: { filter: { columns: [&quot;mpg&quot;] }, pager: [3, 6, 0], resize: true }
+  interactive: { filter: { cols: { mpg: true } }, pager: [3, 6, 0], resize: true }
+});
+```
+
+Typed filters — a dropdown on `cyl`, a range slider on `wt` — with a plain
+box as the default for the other columns:
+
+```{js}
+LT.build({
+  data: mtcars,
+  interactive: {
+    search: false, pager: 6,
+    filter: { default: true, cols: { cyl: { type: &quot;select&quot; }, wt: { type: &quot;range&quot; } } }
+  }
 });
 ```
 
@@ -1895,9 +1992,22 @@ LT.build({
 });
 ```
 
-Sorting and filtering reorder and hide rows, so a spec with `row_group`
-or an `indent` op is rendered as a static table (with a warning in the
-browser console); spanners, styles, and footnotes are no obstacle.
+Row structure is honored: sorting and filtering happen *within* each
+group or subtree, never across it. A `row_group` op sorts and filters
+within each group — a separator group (a string column) whose rows all
+filter out drops its header, while a rowspan group (an array of columns)
+reorders its blocks when its header is clicked and stays nested with
+several columns. An `indent` op sorts siblings under each parent and
+keeps a match's ancestors visible. Spanners, styles, and footnotes are
+no obstacle.
+
+```{js}
+LT.build({
+  data: mtcars,
+  row_group: [&quot;cyl&quot;],
+  interactive: { pager: [8] }
+});
+```
 
 ### Rendering on demand
 
@@ -2428,14 +2538,14 @@ column selection all from arguments.
 </div>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.6</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v0.11.7</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/js/appendix.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.91/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/appendix.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/pages.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
 </body>
