@@ -3,10 +3,11 @@
 # Publish lt's JS/CSS assets to npm via the lite.js (@xiee/utils) repo.
 #
 # Steps (mirrors the "Publish lt to npm" section of CLAUDE.md):
-#   1. Ensure ../lite.js exists (clone it if missing).
+#   1. Ensure ../lite.js exists (clone it if missing); pull --rebase first, so
+#      the sync happens on a clean tree before any asset is copied in.
 #   2. Copy lt's assets from inst/www into lite.js.
-#   3. In lite.js: pull --rebase, pick the next unused patch version, bump
-#      package.json, commit, tag, and push (branch + the new tag only).
+#   3. In lite.js: pick the next unused patch version, bump package.json,
+#      commit, tag, and push (branch + the new tag only).
 #   4. Update this package's Config/lt.js version in DESCRIPTION to match.
 #
 # Run from anywhere; paths are resolved relative to this script.
@@ -22,11 +23,15 @@ LT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 LITE_DIR=$(cd "$LT_DIR/.." && pwd)/lite.js
 WWW="$LT_DIR/inst/www"
 
-# 1. Ensure lite.js is present.
+# 1. Ensure lite.js is present, then sync with remote on a clean tree (before
+#    copying assets in, so the rebase is never blocked by unstaged changes).
 if [ ! -d "$LITE_DIR" ]; then
   echo "Cloning lite.js into $LITE_DIR"
   git clone https://github.com/yihui/lite.js "$LITE_DIR"
 fi
+
+cd "$LITE_DIR"
+git pull --rebase
 
 # 2. Copy every asset under inst/www (except the excluded ones) to lite.js,
 #    routing by extension: *.js -> js/, *.css -> css/.
@@ -45,11 +50,6 @@ for path in "$WWW"/*; do
   esac
 done
 
-cd "$LITE_DIR"
-
-# 3a. Sync with remote before deciding the version.
-git pull --rebase
-
 # Nothing to publish if the assets are unchanged.
 if git diff --quiet; then
   echo "No asset changes; lite.js is already up to date. Nothing to publish."
@@ -57,15 +57,18 @@ if git diff --quiet; then
 fi
 
 # 3b. Pick the next version whose tag does not already exist (local or remote).
+# Align local tags with the remote first (--force, since a diverged local tag
+# would otherwise make `git fetch --tags` fail and abort under `set -e`), so the
+# latest-tag scan below sees the authoritative set.
+git fetch --tags --force --quiet
+tag_exists() { git rev-parse -q --verify "refs/tags/$1" >/dev/null; }
+
 latest=$(git tag | sort -V | tail -1)        # e.g. v1.14.86
 base=${latest#v}                             # strip leading v
 major=${base%%.*}
 rest=${base#*.}
 minor=${rest%%.*}
 patch=${rest##*.}
-
-git fetch --tags --quiet
-tag_exists() { git rev-parse -q --verify "refs/tags/$1" >/dev/null; }
 
 while :; do
   patch=$((patch + 1))
