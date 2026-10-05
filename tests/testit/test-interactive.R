@@ -47,7 +47,8 @@ assert("the extension follows the asset kind it belongs to", {
 assert("the filter and pagination options reach the client spec", {
   # assets aside, format() emits the spec the runtime reads
   json = format(lt(d) |> lt_interactive(filter = 'y', pager = c(20, 5)), assets = FALSE)
-  (grepl('"columns": \\["y"\\]', json) %==% TRUE)
+  # a column vector boxes just those columns: each maps to `true` under `cols`
+  (grepl('"filter": \\{\\s*"cols": \\{\\s*"y": true', json) %==% TRUE)
   # the page sizes keep the given order: the first one is the initial size
   (grepl('"pager": \\[20, 5\\]', json) %==% TRUE)
   # a single size still serializes as an array
@@ -56,9 +57,9 @@ assert("the filter and pagination options reach the client spec", {
   # Inf (every row on one page) travels as 0, which the runtime reads as such
   (grepl('"pager": \\[5, 0\\]', format(lt(d) |> lt_interactive(pager = c(5, Inf)),
                                          assets = FALSE)) %==% TRUE)
-  # filtering every column needs no column list
-  (grepl('"filter": true', format(lt(d) |> lt_interactive(filter = TRUE), assets = FALSE))
-   %==% TRUE)
+  # filtering every column needs no column list: just a default box
+  (grepl('"filter": \\{\\s*"default": true\\s*\\}',
+         format(lt(d) |> lt_interactive(filter = TRUE), assets = FALSE)) %==% TRUE)
   # paging is on by default; filtering is not
   json = format(lt(d) |> lt_interactive(), assets = FALSE)
   (grepl('"pager": \\[10, 25, 50, 100\\]', json) %==% TRUE)

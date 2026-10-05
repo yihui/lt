@@ -28,10 +28,22 @@
 #'   any cell matches the term. Besides plain substring matching, a term that
 #'   references the cell variable `x` (e.g. `x > 5` or `x != "A"`) is evaluated
 #'   as a JavaScript expression against each cell's value.
-#' @param filter Whether to show a filter box under each column header, matching
-#'   terms the same way as `search` but against that column only. A row is kept
-#'   when it passes every filter and the search. Can also be a character vector
-#'   of column names, to filter on those columns only.
+#' @param filter The per-column filters. `TRUE` shows a filter box under every
+#'   column header, matching terms the same way as `search` but against that
+#'   column only (a row is kept when it passes every filter and the search). A
+#'   character vector of column names restricts the boxes to those columns. A
+#'   named list gives each named column its own filter: `TRUE` for a plain box,
+#'   `"select"` for a value dropdown, or `"range"` for a two-thumb range slider
+#'   (the dropdown's choices and the slider's ends are taken from the column's
+#'   data). For a custom label or hand-set options, pass a list instead of the
+#'   string, e.g. `list(type = "select", label = "Cylinders")` or
+#'   `list(type = "range", min = 0, max = 100)`. One *unnamed* entry in the list
+#'   is the default applied to every other visible column, so
+#'   `list(TRUE, cyl = "select")` boxes every column but gives `cyl` a dropdown.
+#'   A typed filter renders as a funnel + popover (holding the widget *and* an
+#'   expression box, kept in sync) under its column header, or — when the column
+#'   is hidden from the table (e.g. with [lt_hide()]) — as a chip in the control
+#'   bar, a natural way to offer a control for a value you don't show.
 #' @param pager The page sizes to offer, as a vector of row counts; the
 #'   first one is used initially. Paging shows that many of the filtered and
 #'   sorted rows at a time, with a pager (first, previous, next, last), the row
@@ -97,8 +109,7 @@ lt_interactive = function(
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
   opts = list(sort = sort_keys(sort), search = search)
-  if (!isFALSE(filter)) opts$filter = if (is.character(filter))
-    list(columns = I(filter)) else TRUE
+  if (!isFALSE(filter)) opts$filter = normalize_filter(filter)
   if (!isFALSE(pager) && length(pager)) {
     sizes = unique(pager)
     sizes[!is.finite(sizes)] = 0  # the runtime reads 0 as "every row"
@@ -111,6 +122,52 @@ lt_interactive = function(
     detail else I(as.character(f_cols(detail, x$data)))
   x$interactive = opts
   x
+}
+
+# Shape the `filter` argument for the client as { default?, cols? }. `TRUE` ->
+# a box on every column (a `default`); a character vector -> boxes on just those
+# columns; a named list -> each named column's own spec in `cols`, with one
+# unnamed entry (if any) kept as the `default` for the other visible columns. The
+# client resolves a typed spec's choices / range from the column data, so nothing
+# here reads `x$data`.
+normalize_filter = function(filter) {
+  if (isTRUE(filter)) return(list(default = TRUE))
+  if (is.character(filter))
+    return(list(cols = stats::setNames(rep(list(TRUE), length(filter)), filter)))
+  if (is.list(filter)) {
+    nm = names(filter)
+    if (is.null(nm)) nm = rep('', length(filter))
+    out = list(); cols = list()
+    for (i in seq_along(filter)) {
+      spec = normalize_spec(filter[[i]])
+      if (nzchar(nm[i])) cols[[nm[i]]] = spec else out$default = spec
+    }
+    if (length(cols)) out$cols = cols
+    return(out)
+  }
+  TRUE
+}
+
+# One column's filter spec: `TRUE` (a plain box) passes through; a `"select"` /
+# `"range"` string becomes `list(type = ...)`; a list is a hand-set spec, its
+# `choices` reshaped to {value, label} objects and `value` kept as a JSON array.
+normalize_spec = function(spec) {
+  if (isTRUE(spec)) return(TRUE)
+  if (is.character(spec) && length(spec) == 1) return(list(type = spec))
+  if (is.list(spec)) {
+    if (!is.null(spec$choices)) spec$choices = choice_objs(spec$choices)
+    if (!is.null(spec$value)) spec$value = I(spec$value)
+    return(spec)
+  }
+  stop('invalid filter spec: ', toString(spec))
+}
+
+# A dropdown's `choices` as {value, label} objects; names, if any, are the labels.
+choice_objs = function(ch) {
+  labs = names(ch)
+  if (is.null(labs)) labs = as.character(ch)
+  lapply(seq_along(ch), function(i)
+    list(value = as.character(ch[[i]]), label = labs[i]))
 }
 
 # Normalize the `sort` argument. A logical passes through (enable or disable

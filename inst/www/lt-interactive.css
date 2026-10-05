@@ -133,6 +133,94 @@
     }
   }
 
+  /* typed filter chips sit after the search box in the head bar; each is a label,
+   * a summary of the current filter, and a funnel popping up the widget + box */
+  .lti-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    &.lti-on .lti-chip-name {
+      font-weight: 600;
+    }
+    .lti-chip-cur {
+      color: #555;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+  .lti-pop {
+    position: relative;
+    .lti-funnel {
+      border: none;
+      padding: 0;
+      width: 1.1em;
+      height: 1.1em;
+      opacity: 0.55;
+      background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="gray"><path d="M1 2h14l-5.5 6.5V14l-3 1V8.5z"/></svg>');
+    }
+    /* a funnel standing in for a header-level filter reads as active when its
+     * column has a live term */
+    &.lti-on .lti-funnel {
+      opacity: 1;
+    }
+    .lti-pop-panel {
+      position: absolute;
+      z-index: 1;
+      top: 100%;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      /* an explicit display beats the UA [hidden] rule, so re-hide it here */
+      &[hidden] { display: none; }
+      gap: 0.5em;
+      min-width: 14em;
+      max-width: 90vw;
+      padding: 0.6em;
+      background: Canvas;
+      border: 1px solid;
+    }
+  }
+
+  /* the custom range slider: a track with a fill band between two button thumbs */
+  .lti-slider {
+    position: relative;
+    height: 1.2em;
+    margin: 0.4em 0.6em;
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 50% 0 auto;
+      height: 3px;
+      transform: translateY(-50%);
+      background: #c8c8c8;
+      border-radius: 3px;
+    }
+    .lti-slider-fill {
+      position: absolute;
+      inset: 50% 0;
+      height: 3px;
+      transform: translateY(-50%);
+      background: #4a90d9;
+    }
+    .lti-thumb {
+      position: absolute;
+      top: 50%;
+      width: 14px;
+      height: 14px;
+      padding: 0;
+      transform: translate(-50%, -50%);
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: #4a90d9;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      touch-action: none;
+    }
+  }
+  .lti-slider-out {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
   .lti-pager {
     display: flex;
     align-items: center;
