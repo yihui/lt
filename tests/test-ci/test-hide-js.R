@@ -59,6 +59,29 @@ assert("hide accepts a formula, and the menu lists displayed labels", {
   (lti_eval(y, labels) %==% 'name|Count')
 })
 
+assert("hiding a column also hides its filter-row and plot-axis-footer cells", {
+  # a toggled-off column must disappear from EVERY per-column row, not only the
+  # header and body: the per-column filter boxes and an inline plot's axis
+  # footer too, or (e.g.) the plot's axis ends up shifted off its own column
+  x = lt(data.frame(name = sym, a = c(1, 2, 3, 4), b = c(2, 3, 4, 5))) |>
+    lt_dotplot(~ a + b, axis = TRUE) |>
+    lt_interactive(hide = TRUE, filter = TRUE, pager = FALSE)
+  # the first column ("name") owns a cell in the filter row and the plot-axis
+  # footer row; both start shown
+  filt = 't.querySelector("tr.lti-filters").children[0].hidden'
+  foot = 't.querySelector("tr.lt-plot-foot").children[0].hidden'
+  (lti_eval(x, filt) %==% 'false')
+  (lti_eval(x, foot) %==% 'false')
+  # toggling it off hides those cells as well as the header/body
+  off0 = box_click(0)
+  (lti_eval(x, filt, off0) %==% 'true')
+  (lti_eval(x, foot, off0) %==% 'true')
+  (lti_eval(x, cell_hidden(0), off0) %==% 'true')
+  # and it stays hidden across a re-render (sorting another column)
+  sortA = 'document.querySelectorAll("thead th")[1].click()'
+  (lti_eval(x, foot, paste(off0, sortA, sep = ';')) %==% 'true')
+})
+
 assert("hiding a column leaves an open detail row's full-width cell alone", {
   # the hide loop keys cells by column index, but a detail row has one cell
   # spanning every column; it must skip that cell, not take it for column 0's
