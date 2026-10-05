@@ -37,9 +37,11 @@ assert("a column cannot be dragged away, and a double-click fits it again", {
   x = itbl(resize = TRUE)
   # dragging far to the left stops before the grip reaches the header label: the
   # resizer's left edge stays at or past the right edge of the label + indicator
-  past = 'var g = t.querySelectorAll(".lti-resizer")[0];
-    var ind = g.parentNode.querySelector(".lti-sort");
-    (g.getBoundingClientRect().left >= Math.floor(ind.getBoundingClientRect().right))'
+  past = '(() => {
+    var g = t.querySelectorAll(".lti-resizer")[0],
+        ind = g.parentNode.querySelector(".lti-sort");
+    return g.getBoundingClientRect().left >= Math.floor(ind.getBoundingClientRect().right);
+  })()'
   (lti_eval(x, past, drag(0, -1000)) %==% 'true')
   # a double-click on the grip restores the column's content width
   fit = paste(MEASURE, drag(0, -1000),

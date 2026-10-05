@@ -352,10 +352,8 @@
       const col = cols[ci];
       if (col == null) return;
       th.classList.add("lti-sortable");
-      // bind the sort click to the label alone, not the whole cell: a resize
-      // grip lives in the <th> but outside this label, so the click a drag
-      // leaves behind (on the <th>) never reaches the sort handler. The label
-      // wraps whatever the cell already held (its text), then the indicator.
+      // sort on the label only, not the whole cell, so the resize grip (a <th>
+      // child outside the label) stays unclickable for sorting
       const lab = elem(doc, "span", { className: "lti-label" }, th);
       while (th.firstChild !== lab) lab.append(th.firstChild);
       marks[col] = { th, ind: elem(doc, "span", { className: "lti-sort" }, lab) };
@@ -501,16 +499,12 @@
   // Drag-to-resize column edges: a grip on the right edge of each header cell.
   // On the first drag the table switches to fixed layout (see fixedLayout) so
   // that dragging one edge moves it alone. A double-click fits the column to its
-  // content. The grip lives in the <th> but outside its `.lti-label` (see
-  // addSort), so neither a click on the grip nor the click a drag leaves behind
-  // on the <th> ever reaches the sort handler bound to the label.
+  // content.
   function addResize(el, layout) {
     const doc = el.ownerDocument, win = doc.defaultView,
           { ths, cs, freeze, natural, setWidth } = layout;
-    // The narrowest a column may be dragged: enough to keep its whole header
-    // label (and sort indicator) visible, so the grip never ends up over the
-    // label. Measured from the cell's left edge to the indicator's right edge,
-    // plus the right padding and the grip's own width, and never below MIN_COL.
+    // smallest width that still shows the whole label, so the grip can't be
+    // dragged over the label text (never below MIN_COL)
     const labelMin = (th, grip) => {
       const r = th.getBoundingClientRect(),
             ind = th.querySelector(".lti-sort"),
