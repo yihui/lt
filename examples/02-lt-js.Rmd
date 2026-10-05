@@ -568,6 +568,26 @@ LT.build({
 });
 ```
 
+`stagger: true` spreads near-equal dots onto separate vertical tracks so
+they do not overlap (the cell grows taller to fit one track per column):
+
+```{js}
+LT.build({
+  data: {
+    Group:  ["Control", "Low", "High"],
+    Before: [3.1, 3.4, 3.0],
+    After:  [3.2, 4.1, 5.2]
+  },
+  ops: [
+    { type: "hide", columns: ["After"] },
+    { type: "label", labels: { Before: "Before / After" } },
+    { type: "dotplot", columns: ["Before", "After"], stagger: true,
+      colors: ["#999999", "#1a9641"], labels: ["Baseline", "Follow-up"],
+      min: 2.5, max: 5.5, axis: true, axis_label: "Score" }
+  ]
+});
+```
+
 ## Row groups
 
 ### Group by column
@@ -901,8 +921,14 @@ optional:
   name string, `"-name"` for descending (or a `{ col, dir }` object);
 - `search`: a search box above the table, matching any cell (`false` to
   turn off);
-- `filter`: a box under each column header, matching that column only —
-  `true` for every column, or `{ columns: [...] }` for some of them;
+- `filter`: per-column filters, as `{ default?, cols? }`. `default` is a
+  spec applied to every visible column left unnamed; `cols` maps a column
+  to its own spec. A spec is `true` for a plain box (matching that column
+  the same way as the search), or `{ type: "select" }` / `{ type: "range" }`
+  for a value dropdown or a two-thumb slider (its choices / ends read from
+  the column data, or set explicitly with `choices` / `min`+`max`). So
+  `{ default: true }` boxes every column, `{ cols: { mpg: true } }` boxes
+  one, and `{ cols: { cyl: { type: "select" } } }` gives `cyl` a dropdown;
 - `pager`: the page sizes to offer, as an array whose first element is
   the initial size; `0` means every row on one page. Omit the field for
   the default sizes, or set it to `false` to show all rows with no
@@ -932,7 +958,20 @@ instead.
 ```{js}
 LT.build({
   data: mtcars,
-  interactive: { filter: { columns: ["mpg"] }, pager: [3, 6, 0], resize: true }
+  interactive: { filter: { cols: { mpg: true } }, pager: [3, 6, 0], resize: true }
+});
+```
+
+Typed filters — a dropdown on `cyl`, a range slider on `wt` — with a plain
+box as the default for the other columns:
+
+```{js}
+LT.build({
+  data: mtcars,
+  interactive: {
+    search: false, pager: 6,
+    filter: { default: true, cols: { cyl: { type: "select" }, wt: { type: "range" } } }
+  }
 });
 ```
 

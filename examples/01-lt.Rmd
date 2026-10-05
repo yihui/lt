@@ -628,6 +628,14 @@ lt(d_dot) |>
   lt_dotplot(~ Before + After, color = TRUE, axis = "Score")
 ```
 
+When two dots fall at nearly the same value they overlap; `stagger = TRUE`
+spreads near-equal dots onto separate tracks so each stays visible.
+
+```{r}
+lt(d_dot) |>
+  lt_dotplot(~ Before + After, color = TRUE, stagger = TRUE, axis = "Score")
+```
+
 ## Styling
 
 ### Cell styling
@@ -825,6 +833,20 @@ only.
 
 ```{r}
 lt(d) |> lt_interactive(filter = TRUE, search = FALSE, pager = 5)
+```
+
+A column can take a *typed* control instead of a plain box: pass a named
+list where each column maps to `"select"` (a value dropdown) or `"range"`
+(a two-thumb slider). The dropdown's choices and the slider's ends are
+read from the column's data. The control renders as a funnel under the
+header, paired with an expression box that stays in sync. One *unnamed*
+entry is the default for every other column.
+
+```{r}
+lt(d) |> lt_interactive(
+  filter = list(TRUE, cyl = "select", wt = "range"),
+  search = FALSE, pager = 5
+)
 ```
 
 ### Row detail (drill-down)
