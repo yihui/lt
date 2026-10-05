@@ -501,17 +501,7 @@
   // that dragging one edge moves it alone. A double-click fits the column to its
   // content.
   function addResize(el, layout) {
-    const doc = el.ownerDocument, win = doc.defaultView,
-          { ths, cs, freeze, natural, setWidth } = layout;
-    // smallest width that still shows the whole label, so the grip can't be
-    // dragged over the label text (never below MIN_COL)
-    const labelMin = (th, grip) => {
-      const r = th.getBoundingClientRect(),
-            ind = $(th, ".lti-sort"),
-            end = ind ? ind.getBoundingClientRect().right : r.right,
-            pad = parseFloat(win.getComputedStyle(th).paddingRight) || 0;
-      return Math.max(MIN_COL, end - r.left + pad + grip.getBoundingClientRect().width);
-    };
+    const doc = el.ownerDocument, { ths, cs, freeze, natural, setWidth } = layout;
     ths.forEach((th, i) => {
       const grip = elem(doc, "div", { className: "lti-resizer" }, th);
       grip.ondblclick = e => {
@@ -522,10 +512,11 @@
       grip.onpointerdown = e => {
         e.stopPropagation();
         freeze();
-        const x0 = e.clientX, w0 = parseFloat(cs[i].style.width),
-              min = labelMin(th, grip);
+        const x0 = e.clientX, w0 = parseFloat(cs[i].style.width);
         el.classList.add("lti-resizing");
-        drag(e, ev => setWidth(i, w0 + ev.clientX - x0, min),
+        // the floor is MIN_COL (setWidth's default): a frozen cell clips its
+        // content, so shrinking just hides the overflow, grip at the edge
+        drag(e, ev => setWidth(i, w0 + ev.clientX - x0),
           () => el.classList.remove("lti-resizing"));
       };
     });
