@@ -514,8 +514,8 @@
         freeze();
         const x0 = e.clientX, w0 = parseFloat(cs[i].style.width);
         el.classList.add("lti-resizing");
-        // the floor is MIN_COL (setWidth's default): a frozen cell clips its
-        // content, so shrinking just hides the overflow, grip at the edge
+        // no label floor: omit setWidth's min arg to take its default, and the
+        // cell clips its overflow (CSS) instead of spilling when shrunk
         drag(e, ev => setWidth(i, w0 + ev.clientX - x0),
           () => el.classList.remove("lti-resizing"));
       };
