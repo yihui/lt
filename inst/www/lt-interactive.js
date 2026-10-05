@@ -5,9 +5,9 @@
  * table whose spec carries `interactive`, it adds the requested controls and
  * re-renders <tbody> through the core `spec._viewRows` seam. Every control is a
  * row of the table itself — the search box in <thead>, the pager in <tfoot> —
- * so it is exactly as wide as the table and scrolls with it. Separator row
- * groups and indentation are honored (sort/filter runs within each group or
- * subtree); a rowspan-mode row group keeps the table static, with a warning.
+ * so it is exactly as wide as the table and scrolls with it. Row structure is
+ * honored: separator row groups, indentation, and rowspan row groups all
+ * sort/filter within each group or subtree, never across it (see computeView).
  */
 (root => {
   "use strict";
@@ -32,6 +32,13 @@
         $$ = (el, sel) => el.querySelectorAll(sel),
         on = (t, type, fn, opts) => t.addEventListener(type, fn, opts),
         off = (t, type, fn) => t.removeEventListener(type, fn);
+  // A row's data cells, in column order: its children minus the leading rowspan
+  // group-column cells (class `lt-row-group`), which are not in `spec._cols` and,
+  // in rowspan mode, appear on some rows but not others (a run's later rows have
+  // none). Selecting by class — not position — is what lets the positional code
+  // (hide, detail, display capture) stay correct whatever leads the row.
+  const dataCells = tr =>
+    [...tr.children].filter(c => !c.classList.contains("lt-row-group"));
   // Create a <tag> and assign `props`: a dashed key ("aria-label") sets an
   // attribute, any other key ("className", "type", "textContent") a DOM
   // property. Appends to `parent` when given, and returns the new element.
@@ -126,33 +133,35 @@
     }
     const keep = r => tests.every(t => t(r));
 
-    // The comparator from the active sort keys: each key in turn, falling through
-    // to the next on a tie; a key's column (resolved once) carries its numeric
-    // test and direction. nulls sort last regardless of direction, so the
-    // direction never applies to them. Null when nothing is sorted.
-    const keys = (state.sort || []).map(k => {
-      const col = data[k.col];
-      return col && { col, num: numCol(col), dir: k.dir === "desc" ? -1 : 1 };
-    }).filter(Boolean);
-    const cmp = keys.length ? (a, b) => {
-      for (const { col, num, dir } of keys) {
-        const x = col[a - 1], y = col[b - 1], xn = x == null, yn = y == null;
-        if (xn || yn) { if (xn !== yn) return xn ? 1 : -1; continue; }
-        coll ||= new Intl.Collator();
-        const c = num ? x - y : coll.compare(String(x), String(y));
-        if (c) return dir * c;
-      }
-      return 0;
-    } : null;
+    // Build a comparator from a list of sort keys: each key in turn, falling
+    // through to the next on a tie; a key's column (resolved once) carries its
+    // numeric test and direction. nulls sort last regardless of direction, so the
+    // direction never applies to them. Null when the list sorts nothing.
+    const makeCmp = sortKeys => {
+      const keys = sortKeys.map(k => {
+        const col = data[k.col];
+        return col && { col, num: numCol(col), dir: k.dir === "desc" ? -1 : 1 };
+      }).filter(Boolean);
+      return keys.length ? (a, b) => {
+        for (const { col, num, dir } of keys) {
+          const x = col[a - 1], y = col[b - 1], xn = x == null, yn = y == null;
+          if (xn || yn) { if (xn !== yn) return xn ? 1 : -1; continue; }
+          coll ||= new Intl.Collator();
+          const c = num ? x - y : coll.compare(String(x), String(y));
+          if (c) return dir * c;
+        }
+        return 0;
+      } : null;
+    };
 
-    // Reduce a list of rows (in document order) to the kept rows in view order.
-    // With no indentation this is a plain filter + sort. With indentation the
-    // rows form a tree (a row's parent is the nearest earlier row one level up):
-    // filtering keeps any row with a surviving descendant, so a match stays in
-    // context, and a sort reorders siblings while each subtree travels with its
-    // parent.
+    // Reduce a list of rows (in document order) to the kept rows in view order,
+    // sorted by `cmp`. With no indentation this is a plain filter + sort. With
+    // indentation the rows form a tree (a row's parent is the nearest earlier row
+    // one level up): filtering keeps any row with a surviving descendant, so a
+    // match stays in context, and a sort reorders siblings while each subtree
+    // travels with its parent.
     const indent = spec._indent;
-    const reduce = rows => {
+    const reduce = (rows, cmp) => {
       if (!indent) {
         const out = rows.filter(keep);
         return cmp ? out.sort(cmp) : out;
@@ -178,18 +187,58 @@
       return flat;
     };
 
-    // Row groups keep their place (the group is the unit that does not move):
-    // each group's rows filter/sort within it, and the surviving rows of all
-    // groups concatenate in group order, then any ungrouped rows (manual groups
-    // need not cover every row). A group left with no row simply contributes
-    // nothing — its header is re-emitted at render only when a row remains.
+    const all = () => Array.from({ length: nRow }, (_, i) => i + 1);
+
+    // Rowspan row groups: the group columns (outermost first) nest, so the view
+    // must stay a hierarchy — sorting a data column may only reorder rows within
+    // the innermost group, never across a group boundary, or a spanning cell
+    // would have to split. So partition by group column 1, then recurse on
+    // column 2 within each block, …, and only at the leaves sort by the data
+    // keys. A group column the reader clicked orders its blocks by that column
+    // (its key is pulled out of the leaf sort); untouched, blocks keep their
+    // first-appearance order. Rendering recomputes the spans from this order.
+    const gcols = spec._rowspan;
+    if (gcols) {
+      const dir = {}, leaf = [];
+      for (const k of state.sort || [])
+        gcols.includes(k.col) ? (dir[k.col] = k.dir) : leaf.push(k);
+      const leafCmp = makeCmp(leaf);
+      const partition = (rows, depth) => {
+        if (depth === gcols.length) return reduce(rows, leafCmp);
+        const col = data[gcols[depth]], blocks = new Map();
+        for (const r of rows) {
+          const v = col[r - 1], key = v == null ? "\0" : String(v);
+          (blocks.get(key) || blocks.set(key, { v, rows: [] }).get(key)).rows.push(r);
+        }
+        let order = [...blocks.values()];
+        if (dir[gcols[depth]]) {
+          const num = numCol(col), d = dir[gcols[depth]] === "desc" ? -1 : 1;
+          order.sort((a, b) => {
+            const an = a.v == null, bn = b.v == null;
+            if (an || bn) return an === bn ? 0 : an ? 1 : -1;
+            coll ||= new Intl.Collator();
+            return d * (num ? a.v - b.v : coll.compare(String(a.v), String(b.v)));
+          });
+        }
+        return order.flatMap(b => partition(b.rows, depth + 1));
+      };
+      return partition(all(), 0);
+    }
+
+    // Separator row groups keep their place (the group is the unit that does not
+    // move): each group's rows filter/sort within it, and the surviving rows of
+    // all groups concatenate in group order, then any ungrouped rows (manual
+    // groups need not cover every row). A group left with no row simply
+    // contributes nothing — its header is re-emitted at render only when a row
+    // remains.
+    const cmp = makeCmp(state.sort || []);
     const groups = spec._groups;
-    if (!groups) return reduce(Array.from({ length: nRow }, (_, i) => i + 1));
+    if (!groups) return reduce(all(), cmp);
     const grouped = new Set(), out = [];
-    for (const g of groups) { g.rows.forEach(r => grouped.add(r)); out.push(...reduce(g.rows)); }
+    for (const g of groups) { g.rows.forEach(r => grouped.add(r)); out.push(...reduce(g.rows, cmp)); }
     const rest = [];
     for (let r = 1; r <= nRow; r++) if (!grouped.has(r)) rest.push(r);
-    return [...out, ...reduce(rest)];
+    return [...out, ...reduce(rest, cmp)];
   }
 
   // The rows of `view` on the current page. `state.page` is clamped into range
@@ -204,41 +253,27 @@
     return view.slice(state.page * n, (state.page + 1) * n);
   }
 
-  // Enhanceable unless the table is in rowspan mode (an array `row_group`, or
-  // lt_group()'s default): there a row-group column is drawn as cells that span
-  // their run of rows, which reordering or dropping rows would break. Separator
-  // row groups and indentation are supported — the view sorts/filters within
-  // each group or subtree (see computeView) and re-emits only the surviving
-  // group headers. Column spanners, explicit or from `auto_span`, are no obstacle
-  // either: they are <thead> rows, and only <tbody> is ever re-rendered. Row-
-  // keyed styles and footnotes are fine too — core keys them to the original row
-  // indices, which is what the view carries.
-  const canEnhance = spec => !spec._rowspan;
-
   // Displayed text per column, keyed to the original row order. It does not
   // change with the view, so capture it once from the initial full render.
   // `order[i]` is the original 1-based index of the i-th body row as rendered
   // (for a grouped table whose groups do not follow file order); absent ⇒ body
   // rows are in index order. Separator group-header rows are skipped — they are
-  // no column's cell.
+  // no column's cell. `dataCells` drops any leading rowspan group cell, so the
+  // index lines up with `cols` whatever precedes the data cells.
   function captureDisplay(el, cols, order) {
     const disp = {};
     cols.forEach(c => disp[c] = []);
     let i = 0;
     $$(el, "tbody tr").forEach(tr => {
       if (tr.classList.contains("lt-row-group")) return;
-      const r = order ? order[i] : i + 1;
-      cols.forEach((c, ci) => disp[c][r - 1] = tr.children[ci]?.textContent ?? "");
+      const r = order ? order[i] : i + 1, cells = dataCells(tr);
+      cols.forEach((c, ci) => disp[c][r - 1] = cells[ci]?.textContent ?? "");
       i++;
     });
     return disp;
   }
 
   function enhance(el, spec) {
-    if (!canEnhance(spec)) return console.warn(
-      "lt: interactive tables don't support rowspan row groups; use " +
-      "lt_group(sep = TRUE) for separator rows. Rendering a static table."
-    );
     const opts = spec.interactive, cols = spec._cols || [],
           data = spec.data || {}, nRow = (data[cols[0]] || []).length,
           groups = spec._groups,
@@ -265,6 +300,12 @@
       }
       return out;
     };
+    // the rowspan group columns lead the header row (they are hidden from
+    // `cols`); the full header order drives sort, so clicking a group header
+    // reorders its blocks (computeView pulls a group-column key out of the leaf
+    // sort — see the `_rowspan` branch there)
+    const nGroup = spec._rowspan ? spec._rowspan.length : 0,
+          allCols = nGroup ? [...spec._rowspan, ...cols] : cols;
     const disp = captureDisplay(el, cols, order),
           // the bottom header row: the one whose cells line up with `cols`
           hrow = [...$$(el, "thead tr")].pop(),
@@ -333,16 +374,18 @@
     const headBar = (opts.search !== false || opts.hide || barCols.length) ?
       elem(el.ownerDocument, "div", { className: "lti-bar" },
         fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0)) : null;
-    // the header labels, read before sort/resize decorate the cells, so the
-    // column menu can list the displayed labels rather than the raw names
-    const labels = [...$$(hrow, "th")].map(th => th.textContent);
-    // wire sort before adding the filter row, so it sees the header row only
-    if (opts.sort !== false) addSort(hrow, cols, state, refresh);
+    // the data-column header labels (skipping any leading group cell), read
+    // before sort/resize decorate the cells, so the column menu can list the
+    // displayed labels rather than the raw names
+    const labels = dataCells(hrow).map(th => th.textContent);
+    // wire sort before adding the filter row, so it sees the header row only;
+    // `allCols` so every header cell binds (a group header is sortable too)
+    if (opts.sort !== false) addSort(hrow, allCols, state, refresh);
     // the under-header filter row: needed when a default applies to visible
     // columns or any named column is itself visible
     if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => cols.includes(c)))))
       addFilter(hrow, cols, flt, spec.data, state, refresh);
-    const layout = opts.resize ? fixedLayout(el, hrow, cols.length) : null;
+    const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     if (opts.hide)
       addColumnToggle(headBar, el, hrow, cols, labels, opts.hide, layout, postSwap);
@@ -514,7 +557,9 @@
     return (body, rows) => [...body.rows].forEach((tr, i) => {
       const r = rows[i];
       if (typeof r !== "number") return;  // a separator group-header row
-      const td0 = tr.cells[0], open = state.expanded.has(r);
+      // the first data cell (past any leading rowspan group cell), so the caret
+      // sits in the row's own first column, not a group label
+      const td0 = dataCells(tr)[0], open = state.expanded.has(r);
       if (!td0) return;
       const btn = elem(doc, "button", {
         type: "button", className: "lti-expand", textContent: open ? "▾" : "▸",
@@ -532,14 +577,16 @@
     });
   }
 
-  // The table's <colgroup>, created (one <col> per column) when core emitted
-  // none — it only does so for a table given explicit widths on the R side.
-  function colGroup(el, nCol) {
+  // The table's <colgroup>, created when core emitted none (it only does so for
+  // a table given explicit widths on the R side). It gets `nGroup` leading <col>s
+  // for the rowspan group columns (which lead each header/body row) then one per
+  // data column, matching core's own layout so widths line up.
+  function colGroup(el, nCol, nGroup = 0) {
     let g = $(el, "colgroup");
     if (!g) {
       const doc = el.ownerDocument;
       g = elem(doc, "colgroup");
-      for (let i = 0; i < nCol; i++) elem(doc, "col", {}, g);
+      for (let i = 0; i < nGroup + nCol; i++) elem(doc, "col", {}, g);
       // <colgroup> comes after <caption> (the title), before <thead>
       el.caption ? el.caption.after(g) : el.prepend(g);
     }
@@ -554,9 +601,9 @@
   // content width (an unconstrained reflow, with the widths put back after).
   // `setWidth(i, w, min)` sets column i to `w` px (clamped to `min`), widening or
   // narrowing the table by as much; the other columns keep their widths.
-  function fixedLayout(el, hrow, nCol) {
+  function fixedLayout(el, hrow, nCol, nGroup = 0) {
     const ths = [...$$(hrow, "th")],
-          cs = colGroup(el, nCol), wOf = e => e.getBoundingClientRect().width;
+          cs = colGroup(el, nCol, nGroup), wOf = e => e.getBoundingClientRect().width;
     const freeze = () => {
       if (el.classList.contains("lti-fixed")) return;
       const w = ths.map(wOf);
@@ -581,7 +628,9 @@
       el.style.width =
         parseFloat(el.style.width) + parseFloat(cs[i].style.width) - old + "px";
     };
-    return { ths, cs, freeze, natural, setWidth };
+    // `dataCs` drops the leading group <col>s, so a data-column consumer (the
+    // column-hide menu) indexes it by data-column position
+    return { ths, cs, dataCs: cs.slice(nGroup), freeze, natural, setWidth };
   }
 
   // Drag-to-resize column edges: a grip on the right edge of each header cell.
@@ -620,10 +669,11 @@
   function addColumnToggle(cell, el, hrow, cols, labels, opt, layout, postSwap) {
     const doc = el.ownerDocument,
           start = (opt && opt.hidden) || [], hidden = new Set();
-    // show/hide column i's cell in one row, skipping the single colspan cell of
-    // a detail or empty row (which spans every column and is no column's own)
+    // show/hide column i's cell in one row (indexing the row's data cells, past
+    // any leading rowspan group cell), skipping the single colspan cell of a
+    // detail or empty row (which spans every column and is no column's own)
     const setCell = (tr, i, on) => {
-      const c = tr.children[i];
+      const c = dataCells(tr)[i];
       if (c && c.colSpan === 1) c.hidden = on;
     };
     // re-hide every hidden column's cells on each freshly-built <tbody>
@@ -639,7 +689,7 @@
     // keeps them in sync; only the fresh <tbody> is re-hidden (via postSwap).
     const apply = i => {
       const on = hidden.has(i);
-      if (layout?.cs[i]) layout.cs[i].hidden = on;
+      if (layout?.dataCs[i]) layout.dataCs[i].hidden = on;
       for (const tr of el.rows)
         if (!tr.classList.contains("lt-spanner-row")) setCell(tr, i, on);
     };

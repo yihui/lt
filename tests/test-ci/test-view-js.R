@@ -108,6 +108,31 @@ assert("filtering an indented table keeps a match's ancestors for context", {
   (run_view(d, list(term = 'x == 1'), spec = spec) %==% c(1L, 2L))
 })
 
+assert("rowspan groups sort within each run; a group key reorders blocks", {
+  d = list(g = c("a", "a", "b", "b"), v = c(2, 1, 4, 3))
+  spec = list(`_rowspan` = I("g"))
+  # a data key sorts within each run only (the blocks keep file order)
+  (run_view(d, by(k('v')), spec = spec) %==% c(2L, 1L, 4L, 3L))
+  # the group column as a key reorders whole blocks (rows keep file order in them)
+  (run_view(d, by(k('g', 'desc')), spec = spec) %==% c(3L, 4L, 1L, 2L))
+  # group key + data key compose: blocks by g desc, rows by v asc within each
+  (run_view(d, by(k('g', 'desc'), k('v')), spec = spec) %==% c(4L, 3L, 2L, 1L))
+  # a filter can empty a block: v < 3 keeps only group a
+  (run_view(d, list(term = 'x < 3'), spec = spec) %==% c(1L, 2L))
+})
+
+assert("nested rowspan groups stay hierarchical: an inner key stays in its parent", {
+  d = list(g1 = c("a", "a", "a", "b"), g2 = c("x", "x", "y", "z"),
+           v = c(3, 1, 2, 4))
+  spec = list(`_rowspan` = I(c("g1", "g2")))
+  # sort v descending: only leaves within the innermost (g1, g2) block reorder,
+  # so g1=a,g2=x (rows 1,2) swaps to 1,2 and nothing crosses a block boundary
+  (run_view(d, by(k('v', 'desc')), spec = spec) %==% c(1L, 2L, 3L, 4L))
+  # sort g2 descending: within g1=a its g2 blocks reorder (y before x), the
+  # leaves within each untouched; g1 blocks and ungrouped tail stay put
+  (run_view(d, by(k('g2', 'desc')), spec = spec) %==% c(3L, 1L, 2L, 4L))
+})
+
 assert("paging slices the view and clamps the page into range", {
   d = list(n = 1:7)
   (run_page(d, list(pageSize = 3))$rows %==% 1:3)

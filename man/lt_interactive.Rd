@@ -91,16 +91,16 @@ columns. The features are handled client-side by an opt-in JavaScript
 extension, loaded only for tables that call this function.
 }
 \details{
-Sorting and filtering respect the row structure. Separator row groups
-(\code{\link[=lt_group]{lt_group()}} with \code{sep = TRUE}, or manual groups) and indentation
-(\code{\link[=lt_indent]{lt_indent()}}) are honored: sorting and filtering happen \emph{within} each group
-or subtree, the groups keep their order, a group whose rows all filter out
-drops its header, and an indented child keeps its ancestors visible for
-context. A rowspan row group (\code{\link[=lt_group]{lt_group()}} with its default rowspan rendering)
-is the one case still rendered static (a console warning is emitted in the
-browser), since the spanning cells cannot survive a reorder. Column spanners
-(\code{\link[=lt_spanner]{lt_spanner()}}) are no obstacle either, nor are row-specific styles or
-footnotes: those travel with their rows.
+Sorting and filtering respect the row structure, happening \emph{within} each
+group or subtree rather than across it. Separator row groups (\code{\link[=lt_group]{lt_group()}}
+with \code{sep = TRUE}, or manual groups) keep their order, and a group whose rows
+all filter out drops its header. Indentation (\code{\link[=lt_indent]{lt_indent()}}) sorts siblings
+under each parent, and an indented child keeps its ancestors visible for
+context. Rowspan row groups (\code{\link[=lt_group]{lt_group()}} with its default rowspan rendering)
+sort and filter within each run and clicking a group header reorders its
+blocks; with several group columns the view stays nested (an inner column
+reorders only within its parent block), and the spanning cells are redrawn to
+match.
 }
 \examples{
 lt(head(mtcars)) |> lt_interactive()

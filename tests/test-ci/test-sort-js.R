@@ -41,11 +41,34 @@ assert("an initial sort orders the rows before any click", {
   (lti_eval(x, 'document.querySelectorAll("thead th")[1].ariaSort') %==% 'descending')
 })
 
-assert("a rowspan row group is left static (spanning cells can't reorder)", {
-  d = data.frame(g = c("a", "a", "b"), v = 1:3)
+assert("rowspan row groups sort within each run and reorder as blocks", {
+  d = data.frame(g = c("a", "a", "b", "b"), v = c(2, 1, 4, 3))
   # lt_group()'s default rendering draws the group column as rowspan cells
-  x = lt(d) |> lt_group(~ g) |> lt_interactive()
-  (lti_eval(x, '[...t.querySelectorAll(".lti-sortable")].length') %==% '0')
+  x = lt(d) |> lt_group(~ g) |> lt_interactive(pager = FALSE)
+  # v is the one data column; the group cells are <th class=lt-row-group>
+  cells = '[...t.querySelectorAll("tbody tr")].map(r => r.querySelector("td").textContent).join("|")'
+  heads = '[...t.querySelectorAll("tbody th.lt-row-group")].map(e => e.textContent).filter(Boolean).join("|")'
+  # header cells are [g, v]; click v to sort it ascending within each group
+  vclick = 'document.querySelectorAll("thead th .lti-label")[1].click()'
+  (strsplit(lti_eval(x, cells, vclick), '|', fixed = TRUE)[[1]] %==% c('1', '2', '3', '4'))
+  # both group labels survive, redrawn in order, as the rows reorder under them
+  (lti_eval(x, heads, vclick) %==% 'a|b')
+  # clicking the group header twice (asc, desc) reorders the blocks: b before a
+  gclick = rep('document.querySelector("thead th .lti-label").click()', 2)
+  (lti_eval(x, heads, paste(gclick, collapse = ';')) %==% 'b|a')
+})
+
+assert("nested rowspan groups stay hierarchical in the browser", {
+  d = data.frame(g1 = c("a", "a", "a", "b"), g2 = c("x", "x", "y", "z"),
+                 v = c(3, 1, 2, 4))
+  x = lt(d) |> lt_group(~ g1 + g2) |> lt_interactive(pager = FALSE)
+  # the one data column v, in rendered order
+  col = '[...t.querySelectorAll("tbody tr")].map(r => r.querySelector("td").textContent).join("|")'
+  # header cells are [g1, g2, v]; click v twice to sort it descending — it only
+  # reorders leaves within the innermost (g1, g2) block, so g1=a,g2=x reads 3,1
+  click = paste(rep(
+    'document.querySelectorAll("thead th .lti-label")[2].click()', 2), collapse = ';')
+  (strsplit(lti_eval(x, col, click), '|', fixed = TRUE)[[1]] %==% c('3', '1', '2', '4'))
 })
 
 assert("separator row groups stay interactive, sorting within each group", {

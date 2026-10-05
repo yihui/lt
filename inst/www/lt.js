@@ -561,7 +561,8 @@
       out.push(`</tr>`);
     }
     out.push(`<tr>`);
-    for (const rs of rowSpans) out.push(`<th scope="col">${txt(rs.label)}</th>`);
+    for (const rs of rowSpans)
+      out.push(`<th scope="col" class="lt-row-group">${txt(rs.label)}</th>`);
     for (let i = 0; i < cols.length; i++)
       out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", cols[i])}</th>`);
     out.push(`</tr></thead>`);
@@ -575,19 +576,29 @@
     }
 
     // Row rendering
-    const pushRow = r => {
+    const pushRow = (r, spanCells) => {
       out.push(`<tr>`);
       // Row-group cells. For a group spanning n > 1 rows, the label goes in a
       // non-spanning cell on the first row — so vertical-align centers it
       // within that row's height (matching the body cells) instead of across
       // the whole span — followed by an empty filler cell spanning the
-      // remaining n - 1 rows. A single-row group is just the label cell.
-      for (const rs of rowSpans) {
-        const span = rs.spans[r - 1], fill = (rs.spans[r - 2] || 0) - 1;
-        if (span > 0)
-          out.push(`<th scope="row" class="lt-row-group${span > 1 ? " lt-row-open" : ""}">${escIf(isRaw(rs.col), cell(rs.col, r))}${mark("row_groups", str(data[rs.col][r - 1]))}</th>`);
-        else if (fill > 0)
-          out.push(`<th class="lt-row-group"${attr("rowspan", fill > 1 ? fill : 0)}></th>`);
+      // remaining n - 1 rows. A single-row group is just the label cell. The
+      // per-column descriptor ({label, open} for the label cell, {fill} for the
+      // filler, nothing when covered by a filler above) is supplied by the
+      // caller when rows are reordered (`spanCells`, computed in view order),
+      // else derived from the file-order spans.
+      for (let gi = 0; gi < rowSpans.length; gi++) {
+        const rs = rowSpans[gi];
+        let d = spanCells ? spanCells[gi] : null;
+        if (!spanCells) {
+          const span = rs.spans[r - 1], fill = (rs.spans[r - 2] || 0) - 1;
+          d = span > 0 ? { label: true, open: span > 1 } : fill > 0 ? { fill } : null;
+        }
+        if (!d) continue;
+        if (d.label)
+          out.push(`<th scope="row" class="lt-row-group${d.open ? " lt-row-open" : ""}">${escIf(isRaw(rs.col), cell(rs.col, r))}${mark("row_groups", str(data[rs.col][r - 1]))}</th>`);
+        else
+          out.push(`<th class="lt-row-group"${attr("rowspan", d.fill > 1 ? d.fill : 0)}></th>`);
       }
       const ind = indent[r - 1] || 0;
       for (let ci = 0; ci < cols.length; ci++) {
@@ -616,18 +627,47 @@
     const groupHeader = (label, raw) =>
       `<tr class="lt-row-group"><th colspan="${nCol}" scope="colgroup">${escIf(raw, label)}${mark("row_groups", label)}</th></tr>`;
 
+    // Rowspan group cells recomputed for a reordered view: the file-order
+    // `rs.spans` no longer describe the runs, so walk the view sequence and
+    // group its rows into runs sharing the same group-value prefix (column gi's
+    // run breaks when its value or any earlier group column's value changes).
+    // Each run's first row gets the label cell, its second a filler spanning the
+    // rest; the remaining rows get nothing. Returns one descriptor array per
+    // view position, matching pushRow's `spanCells`.
+    const viewRowSpans = seq => {
+      const info = seq.map(() => []);
+      for (let gi = 0; gi < rowSpans.length; gi++) {
+        const key = r => rowSpans.slice(0, gi + 1)
+          .map(rs => str(data[rs.col][r - 1])).join("\u0000");
+        for (let i = 0; i < seq.length;) {
+          let j = i + 1;
+          const k = key(seq[i]);
+          while (j < seq.length && key(seq[j]) === k) j++;
+          const len = j - i;
+          info[i][gi] = { label: true, open: len > 1 };
+          if (len > 1) info[i + 1][gi] = { fill: len - 1 };
+          i = j;
+        }
+      }
+      return info;
+    };
+
     // <tbody>. An optional `spec._viewRows` sets the order/subset of rows — the
     // seam the interactive plugin uses to sort/filter without re-implementing row
     // rendering. Each entry is a 1-based original row index, or (for a grouped
     // table) an object `{label, raw}` for a separator group header the plugin
     // decided to re-emit. It takes precedence over the file-order branches below,
     // which draw the static table. Row-indexed styles/footnotes/indent stay
-    // correct because they remain keyed to the original indices.
+    // correct because they remain keyed to the original indices. In rowspan mode
+    // the span cells are recomputed from the view order (viewRowSpans).
     out.push(`<tbody>`);
     if (spec._viewRows) {
+      const info = rowSpans.length ?
+        viewRowSpans(spec._viewRows.filter(r => typeof r === "number")) : null;
+      let vi = 0;
       for (const r of spec._viewRows)
         if (r && typeof r === "object") out.push(groupHeader(r.label, r.raw));
-        else pushRow(r);
+        else pushRow(r, info ? info[vi++] : null);
     } else if (groups.length) {
       const seen = {};
       for (const g of groups) {
@@ -677,12 +717,13 @@
     spec._display = display;
     // Expose the resolved row structure so the interactive plugin can honor it:
     // the separator row groups (each `{label, rows, raw}`), the per-row indent
-    // levels (an array, or null when none), and whether rowspan mode is on (a
-    // row-group column drawn as spanning cells, which reordering would break, so
-    // such a table is kept static).
+    // levels (an array, or null when none), and the rowspan group columns (the
+    // column names drawn as spanning cells, outermost first, or null) — the
+    // plugin sorts/filters within each run and recomputes the spans in view
+    // order (see buildHtml's viewRowSpans).
     spec._groups = groups.length ? groups : null;
     spec._indent = indent.some(v => v) ? indent : null;
-    spec._rowspan = rowSpans.length > 0;
+    spec._rowspan = rowSpans.length ? rowSpans.map(rs => rs.col) : null;
     // Wrap in a div so a wide table can scroll horizontally (`overflow-x`)
     // instead of overflowing the page.
     return `<div class="lt-wrap">${out.join("")}</div>`;
