@@ -32,13 +32,22 @@ any cell matches the term. Besides plain substring matching, a term that
 references the cell variable \code{x} (e.g. \code{x > 5} or \code{x != "A"}) is evaluated
 as a JavaScript expression against each cell's value.}
 
-\item{filter}{Whether to show a filter box under each column header, matching
-terms the same way as \code{search} but against that column only. A row is kept
-when it passes every filter and the search. Can also be a character vector
-of column names, to filter on those columns only, or a named list mapping a
-column to a typed filter (\code{\link[=lt_select]{lt_select()}} / \code{\link[=lt_range]{lt_range()}}) for a dropdown or
-range-slider control shown in the control bar, or to \code{TRUE} for a plain
-filter box on that column — the two can be mixed in one list.}
+\item{filter}{The per-column filters. \code{TRUE} shows a filter box under every
+column header, matching terms the same way as \code{search} but against that
+column only (a row is kept when it passes every filter and the search). A
+character vector of column names restricts the boxes to those columns. A
+named list gives each named column its own filter: \code{TRUE} for a plain box,
+\code{"select"} for a value dropdown, or \code{"range"} for a two-thumb range slider
+(the dropdown's choices and the slider's ends are taken from the column's
+data). For a custom label or hand-set options, pass a list instead of the
+string, e.g. \code{list(type = "select", label = "Cylinders")} or
+\code{list(type = "range", min = 0, max = 100)}. One \emph{unnamed} entry in the list
+is the default applied to every other visible column, so
+\code{list(TRUE, cyl = "select")} boxes every column but gives \code{cyl} a dropdown.
+A typed filter renders as a funnel + popover (holding the widget \emph{and} an
+expression box, kept in sync) under its column header, or — when the column
+is hidden from the table (e.g. with \code{\link[=lt_hide]{lt_hide()}}) — as a chip in the control
+bar, a natural way to offer a control for a value you don't show.}
 
 \item{pager}{The page sizes to offer, as a vector of row counts; the
 first one is used initially. Paging shows that many of the filtered and

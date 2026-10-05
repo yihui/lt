@@ -28,13 +28,22 @@
 #'   any cell matches the term. Besides plain substring matching, a term that
 #'   references the cell variable `x` (e.g. `x > 5` or `x != "A"`) is evaluated
 #'   as a JavaScript expression against each cell's value.
-#' @param filter Whether to show a filter box under each column header, matching
-#'   terms the same way as `search` but against that column only. A row is kept
-#'   when it passes every filter and the search. Can also be a character vector
-#'   of column names, to filter on those columns only, or a named list mapping a
-#'   column to a typed filter ([lt_select()] / [lt_range()]) for a dropdown or
-#'   range-slider control shown in the control bar, or to `TRUE` for a plain
-#'   filter box on that column — the two can be mixed in one list.
+#' @param filter The per-column filters. `TRUE` shows a filter box under every
+#'   column header, matching terms the same way as `search` but against that
+#'   column only (a row is kept when it passes every filter and the search). A
+#'   character vector of column names restricts the boxes to those columns. A
+#'   named list gives each named column its own filter: `TRUE` for a plain box,
+#'   `"select"` for a value dropdown, or `"range"` for a two-thumb range slider
+#'   (the dropdown's choices and the slider's ends are taken from the column's
+#'   data). For a custom label or hand-set options, pass a list instead of the
+#'   string, e.g. `list(type = "select", label = "Cylinders")` or
+#'   `list(type = "range", min = 0, max = 100)`. One *unnamed* entry in the list
+#'   is the default applied to every other visible column, so
+#'   `list(TRUE, cyl = "select")` boxes every column but gives `cyl` a dropdown.
+#'   A typed filter renders as a funnel + popover (holding the widget *and* an
+#'   expression box, kept in sync) under its column header, or — when the column
+#'   is hidden from the table (e.g. with [lt_hide()]) — as a chip in the control
+#'   bar, a natural way to offer a control for a value you don't show.
 #' @param pager The page sizes to offer, as a vector of row counts; the
 #'   first one is used initially. Paging shows that many of the filtered and
 #'   sorted rows at a time, with a pager (first, previous, next, last), the row
@@ -100,11 +109,7 @@ lt_interactive = function(
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
   opts = list(sort = sort_keys(sort), search = search)
-  if (!isFALSE(filter)) opts$filter = if (is.list(filter) && length(filter) &&
-    !is.null(names(filter)) && all(vapply(filter, function(e)
-      inherits(e, 'lt_filter') || isTRUE(e), logical(1))))
-    typed_filter(filter, x$data) else
-    if (is.character(filter)) list(columns = I(filter)) else TRUE
+  if (!isFALSE(filter)) opts$filter = normalize_filter(filter)
   if (!isFALSE(pager) && length(pager)) {
     sizes = unique(pager)
     sizes[!is.finite(sizes)] = 0  # the runtime reads 0 as "every row"
@@ -119,83 +124,50 @@ lt_interactive = function(
   x
 }
 
-#' Typed column filters
-#'
-#' Richer filters for [lt_interactive()], as an alternative to its plain
-#' per-column filter boxes. Pass `filter` a named list mapping a column to one of
-#' these: `lt_select()` for a value dropdown, `lt_range()` for a two-thumb range
-#' slider. Each is shown as a chip in the table's control bar (where the search
-#' box lives), with a funnel that opens a popover holding the widget *and* an
-#' expression box — both edit the same underlying filter and stay in sync, so the
-#' widget is a friendly face on an expression the reader could also type (see the
-#' `search` term syntax in [lt_interactive()]).
-#'
-#' The target column may be one hidden from the table with [lt_hide()]: the
-#' filter still works (it reads the raw values, which travel to the client
-#' regardless), a natural way to offer a control for a value you don't show.
-#'
-#' @param choices The dropdown's options, as a vector of the column's values;
-#'   names, if any, are used as the labels. Defaults to the column's sorted
-#'   distinct values.
-#' @param selected The option selected initially (filtering the table at once).
-#'   Defaults to the first choice.
-#' @param min,max The ends of the slider's range. Default to the column's range.
-#' @param step The slider's granularity. Defaults to a hundredth of the range.
-#' @param value The thumbs' initial `c(low, high)` positions. Default to the full
-#'   range (no initial filtering).
-#' @param label The chip's label. Defaults to the column's displayed name.
-#' @return A filter spec for `lt_interactive(filter = )`.
-#' @seealso [lt_interactive()]
-#' @export
-#' @examples
-#' lt(mtcars) |> lt_interactive(filter = list(
-#'   cyl = lt_select(label = "Cylinders"),
-#'   mpg = lt_range(label = "Miles / gallon")
-#' ))
-lt_select = function(choices = NULL, selected = NULL, label = NULL)
-  structure(list(type = 'select', choices = choices, selected = selected,
-    label = label), class = 'lt_filter')
-
-#' @rdname lt_select
-#' @export
-lt_range = function(min = NULL, max = NULL, step = NULL, value = NULL, label = NULL)
-  structure(list(type = 'range', min = min, max = max, step = step,
-    value = value, label = label), class = 'lt_filter')
-
-# Shape a named list of typed filters (lt_select / lt_range) and/or `TRUE`
-# entries for the client: the typed ones become control-bar chips (`cols`), each
-# resolved against its column's data; a `TRUE` entry asks for a plain per-column
-# filter box (`columns`), so chips and boxes can be mixed in one call.
-typed_filter = function(filter, data) {
-  typed = Filter(function(e) inherits(e, 'lt_filter'), filter)
-  boxes = names(filter)[vapply(filter, isTRUE, logical(1))]
-  out = list()
-  if (length(typed)) out$cols = Map(resolve_filter, typed, data[names(typed)])
-  if (length(boxes)) out$columns = I(boxes)
-  out
+# Shape the `filter` argument for the client as { default?, cols? }. `TRUE` ->
+# a box on every column (a `default`); a character vector -> boxes on just those
+# columns; a named list -> each named column's own spec in `cols`, with one
+# unnamed entry (if any) kept as the `default` for the other visible columns. The
+# client resolves a typed spec's choices / range from the column data, so nothing
+# here reads `x$data`.
+normalize_filter = function(filter) {
+  if (isTRUE(filter)) return(list(default = TRUE))
+  if (is.character(filter))
+    return(list(cols = stats::setNames(rep(list(TRUE), length(filter)), filter)))
+  if (is.list(filter)) {
+    nm = names(filter)
+    if (is.null(nm)) nm = rep('', length(filter))
+    out = list(); cols = list()
+    for (i in seq_along(filter)) {
+      spec = normalize_spec(filter[[i]])
+      if (nzchar(nm[i])) cols[[nm[i]]] = spec else out$default = spec
+    }
+    if (length(cols)) out$cols = cols
+    return(out)
+  }
+  TRUE
 }
 
-# Fill a typed filter's unset fields from its column's data, and shape it for the
-# client: a select carries its choices as {value, label} objects; a range its
-# numeric ends (and optional step / initial thumbs).
-resolve_filter = function(cfg, column) {
-  if (cfg$type == 'select') {
-    ch = cfg$choices
-    if (is.null(ch)) ch = sort(unique(column[!is.na(column)]))
-    labs = names(ch)
-    if (is.null(labs)) labs = as.character(ch)
-    out = list(type = 'select', choices = lapply(seq_along(ch), function(i)
-      list(value = as.character(ch[[i]]), label = labs[i])))
-    if (!is.null(cfg$selected)) out$selected = as.character(cfg$selected)
-  } else {
-    out = list(type = 'range',
-      min = if (is.null(cfg$min)) min(column, na.rm = TRUE) else cfg$min,
-      max = if (is.null(cfg$max)) max(column, na.rm = TRUE) else cfg$max)
-    if (!is.null(cfg$step)) out$step = cfg$step
-    if (!is.null(cfg$value)) out$value = I(cfg$value)
+# One column's filter spec: `TRUE` (a plain box) passes through; a `"select"` /
+# `"range"` string becomes `list(type = ...)`; a list is a hand-set spec, its
+# `choices` reshaped to {value, label} objects and `value` kept as a JSON array.
+normalize_spec = function(spec) {
+  if (isTRUE(spec)) return(TRUE)
+  if (is.character(spec) && length(spec) == 1) return(list(type = spec))
+  if (is.list(spec)) {
+    if (!is.null(spec$choices)) spec$choices = choice_objs(spec$choices)
+    if (!is.null(spec$value)) spec$value = I(spec$value)
+    return(spec)
   }
-  if (!is.null(cfg$label)) out$label = cfg$label
-  out
+  stop('invalid filter spec: ', toString(spec))
+}
+
+# A dropdown's `choices` as {value, label} objects; names, if any, are the labels.
+choice_objs = function(ch) {
+  labs = names(ch)
+  if (is.null(labs)) labs = as.character(ch)
+  lapply(seq_along(ch), function(i)
+    list(value = as.character(ch[[i]]), label = labs[i]))
 }
 
 # Normalize the `sort` argument. A logical passes through (enable or disable

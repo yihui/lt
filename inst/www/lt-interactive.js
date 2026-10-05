@@ -233,9 +233,18 @@
       }
     };
 
+    // the `filter` option is normalized (R side) to { default?, cols? }: a
+    // `default` spec applies to every visible column left unnamed, `cols` maps a
+    // column to its spec (`true` = a plain box, else a typed select/range). A
+    // typed filter on a hidden column (not in `cols` = spec._cols) can't live
+    // under a header, so it becomes a chip in the head bar; everything else sits
+    // under its column header.
+    const flt = opts.filter,
+          barCols = flt?.cols ?
+            Object.keys(flt.cols).filter(c => flt.cols[c] !== true && !cols.includes(c)) : [];
     // the table-wide controls share one full-width head row: the column menu
-    // (if any) at its start, then the search box, laid out in an inner flex bar
-    const headBar = (opts.search !== false || opts.hide || opts.filter?.cols) ?
+    // (if any) at its start, the search box, then any head-bar filter chips
+    const headBar = (opts.search !== false || opts.hide || barCols.length) ?
       elem(el.ownerDocument, "div", { className: "lti-bar" },
         fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0)) : null;
     // the header labels, read before sort/resize decorate the cells, so the
@@ -243,16 +252,16 @@
     const labels = [...$$(hrow, "th")].map(th => th.textContent);
     // wire sort before adding the filter row, so it sees the header row only
     if (opts.sort !== false) addSort(hrow, cols, state, refresh);
-    // per-column boxes: on by default (filter=TRUE / a column vector), and also
-    // when a typed-filter list names columns for boxes alongside its chips
-    if (opts.filter && (opts.filter.columns || !opts.filter.cols))
-      addFilter(hrow, cols, opts.filter, state, refresh);
+    // the under-header filter row: needed when a default applies to visible
+    // columns or any named column is itself visible
+    if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => cols.includes(c)))))
+      addFilter(hrow, cols, flt, spec.data, state, refresh);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length) : null;
     if (opts.resize) addResize(el, layout);
     if (opts.hide)
       addColumnToggle(headBar, el, hrow, cols, labels, opts.hide, layout, postSwap);
     if (opts.search !== false) addSearch(headBar, el, state, refresh);
-    if (opts.filter?.cols) addControlFilters(headBar, state, opts.filter.cols, refresh);
+    if (barCols.length) addControlFilters(headBar, barCols, flt.cols, spec.data, state, refresh);
     // row detail re-renders through the same seam: toggling a row only changes
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
@@ -349,17 +358,24 @@
     paint();  // reflect any initial sort carried on the spec
   }
 
-  // A row of per-column search boxes below the headers, inside <thead> so the
-  // <tbody> swap leaves it (and what has been typed into it) alone.
-  // `opt.columns`, when an array, restricts which columns get a box.
-  function addFilter(hrow, cols, opt, state, refresh) {
-    const doc = hrow.ownerDocument, only = opt.columns,
-          row = elem(doc, "tr", { className: "lti-filters" });
+  // A row of per-column filters below the headers, inside <thead> so the <tbody>
+  // swap leaves it (and what has been typed into it) alone. `flt` is the
+  // normalized { default?, cols? }: each visible column takes its named spec, or
+  // the default when unnamed. A `true` spec is a plain search box; a typed spec
+  // is a funnel + popover under the header (see typedFilter).
+  function addFilter(hrow, cols, flt, data, state, refresh) {
+    const doc = hrow.ownerDocument,
+          row = elem(doc, "tr", { className: "lti-filters" }),
+          def = flt.default, explicit = flt.cols || {};
     cols.forEach(c => {
-      const cell = elem(doc, "td", {}, row);
-      if (Array.isArray(only) && !only.includes(c)) return;
-      const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
-      onType(input, v => { state.filters[c] = v; refresh(); });
+      const cell = elem(doc, "td", {}, row),
+            spec = c in explicit ? explicit[c] : def;
+      if (!spec) return;                           // no filter on this column
+      if (spec === true) {                         // a plain search box
+        const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
+        onType(input, v => { v ? (state.filters[c] = v) : delete state.filters[c]; refresh(); });
+      } else                                       // a typed funnel under the header
+        cell.appendChild(typedFilter(doc, c, spec, data, state, refresh, null));
     });
     hrow.parentNode.appendChild(row);
   }
@@ -564,14 +580,15 @@
     on(doc, "keydown", e => { if (e.key === "Escape") open(false); });
   }
 
-  // --- Typed, control-bar-hosted column filters (the `filter` named-list form).
-  // Each configured column gets a chip in the head bar: its label, a summary of
-  // the current filter, and a funnel opening a popover. The popover holds an
-  // expression box AND a widget (a value dropdown or a range slider); both edit
-  // the one filter term for that column (state.filters[col]) and stay in sync, so
-  // the widget is a friendly face on the same expression a reader could type. The
-  // column may be hidden from the table — it still travels in spec.data, which is
-  // what computeView filters on.
+  // --- Typed column filters (the `filter` named-list form). A typed spec is
+  // {type:"select"|"range", label?, choices?, min?, max?, step?, value?,
+  // selected?}; it renders as a funnel + popover, under its own header when the
+  // column is visible or as a labelled head-bar chip when it is hidden (the
+  // column still travels in spec.data, which is what computeView filters on). The
+  // popover holds an expression box AND a widget (a value dropdown or a range
+  // slider); both edit the one filter term for that column (state.filters[col])
+  // and stay in sync, so the widget is a friendly face on the same expression a
+  // reader could type.
 
   // A filter term string <-> a widget value, per type. A `null` parse means the
   // term is something the widget can't show (a hand-typed expression), so the
@@ -587,6 +604,34 @@
           const m = /^\s*x\s*>=\s*(-?[\d.]+)\s*&&\s*x\s*<=\s*(-?[\d.]+)\s*$/.exec(s || "");
           return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
         };
+
+  // Fill a typed spec's choices (select) or min/max (range) from the column's
+  // data when the R side left them out, so `filter = list(x = "select")` needs no
+  // enumeration. Returns a copy with the gaps filled.
+  function resolveSpec(spec, column) {
+    if (spec.type === "select") {
+      let choices = spec.choices;
+      if (!choices) {
+        const seen = new Set(), vals = [];
+        for (const v of column) if (v != null && !seen.has(v)) { seen.add(v); vals.push(v); }
+        vals.sort((a, b) => typeof a === "number" && typeof b === "number"
+          ? a - b : String(a).localeCompare(String(b)));
+        choices = vals.map(v => ({ value: String(v), label: String(v) }));
+      }
+      return { ...spec, choices };
+    }
+    let { min, max } = spec;
+    if (min == null || max == null) {
+      let lo = Infinity, hi = -Infinity;
+      for (const v of column) {
+        const n = Number(v);
+        if (isFinite(n)) { if (n < lo) lo = n; if (n > hi) hi = n; }
+      }
+      if (min == null) min = isFinite(lo) ? lo : 0;
+      if (max == null) max = isFinite(hi) ? hi : 1;
+    }
+    return { ...spec, min, max };
+  }
 
   // A dropdown of {value, label} options; `onInput(value)` fires on change.
   function makeSelect(doc, options, onInput) {
@@ -661,79 +706,109 @@
           }, wrap),
           panel = elem(doc, "div", { className: "lti-pop-panel", hidden: true }, wrap);
     build(panel);
-    const open = on => { panel.hidden = !on; btn.setAttribute("aria-expanded", String(on)); };
+    // keep the panel inside the viewport: it opens to the funnel's left edge by
+    // default, but a funnel near the right margin would push it off-screen (and
+    // raise a horizontal scrollbar), so anchor it to the funnel's right instead
+    const place = () => {
+      panel.style.left = panel.style.right = "";  // back to the CSS default (left:0)
+      const r = panel.getBoundingClientRect(), vw = (doc.defaultView || window).innerWidth;
+      if (r.right > vw - 4) { panel.style.left = "auto"; panel.style.right = "0"; }
+    };
+    const open = on => {
+      panel.hidden = !on;
+      btn.setAttribute("aria-expanded", String(on));
+      if (on) place();
+    };
     btn.onclick = e => { e.stopPropagation(); open(panel.hidden); };
     on(doc, "click", e => { if (!wrap.contains(e.target)) open(false); });
     on(doc, "keydown", e => { if (e.key === "Escape") open(false); });
     return wrap;
   }
 
-  // Build a chip per configured column into the head bar. `cfg` maps a column
-  // name to its spec: {type:"select", choices:[{value,label}], selected} or
-  // {type:"range", min, max, step, value}, each with an optional `label`.
-  function addControlFilters(cell, state, cfg, refresh) {
-    const doc = cell.ownerDocument;
-    for (const col in cfg) {
-      const c = cfg[col], label = c.label || col,
-            chip = elem(doc, "span", { className: "lti-chip" }, cell);
-      elem(doc, "span", { className: "lti-chip-name", textContent: label }, chip);
-      const summary = elem(doc, "span", { className: "lti-chip-cur" }, chip),
-            // the editors (expression box + widget) that mirror this column's term
-            editors = [],
-            // what the chip summary reads for a term, per type
-            describe = c.type === "select" ?
-              t => {
-                const v = selParse(t);
-                if (v == null) return t ? "⋯" : "";
-                const o = c.choices.find(o => o.value === v);
-                return o ? o.label : v;
-              } :
-              t => { const p = rngParse(t); return p ? `${p[0]} – ${p[1]}` : t ? "⋯" : ""; };
-      // set the shared term, re-render, and reflect it into every editor but the
-      // one that caused the change (`from`), so dragging the slider updates the
-      // box and vice versa without a feedback loop
-      const setTerm = (expr, from) => {
-        expr ? (state.filters[col] = expr) : delete state.filters[col];
-        refresh();
-        const cur = state.filters[col] || "";
-        editors.forEach(e => e !== from && e.reflect(cur));
-        summary.textContent = describe(cur);
-        chip.classList.toggle("lti-on", !!cur);
-      };
-      chip.appendChild(popover(doc, `Filter ${label}`, panel => {
-        const box = elem(doc, "input", {
-          type: "search", className: "lti-search",
-          "aria-label": `${label} filter expression`
-        }, panel);
-        const boxEd = { reflect: v => { if (doc.activeElement !== box) box.value = v; } };
-        editors.push(boxEd);
-        onType(box, v => setTerm(v.trim(), boxEd));
-        if (c.type === "select") {
-          const w = makeSelect(doc, c.choices, v => setTerm(selExpr(v), wEd)),
-                wEd = { reflect: v => { const p = selParse(v); w.set(p == null ? "" : p); } };
-          editors.push(wEd);
-          panel.appendChild(w.el);
-        } else {
-          const out = elem(doc, "span", { className: "lti-slider-out" }),
-                w = makeSlider(doc, c, v => {
-                  out.textContent = `${v[0]} – ${v[1]}`;
-                  setTerm(rngExpr(v[0], v[1], c.min, c.max), wEd);
-                }),
-                wEd = { reflect: v => {
-                  const p = rngParse(v) || [c.min, c.max];
-                  w.set(p);
-                  out.textContent = `${p[0]} – ${p[1]}`;
-                } };
-          editors.push(wEd);
-          panel.append(w.el, out);
-        }
-        // seed from the configured default: a selected value, or an initial range
-        const init = c.type === "select" ?
-          selExpr(c.selected ?? (c.choices[0] || {}).value ?? "") :
-          c.value ? rngExpr(c.value[0], c.value[1], c.min, c.max) : "";
-        setTerm(init, null);
-      }));
+  // Build one typed column filter and return its element. The funnel + popover
+  // machinery is shared by both placements: a head-bar chip when `chipLabel` is a
+  // string (a label + current-value summary wrap the funnel), or a bare funnel
+  // under the column header when `chipLabel` is null.
+  function typedFilter(doc, col, spec, data, state, refresh, chipLabel) {
+    const cfg = resolveSpec(spec, data[col] || []),
+          // the editors (expression box + widget) that mirror this column's term
+          editors = [],
+          // what the chip summary reads for a term, per type
+          describe = cfg.type === "select" ?
+            t => {
+              const v = selParse(t);
+              if (v == null) return t ? "⋯" : "";
+              const o = cfg.choices.find(o => o.value === v);
+              return o ? o.label : v;
+            } :
+            t => { const p = rngParse(t); return p ? `${p[0]} – ${p[1]}` : t ? "⋯" : ""; };
+    let mark = () => {};  // paints the active state once `root` exists (below)
+    // set the shared term, re-render, and reflect it into every editor but the
+    // one that caused the change (`from`), so dragging the slider updates the box
+    // and vice versa without a feedback loop
+    const setTerm = (expr, from) => {
+      expr ? (state.filters[col] = expr) : delete state.filters[col];
+      refresh();
+      const cur = state.filters[col] || "";
+      editors.forEach(e => e !== from && e.reflect(cur));
+      mark(cur);
+    };
+    const wrap = popover(doc, `Filter ${cfg.label || col}`, panel => {
+      const box = elem(doc, "input", {
+        type: "search", className: "lti-search",
+        "aria-label": `${cfg.label || col} filter expression`
+      }, panel);
+      const boxEd = { reflect: v => { if (doc.activeElement !== box) box.value = v; } };
+      editors.push(boxEd);
+      onType(box, v => setTerm(v.trim(), boxEd));
+      if (cfg.type === "select") {
+        const w = makeSelect(doc, cfg.choices, v => setTerm(selExpr(v), wEd)),
+              wEd = { reflect: v => { const p = selParse(v); w.set(p == null ? "" : p); } };
+        editors.push(wEd);
+        panel.appendChild(w.el);
+      } else {
+        const out = elem(doc, "span", { className: "lti-slider-out" }),
+              w = makeSlider(doc, cfg, v => {
+                out.textContent = `${v[0]} – ${v[1]}`;
+                setTerm(rngExpr(v[0], v[1], cfg.min, cfg.max), wEd);
+              }),
+              wEd = { reflect: v => {
+                const p = rngParse(v) || [cfg.min, cfg.max];
+                w.set(p);
+                out.textContent = `${p[0]} – ${p[1]}`;
+              } };
+        editors.push(wEd);
+        panel.append(w.el, out);
+      }
+      // seed from the configured default: a selected value, or an initial range
+      const init = cfg.type === "select" ?
+        selExpr(cfg.selected ?? (cfg.choices[0] || {}).value ?? "") :
+        cfg.value ? rngExpr(cfg.value[0], cfg.value[1], cfg.min, cfg.max) : "";
+      setTerm(init, null);
+    });
+    // a hidden column wraps the funnel in a chip (label + value summary); a
+    // visible column shows the bare funnel under its own header
+    let root = wrap, summary;
+    if (chipLabel != null) {
+      root = elem(doc, "span", { className: "lti-chip" });
+      elem(doc, "span", { className: "lti-chip-name", textContent: chipLabel }, root);
+      summary = elem(doc, "span", { className: "lti-chip-cur" }, root);
+      root.appendChild(wrap);
     }
+    mark = cur => {
+      root.classList.toggle("lti-on", !!cur);
+      if (summary) summary.textContent = describe(cur);
+    };
+    mark(state.filters[col] || "");  // paint the seeded term
+    return root;
+  }
+
+  // A head-bar chip for each hidden typed column (see typedFilter).
+  function addControlFilters(cell, barCols, cfg, data, state, refresh) {
+    const doc = cell.ownerDocument;
+    for (const col of barCols)
+      cell.appendChild(
+        typedFilter(doc, col, cfg[col], data, state, refresh, cfg[col].label || col));
   }
 
   // Pager as the last row of <tfoot> (after any footnotes), with a page-size

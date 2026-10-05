@@ -154,7 +154,13 @@
       padding: 0;
       width: 1.1em;
       height: 1.1em;
+      opacity: 0.55;
       background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="gray"><path d="M1 2h14l-5.5 6.5V14l-3 1V8.5z"/></svg>');
+    }
+    /* a funnel standing in for a header-level filter reads as active when its
+     * column has a live term */
+    &.lti-on .lti-funnel {
+      opacity: 1;
     }
     .lti-pop-panel {
       position: absolute;
@@ -163,8 +169,11 @@
       left: 0;
       display: flex;
       flex-direction: column;
+      /* an explicit display beats the UA [hidden] rule, so re-hide it here */
+      &[hidden] { display: none; }
       gap: 0.5em;
       min-width: 14em;
+      max-width: 90vw;
       padding: 0.6em;
       background: Canvas;
       border: 1px solid;
