@@ -352,8 +352,14 @@
       const col = cols[ci];
       if (col == null) return;
       th.classList.add("lti-sortable");
-      marks[col] = { th, ind: elem(doc, "span", { className: "lti-sort" }, th) };
-      th.onclick = e => { cycle(state, col, e.shiftKey); paint(); refresh(); };
+      // bind the sort click to the label alone, not the whole cell: a resize
+      // grip lives in the <th> but outside this label, so the click a drag
+      // leaves behind (on the <th>) never reaches the sort handler. The label
+      // wraps whatever the cell already held (its text), then the indicator.
+      const lab = elem(doc, "span", { className: "lti-label" }, th);
+      while (th.firstChild !== lab) lab.append(th.firstChild);
+      marks[col] = { th, ind: elem(doc, "span", { className: "lti-sort" }, lab) };
+      lab.onclick = e => { cycle(state, col, e.shiftKey); paint(); refresh(); };
     });
     paint();  // reflect any initial sort carried on the spec
   }
@@ -495,7 +501,9 @@
   // Drag-to-resize column edges: a grip on the right edge of each header cell.
   // On the first drag the table switches to fixed layout (see fixedLayout) so
   // that dragging one edge moves it alone. A double-click fits the column to its
-  // content.
+  // content. The grip lives in the <th> but outside its `.lti-label` (see
+  // addSort), so neither a click on the grip nor the click a drag leaves behind
+  // on the <th> ever reaches the sort handler bound to the label.
   function addResize(el, layout) {
     const doc = el.ownerDocument, win = doc.defaultView,
           { ths, cs, freeze, natural, setWidth } = layout;
@@ -512,12 +520,6 @@
     };
     ths.forEach((th, i) => {
       const grip = elem(doc, "div", { className: "lti-resizer" }, th);
-      // the grip sits in a header cell that may sort on click: swallow the click
-      // that follows a resize (captured on the document, since dragging past the
-      // column's min width leaves the pointer off the grip, so the click lands on
-      // the <th> itself and would otherwise sort the column)
-      const noSort = () => on(doc, "click", e => e.stopPropagation(),
-        { capture: true, once: true });
       grip.ondblclick = e => {
         e.stopPropagation();
         freeze();
@@ -530,7 +532,7 @@
               min = labelMin(th, grip);
         el.classList.add("lti-resizing");
         drag(e, ev => setWidth(i, w0 + ev.clientX - x0, min),
-          () => { el.classList.remove("lti-resizing"); noSort(); });
+          () => el.classList.remove("lti-resizing"));
       };
     });
   }

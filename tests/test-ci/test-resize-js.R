@@ -28,7 +28,9 @@ assert("dragging a column edge resizes that column, and the table with it", {
   (lti_eval(x, probe, paste(MEASURE, drag(0, 40))) %==% '40,0,40')
   (lti_eval(x, 't.className', drag(0, 40)) %==% 'lt-table lti-fixed')
   # the widths live outside <tbody>, so sorting (which re-renders it) keeps them
-  (lti_eval(x, probe, paste(MEASURE, drag(0, 40), 'th(1).click()')) %==% '40,0,40')
+  (lti_eval(x, probe,
+    paste(MEASURE, drag(0, 40), 'th(1).querySelector(".lti-label").click()'))
+    %==% '40,0,40')
 })
 
 assert("a column cannot be dragged away, and a double-click fits it again", {
@@ -48,11 +50,14 @@ assert("a column cannot be dragged away, and a double-click fits it again", {
 
 assert("the click that follows a resize drag does not sort the column", {
   x = itbl(resize = TRUE, sort = TRUE)
-  # a bare click on the header sorts it (ascending)
+  # clicking the label sorts the column (ascending); the sort binds to the label,
+  # not the whole cell
   sorted = 'th(0).getAttribute("aria-sort")'
-  (lti_eval(x, sorted, paste(MEASURE, 'th(0).click()')) %==% 'ascending')
+  (lti_eval(x, sorted, paste(MEASURE, 'th(0).querySelector(".lti-label").click()'))
+    %==% 'ascending')
   # dragging the grip past the column min width leaves the pointer off the grip,
-  # so the browser fires the trailing click on the <th>; that click must not sort
+  # so the browser fires the trailing click on the <th> (not the label); that
+  # click must not sort
   after = paste(MEASURE, drag(0, -1000),
     'th(0).dispatchEvent(new MouseEvent("click", {bubbles: true}))')
   (lti_eval(x, sorted, after) %==% 'null')

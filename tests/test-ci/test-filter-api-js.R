@@ -15,7 +15,8 @@ assert("el._lt.filter lets outside widgets filter the table, composing with AND"
   # a null fn removes just that one predicate
   (lti_eval(x, rows, paste(both, 't._lt.filter("big", null)', sep = ';')) %==% '3')
   # a predicate survives a re-render (here, sorting a column)
-  sortN = paste(big, 'document.querySelector("thead th").click()', sep = ';')
+  sortN = paste(big,
+    'document.querySelector("thead th .lti-label").click()', sep = ';')
   (lti_eval(x, rows, sortN) %==% '2')
 })
 
