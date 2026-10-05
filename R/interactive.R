@@ -9,11 +9,16 @@
 #' columns. The features are handled client-side by an opt-in JavaScript
 #' extension, loaded only for tables that call this function.
 #'
-#' Interactivity needs the rows to be independent of each other, since it
-#' reorders and hides them. Tables with row groups ([lt_group()]) or indentation
-#' ([lt_indent()]) are rendered static (a console warning is emitted in the
-#' browser). Column spanners ([lt_spanner()]) are no obstacle, nor are
-#' row-specific styles or footnotes: those travel with their rows.
+#' Sorting and filtering respect the row structure. Separator row groups
+#' ([lt_group()] with `sep = TRUE`, or manual groups) and indentation
+#' ([lt_indent()]) are honored: sorting and filtering happen *within* each group
+#' or subtree, the groups keep their order, a group whose rows all filter out
+#' drops its header, and an indented child keeps its ancestors visible for
+#' context. A rowspan row group ([lt_group()] with its default rowspan rendering)
+#' is the one case still rendered static (a console warning is emitted in the
+#' browser), since the spanning cells cannot survive a reorder. Column spanners
+#' ([lt_spanner()]) are no obstacle either, nor are row-specific styles or
+#' footnotes: those travel with their rows.
 #'
 #' @inheritParams lt_align
 #' @param sort Whether clicking a column header sorts the table by that column

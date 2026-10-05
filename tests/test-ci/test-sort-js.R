@@ -1,5 +1,6 @@
 # Interactive sorting in the browser: header clicks, shift-click multi-key,
-# initial sort, and when a table is kept static (row groups, indentation).
+# initial sort, sorting within separator row groups and indented subtrees, and
+# the one case still kept static (a rowspan row group).
 
 assert("clicking a header sorts the rendered rows", {
   x = itbl()
@@ -40,14 +41,43 @@ assert("an initial sort orders the rows before any click", {
   (lti_eval(x, 'document.querySelectorAll("thead th")[1].ariaSort') %==% 'descending')
 })
 
-assert("a table whose row order carries meaning is left static", {
+assert("a rowspan row group is left static (spanning cells can't reorder)", {
   d = data.frame(g = c("a", "a", "b"), v = 1:3)
-  # row groups
+  # lt_group()'s default rendering draws the group column as rowspan cells
   x = lt(d) |> lt_group(~ g) |> lt_interactive()
   (lti_eval(x, '[...t.querySelectorAll(".lti-sortable")].length') %==% '0')
-  # indentation (a hierarchy sorting would scramble)
-  x = lt(d) |> lt_indent(2) |> lt_interactive()
-  (lti_eval(x, '[...t.querySelectorAll(".lti-sortable")].length') %==% '0')
+})
+
+assert("separator row groups stay interactive, sorting within each group", {
+  d = data.frame(g = c("a", "a", "b", "b"), v = c(2, 1, 4, 3))
+  x = lt(d) |> lt_group(~ g, sep = TRUE) |> lt_interactive(pager = FALSE)
+  # the group column is hidden; the only visible column is v
+  cells = '[...t.querySelectorAll("tbody tr:not(.lt-row-group)")]
+             .map(r => r.children[0].textContent).join("|")'
+  heads = '[...t.querySelectorAll("tbody tr.lt-row-group th")]
+             .map(e => e.textContent).join("|")'
+  click = 'document.querySelector("thead th").click()'   # sort v ascending
+  # v sorts within each group; the two group headers both survive, in order
+  (strsplit(lti_eval(x, cells, click), '|', fixed = TRUE)[[1]] %==% c('1', '2', '3', '4'))
+  (lti_eval(x, heads, click) %==% 'a|b')
+  # a search that empties group b drops its header, keeping only group a
+  search = 'var s = t.querySelector(".lti-search"); s.value = "x < 3";
+            s.dispatchEvent(new Event("change"))'
+  (lti_eval(x, heads, search) %==% 'a')
+  (strsplit(lti_eval(x, cells, search), '|', fixed = TRUE)[[1]] %==% c('2', '1'))
+})
+
+assert("an indented table stays interactive, sorting siblings within a parent", {
+  # A(0) with children A2,A1(1); B(0) with child B1(1)
+  d = data.frame(v = c("A", "A2", "A1", "B", "B1"), n = c(3, 2, 1, 5, 4))
+  x = lt(d) |> lt_indent(c(2, 3, 5)) |> lt_interactive(pager = FALSE)
+  col = '[...t.querySelectorAll("tbody tr")].map(r => r.children[0].textContent).join("|")'
+  (strsplit(lti_eval(x, col), '|', fixed = TRUE)[[1]] %==%
+     c('A', 'A2', 'A1', 'B', 'B1'))                       # file order first
+  click = 'document.querySelectorAll("thead th")[1].click()'   # sort n ascending
+  # parents keep their place; each parent's children sort within it
+  (strsplit(lti_eval(x, col, click), '|', fixed = TRUE)[[1]] %==%
+     c('A', 'A1', 'A2', 'B', 'B1'))
 })
 
 assert("column spanners stay interactive: they are header rows, not body rows", {

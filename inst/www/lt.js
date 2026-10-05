@@ -612,21 +612,29 @@
       out.push(`</tr>`);
     };
 
-    // <tbody>. An optional `spec._viewRows` (1-based original row indices) sets
-    // the order/subset of rows for the flat case — the seam the interactive
-    // plugin uses to sort/filter without re-implementing row rendering. Absent
-    // ⇒ all rows in original order (the default). Row-indexed styles/footnotes/
-    // indent stay correct because they remain keyed to the original indices.
+    // A separator row-group header: a single full-width cell carrying the label.
+    const groupHeader = (label, raw) =>
+      `<tr class="lt-row-group"><th colspan="${nCol}" scope="colgroup">${escIf(raw, label)}${mark("row_groups", label)}</th></tr>`;
+
+    // <tbody>. An optional `spec._viewRows` sets the order/subset of rows — the
+    // seam the interactive plugin uses to sort/filter without re-implementing row
+    // rendering. Each entry is a 1-based original row index, or (for a grouped
+    // table) an object `{label, raw}` for a separator group header the plugin
+    // decided to re-emit. It takes precedence over the file-order branches below,
+    // which draw the static table. Row-indexed styles/footnotes/indent stay
+    // correct because they remain keyed to the original indices.
     out.push(`<tbody>`);
-    if (groups.length) {
+    if (spec._viewRows) {
+      for (const r of spec._viewRows)
+        if (r && typeof r === "object") out.push(groupHeader(r.label, r.raw));
+        else pushRow(r);
+    } else if (groups.length) {
       const seen = {};
       for (const g of groups) {
-        out.push(`<tr class="lt-row-group"><th colspan="${nCol}" scope="colgroup">${escIf(g.raw, g.label)}${mark("row_groups", g.label)}</th></tr>`);
+        out.push(groupHeader(g.label, g.raw));
         for (const r of g.rows) { seen[r] = 1; pushRow(r); }
       }
       for (let r = 1; r <= nRow; r++) if (!seen[r]) pushRow(r);
-    } else if (spec._viewRows) {
-      for (const r of spec._viewRows) pushRow(r);
     } else {
       for (let r = 1; r <= nRow; r++) pushRow(r);
     }
@@ -667,6 +675,14 @@
     // Also expose the formatted cell text (every column, including hidden ones),
     // so plugins can show the displayed values (e.g. a row detail).
     spec._display = display;
+    // Expose the resolved row structure so the interactive plugin can honor it:
+    // the separator row groups (each `{label, rows, raw}`), the per-row indent
+    // levels (an array, or null when none), and whether rowspan mode is on (a
+    // row-group column drawn as spanning cells, which reordering would break, so
+    // such a table is kept static).
+    spec._groups = groups.length ? groups : null;
+    spec._indent = indent.some(v => v) ? indent : null;
+    spec._rowspan = rowSpans.length > 0;
     // Wrap in a div so a wide table can scroll horizontally (`overflow-x`)
     // instead of overflowing the page.
     return `<div class="lt-wrap">${out.join("")}</div>`;

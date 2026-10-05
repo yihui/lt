@@ -5,8 +5,9 @@
  * table whose spec carries `interactive`, it adds the requested controls and
  * re-renders <tbody> through the core `spec._viewRows` seam. Every control is a
  * row of the table itself — the search box in <thead>, the pager in <tfoot> —
- * so it is exactly as wide as the table and scrolls with it. Flat rows only (no
- * row groups or indentation); such tables stay static, with a console warning.
+ * so it is exactly as wide as the table and scrolls with it. Separator row
+ * groups and indentation are honored (sort/filter runs within each group or
+ * subtree); a rowspan-mode row group keeps the table static, with a warning.
  */
 (root => {
   "use strict";
@@ -97,51 +98,98 @@
   // predicates are combined with AND: a row must pass all of them.
   function computeView(spec, disp, state) {
     const cols = spec._cols || [], data = spec.data || {},
+          nRow = (data[cols[0]] || []).length,
           cell = (c, r) => ({
             raw: data[c]?.[r - 1] ?? null, disp: disp[c]?.[r - 1] ?? ""
           });
-    let idx = Array.from({ length: (data[cols[0]] || []).length }, (_, i) => i + 1);
 
-    // filters first: each looks at one cell, so they are the cheapest
+    // The per-row keep test: the column filters, the table-wide search, then the
+    // externally registered predicates, combined with AND (a row must pass all).
+    // A filter looks at one cell, so the cheap tests come first.
+    const tests = [];
     for (const c in state.filters || {}) {
       const pred = matcher(state.filters[c]);
-      if (pred) idx = idx.filter(r => pred([cell(c, r)]));
+      if (pred) tests.push(r => pred([cell(c, r)]));
     }
-    const pred = matcher(state.term);
-    if (pred) idx = idx.filter(r => pred(cols.map(c => cell(c, r))));
-
+    const sPred = matcher(state.term);
+    if (sPred) tests.push(r => sPred(cols.map(c => cell(c, r))));
     // predicates registered from outside (el._lt.filter) run last, each a
-    // function of the row's raw values keyed by column; combined with AND. The
-    // row carries *every* column (not just the visible `cols`), so a widget can
-    // filter on a hidden helper column — e.g. forestly's incidence slider reads
-    // the hidden `hide_prop`, its parameter dropdown the hidden `parameter`.
+    // function of the row's raw values keyed by column. The row carries *every*
+    // column (not just the visible `cols`), so a widget can filter on a hidden
+    // helper column — e.g. forestly's incidence slider reads the hidden
+    // `hide_prop`, its parameter dropdown the hidden `parameter`.
     const fns = Object.values(state.predicates || {});
     if (fns.length) {
-      const all = Object.keys(data);
-      const row = r => Object.fromEntries(all.map(c => [c, data[c]?.[r - 1] ?? null]));
-      idx = idx.filter(r => { const o = row(r); return fns.every(f => f(o)); });
+      const all = Object.keys(data),
+            row = r => Object.fromEntries(all.map(c => [c, data[c]?.[r - 1] ?? null]));
+      tests.push(r => { const o = row(r); return fns.every(f => f(o)); });
     }
+    const keep = r => tests.every(t => t(r));
 
-    // sort by each key in turn, falling through to the next on a tie; a key's
-    // column (resolved once) carries its numeric test and direction. nulls sort
-    // last regardless of direction, so the direction never applies to them.
+    // The comparator from the active sort keys: each key in turn, falling through
+    // to the next on a tie; a key's column (resolved once) carries its numeric
+    // test and direction. nulls sort last regardless of direction, so the
+    // direction never applies to them. Null when nothing is sorted.
     const keys = (state.sort || []).map(k => {
       const col = data[k.col];
       return col && { col, num: numCol(col), dir: k.dir === "desc" ? -1 : 1 };
     }).filter(Boolean);
-    if (keys.length) {
-      coll ||= new Intl.Collator();
-      idx.sort((a, b) => {
-        for (const { col, num, dir } of keys) {
-          const x = col[a - 1], y = col[b - 1], xn = x == null, yn = y == null;
-          if (xn || yn) { if (xn !== yn) return xn ? 1 : -1; continue; }
-          const c = num ? x - y : coll.compare(String(x), String(y));
-          if (c) return dir * c;
-        }
-        return 0;
-      });
-    }
-    return idx;
+    const cmp = keys.length ? (a, b) => {
+      for (const { col, num, dir } of keys) {
+        const x = col[a - 1], y = col[b - 1], xn = x == null, yn = y == null;
+        if (xn || yn) { if (xn !== yn) return xn ? 1 : -1; continue; }
+        coll ||= new Intl.Collator();
+        const c = num ? x - y : coll.compare(String(x), String(y));
+        if (c) return dir * c;
+      }
+      return 0;
+    } : null;
+
+    // Reduce a list of rows (in document order) to the kept rows in view order.
+    // With no indentation this is a plain filter + sort. With indentation the
+    // rows form a tree (a row's parent is the nearest earlier row one level up):
+    // filtering keeps any row with a surviving descendant, so a match stays in
+    // context, and a sort reorders siblings while each subtree travels with its
+    // parent.
+    const indent = spec._indent;
+    const reduce = rows => {
+      if (!indent) {
+        const out = rows.filter(keep);
+        return cmp ? out.sort(cmp) : out;
+      }
+      const roots = [], stack = [];
+      for (const r of rows) {
+        const node = { r, kids: [] }, lv = indent[r - 1] || 0;
+        while (stack.length && stack[stack.length - 1].lv >= lv) stack.pop();
+        (stack.length ? stack[stack.length - 1].node.kids : roots).push(node);
+        stack.push({ node, lv });
+      }
+      const prune = ns => ns.map(n => {
+        const kids = prune(n.kids);
+        return keep(n.r) || kids.length ? { r: n.r, kids } : null;
+      }).filter(Boolean);
+      const sortNodes = ns => {
+        if (cmp) ns.sort((a, b) => cmp(a.r, b.r));
+        ns.forEach(n => sortNodes(n.kids));
+        return ns;
+      };
+      const flat = [], walk = ns => ns.forEach(n => { flat.push(n.r); walk(n.kids); });
+      walk(sortNodes(prune(roots)));
+      return flat;
+    };
+
+    // Row groups keep their place (the group is the unit that does not move):
+    // each group's rows filter/sort within it, and the surviving rows of all
+    // groups concatenate in group order, then any ungrouped rows (manual groups
+    // need not cover every row). A group left with no row simply contributes
+    // nothing — its header is re-emitted at render only when a row remains.
+    const groups = spec._groups;
+    if (!groups) return reduce(Array.from({ length: nRow }, (_, i) => i + 1));
+    const grouped = new Set(), out = [];
+    for (const g of groups) { g.rows.forEach(r => grouped.add(r)); out.push(...reduce(g.rows)); }
+    const rest = [];
+    for (let r = 1; r <= nRow; r++) if (!grouped.has(r)) rest.push(r);
+    return [...out, ...reduce(rest)];
   }
 
   // The rows of `view` on the current page. `state.page` is clamped into range
@@ -156,33 +204,68 @@
     return view.slice(state.page * n, (state.page + 1) * n);
   }
 
-  // Enhanceable only when the rows are flat: row groups and indentation give the
-  // row order a meaning of its own (grouping, hierarchy) that reordering or
-  // dropping rows would destroy. Column spanners, explicit or from `auto_span`,
-  // are no obstacle: they are <thead> rows, and only <tbody> is ever re-rendered.
-  // Row-keyed styles and footnotes are fine too — core keys them to the original
-  // row indices, which is what the view carries.
-  const isFlat = spec => !spec.row_group &&
-    !(spec.ops || []).some(o => o.type === "row_group" || o.type === "indent");
+  // Enhanceable unless the table is in rowspan mode (an array `row_group`, or
+  // lt_group()'s default): there a row-group column is drawn as cells that span
+  // their run of rows, which reordering or dropping rows would break. Separator
+  // row groups and indentation are supported — the view sorts/filters within
+  // each group or subtree (see computeView) and re-emits only the surviving
+  // group headers. Column spanners, explicit or from `auto_span`, are no obstacle
+  // either: they are <thead> rows, and only <tbody> is ever re-rendered. Row-
+  // keyed styles and footnotes are fine too — core keys them to the original row
+  // indices, which is what the view carries.
+  const canEnhance = spec => !spec._rowspan;
 
   // Displayed text per column, keyed to the original row order. It does not
   // change with the view, so capture it once from the initial full render.
-  function captureDisplay(el, cols) {
+  // `order[i]` is the original 1-based index of the i-th body row as rendered
+  // (for a grouped table whose groups do not follow file order); absent ⇒ body
+  // rows are in index order. Separator group-header rows are skipped — they are
+  // no column's cell.
+  function captureDisplay(el, cols, order) {
     const disp = {};
     cols.forEach(c => disp[c] = []);
-    $$(el, "tbody tr").forEach((tr, ri) => cols.forEach(
-      (c, ci) => disp[c][ri] = tr.children[ci]?.textContent ?? ""
-    ));
+    let i = 0;
+    $$(el, "tbody tr").forEach(tr => {
+      if (tr.classList.contains("lt-row-group")) return;
+      const r = order ? order[i] : i + 1;
+      cols.forEach((c, ci) => disp[c][r - 1] = tr.children[ci]?.textContent ?? "");
+      i++;
+    });
     return disp;
   }
 
   function enhance(el, spec) {
-    if (!isFlat(spec)) return console.warn(
-      "lt: interactive tables need flat rows (no row groups or indentation); " +
-      "rendering a static table."
+    if (!canEnhance(spec)) return console.warn(
+      "lt: interactive tables don't support rowspan row groups; use " +
+      "lt_group(sep = TRUE) for separator rows. Rendering a static table."
     );
     const opts = spec.interactive, cols = spec._cols || [],
-          disp = captureDisplay(el, cols),
+          data = spec.data || {}, nRow = (data[cols[0]] || []).length,
+          groups = spec._groups,
+          // each row's group (for re-emitting a surviving header), and the body
+          // render order: groups in order, then any ungrouped rows (so a manual
+          // group listed out of file order maps the display text correctly)
+          groupOf = {}, order = groups ? [] : null;
+    if (groups) {
+      const seen = new Set();
+      groups.forEach(g => g.rows.forEach(r => { groupOf[r] = g; order.push(r); seen.add(r); }));
+      for (let r = 1; r <= nRow; r++) if (!seen.has(r)) order.push(r);
+    }
+    // turn a page's data rows into the row list core renders: a group header
+    // (an object core draws as a full-width label row) is inserted whenever the
+    // group changes, so a group spanning a page boundary re-shows its header at
+    // the top of the next page; ungrouped rows get none.
+    const withGroups = rows => {
+      if (!groups) return rows;
+      const out = []; let prev;
+      for (const r of rows) {
+        const g = groupOf[r];
+        if (g !== prev) { if (g) out.push({ label: g.label, raw: g.raw }); prev = g; }
+        out.push(r);
+      }
+      return out;
+    };
+    const disp = captureDisplay(el, cols, order),
           // the bottom header row: the one whose cells line up with `cols`
           hrow = [...$$(el, "thead tr")].pop(),
           // an array `sort` on the options is an initial sort (a list of key
@@ -204,13 +287,16 @@
     const refresh = (stale = true) => {
       if (stale) { view = computeView(spec, disp, state); state.page = 0; }
       const rows = pageSlice(view, state),
+            // _viewRows carries the page's data rows with group headers spliced
+            // back in; postSwap hooks get the same list, one entry per <tbody> row
+            vr = withGroups(rows),
             tmp = elem(el.ownerDocument, "template", {
-              innerHTML: LT.buildHtml({ ...spec, _viewRows: rows })
+              innerHTML: LT.buildHtml({ ...spec, _viewRows: vr })
             });
       const body = $(tmp.content, "tbody");
       if (!rows.length)  // no matches: a neutral symbol spanning all columns
         body.innerHTML = `<tr class="lti-empty"><td colspan="${cols.length}">—</td></tr>`;
-      else postSwap.forEach(f => f(body, rows));
+      else postSwap.forEach(f => f(body, vr));
       $(el, "tbody").replaceWith(body);
       sync(view.length);
     };
@@ -422,7 +508,9 @@
       rerender();
     };
     return (body, rows) => [...body.rows].forEach((tr, i) => {
-      const r = rows[i], td0 = tr.cells[0], open = state.expanded.has(r);
+      const r = rows[i];
+      if (typeof r !== "number") return;  // a separator group-header row
+      const td0 = tr.cells[0], open = state.expanded.has(r);
       if (!td0) return;
       const btn = elem(doc, "button", {
         type: "button", className: "lti-expand", textContent: open ? "▾" : "▸",

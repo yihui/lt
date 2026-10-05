@@ -91,11 +91,16 @@ columns. The features are handled client-side by an opt-in JavaScript
 extension, loaded only for tables that call this function.
 }
 \details{
-Interactivity needs the rows to be independent of each other, since it
-reorders and hides them. Tables with row groups (\code{\link[=lt_group]{lt_group()}}) or indentation
-(\code{\link[=lt_indent]{lt_indent()}}) are rendered static (a console warning is emitted in the
-browser). Column spanners (\code{\link[=lt_spanner]{lt_spanner()}}) are no obstacle, nor are
-row-specific styles or footnotes: those travel with their rows.
+Sorting and filtering respect the row structure. Separator row groups
+(\code{\link[=lt_group]{lt_group()}} with \code{sep = TRUE}, or manual groups) and indentation
+(\code{\link[=lt_indent]{lt_indent()}}) are honored: sorting and filtering happen \emph{within} each group
+or subtree, the groups keep their order, a group whose rows all filter out
+drops its header, and an indented child keeps its ancestors visible for
+context. A rowspan row group (\code{\link[=lt_group]{lt_group()}} with its default rowspan rendering)
+is the one case still rendered static (a console warning is emitted in the
+browser), since the spanning cells cannot survive a reorder. Column spanners
+(\code{\link[=lt_spanner]{lt_spanner()}}) are no obstacle either, nor are row-specific styles or
+footnotes: those travel with their rows.
 }
 \examples{
 lt(head(mtcars)) |> lt_interactive()

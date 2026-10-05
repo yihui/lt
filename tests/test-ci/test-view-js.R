@@ -71,6 +71,43 @@ assert("filters and the search are combined with AND", {
   (run_view(d, list(filters = list(name = 'a', n = 'x > 100'))) %==% integer(0))
 })
 
+assert("row groups sort and filter within each group, keeping group order", {
+  d = list(g = c("a", "a", "b", "b"), v = c(2, 1, 4, 3))
+  spec = list(`_groups` = list(
+    list(label = "a", rows = I(1:2)), list(label = "b", rows = I(3:4))
+  ))
+  # sort v ascending within each group; the groups stay a-before-b
+  (run_view(d, by(k('v')), spec = spec) %==% c(2L, 1L, 4L, 3L))
+  (run_view(d, by(k('v', 'desc')), spec = spec) %==% c(1L, 2L, 3L, 4L))
+  # a filter can empty a whole group: keep v < 3 (only group a) or v >= 3 (b)
+  (run_view(d, list(term = 'x < 3'), spec = spec) %==% c(1L, 2L))
+  (run_view(d, list(term = 'x >= 3'), spec = spec) %==% c(3L, 4L))
+})
+
+assert("manual groups need not cover every row; the rest trail ungrouped", {
+  d = list(v = 1:3)
+  # only rows 1 and 3 are grouped; row 2 is ungrouped and comes last
+  spec = list(`_groups` = list(list(label = "g", rows = I(c(1L, 3L)))))
+  (run_view(d, list(), spec = spec) %==% c(1L, 3L, 2L))
+})
+
+assert("indentation builds a tree; a sort reorders siblings within a parent", {
+  # 1:A(0) 2:A2(1) 3:A1(1) 4:B(0) 5:B1(1)
+  d = list(v = c("A", "A2", "A1", "B", "B1"), n = c(3, 2, 1, 5, 4))
+  spec = list(`_indent` = c(0, 1, 1, 0, 1))
+  (run_view(d, list(), spec = spec) %==% 1:5)                       # file order
+  # sort n ascending: parents 1,4 keep their order; row 1's children sort
+  # (row 3 n=1 before row 2 n=2), with each subtree carried along
+  (run_view(d, by(k('n')), spec = spec) %==% c(1L, 3L, 2L, 4L, 5L))
+})
+
+assert("filtering an indented table keeps a match's ancestors for context", {
+  d = list(v = c("A", "A1", "A2", "B", "B1"), n = c(3, 1, 2, 5, 4))
+  spec = list(`_indent` = c(0, 1, 1, 0, 1))
+  # only row 2 matches (n == 1); its parent (row 1) stays, the B subtree goes
+  (run_view(d, list(term = 'x == 1'), spec = spec) %==% c(1L, 2L))
+})
+
 assert("paging slices the view and clamps the page into range", {
   d = list(n = 1:7)
   (run_page(d, list(pageSize = 3))$rows %==% 1:3)
