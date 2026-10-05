@@ -501,9 +501,12 @@
           { ths, cs, freeze, natural, setWidth } = layout;
     ths.forEach((th, i) => {
       const grip = elem(doc, "div", { className: "lti-resizer" }, th);
-      // the grip sits in a header cell that may sort on click: its own events
-      // stop here, or a drag would sort the column as well
-      grip.onclick = e => e.stopPropagation();
+      // the grip sits in a header cell that may sort on click: swallow the click
+      // that follows a resize (captured on the document, since dragging past the
+      // column's min width leaves the pointer off the grip, so the click lands on
+      // the <th> itself and would otherwise sort the column)
+      const noSort = () => on(doc, "click", e => e.stopPropagation(),
+        { capture: true, once: true });
       grip.ondblclick = e => {
         e.stopPropagation();
         freeze();
@@ -515,7 +518,7 @@
         const x0 = e.clientX, w0 = parseFloat(cs[i].style.width);
         el.classList.add("lti-resizing");
         drag(e, ev => setWidth(i, w0 + ev.clientX - x0),
-          () => el.classList.remove("lti-resizing"));
+          () => { el.classList.remove("lti-resizing"); noSort(); });
       };
     });
   }

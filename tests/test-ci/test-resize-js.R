@@ -42,6 +42,18 @@ assert("a column cannot be dragged away, and a double-click fits it again", {
   (lti_eval(x, 'Math.round(w(0) - w0)', fit) %==% '0')
 })
 
+assert("the click that follows a resize drag does not sort the column", {
+  x = itbl(resize = TRUE, sort = TRUE)
+  # a bare click on the header sorts it (ascending)
+  sorted = 'th(0).getAttribute("aria-sort")'
+  (lti_eval(x, sorted, paste(MEASURE, 'th(0).click()')) %==% 'ascending')
+  # dragging the grip past the column min width leaves the pointer off the grip,
+  # so the browser fires the trailing click on the <th>; that click must not sort
+  after = paste(MEASURE, drag(0, -1000),
+    'th(0).dispatchEvent(new MouseEvent("click", {bubbles: true}))')
+  (lti_eval(x, sorted, after) %==% 'null')
+})
+
 assert("resizing is off by default", {
   (lti_eval(itbl(), 't.querySelectorAll(".lti-resizer").length') %==% '0')
   (lti_eval(itbl(), 't.className') %==% 'lt-table')
