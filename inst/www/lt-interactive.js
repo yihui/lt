@@ -507,7 +507,7 @@
     // dragged over the label text (never below MIN_COL)
     const labelMin = (th, grip) => {
       const r = th.getBoundingClientRect(),
-            ind = th.querySelector(".lti-sort"),
+            ind = $(th, ".lti-sort"),
             end = ind ? ind.getBoundingClientRect().right : r.right,
             pad = parseFloat(win.getComputedStyle(th).paddingRight) || 0;
       return Math.max(MIN_COL, end - r.left + pad + grip.getBoundingClientRect().width);
