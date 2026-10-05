@@ -17,16 +17,13 @@
   .lti-search {
     width: 100%;
     padding: .5em 0 .5em 1.6em;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="2"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l5 5"/></svg>');
-    background-repeat: no-repeat;
-    background-position: 0.4em center;
-    background-size: 1em;
-  }
-  /* on focus the magnifier goes away, leaving a small left pad so the caret
-   * sits just inside the edge rather than behind the icon's wider gutter */
-  .lti-search:focus {
-    padding-left: .5em;
-    background-image: none;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="2"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l5 5"/></svg>') 0.4em center / 1em no-repeat;
+    /* on focus the magnifier goes away, leaving a small left pad so the caret
+     * sits just inside the edge rather than behind the icon's wider gutter */
+    &:focus {
+      padding-left: .5em;
+      background-image: none;
+    }
   }
 
   /* the click target is the label span, not the whole cell (so the resize grip
@@ -73,10 +70,10 @@
     cursor: col-resize;
     user-select: none;
     touch-action: none;
-  }
-  .lti-resizer:hover {
-    background: currentColor;
-    opacity: 0.3;
+    &:hover {
+      background: currentColor;
+      opacity: 0.3;
+    }
   }
   /* while dragging, the pointer keeps the resize cursor anywhere on the table,
    * and the drag selects no text */

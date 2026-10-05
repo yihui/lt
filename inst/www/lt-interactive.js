@@ -26,6 +26,12 @@
   // explicit `{col, dir}` object. Normalizes either to `{col, dir}`.
   const parseKey = k => typeof k !== "string" ? { ...k } :
     k[0] === "-" ? { col: k.slice(1), dir: "desc" } : { col: k, dir: "asc" };
+  // Compare two non-null values: numeric subtraction for a numeric column, else
+  // a locale-aware string compare (the collator built once, lazily reused).
+  const cmpVals = (x, y, num) => {
+    coll ||= new Intl.Collator();
+    return num ? x - y : coll.compare(String(x), String(y));
+  };
 
   // --- Small DOM helpers, so building the controls stays terse ---
   const $ = (el, sel) => el.querySelector(sel),
@@ -146,8 +152,7 @@
         for (const { col, num, dir } of keys) {
           const x = col[a - 1], y = col[b - 1], xn = x == null, yn = y == null;
           if (xn || yn) { if (xn !== yn) return xn ? 1 : -1; continue; }
-          coll ||= new Intl.Collator();
-          const c = num ? x - y : coll.compare(String(x), String(y));
+          const c = cmpVals(x, y, num);
           if (c) return dir * c;
         }
         return 0;
@@ -216,8 +221,7 @@
           order.sort((a, b) => {
             const an = a.v == null, bn = b.v == null;
             if (an || bn) return an === bn ? 0 : an ? 1 : -1;
-            coll ||= new Intl.Collator();
-            return d * (num ? a.v - b.v : coll.compare(String(a.v), String(b.v)));
+            return d * cmpVals(a.v, b.v, num);
           });
         }
         return order.flatMap(b => partition(b.rows, depth + 1));
@@ -626,7 +630,7 @@
       const old = parseFloat(cs[i].style.width);
       cs[i].style.width = Math.max(w, min) + "px";
       el.style.width =
-        parseFloat(el.style.width) + parseFloat(cs[i].style.width) - old + "px";
+        `${parseFloat(el.style.width) + parseFloat(cs[i].style.width) - old}px`;
     };
     // `dataCs` drops the leading group <col>s, so a data-column consumer (the
     // column-hide menu) indexes it by data-column position
@@ -809,7 +813,7 @@
               t.setAttribute("aria-valuenow", val[i]);
             });
             fill.style.left = pct(val[0]) + "%";
-            fill.style.right = 100 - pct(val[1]) + "%";
+            fill.style.right = `${100 - pct(val[1])}%`;
           },
           setOne = (i, v) => {
             val[i] = snap(v);

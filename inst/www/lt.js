@@ -64,9 +64,9 @@
       s.match(/^(-?)(\d+)(?:\.(\d+))?e([+-]?\d+)$/i);
     const exp = +expStr, digits = int + frac, point = int.length + exp;
     let out;
-    if (point <= 0) out = "0." + "0".repeat(-point) + digits;
+    if (point <= 0) out = `0.${"0".repeat(-point)}${digits}`;
     else if (point >= digits.length) out = digits + "0".repeat(point - digits.length);
-    else out = digits.slice(0, point) + "." + digits.slice(point);
+    else out = `${digits.slice(0, point)}.${digits.slice(point)}`;
     return sign + out;
   }
 
@@ -82,7 +82,7 @@
       parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, bigMark);
       s = parts.join(".");
     }
-    if (s[0] === "-") s = "−" + s.slice(1);
+    if (s[0] === "-") s = `−${s.slice(1)}`;
     return decimals != null || bigMark || sigDigits != null ? s : null;
   }
 
@@ -103,8 +103,7 @@
     return result;
   }
   function subRefs(s, vals) {
-    for (let i = 0; i < vals.length; i++)
-      s = s.split("{" + (i + 1) + "}").join(vals[i]);
+    vals.forEach((v, i) => s = s.split(`{${i + 1}}`).join(v));
     return s;
   }
 
@@ -210,7 +209,7 @@
           eachCell(cols, (c, i, raw) => {
             if (op.small != null && isNum(raw) && raw !== 0 &&
                 Math.abs(raw) < op.small) {
-              display[c][i] = op.small_text ?? ("<" + op.small);
+              display[c][i] = op.small_text ?? `<${op.small}`;
             } else if (op.zero != null && raw === 0) {
               display[c][i] = op.zero;
             } else if (op.missing != null && raw == null) {
@@ -529,9 +528,8 @@
     // align with the body columns (which are offset by nGrp on the left).
     if (colWidths && colWidths.some(w => w)) {
       out.push(`<colgroup>`);
-      for (let i = 0; i < nGrp; i++) out.push(`<col>`);
-      for (let i = 0; i < cols.length; i++)
-        out.push(`<col${attr("style", colWidths[i] ? "width:" + colWidths[i] : "")}>`);
+      if (nGrp) out.push("<col>".repeat(nGrp));
+      colWidths.forEach(w => out.push(`<col${attr("style", w ? `width:${w}` : "")}>`));
       out.push(`</colgroup>`);
     }
 
@@ -563,8 +561,8 @@
     out.push(`<tr>`);
     for (const rs of rowSpans)
       out.push(`<th scope="col" class="lt-row-group">${txt(rs.label)}</th>`);
-    for (let i = 0; i < cols.length; i++)
-      out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", cols[i])}</th>`);
+    cols.forEach((c, i) =>
+      out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", c)}</th>`));
     out.push(`</tr></thead>`);
 
     // Body footnote markers
@@ -693,13 +691,13 @@
       if (hasFoot) {
         out.push(`<tr class="lt-plot-foot">`);
         out.push(`<td></td>`.repeat(nGrp));
-        for (let i = 0; i < cols.length; i++) {
-          const cm = cellMap[cols[i]];
+        cols.forEach((c, i) => {
+          const cm = cellMap[c];
           // reuse the renderer's cell class so the footer lines up with the plot
           const extra = footCells[i] && cm ? (cm.rnd.cellClass?.(cm.cfg) || "") : "";
           const ac = [colCls[i], extra].filter(Boolean).join(" ");
           out.push(`<td${attr("class", ac)}>${footCells[i]}</td>`);
-        }
+        });
         out.push(`</tr>`);
       }
       reg.order.forEach((t, i) => out.push(footRow("lt-footnote", `${sup(i + 1)} ${txt(t)}`)));
