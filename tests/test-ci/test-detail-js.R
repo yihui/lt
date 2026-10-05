@@ -20,7 +20,7 @@ assert("expanding a row reveals its detail, which follows the row", {
   # it stays open across a sort (which re-renders <tbody>) and follows its row:
   # after sorting by n ascending, Rash (n = 5) moves, and its detail trails it
   srt = paste(open0,
-    'document.querySelectorAll("thead th")[1].querySelector(".lti-label").click()',
+    'document.querySelectorAll("thead th .lti-label")[1].click()',
     sep = ';')
   (lti_eval(x, 't.querySelectorAll(".lti-detail").length', srt) %==% '1')
   (lti_eval(
