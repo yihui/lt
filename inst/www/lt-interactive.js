@@ -725,27 +725,52 @@
     return wrap;
   }
 
+  // One bundle per filter type, so adding a type is a single entry rather than a
+  // branch in each of describe/build/init. `describe(term, cfg)` is the chip's
+  // one-line summary; `init(cfg)` is the term for the configured default; and
+  // `build(doc, cfg, setTerm)` makes the widget as a syncing editor `{ el,
+  // reflect(term) }`, where `el` (a node or array of nodes) goes in the popover
+  // and the widget's own input writes the term through `setTerm`. The term <->
+  // value primitives (selExpr etc., above) back these.
+  const KINDS = {
+    select: {
+      describe: (t, cfg) => {
+        const v = selParse(t);
+        if (v == null) return t ? "⋯" : "";
+        const o = cfg.choices.find(o => o.value === v);
+        return o ? o.label : v;
+      },
+      init: cfg => selExpr(cfg.selected ?? (cfg.choices[0] || {}).value ?? ""),
+      build: (doc, cfg, setTerm) => {
+        const w = makeSelect(doc, cfg.choices, v => setTerm(selExpr(v), ed)),
+              ed = { el: w.el, reflect: t => { const v = selParse(t); w.set(v == null ? "" : v); } };
+        return ed;
+      }
+    },
+    range: {
+      describe: t => { const p = rngParse(t); return p ? `${p[0]} – ${p[1]}` : t ? "⋯" : ""; },
+      init: cfg => cfg.value ? rngExpr(cfg.value[0], cfg.value[1], cfg.min, cfg.max) : "",
+      build: (doc, cfg, setTerm) => {
+        const out = elem(doc, "span", { className: "lti-slider-out" }),
+              show = p => out.textContent = `${p[0]} – ${p[1]}`,
+              w = makeSlider(doc, cfg, v => { show(v); setTerm(rngExpr(v[0], v[1], cfg.min, cfg.max), ed); }),
+              ed = { el: [w.el, out], reflect: t => { const p = rngParse(t) || [cfg.min, cfg.max]; w.set(p); show(p); } };
+        return ed;
+      }
+    }
+  };
+
   // Build one typed column filter and return its element. The funnel + popover
   // machinery is shared by both placements: a head-bar chip when `chipLabel` is a
   // string (a label + current-value summary wrap the funnel), or a bare funnel
   // under the column header when `chipLabel` is null.
   function typedFilter(doc, col, spec, data, state, refresh, chipLabel) {
     const cfg = resolveSpec(spec, data[col] || []),
-          // the editors (expression box + widget) that mirror this column's term
-          editors = [],
-          // what the chip summary reads for a term, per type
-          describe = cfg.type === "select" ?
-            t => {
-              const v = selParse(t);
-              if (v == null) return t ? "⋯" : "";
-              const o = cfg.choices.find(o => o.value === v);
-              return o ? o.label : v;
-            } :
-            t => { const p = rngParse(t); return p ? `${p[0]} – ${p[1]}` : t ? "⋯" : ""; };
-    let mark = () => {};  // paints the active state once `root` exists (below)
-    // set the shared term, re-render, and reflect it into every editor but the
-    // one that caused the change (`from`), so dragging the slider updates the box
-    // and vice versa without a feedback loop
+          kind = KINDS[cfg.type],
+          editors = [];       // the expression box + widget, kept in sync
+    let mark = () => {};       // paints the active state once `root` exists (below)
+    // set the one term, re-render, and reflect it into every editor but the one
+    // that caused the change (`from`), so the slider and box update each other
     const setTerm = (expr, from) => {
       expr ? (state.filters[col] = expr) : delete state.filters[col];
       refresh();
@@ -761,30 +786,10 @@
       const boxEd = { reflect: v => { if (doc.activeElement !== box) box.value = v; } };
       editors.push(boxEd);
       onType(box, v => setTerm(v.trim(), boxEd));
-      if (cfg.type === "select") {
-        const w = makeSelect(doc, cfg.choices, v => setTerm(selExpr(v), wEd)),
-              wEd = { reflect: v => { const p = selParse(v); w.set(p == null ? "" : p); } };
-        editors.push(wEd);
-        panel.appendChild(w.el);
-      } else {
-        const out = elem(doc, "span", { className: "lti-slider-out" }),
-              w = makeSlider(doc, cfg, v => {
-                out.textContent = `${v[0]} – ${v[1]}`;
-                setTerm(rngExpr(v[0], v[1], cfg.min, cfg.max), wEd);
-              }),
-              wEd = { reflect: v => {
-                const p = rngParse(v) || [cfg.min, cfg.max];
-                w.set(p);
-                out.textContent = `${p[0]} – ${p[1]}`;
-              } };
-        editors.push(wEd);
-        panel.append(w.el, out);
-      }
-      // seed from the configured default: a selected value, or an initial range
-      const init = cfg.type === "select" ?
-        selExpr(cfg.selected ?? (cfg.choices[0] || {}).value ?? "") :
-        cfg.value ? rngExpr(cfg.value[0], cfg.value[1], cfg.min, cfg.max) : "";
-      setTerm(init, null);
+      const wEd = kind.build(doc, cfg, setTerm);  // the widget as a syncing editor
+      editors.push(wEd);
+      panel.append(...[].concat(wEd.el));
+      setTerm(kind.init(cfg), null);              // seed the configured default
     });
     // a hidden column wraps the funnel in a chip (label + value summary); a
     // visible column shows the bare funnel under its own header
@@ -797,7 +802,7 @@
     }
     mark = cur => {
       root.classList.toggle("lti-on", !!cur);
-      if (summary) summary.textContent = describe(cur);
+      if (summary) summary.textContent = kind.describe(cur, cfg);
     };
     mark(state.filters[col] || "");  // paint the seeded term
     return root;

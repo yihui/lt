@@ -142,3 +142,38 @@ xfun::tojson(spec(x))
   ]
 }
 ```
+
+```r
+# typed filters normalize to { default?, cols }: one unnamed default for the
+# other visible columns, each named column its own box (TRUE) or typed spec
+d = data.frame(x = 1:3, y = c("a", "b", "c"))
+x = lt(d) |> lt_interactive(sort = FALSE, search = FALSE,
+  filter = list(TRUE, y = "select", x = list(type = "range", min = 0, max = 9)))
+xfun::tojson(spec(x))
+```
+```
+{
+  "data": {
+    "x": [1, 2, 3],
+    "y": ["a", "b", "c"]
+  },
+  "interactive": {
+    "sort": false,
+    "search": false,
+    "filter": {
+      "default": true,
+      "cols": {
+        "y": {
+          "type": "select"
+        },
+        "x": {
+          "type": "range",
+          "min": 0,
+          "max": 9
+        }
+      }
+    },
+    "pager": [10, 25, 50, 100]
+  }
+}
+```
