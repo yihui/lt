@@ -29,7 +29,9 @@
     background-image: none;
   }
 
-  .lti-sortable {
+  /* the click target is the label span, not the whole cell (so the resize grip
+   * stays separate), so the pointer cursor belongs on the label too */
+  .lti-sortable .lti-label {
     cursor: pointer;
     user-select: none;
   }

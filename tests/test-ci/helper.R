@@ -42,12 +42,14 @@ if (paged) view = int.pageSlice(view, state);
 process.stdout.write(view.join(",") + (paged ? "|" + state.page : ""));
 '
 
-run_out = function(data, state = list(), disp = NULL) {
+run_out = function(data, state = list(), disp = NULL, spec = list()) {
   if (is.null(disp)) disp = lapply(data, as.character)
   runner = tempfile(fileext = '.js')
   writeLines(RUNNER, runner)
   on.exit(unlink(runner), add = TRUE)
-  input = xfun::tojson(list(spec = list(data = data), disp = disp, state = state))
+  input = xfun::tojson(list(
+    spec = modifyList(list(data = data), spec), disp = disp, state = state
+  ))
   out = system2(
     'node',
     shQuote(c(runner, asset_path('lt.js'), asset_path('lt-interactive.js'))),
@@ -60,8 +62,8 @@ as_rows = function(x) if (is.na(x) || !nzchar(x)) integer(0) else
   as.integer(strsplit(x, ',')[[1]])
 
 # the view (the rendered row indices)
-run_view = function(data, state = list(), disp = NULL)
-  as_rows(run_out(data, state, disp)[1])
+run_view = function(data, state = list(), disp = NULL, spec = list())
+  as_rows(run_out(data, state, disp, spec)[1])
 
 # the view plus the page it was taken from, for a state that asks for paging
 run_page = function(data, state) {
