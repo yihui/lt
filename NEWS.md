@@ -9,6 +9,7 @@
   - **Resize** (`resize`): drag a column's right edge to resize it.
   - **Hide** (`hide`): an eye button opening a checklist that toggles columns.
   - **Detail** (`detail`): an expand caret per row that reveals a drill-down table built from that row.
+  - **Download** (`download`): a button that downloads the current view (every row the filters and search keep, in sort order, across all pages) as a CSV file, using the displayed cell text.
 
   Row structure is honored — sorting and filtering happen *within* each group or subtree, never across it. Separator row groups keep their order (a group whose rows all filter out drops its header); indentation sorts siblings under each parent (a child keeps its ancestors visible); and rowspan row groups (the default `lt_group()` rendering) sort and filter within each run while clicking a group header reorders its blocks — with several group columns the view stays nested, and the spanning cells are redrawn to match.
 

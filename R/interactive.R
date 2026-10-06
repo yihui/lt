@@ -77,6 +77,12 @@
 #'   formatted text, each keyed by column name — and returns a table spec, which
 #'   may carry its own `interactive` field to make the detail table interactive.
 #'   `NULL` (the default) adds no row detail.
+#' @param download Whether to add a button that downloads the table as a CSV
+#'   file. The file holds the current view (every row the filters and search
+#'   keep, in sort order, across all pages) of the table's columns, using the
+#'   displayed cell text. `TRUE` adds the button with a default file name; a
+#'   string sets the file name (a `.csv` extension is added if missing).
+#'   `FALSE` (the default) adds no button.
 #' @return `x` with interactivity enabled.
 #' @export
 #' @examples
@@ -107,9 +113,12 @@
 #'   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
 #'     value: [i, d.mpg] } })')
 #' )
+#' # a button to download the current view as a CSV file
+#' lt(head(mtcars)) |> lt_interactive(download = TRUE)
+#' lt(head(mtcars)) |> lt_interactive(download = 'cars.csv')
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = FALSE, pager = c(10, 25, 50, 100),
-  resize = FALSE, hide = NULL, detail = NULL
+  resize = FALSE, hide = NULL, detail = NULL, download = FALSE
 ) {
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
@@ -125,6 +134,8 @@ lt_interactive = function(
     list(hidden = I(as.character(f_cols(hide, x$data))))
   if (!is.null(detail)) opts$detail = if (inherits(detail, 'JS_LITERAL'))
     detail else I(as.character(f_cols(detail, x$data)))
+  if (!is.null(download) && !isFALSE(download))
+    opts$download = if (isTRUE(download)) TRUE else as.character(download)[1]
   x$interactive = opts
   x
 }

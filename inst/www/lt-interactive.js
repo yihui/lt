@@ -373,9 +373,10 @@
     const flt = opts.filter,
           barCols = flt?.cols ?
             Object.keys(flt.cols).filter(c => flt.cols[c] !== true && !cols.includes(c)) : [];
-    // the table-wide controls share one full-width head row: the column menu
-    // (if any) at its start, the search box, then any head-bar filter chips
-    const headBar = (opts.search !== false || opts.hide || barCols.length) ?
+    // the table-wide controls share one full-width head row, laid out left to
+    // right: an icon group (the column menu and the download button), then the
+    // head-bar filter chips, then the search box (which absorbs the free space)
+    const headBar = (opts.search !== false || opts.hide || barCols.length || opts.download) ?
       elem(el.ownerDocument, "div", { className: "lti-bar" },
         fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0)) : null;
     // the data-column header labels (skipping any leading group cell), read
@@ -391,10 +392,20 @@
       addFilter(hrow, cols, flt, spec.data, state, refresh);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
+    // the icon buttons sit together in a group that keeps its natural width;
+    // append them (menu first, download second) before the chips and search so
+    // the DOM order is the visual order
+    const icons = (opts.hide || opts.download) ?
+      elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
     if (opts.hide)
-      addColumnToggle(headBar, el, hrow, cols, labels, opts.hide, layout, postSwap);
+      addColumnToggle(icons, el, hrow, cols, labels, opts.hide, layout, postSwap);
+    if (opts.download) addDownload(icons, el, spec, cols, labels, opts.download);
+    // the chips share a group so the bar has three parts (icons, chips, search)
+    // with a wider gap between them than within each
+    if (barCols.length) addControlFilters(
+      elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar),
+      barCols, flt.cols, spec.data, state, refresh);
     if (opts.search !== false) addSearch(headBar, el, state, refresh);
-    if (barCols.length) addControlFilters(headBar, barCols, flt.cols, spec.data, state, refresh);
     // row detail re-renders through the same seam: toggling a row only changes
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
@@ -444,6 +455,40 @@
   function addSearch(cell, el, state, refresh) {
     const input = cell.appendChild(searchInput(el.ownerDocument, "Search"));
     onType(input, v => { state.term = v; refresh(); });
+  }
+
+  // Escape one value for a CSV field: wrap in quotes (doubling any inside) only
+  // when it holds a comma, quote, or newline, so plain values stay bare.
+  function csvField(v) {
+    const s = v == null ? "" : String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  // A button that downloads the table's current view as a CSV file. The header
+  // row is the column labels; each body row is a view row (every row the filters
+  // and search keep, in sort order, across all pages — `el._lt.view()` gives the
+  // 1-based original indices) rendered with the displayed cell text from
+  // `spec._display`. `name` is the file name (`true` = a default); group columns
+  // (null in `cols`) are skipped. No library, no network: a Blob and an <a>.
+  function addDownload(cell, el, spec, cols, labels, name) {
+    const doc = el.ownerDocument,
+          file = (typeof name === "string" && name ? name : "table")
+            .replace(/(\.csv)?$/i, ".csv"),
+          keep = cols.map((c, i) => i).filter(i => cols[i] != null),
+          btn = elem(doc, "button", {
+            type: "button", className: "lti-download", title: "Download CSV",
+            "aria-label": "Download table as CSV"
+          }, cell);
+    btn.onclick = () => {
+      const disp = spec._display || {},
+            lines = [keep.map(i => csvField(labels[i] ?? cols[i])).join(",")];
+      for (const r of el._lt.view())
+        lines.push(keep.map(i => csvField((disp[cols[i]] || [])[r - 1])).join(","));
+      const url = URL.createObjectURL(
+        new Blob([lines.join("\n")], { type: "text/csv" }));
+      elem(doc, "a", { href: url, download: file }).click();
+      URL.revokeObjectURL(url);
+    };
   }
 
   // Advance one column through asc → desc → unsorted, updating `state.sort` (an

@@ -84,6 +84,19 @@ assert("a default sort reaches the client spec as ordered name keys", {
          format(lt(d) |> lt_interactive(sort = FALSE), assets = FALSE)) %==% TRUE)
 })
 
+assert("download reaches the client spec as true or a file name, else absent", {
+  # TRUE enables the button with no file name of its own (the client defaults it)
+  (grepl('"download": true',
+         format(lt(d) |> lt_interactive(download = TRUE), assets = FALSE)) %==% TRUE)
+  # a string sets the file name, kept verbatim
+  (grepl('"download": "cars.csv"',
+         format(lt(d) |> lt_interactive(download = 'cars.csv'), assets = FALSE)) %==% TRUE)
+  # off by default, and FALSE/NULL emit nothing
+  (grepl('download', format(lt(d) |> lt_interactive(), assets = FALSE)) %==% FALSE)
+  (grepl('download',
+         format(lt(d) |> lt_interactive(download = FALSE), assets = FALSE)) %==% FALSE)
+})
+
 assert("detail = column names resolves to a name array; js() stays verbatim", {
   # a formula / character vector of columns becomes a plain name array for the
   # runtime to build a one-row detail table from
