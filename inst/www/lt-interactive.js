@@ -903,13 +903,19 @@
           }, wrap),
           panel = elem(doc, "div", { className: "lti-pop-panel", hidden: true }, wrap);
     build(panel);
-    // keep the panel inside the viewport: it opens to the funnel's left edge by
-    // default, but a funnel near the right margin would push it off-screen (and
-    // raise a horizontal scrollbar), so anchor it to the funnel's right instead
+    // keep the panel inside the table's scroll box: it opens to the funnel's left
+    // edge by default, but a funnel near the right edge would push it past the
+    // box (raising its horizontal scrollbar), so anchor it to the funnel's right
+    // instead. The limit is the scroll box's right edge, not the viewport's — the
+    // box can have room on screen yet none of its own, and vice versa.
     const place = () => {
       panel.style.left = panel.style.right = "";  // back to the CSS default (left:0)
-      const r = panel.getBoundingClientRect(), vw = (doc.defaultView || window).innerWidth;
-      if (r.right > vw - 4) { panel.style.left = "auto"; panel.style.right = "0"; }
+      const vw = (doc.defaultView || window).innerWidth,
+            box = wrap.closest(".lt-wrap"),
+            limit = Math.min(vw, box ? box.getBoundingClientRect().right : vw);
+      if (panel.getBoundingClientRect().right > limit - 4) {
+        panel.style.left = "auto"; panel.style.right = "0";
+      }
     };
     const open = on => {
       const was = !panel.hidden;

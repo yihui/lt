@@ -93,3 +93,16 @@ assert('a chip value summary updates only once its popover closes, not while edi
   # empty while the popover is open, filled in only after it closes
   (lti_eval(x, 'during + "|" + after', js) %==% '|6 – 10')
 })
+
+assert('a popover flips to the funnel right against the scroll box, not the viewport', {
+  x = lt(tdf()) |> lt_interactive(filter = list(grp = 'select'), search = FALSE, pager = FALSE)
+  # a narrow scroll box with room to spare in the viewport: a panel that would
+  # overflow the box must still flip (anchored right:0), gauged by the box edge
+  narrow = 'var w = t.closest(".lt-wrap"); w.style.width = "150px"; w.style.overflowX = "auto";
+            t.querySelector(".lti-funnel").click()'
+  (lti_eval(x, 't.querySelector(".lti-pop-panel").style.right === "0px"', narrow) %==% 'true')
+  # a wide box leaves the panel at its default left anchor (no inline right)
+  wide = 'var w = t.closest(".lt-wrap"); w.style.width = "1200px";
+          t.querySelector(".lti-funnel").click()'
+  (lti_eval(x, 't.querySelector(".lti-pop-panel").style.right === ""', wide) %==% 'true')
+})
