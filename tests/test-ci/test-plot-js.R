@@ -15,9 +15,9 @@ assert("lt_errorbar renders an inline SVG point-and-bar on a shared scale", {
   # row 1: est 0.5 -> cx 40 (cy = height/2 = 8); bar from lo 0 (x 4) to hi 1 (x 76)
   (grepl('<circle cx="40" cy="8"', html, fixed = TRUE) %==% TRUE)
   (grepl('x1="4" y1="8" x2="76" y2="8"', html, fixed = TRUE) %==% TRUE)
-  # short vertical end caps at both ends of the bar (y = 8 ± cap, cap = 4)
-  (grepl('x1="4" y1="4" x2="4" y2="12"', html, fixed = TRUE) %==% TRUE)
-  (grepl('x1="76" y1="4" x2="76" y2="12"', html, fixed = TRUE) %==% TRUE)
+  # short vertical end caps at both ends of the bar (y = 8 ± cap, cap = 3)
+  (grepl('x1="4" y1="5" x2="4" y2="11"', html, fixed = TRUE) %==% TRUE)
+  (grepl('x1="76" y1="5" x2="76" y2="11"', html, fixed = TRUE) %==% TRUE)
   # row 2 lands on the same scale: est 0.2 -> cx 18.4, bar 0.1..0.3 -> x 11.2..25.6
   (grepl('<circle cx="18.4" cy="8"', html, fixed = TRUE) %==% TRUE)
   (grepl('x1="11.2" y1="8" x2="25.6" y2="8"', html, fixed = TRUE) %==% TRUE)
