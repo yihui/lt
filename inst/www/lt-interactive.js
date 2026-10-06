@@ -414,7 +414,7 @@
     // `pager` is the page sizes to offer, the first one being the initial
     if (opts.pager) {
       const sizes = Array.isArray(opts.pager) ? opts.pager : [10, 25, 50, 100];
-      sync = addPaginate(el, cols, sizes, state, () => refresh(false));
+      sync = addPaginate(el, cols, sizes, nRow, state, () => refresh(false));
       refresh();  // cut the full render down to the first page
     } else if (state.sort.length || opts.detail) {
       // core rendered the rows in file order; re-render to apply an initial
@@ -1010,7 +1010,7 @@
   // numbers only: « ‹ › » for first/previous/next/last and `from–to / total`
   // for the position. Returns the callback that updates them for a new row
   // count.
-  function addPaginate(el, cols, sizes, state, repage) {
+  function addPaginate(el, cols, sizes, nRow, state, repage) {
     const doc = el.ownerDocument;
     let foot = el.tFoot;
     // reuse the core footer if there is one, so the pager is sized like it
@@ -1030,7 +1030,8 @@
       return b;
     });
     bar.appendChild(pos);
-    if (sizes.length > 1) {
+    // no dropdown when even the smallest size holds every row (none would split)
+    if (sizes.length > 1 && nRow > Math.min(...sizes.filter(n => n > 0))) {
       const sel = elem(doc, "select", { "aria-label": "Rows per page" }, bar);
       // 0: every row on one page (∞)
       sizes.forEach(n => elem(doc, "option", { value: n, textContent: n || "∞" }, sel));
@@ -1039,10 +1040,12 @@
     return total => {
       // a page size of 0 is one page holding everything
       const n = state.pageSize || total || 1,
-            last = Math.max(0, Math.ceil(total / n) - 1);
-      pos.textContent = total ?
+            last = Math.max(0, Math.ceil(total / n) - 1),
+            // under a filter, append the full count in parens (a symbol, no i18n)
+            all = total < nRow ? ` (${nRow})` : "";
+      pos.textContent = (total ?
         `${state.page * n + 1}–${Math.min(total, (state.page + 1) * n)} / ${total}` :
-        "0 / 0";
+        "0 / 0") + all;
       btns.forEach((b, i) => b.disabled = i < 2 ? !state.page : state.page === last);
     };
   }

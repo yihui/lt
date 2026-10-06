@@ -53,8 +53,11 @@
 #'   first one is used initially. Paging shows that many of the filtered and
 #'   sorted rows at a time, with a pager (first, previous, next, last), the row
 #'   range, and (for more than one size) a selector below the table. `Inf` is a
-#'   valid size (every row on one page), offered as `∞` in the selector. Use
-#'   `FALSE` or `NULL` to show all rows with no pager at all.
+#'   valid size (every row on one page), offered as `∞` in the selector. The
+#'   selector is omitted when the table has no more rows than the smallest page
+#'   size (no size would split it), though the pager's nav and row-count readout
+#'   stay, the latter being useful as a filter narrows the rows. Use `FALSE` or
+#'   `NULL` to show all rows with no pager at all.
 #' @param resize Whether to let the reader drag a column's right edge to resize
 #'   it (double-clicking the edge fits the column to its content). Widening a
 #'   column widens the table, leaving the other columns as they are. Initial

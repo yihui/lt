@@ -22,8 +22,13 @@ assert("the pager shows one page of rows at a time", {
   (lti_eval(x, 'document.querySelectorAll(".lti-pager select").length') %==% '0')
 })
 
-assert("paging is on by default and can be turned off", {
+assert("paging is on by default; the size selector drops when no size splits", {
+  # default sizes, 4 rows: pager shows but no size splits, so no selector
   (lti_eval(itbl(), 'document.querySelector(".lti-pos").textContent') %==% '1–4 / 4')
+  (lti_eval(itbl(), 'document.querySelectorAll(".lti-pager select").length') %==% '0')
+  # a size below the row count brings the selector back
+  (lti_eval(itbl(pager = c(2, 10)),
+            'document.querySelectorAll(".lti-pager select").length') %==% '1')
   (lti_eval(itbl(pager = FALSE),
             'document.querySelectorAll(".lti-pager").length') %==% '0')
 })
@@ -55,5 +60,9 @@ assert("the page size selector re-pages, and searching returns to page 1", {
           i.value = "a"; i.dispatchEvent(new Event("change"))'
   (lti_rows(x, paste('document.querySelectorAll(".lti-pager button")[2].click()', find,
                      sep = ';')) %==% c("Rash", "Nausea"))
-  (lti_eval(x, 'document.querySelector(".lti-pos").textContent', find) %==% '1–2 / 3')
+  # a search dropped rows, so the full count trails in parens
+  (lti_eval(x, 'document.querySelector(".lti-pos").textContent', find) %==% '1–2 / 3 (4)')
+  none = 'var i = t.querySelector(".lti-search");
+          i.value = "zzz"; i.dispatchEvent(new Event("change"))'
+  (lti_eval(x, 'document.querySelector(".lti-pos").textContent', none) %==% '0 / 0 (4)')
 })
