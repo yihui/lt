@@ -948,7 +948,11 @@ optional:
   spec. `row` has the raw values and `display` the formatted text, each
   keyed by column name and covering every column. The returned spec is an
   ordinary table spec, so give it its own `interactive` field to make the
-  detail table sortable/filterable/paged too.
+  detail table sortable/filterable/paged too;
+- `download`: a button in the control bar that downloads the current view
+  (every row the filters and search keep, in sort order, across all pages) as
+  a CSV file, using the displayed cell text. `true` uses a default file name;
+  a string sets the file name.
 
 A term is matched case-insensitively against the displayed text, with a
 leading `!` to negate it; a term that mentions `x` (e.g., `x > 20`) is
@@ -981,6 +985,16 @@ Open the eye menu to toggle columns; `hp` and `wt` start hidden here:
 LT.build({
   data: mtcars,
   interactive: { hide: { hidden: ["hp", "wt"] }, pager: 5 }
+});
+```
+
+A download button writes the current view to a CSV file (filter or sort
+first, and the file follows):
+
+```{js}
+LT.build({
+  data: mtcars,
+  interactive: { download: "cars.csv", filter: { default: true }, pager: 5 }
 });
 ```
 
@@ -1036,6 +1050,9 @@ using the built-in boxes:
   the search — combine with AND.
 - `el._lt.refresh()` re-renders the body; `filter()` calls it for you, so
   you rarely need it directly.
+- `el._lt.view()` returns the current view as 1-based original row indices
+  (every row the filters and search keep, in sort order, across all pages) —
+  what a "download what's shown" button reads.
 - `el._lt.spec` and `el._lt.state` are exposed for reading. A widget reads
   `el._lt.spec.data[col]` for a column's raw values to build its choices
   (the unique categories for a dropdown, the min/max for a slider).

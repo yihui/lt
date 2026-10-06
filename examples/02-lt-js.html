@@ -96,12 +96,12 @@
 </li>
 </ul>
 </div>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/lt.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/lt-plot.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/lt-interactive.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/lt-plot.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/lt.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/lt-interactive.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/css/lt-interactive.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/js/lt-interactive.min.js" defer></script>
 <p>This document demonstrates the lt.js runtime directly from JavaScript.
 Each example shows a JSON spec and renders the table with <code>LT.build()</code>.</p>
 <h2 id="sec:including-lt-js"><span class="section-number main-number">1</span> Including lt.js</h2>
@@ -1294,7 +1294,11 @@ values, including ones hidden with a <code>hide</code> op) or a function <code>(
 spec. <code>row</code> has the raw values and <code>display</code> the formatted text, each
 keyed by column name and covering every column. The returned spec is an
 ordinary table spec, so give it its own <code>interactive</code> field to make the
-detail table sortable/filterable/paged too.</li>
+detail table sortable/filterable/paged too;</li>
+<li><code>download</code>: a button in the control bar that downloads the current view
+(every row the filters and search keep, in sort order, across all pages) as
+a CSV file, using the displayed cell text. <code>true</code> uses a default file name;
+a string sets the file name.</li>
 </ul>
 <p>A term is matched case-insensitively against the displayed text, with a
 leading <code>!</code> to negate it; a term that mentions <code>x</code> (e.g., <code>x &gt; 20</code>) is
@@ -1335,6 +1339,17 @@ box as the default for the other columns:</p>
 <script>LT.build({
   data: mtcars,
   interactive: { hide: { hidden: ["hp", "wt"] }, pager: 5 }
+});</script>
+<p>A download button writes the current view to a CSV file (filter or sort
+first, and the file follows):</p>
+<pre><code class="language-js">LT.build({
+  data: mtcars,
+  interactive: { download: &quot;cars.csv&quot;, filter: { default: true }, pager: 5 }
+});
+</code></pre>
+<script>LT.build({
+  data: mtcars,
+  interactive: { download: "cars.csv", filter: { default: true }, pager: 5 }
 });</script>
 <p>Row structure is honored: sorting and filtering happen <em>within</em> each
 group or subtree, never across it. A <code>row_group</code> op sorts and filters
@@ -1394,6 +1409,9 @@ predicates from every id — together with the built-in column filters and
 the search — combine with AND.</li>
 <li><code>el._lt.refresh()</code> re-renders the body; <code>filter()</code> calls it for you, so
 you rarely need it directly.</li>
+<li><code>el._lt.view()</code> returns the current view as 1-based original row indices
+(every row the filters and search keep, in sort order, across all pages) —
+what a “download what’s shown” button reads.</li>
 <li><code>el._lt.spec</code> and <code>el._lt.state</code> are exposed for reading. A widget reads
 <code>el._lt.spec.data[col]</code> for a column’s raw values to build its choices
 (the unique categories for a dropdown, the min/max for a slider).</li>

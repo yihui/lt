@@ -182,7 +182,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
 <pre><code>&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;lt&lt;/title&gt;
 &lt;style&gt;body{font-family:system-ui,sans-serif;padding:1em}&lt;/style&gt;&lt;/head&gt;
 &lt;body&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/lt.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/css/lt.min.css&quot;&gt;
 &lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   &quot;data&quot;: {
@@ -200,7 +200,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
   }
 }
 })&lt;/script&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;
 </code></pre>
 <h2 id="sec:man-lt"><span class="section-number main-number">3</span> Create a table specification</h2>
@@ -458,7 +458,7 @@ Its script loads before the core runtime so plot cells render.</p>
 </code></pre>
 <pre><code>#&gt; List of 10
 #&gt;  $ name      : chr &quot;lt&quot;
-#&gt;  $ version   : chr &quot;0.4.27&quot;
+#&gt;  $ version   : chr &quot;0.4.28&quot;
 #&gt;  $ src       :List of 1
 #&gt;   ..$ file: chr &quot;/Users/runner/work/_temp/Library/lt/www&quot;
 #&gt;  $ meta      : NULL
@@ -803,7 +803,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmps3v81v/file13dd65ef96f2.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmp9A7jan/file682224ad73f8.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -917,7 +917,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmps3v81v/file13dd55858288.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//Rtmp9A7jan/file682222f0a5b5.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -1257,7 +1257,8 @@ extension, loaded only for tables that call this function.
   pager = c(10, 25, 50, 100),
   resize = FALSE,
   hide = NULL,
-  detail = NULL
+  detail = NULL,
+  download = FALSE
 )</code></pre>
 <h3 id="sec:arguments_17" class="unnumbered unlisted">Arguments</h3>
 <table role = "presentation">
@@ -1342,6 +1343,15 @@ formatted text, each keyed by column name — and returns a table spec, which
 may carry its own <code>interactive</code> field to make the detail table interactive.
 <code>NULL</code> (the default) adds no row detail.</p>
 </td></tr>
+<tr><td><code>download</code></td>
+<td>
+<p>Whether to add a button that downloads the table as a CSV
+file. The file holds the current view (every row the filters and search
+keep, in sort order, across all pages) of the table's columns, using the
+displayed cell text. <code>TRUE</code> adds the button with a default file name; a
+string sets the file name (a <code>.csv</code> extension is added if missing).
+<code>FALSE</code> (the default) adds no button.</p>
+</td></tr>
 </table>
 <h3 id="sec:details_5" class="unnumbered unlisted">Details</h3>
 <p>Sorting and filtering respect the row structure, happening <em>within</em> each
@@ -1386,6 +1396,9 @@ lt(head(mtcars)) |&gt; lt_interactive(
   detail = js('(row, i, d) =&gt; ({ data: { metric: [&quot;row&quot;, &quot;mpg&quot;],
     value: [i, d.mpg] } })')
 )
+# a button to download the current view as a CSV file
+lt(head(mtcars)) |&gt; lt_interactive(download = TRUE)
+lt(head(mtcars)) |&gt; lt_interactive(download = 'cars.csv')
 </code></pre>
 <h2 id="sec:man-lt_label"><span class="section-number main-number">19</span> Rename column labels</h2>
 <h3 id="sec:description_19" class="unnumbered unlisted">Description</h3>

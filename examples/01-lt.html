@@ -95,7 +95,8 @@
 <li><a href="#sec:row-detail-drill-down"><span class="section-number">11.3</span> Row detail (drill-down)</a></li>
 <li><a href="#sec:resizable-columns"><span class="section-number">11.4</span> Resizable columns</a></li>
 <li><a href="#sec:column-visibility"><span class="section-number">11.5</span> Column visibility</a></li>
-<li><a href="#sec:row-groups-and-indentation"><span class="section-number">11.6</span> Row groups and indentation</a></li>
+<li><a href="#sec:downloading-a-csv"><span class="section-number">11.6</span> Downloading a CSV</a></li>
+<li><a href="#sec:row-groups-and-indentation"><span class="section-number">11.7</span> Row groups and indentation</a></li>
 </ul>
 </li>
 </ul>
@@ -177,7 +178,7 @@ lt(d, auto_format = FALSE) |&gt;
   # lt_note(): the footer note names itself and lt_export()
   lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/css/lt.min.css">
 <style>.lt-table {
   .highlight { font-weight: bold; color: #c60; }
 }</style>
@@ -310,7 +311,7 @@ lt(d, auto_format = FALSE) |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/js/lt.min.js" defer></script>
 <h2 id="sec:basics"><span class="section-number main-number">2</span> Basics</h2>
 <h3 id="sec:a-simple-table"><span class="section-number">2.1</span> A simple table</h3>
 <p>Pass any data frame to <code>lt()</code>:</p>
@@ -1452,7 +1453,7 @@ each cell.</p>
 lt(d_eff) |&gt;
   lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = &quot;Effect (95% CI)&quot;)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/css/lt-plot.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -1482,7 +1483,7 @@ lt(d_eff) |&gt;
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/js/lt-plot.min.js" defer></script>
 <p>Several series can share one cell: pass one <code>value ~ lower + upper</code> per series
 and each row stacks one point-and-bar on the same scale (e.g. a risk difference
 for each of several treatment arms). <code>color</code> and <code>labels</code> key the series in a
@@ -2032,7 +2033,7 @@ first of which is used initially.</p>
 <pre><code class="language-r">d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;)]
 lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf))
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/css/lt-interactive.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -2048,7 +2049,7 @@ lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf))
   }
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.92/js/lt-interactive.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.93/js/lt-interactive.min.js" defer></script>
 <p>Shift-click a second header to sort by it as a tie-breaker, so several
 columns sort at once (an ordinal in each header marks its place). An
 initial sort can be requested with <code>sort</code>, either as a character vector
@@ -2272,7 +2273,35 @@ them back). The checklist shows each column’s displayed label.</p>
   }
 }
 })</script>
-<h3 id="sec:row-groups-and-indentation"><span class="section-number">11.6</span> Row groups and indentation</h3>
+<h3 id="sec:downloading-a-csv"><span class="section-number">11.6</span> Downloading a CSV</h3>
+<p><code>download</code> adds a button to the control bar that downloads the table’s
+current view — every row the filters and the search keep, in sort order,
+across all pages — as a CSV file, using the displayed cell text. Use
+<code>download = TRUE</code> for a default file name, or pass a string to set it (a
+<code>.csv</code> extension is added if missing). Try filtering or sorting first: the
+file holds exactly what the table shows.</p>
+<pre><code class="language-r">lt(d) |&gt; lt_interactive(download = &quot;cars.csv&quot;, filter = TRUE, pager = 5)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "mpg": [21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 24.4, 22.8, 19.2, 17.8, 16.4, 17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 30.4, 33.9, 21.5, 15.5, 15.2, 13.3, 19.2, 27.3, 26, 30.4, 15.8, 19.7, 15, 21.4],
+    "cyl": [6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 8, 6, 8, 4],
+    "hp": [110, 110, 93, 110, 175, 105, 245, 62, 95, 123, 123, 180, 180, 180, 205, 215, 230, 66, 52, 65, 97, 150, 150, 245, 175, 66, 91, 113, 264, 175, 335, 109],
+    "wt": [2.62, 2.875, 2.32, 3.215, 3.44, 3.46, 3.57, 3.19, 3.15, 3.44, 3.44, 4.07, 3.73, 3.78, 5.25, 5.424, 5.345, 2.2, 1.615, 1.835, 2.465, 3.52, 3.435, 3.84, 3.845, 1.935, 2.14, 1.513, 3.17, 2.77, 3.57, 2.78]
+  },
+  "interactive": {
+    "sort": true,
+    "search": true,
+    "filter": {
+      "default": true
+    },
+    "pager": [5],
+    "download": "cars.csv"
+  }
+}
+})</script>
+<h3 id="sec:row-groups-and-indentation"><span class="section-number">11.7</span> Row groups and indentation</h3>
 <p>Row structure is honored: sorting and filtering happen <em>within</em> each
 group or subtree, never across it, so a group header never parts from
 its rows and an indented child never loses its parent. Separator row

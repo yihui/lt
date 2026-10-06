@@ -959,6 +959,19 @@ them back). The checklist shows each column's displayed label.
 lt(d) |&gt; lt_interactive(hide = ~ hp + wt, pager = 5)
 ```
 
+### Downloading a CSV
+
+`download` adds a button to the control bar that downloads the table's
+current view — every row the filters and the search keep, in sort order,
+across all pages — as a CSV file, using the displayed cell text. Use
+`download = TRUE` for a default file name, or pass a string to set it (a
+`.csv` extension is added if missing). Try filtering or sorting first: the
+file holds exactly what the table shows.
+
+```{r}
+lt(d) |&gt; lt_interactive(download = &quot;cars.csv&quot;, filter = TRUE, pager = 5)
+```
+
 ### Row groups and indentation
 
 Row structure is honored: sorting and filtering happen *within* each
@@ -1956,7 +1969,11 @@ optional:
   spec. `row` has the raw values and `display` the formatted text, each
   keyed by column name and covering every column. The returned spec is an
   ordinary table spec, so give it its own `interactive` field to make the
-  detail table sortable/filterable/paged too.
+  detail table sortable/filterable/paged too;
+- `download`: a button in the control bar that downloads the current view
+  (every row the filters and search keep, in sort order, across all pages) as
+  a CSV file, using the displayed cell text. `true` uses a default file name;
+  a string sets the file name.
 
 A term is matched case-insensitively against the displayed text, with a
 leading `!` to negate it; a term that mentions `x` (e.g., `x &gt; 20`) is
@@ -1989,6 +2006,16 @@ Open the eye menu to toggle columns; `hp` and `wt` start hidden here:
 LT.build({
   data: mtcars,
   interactive: { hide: { hidden: [&quot;hp&quot;, &quot;wt&quot;] }, pager: 5 }
+});
+```
+
+A download button writes the current view to a CSV file (filter or sort
+first, and the file follows):
+
+```{js}
+LT.build({
+  data: mtcars,
+  interactive: { download: &quot;cars.csv&quot;, filter: { default: true }, pager: 5 }
 });
 ```
 
@@ -2044,6 +2071,9 @@ using the built-in boxes:
   the search — combine with AND.
 - `el._lt.refresh()` re-renders the body; `filter()` calls it for you, so
   you rarely need it directly.
+- `el._lt.view()` returns the current view as 1-based original row indices
+  (every row the filters and search keep, in sort order, across all pages) —
+  what a &quot;download what's shown&quot; button reads.
 - `el._lt.spec` and `el._lt.state` are exposed for reading. A widget reads
   `el._lt.spec.data[col]` for a column's raw values to build its choices
   (the unique categories for a dropdown, the min/max for a slider).
