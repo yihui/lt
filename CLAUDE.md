@@ -79,6 +79,35 @@ assert('expectation message', {
 
 ## Conventions
 
+### Design goal: lightweight output
+
+lt's whole pitch is an ultra-lightweight alternative — "no sass, no V8, no
+htmltools, just base R and xfun". Every byte of rendered HTML/CSS/JS counts.
+Apply this when writing *and when editing* existing code:
+
+- **Compact R and JS alike**: arrow functions, template literals, object
+  shorthand, pipes, single-line lambdas. Build big strings with `out.push(...)`
+  then `out.join("")`, not a stateful `html += ...` thread.
+- **DRY**: extract a repeated pattern into a small helper the moment it recurs.
+- **JSON-only payload**: don't emit a server-side `<table>` when the data also
+  ships as JSON — send the JSON and let the runtime build the table client-side.
+- **Assets once per page**: the CSS + JS runtime are emitted once and shared; a
+  per-table `<script>` only calls into the runtime. Route any new render path
+  through that same seam.
+- **Omit empty spec slots**: never serialize `name: {}` or `name: null` — drop
+  the key. Likewise omit empty/NULL list slots in R.
+- **No random IDs**: never auto-generate element/table IDs (they churn version
+  control diffs); emit `id` only when the user supplies one, and design
+  selectors/lookups not to need one.
+- **No unnecessary CSS**: only declare properties that change something; don't
+  restate browser defaults.
+- **No defensive `requireNamespace()`**: in functions whose names already imply a
+  Suggests dependency (`lt_output`, `render_lt`, `knit_print.lt_tbl`, …), let R
+  raise its normal error rather than guarding.
+
+The sibling package `../gglite` follows the same conventions — consult it for
+precedent on minimal rendering.
+
 ### R Code Style
 
 Match the surrounding code for formatting: single quotes, 2-space indent,
@@ -93,6 +122,12 @@ code already shows:
     `return()`, never `return(NULL)`.
 4.  **US spelling** in all docs, comments, and example text (e.g., "color" not
     "colour", "center" not "centre").
+5.  **Reuse xfun**: lt imports xfun — use its helpers (`html_escape`, `tojson`,
+    `html_view`, `html_tag`, `record_print`, …) instead of reimplementing. Check
+    `ls("package:xfun")` before writing any small text/HTML utility.
+6.  **Never hand-edit generated files**: regenerate `*.Rd` and `NAMESPACE` with
+    `roxygen2::roxygenise()`, and example `*.html` with `litedown::fuse()`. The
+    roxygen comments and `.Rmd` sources are the single source of truth.
 
 ### JavaScript Code Style
 
@@ -110,6 +145,25 @@ Beyond that:
     rather than one `const` per line. Exceptions, kept on their own line: a
     `const` whose value is a long or multi-line function, and a `const` that
     carries its own detailed comment — so the comment and structure read clearly.
+
+### Documentation
+
+Comprehensive but user-facing: describe what a function does, when to use it, and
+how parameters interact. Omit internal implementation details (JS globals,
+internal variable names, data structures, queue mechanics) that may change and
+that only a maintainer would care about. Don't frame behavior against a past or
+alternative implementation the user never saw — state it directly ("the header
+joins all names", not "… rather than just the first").
+
+In `NEWS.md`, never hard-wrap: one line per bullet (and sub-bullet). Readability
+comes from the bullet structure, not from wrapping.
+
+### Verify browser fixes
+
+When a change affects rendered HTML/JS, confirm it in a headless browser before
+reporting it done — the `tests/test-ci/helper.R` helpers (`lti_eval`,
+`lti_rows`) drive one, or use `chromote` / `xfun::browser_dom()`. Check that the
+actual DOM is right, not just that the source matches.
 
 ### Git workflow
 
