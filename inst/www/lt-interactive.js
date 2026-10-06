@@ -235,8 +235,7 @@
     // groups need not cover every row). A group left with no row simply
     // contributes nothing — its header is re-emitted at render only when a row
     // remains.
-    const cmp = makeCmp(state.sort || []);
-    const groups = spec._groups;
+    const cmp = makeCmp(state.sort || []), groups = spec._groups;
     if (!groups) return reduce(all(), cmp);
     const grouped = new Set(), out = [];
     for (const g of groups) { g.rows.forEach(r => grouped.add(r)); out.push(...reduce(g.rows, cmp)); }

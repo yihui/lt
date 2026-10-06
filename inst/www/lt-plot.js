@@ -8,8 +8,7 @@
  */
 (root => {
   "use strict";
-  const LT = root.LT || (root.LT = {});
-  const cells = LT.cells || (LT.cells = {});
+  const LT = root.LT || (root.LT = {}), cells = LT.cells || (LT.cells = {});
   if (cells.errorbar) return;  // duplicate inclusion is a no-op
 
   // Horizontal padding (px) left/right inside an error-bar SVG, so points,
@@ -175,9 +174,9 @@
   // entries become null (a gap in the line, a skipped bar). `u` carries the core
   // helpers (esc/isNum/str).
   function spSeries(sp, data, r, u) {
-    const cell = data[sp.cols[0]]?.[r - 1];
-    const raw = sp.cols.length === 1 && Array.isArray(cell)
-      ? cell : sp.cols.map(c => data[c]?.[r - 1]);
+    const cell = data[sp.cols[0]]?.[r - 1],
+          raw = sp.cols.length === 1 && Array.isArray(cell)
+            ? cell : sp.cols.map(c => data[c]?.[r - 1]);
     return raw.map(v => u.isNum(v) ? +v : null);
   }
 
@@ -188,8 +187,8 @@
   function svgSparkline(sp, data, r, u) {
     const vals = spSeries(sp, data, r, u), fin = vals.filter(v => v != null);
     if (!fin.length) return "";
-    const W = sp.width, H = sp.height, n = vals.length;
-    const lo = sp.min != null ? sp.min : Math.min(...fin),
+    const W = sp.width, H = sp.height, n = vals.length,
+          lo = sp.min != null ? sp.min : Math.min(...fin),
           hi = sp.max != null ? sp.max : Math.max(...fin);
     const xAt = i => round1(n > 1 ? SP_PAD + i / (n - 1) * (W - 2 * SP_PAD) : W / 2),
           yAt = v => round1(hi > lo

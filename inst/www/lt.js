@@ -294,8 +294,8 @@
     onOp("align", op => { for (const c of (op.columns || [])) setByCol(align, c, op.align); });
 
     // Column labels
-    const autoLbl = s => spec.auto_label === false ? s : s.replace(/[._]/g, " ");
-    const colLabels = visible.map(autoLbl);
+    const autoLbl = s => spec.auto_label === false ? s : s.replace(/[._]/g, " "),
+          colLabels = visible.map(autoLbl);
     onOp("label", op => {
       for (const [c, lbl] of Object.entries(op.labels || {})) setByCol(colLabels, c, lbl);
     });
@@ -492,8 +492,8 @@
           // R side); spec.html_cols is true (all columns) or a name array.
           isRaw = c => rawCol(spec.html_cols, c),
           out = [`<table class="lt-table"${tableWidth ? ` style="width:${tableWidth}"` : ""}>`];
-    const mark = (type, val) => { const i = fIdx(type, val); return i ? sup(i) : ""; };
-    const cell = (c, r) => display[c]?.[r - 1] ?? "";
+    const mark = (type, val) => { const i = fIdx(type, val); return i ? sup(i) : ""; },
+          cell = (c, r) => display[c]?.[r - 1] ?? "";
     // ` name="val"` for a truthy val, else "" — for optional HTML attributes.
     const attr = (n, v) => v ? ` ${n}="${v}"` : "";
     // Plain class names per column (alignment + leading-indent), "" if none.
@@ -694,8 +694,8 @@
         cols.forEach((c, i) => {
           const cm = cellMap[c];
           // reuse the renderer's cell class so the footer lines up with the plot
-          const extra = footCells[i] && cm ? (cm.rnd.cellClass?.(cm.cfg) || "") : "";
-          const ac = [colCls[i], extra].filter(Boolean).join(" ");
+          const extra = footCells[i] && cm ? (cm.rnd.cellClass?.(cm.cfg) || "") : "",
+                ac = [colCls[i], extra].filter(Boolean).join(" ");
           out.push(`<td${attr("class", ac)}>${footCells[i]}</td>`);
         });
         out.push(`</tr>`);
