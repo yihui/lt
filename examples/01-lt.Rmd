@@ -908,6 +908,19 @@ them back). The checklist shows each column's displayed label.
 lt(d) |> lt_interactive(hide = ~ hp + wt, pager = 5)
 ```
 
+### Downloading a CSV
+
+`download` adds a button to the control bar that downloads the table's
+current view — every row the filters and the search keep, in sort order,
+across all pages — as a CSV file, using the displayed cell text. Use
+`download = TRUE` for a default file name, or pass a string to set it (a
+`.csv` extension is added if missing). Try filtering or sorting first: the
+file holds exactly what the table shows.
+
+```{r}
+lt(d) |> lt_interactive(download = "cars.csv", filter = TRUE, pager = 5)
+```
+
 ### Row groups and indentation
 
 Row structure is honored: sorting and filtering happen *within* each
