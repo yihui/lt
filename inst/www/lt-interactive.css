@@ -93,23 +93,26 @@
     }
   }
 
-  /* the column menu and search box share this flex bar: alone, the search fills
-   * it; with the menu button, they sit at opposite ends */
+  /* the control bar lays its parts out left to right: an icon group, the filter
+   * chips, then the search box. Only the search box grows, so all the free space
+   * lands in it (pushing it to the right edge); the icons and chips keep their
+   * natural width. The search still fills the bar when it is the only control. */
   .lti-bar {
     display: flex;
     align-items: center;
-    gap: 0.3em;
-    .lti-search {
-      flex: 1;
+    /* a wide gap between the three parts (icons, chips, search) ... */
+    gap: 1.2em;
+    .lti-icons, .lti-chips {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      /* ... but a tight gap between the buttons / chips within a part */
+      gap: 0.3em;
     }
-    &:has(.lti-cols) {
-      justify-content: space-between;
-      /* width:auto overrides the base 100%, so the box takes its natural width
-       * and the free space falls between it and the menu button */
-      .lti-search {
-        flex: 0 1 auto;
-        width: auto;
-      }
+    /* direct child only: a chip's popover holds its own `.lti-search` box */
+    & > .lti-search {
+      flex: 1 1 8em;
+      min-width: 6em;
     }
   }
 

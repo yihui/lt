@@ -373,8 +373,9 @@
     const flt = opts.filter,
           barCols = flt?.cols ?
             Object.keys(flt.cols).filter(c => flt.cols[c] !== true && !cols.includes(c)) : [];
-    // the table-wide controls share one full-width head row: the column menu
-    // (if any) at its start, the search box, then any head-bar filter chips
+    // the table-wide controls share one full-width head row, laid out left to
+    // right: an icon group (the column menu and the download button), then the
+    // head-bar filter chips, then the search box (which absorbs the free space)
     const headBar = (opts.search !== false || opts.hide || barCols.length || opts.download) ?
       elem(el.ownerDocument, "div", { className: "lti-bar" },
         fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0)) : null;
@@ -391,11 +392,20 @@
       addFilter(hrow, cols, flt, spec.data, state, refresh);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
+    // the icon buttons sit together in a group that keeps its natural width;
+    // append them (menu first, download second) before the chips and search so
+    // the DOM order is the visual order
+    const icons = (opts.hide || opts.download) ?
+      elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
     if (opts.hide)
-      addColumnToggle(headBar, el, hrow, cols, labels, opts.hide, layout, postSwap);
+      addColumnToggle(icons, el, hrow, cols, labels, opts.hide, layout, postSwap);
+    if (opts.download) addDownload(icons, el, spec, cols, labels, opts.download);
+    // the chips share a group so the bar has three parts (icons, chips, search)
+    // with a wider gap between them than within each
+    if (barCols.length) addControlFilters(
+      elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar),
+      barCols, flt.cols, spec.data, state, refresh);
     if (opts.search !== false) addSearch(headBar, el, state, refresh);
-    if (barCols.length) addControlFilters(headBar, barCols, flt.cols, spec.data, state, refresh);
-    if (opts.download) addDownload(headBar, el, spec, cols, labels, opts.download);
     // row detail re-renders through the same seam: toggling a row only changes
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
