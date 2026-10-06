@@ -98,11 +98,8 @@
 #' lt(head(mtcars)) |> lt_interactive(resize = TRUE)
 #' # a column-visibility menu (all columns shown, or with some hidden to start)
 #' lt(head(mtcars)) |> lt_interactive(hide = TRUE)
-#' lt(head(mtcars)) |> lt_interactive(hide = c('hp', 'drat'))
-#' lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)  # same, as a formula
-#' # an initial sort by cyl, then mpg descending within each (two equivalent
-#' # forms: a character vector, or a formula)
-#' lt(mtcars) |> lt_interactive(sort = c('cyl', '-mpg'))
+#' lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)
+#' # an initial sort by cyl, then mpg descending within each
 #' lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
 #' # expandable row detail (drill-down): name the columns to show. Here gear and
 #' # carb are hidden from the main table but revealed in the detail that appears

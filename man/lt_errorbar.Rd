@@ -83,9 +83,8 @@ d = data.frame(
 )
 # a two-sided formula names the estimate (LHS) and the bounds (RHS)
 lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
-# or a length-3 vector c(value, lower, upper); keep the bounds visible, add
-# a labeled axis
-lt(d) |> lt_errorbar(c("est", "lo", "hi"), hide = FALSE, axis = "Effect")
+# keep the bounds columns visible and add a labeled axis
+lt(d) |> lt_errorbar(est ~ lo + hi, hide = FALSE, axis = "Effect")
 # several series stacked in each cell, colored with a footer legend
 d2 = data.frame(
   term = c("A", "B"), e1 = c(0.2, 0.4), l1 = c(0, 0.2), u1 = c(0.4, 0.6),
