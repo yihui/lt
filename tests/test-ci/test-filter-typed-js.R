@@ -4,26 +4,41 @@
 
 tdf = function() data.frame(name = sym, n = c(5, 12, 3, 8), grp = c('a', 'b', 'a', 'b'))
 
-assert('a "select" on a visible column is a header funnel that filters and defaults to the first choice', {
+assert('a "select" on a visible column is a header funnel that defaults to no filter', {
   x = lt(tdf()) |> lt_interactive(filter = list(grp = 'select'), pager = FALSE)
   # a visible column's control sits under its header (the filter row), not in a chip
   (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-funnel").length') %==% '1')
   (lti_eval(x, 't.querySelectorAll(".lti-chip").length') %==% '0')
-  # the default selects the first distinct value ("a"): only its rows show
-  (lti_rows(x) %==% c('Rash', 'Headache'))
-  # picking another value from the dropdown refilters
+  # no value is pre-selected, so a bare "select" shows every row on load (a seeded
+  # first-choice filter would silently hide rows the reader never asked to hide)
+  (length(lti_rows(x)) %==% 4L)
+  # the dropdown offers a leading blank "no filter" choice before the distinct values
+  (lti_eval(x, 'Array.from(t.querySelectorAll(".lti-filters select option")).map(o => o.value).join(",")')
+   %==% ',a,b')
+  # picking a value from the dropdown filters to it
   pick = 'var s = t.querySelector(".lti-filters select"); s.value = "b"; s.onchange()'
   (lti_rows(x, pick) %==% c('Nausea', 'Itch'))
   # the expression box mirrors the pick
   (lti_eval(x, 't.querySelector(".lti-filters .lti-pop input").value === String.raw`x == "b"`', pick)
    %==% 'true')
+  # choosing the blank clears the filter: every row again
+  clear = 'var s = t.querySelector(".lti-filters select"); s.value = "b"; s.onchange();
+           s.value = ""; s.onchange()'
+  (length(lti_rows(x, clear)) %==% 4L)
 })
 
-assert('el._lt.view() reports the filtered rows a typed filter keeps', {
+assert('a "select" with a `selected` value seeds that filter on load', {
+  x = lt(tdf()) |> lt_interactive(
+    filter = list(grp = list(type = 'select', selected = 'b')), pager = FALSE)
+  (lti_rows(x) %==% c('Nausea', 'Itch'))
+})
+
+assert('el._lt.view() reports the rows a typed filter keeps', {
   # a download-what-is-shown button reads the current view; typed filters live in
   # state.filters (not external predicates), so view() must reflect them
-  x = lt(tdf()) |> lt_interactive(filter = list(grp = 'select'), pager = FALSE)
-  # the default grp == "a" keeps rows 1 and 3 (every row, not just a page)
+  x = lt(tdf()) |> lt_interactive(
+    filter = list(grp = list(type = 'select', selected = 'a')), pager = FALSE)
+  # grp == "a" keeps rows 1 and 3 (every row, not just a page)
   (lti_eval(x, 't._lt.view().join(",")') %==% '1,3')
 })
 
@@ -44,7 +59,7 @@ assert('an unnamed default entry boxes the other columns alongside a typed colum
   x = lt(tdf()) |> lt_interactive(filter = list(TRUE, grp = 'select'), pager = FALSE)
   (lti_eval(x, 't.querySelectorAll(".lti-filters > td > .lti-search").length') %==% '2')
   (lti_eval(x, 't.querySelectorAll(".lti-filters select").length') %==% '1')
-  # the box filters its own column, composing with the dropdown's default (grp "a")
+  # the box filters its own column (the dropdown adds no default filter of its own)
   box = 'var i = t.querySelector(".lti-filters > td > .lti-search");
          i.value = "Rash"; i.dispatchEvent(new Event("change"))'
   (lti_rows(x, box) %==% c('Rash'))

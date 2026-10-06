@@ -807,6 +807,9 @@
           ? a - b : String(a).localeCompare(String(b)));
         choices = vals.map(v => ({ value: String(v), label: String(v) }));
       }
+      // a leading blank is the "no filter" choice, so a select shows every row
+      // until the reader picks a value (and can always return to it)
+      if (!choices.some(o => o.value === "")) choices = [{ value: "", label: "" }, ...choices];
       return { ...spec, choices };
     }
     let { min, max } = spec;
@@ -929,7 +932,7 @@
         const o = cfg.choices.find(o => o.value === v);
         return o ? o.label : v;
       },
-      init: cfg => selExpr(cfg.selected ?? (cfg.choices[0] || {}).value ?? ""),
+      init: cfg => selExpr(cfg.selected ?? ""),
       build: (doc, cfg, setTerm) => {
         const w = makeSelect(doc, cfg.choices, v => setTerm(selExpr(v), ed)),
               ed = { el: w.el, reflect: t => { const v = selParse(t); w.set(v == null ? "" : v); } };
