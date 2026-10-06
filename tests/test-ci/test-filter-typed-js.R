@@ -79,3 +79,17 @@ assert('a "range" filter renders a two-thumb slider whose box filters numericall
   (lti_eval(x, 'parseFloat(t.querySelectorAll(".lti-thumb")[0].style.left) > 0', box)
    %==% 'true')
 })
+
+assert('a chip value summary updates only once its popover closes, not while editing', {
+  # the chip text is variable width; updating it live while dragging would shift
+  # the funnel (and popover) sideways, so it is deferred until the popover closes
+  x = lt(tdf()) |> lt_hide(~ n) |> lt_interactive(filter = list(n = 'range'), pager = FALSE)
+  js = 'var f = t.querySelector(".lti-chip .lti-funnel"); f.click();
+        var b = t.querySelector(".lti-chip .lti-pop input");
+        b.value = "x >= 6 && x <= 10"; b.onchange();
+        var during = t.querySelector(".lti-chip-cur").textContent;
+        t.ownerDocument.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+        var after = t.querySelector(".lti-chip-cur").textContent'
+  # empty while the popover is open, filled in only after it closes
+  (lti_eval(x, 'during + "|" + after', js) %==% '|6 – 10')
+})

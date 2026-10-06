@@ -890,7 +890,7 @@
 
   // A funnel button that toggles a floating panel built by `build(panel)`; closes
   // on an outside click or Escape. Returns the wrapper element.
-  function popover(doc, label, build) {
+  function popover(doc, label, build, onClose) {
     const wrap = elem(doc, "span", { className: "lti-pop" }),
           btn = elem(doc, "button", {
             type: "button", className: "lti-funnel", title: label,
@@ -907,9 +907,10 @@
       if (r.right > vw - 4) { panel.style.left = "auto"; panel.style.right = "0"; }
     };
     const open = on => {
+      const was = !panel.hidden;
       panel.hidden = !on;
       btn.setAttribute("aria-expanded", String(on));
-      if (on) place();
+      if (on) place(); else if (was) onClose && onClose();
     };
     btn.onclick = e => { e.stopPropagation(); open(panel.hidden); };
     on(doc, "click", e => { if (!wrap.contains(e.target)) open(false); });
@@ -982,7 +983,7 @@
       editors.push(wEd);
       panel.append(...[].concat(wEd.el));
       setTerm(kind.init(cfg), null);              // seed the configured default
-    });
+    }, () => showSummary());                       // refresh the chip text on close
     // a hidden column wraps the funnel in a chip (label + value summary); a
     // visible column shows the bare funnel under its own header
     let root = wrap, summary;
@@ -992,11 +993,14 @@
       summary = elem(doc, "span", { className: "lti-chip-cur" }, root);
       root.appendChild(wrap);
     }
-    mark = cur => {
-      root.classList.toggle("lti-on", !!cur);
-      if (summary) summary.textContent = kind.describe(cur, cfg);
-    };
+    // the active-state class tracks every change (color only, no reflow), but the
+    // chip's value text is a variable width, so a live update while dragging the
+    // slider would shift the funnel (and its popover) sideways; defer it to close
+    mark = cur => root.classList.toggle("lti-on", !!cur);
+    const showSummary = () =>
+      summary && (summary.textContent = kind.describe(state.filters[col] || "", cfg));
     mark(state.filters[col] || "");  // paint the seeded term
+    showSummary();
     return root;
   }
 
