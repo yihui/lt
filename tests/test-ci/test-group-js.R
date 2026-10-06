@@ -47,6 +47,24 @@ assert("column widths align past rowspan group columns", {
   (matches(html, '.*<colgroup><col><col style="width:9em"></colgroup>.*') %==% "")
 })
 
+assert("full-width control rows span the rowspan group columns too", {
+  # a rowspan group adds a leading column that is not in `_cols`; the table-wide
+  # control rows (head bar, pager, no-match row, detail) must span it as well, or
+  # they fall short of the table's full width
+  d = data.frame(g = c("A", "A", "B"), x = c(1, 2, 3), y = c(4, 5, 6))
+  x = lt(d) |> lt_group(~ g) |>
+    lt_interactive(pager = 2, search = TRUE, download = TRUE)
+  # 3 = 1 group column + 2 data columns
+  (lti_eval(x, 't.querySelector(".lti-head td").colSpan') %==% '3')
+  (lti_eval(x, 't.querySelector(".lti-pager-row td").colSpan') %==% '3')
+  miss = 'var s = t.querySelector(".lti-bar input[type=search]");
+          s.value = "zzz"; s.dispatchEvent(new Event("change"))'
+  (lti_eval(x, 't.querySelector(".lti-empty td").colSpan', miss) %==% '3')
+  xd = lt(d) |> lt_group(~ g) |> lt_interactive(detail = ~ y)
+  open = 't.querySelector(".lti-expand").click()'
+  (lti_eval(xd, 't.querySelector(".lti-detail td").colSpan', open) %==% '3')
+})
+
 assert("sort by groups reorders rows", {
   html = build(list(
     data = list(g = c("B", "A", "B", "A"), v = c(1, 2, 3, 4)),

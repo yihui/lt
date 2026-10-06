@@ -309,7 +309,10 @@
     // reorders its blocks (computeView pulls a group-column key out of the leaf
     // sort — see the `_rowspan` branch there)
     const nGroup = spec._rowspan ? spec._rowspan.length : 0,
-          allCols = nGroup ? [...spec._rowspan, ...cols] : cols;
+          allCols = nGroup ? [...spec._rowspan, ...cols] : cols,
+          // the table's full column count: a full-width row (control bar, pager,
+          // no-match placeholder, detail) must span the leading group columns too
+          nAll = nGroup + cols.length;
     const disp = captureDisplay(el, cols, order),
           // the bottom header row: the one whose cells line up with `cols`
           hrow = [...$$(el, "thead tr")].pop(),
@@ -340,7 +343,7 @@
             });
       const body = $(tmp.content, "tbody");
       if (!rows.length)  // no matches: a neutral symbol spanning all columns
-        body.innerHTML = `<tr class="lti-empty"><td colspan="${cols.length}">—</td></tr>`;
+        body.innerHTML = `<tr class="lti-empty"><td colspan="${nAll}">—</td></tr>`;
       else postSwap.forEach(f => f(body, vr));
       $(el, "tbody").replaceWith(body);
       sync(view.length);
@@ -378,7 +381,7 @@
     // head-bar filter chips, then the search box (which absorbs the free space)
     const headBar = (opts.search !== false || opts.hide || barCols.length || opts.download) ?
       elem(el.ownerDocument, "div", { className: "lti-bar" },
-        fullRow(el.tHead || el.createTHead(), "lti-head", cols.length, 0)) : null;
+        fullRow(el.tHead || el.createTHead(), "lti-head", nAll, 0)) : null;
     // the data-column header labels (skipping any leading group cell), read
     // before sort/resize decorate the cells, so the column menu can list the
     // displayed labels rather than the raw names
@@ -410,11 +413,11 @@
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
     if (opts.detail)
-      postSwap.push(addDetail(el, spec, cols, state, opts.detail, () => refresh(false)));
+      postSwap.push(addDetail(el, spec, nAll, state, opts.detail, () => refresh(false)));
     // `pager` is the page sizes to offer, the first one being the initial
     if (opts.pager) {
       const sizes = Array.isArray(opts.pager) ? opts.pager : [10, 25, 50, 100];
-      sync = addPaginate(el, cols, sizes, nRow, state, () => refresh(false));
+      sync = addPaginate(el, nAll, sizes, nRow, state, () => refresh(false));
       refresh();  // cut the full render down to the first page
     } else if (state.sort.length || opts.detail) {
       // core rendered the rows in file order; re-render to apply an initial
@@ -573,8 +576,10 @@
   // interactive). Expanded rows are tracked by their original index, so detail
   // follows its row across sort/filter/page. Resolving `detailOpt` is deferred
   // to the first expand, so a global built after the table still works.
-  function addDetail(el, spec, cols, state, detailOpt, rerender) {
-    const doc = el.ownerDocument, nCol = cols.length, cache = {};
+  function addDetail(el, spec, nCol, state, detailOpt, rerender) {
+    // `nCol` is the table's full width, so the detail row spans the leading
+    // rowspan group columns too
+    const doc = el.ownerDocument, cache = {};
     state.expanded = new Set();
     // a row as an object keyed by column (every column, including ones hidden
     // from the table), built from `src`: spec.data gives raw values, spec._display
@@ -1017,13 +1022,13 @@
   // numbers only: « ‹ › » for first/previous/next/last and `from–to / total`
   // for the position. Returns the callback that updates them for a new row
   // count.
-  function addPaginate(el, cols, sizes, nRow, state, repage) {
+  function addPaginate(el, nCol, sizes, nRow, state, repage) {
     const doc = el.ownerDocument;
     let foot = el.tFoot;
     // reuse the core footer if there is one, so the pager is sized like it
     if (!foot) (foot = el.createTFoot()).className = "lt-footer";
     const bar = elem(doc, "div", { className: "lti-pager" },
-            fullRow(foot, "lti-pager-row", cols.length, -1)),
+            fullRow(foot, "lti-pager-row", nCol, -1)),
           pos = elem(doc, "span", { className: "lti-pos" });
     state.pageSize = sizes[0];
     // the last page is clamped by pageSlice(), so a large number will do
