@@ -391,7 +391,7 @@
     // the under-header filter row: needed when a default applies to visible
     // columns or any named column is itself visible
     if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => cols.includes(c)))))
-      addFilter(hrow, cols, flt, spec.data, state, refresh);
+      addFilter(hrow, cols, flt, spec.data, state, refresh, nGroup);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     // the icon buttons sit together in a group that keeps its natural width;
@@ -547,10 +547,13 @@
   // normalized { default?, cols? }: each visible column takes its named spec, or
   // the default when unnamed. A `true` spec is a plain search box; a typed spec
   // is a funnel + popover under the header (see typedFilter).
-  function addFilter(hrow, cols, flt, data, state, refresh) {
+  function addFilter(hrow, cols, flt, data, state, refresh, nGroup = 0) {
     const doc = hrow.ownerDocument,
           row = elem(doc, "tr", { className: "lti-filters" }),
           def = flt.default, explicit = flt.cols || {};
+    // leading rowspan group columns carry no filter, but their cells must still
+    // be present so each data column's box lines up under its own header
+    for (let i = 0; i < nGroup; i++) elem(doc, "td", {}, row);
     cols.forEach(c => {
       const cell = elem(doc, "td", {}, row),
             spec = c in explicit ? explicit[c] : def;

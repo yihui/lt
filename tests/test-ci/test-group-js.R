@@ -65,6 +65,17 @@ assert("full-width control rows span the rowspan group columns too", {
   (lti_eval(xd, 't.querySelector(".lti-detail td").colSpan', open) %==% '3')
 })
 
+assert("an under-header filter lines up past the rowspan group columns", {
+  # the filter row leads with the group columns' (empty) cells, so each column's
+  # funnel sits under its own header rather than shifting left by the group count
+  d = data.frame(g = c("A", "A", "B"), x = c(1, 2, 3), y = c(4, 5, 6))
+  x = lt(d) |> lt_group(~ g) |> lt_interactive(filter = list(y = "range"))
+  # 3 = 1 group cell + x + y; the funnel's cell is the last one (column y)
+  (lti_eval(x, 't.querySelectorAll(".lti-filters > td").length') %==% '3')
+  (lti_eval(x, 't.querySelector(".lti-filters .lti-funnel").closest("td").cellIndex')
+   %==% lti_eval(x, '[...t.querySelectorAll("thead th")].find(th => th.textContent.trim() === "y").cellIndex'))
+})
+
 assert("sort by groups reorders rows", {
   html = build(list(
     data = list(g = c("B", "A", "B", "A"), v = c(1, 2, 3, 4)),
