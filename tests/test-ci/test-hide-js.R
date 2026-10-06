@@ -82,6 +82,28 @@ assert("hiding a column also hides its filter-row and plot-axis-footer cells", {
   (lti_eval(x, foot, paste(off0, sortA, sep = ';')) %==% 'true')
 })
 
+assert("hiding a column keeps the spanner row aligned with the body", {
+  # the spanner row merges cells, so a column is not at cell index i there as in
+  # every other row; the hide loop must shrink the covering spanner's colSpan
+  # (and drop it once all its columns are gone) rather than skip the row, or the
+  # spanners drift off their columns
+  d = data.frame(a = 1:3, b = 4:6, c = 7:9, e = 10:12)
+  x = lt(d) |> lt_spanner("G1", ~ a + b) |> lt_spanner("G2", ~ c + e) |>
+    lt_interactive(hide = ~ a, pager = FALSE)
+  g1 = 't.querySelector(".lt-spanner-row").children[0]'
+  # a starts hidden: G1 (over a + b) shrinks from 2 to 1 but still shows (b left)
+  (lti_eval(x, paste0(g1, ".colSpan")) %==% '1')
+  (lti_eval(x, paste0(g1, ".hidden")) %==% 'false')
+  # hiding b too empties G1, so it hides; G2 is untouched
+  offb = box_click(1)
+  (lti_eval(x, paste0(g1, ".hidden"), offb) %==% 'true')
+  (lti_eval(x, 't.querySelector(".lt-spanner-row").children[1].colSpan', offb) %==% '2')
+  # re-showing both restores G1's full span (idempotent across toggles)
+  back = paste(offb, box_click(1), box_click(0), sep = ';')
+  (lti_eval(x, paste0(g1, ".colSpan"), back) %==% '2')
+  (lti_eval(x, paste0(g1, ".hidden"), back) %==% 'false')
+})
+
 assert("hiding a column leaves an open detail row's full-width cell alone", {
   # the hide loop keys cells by column index, but a detail row has one cell
   # spanning every column; it must skip that cell, not take it for column 0's

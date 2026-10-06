@@ -736,18 +736,41 @@
     postSwap.push(body => hidden.forEach(i => {
       for (const tr of body.rows) setCell(tr, i, true);
     }));
+    // The spanner row merges cells, so column i is not at cell index i there as
+    // in every other row; handle it separately (applySpan). Map each spanner-row
+    // cell to the column range it covers (skipping the leading row-group
+    // placeholders): hide a plain colspan-1 slot outright, and shrink a real
+    // spanner's colSpan — hiding it only once all its columns are gone — so the
+    // spanners stay aligned with the body as columns come and go.
+    const nGrp = [...hrow.children].length - dataCells(hrow).length,
+          spanRow = [...el.rows].find(tr => tr.classList.contains("lt-spanner-row")),
+          spanCells = spanRow ? dataCells(spanRow).slice(nGrp) : [];
+    let col0 = 0;
+    spanCells.forEach(c => { c._span = c.colSpan; c._start = col0; col0 += c._span; });
+    // Recompute every spanner cell from the current `hidden` set (idempotent, so
+    // it is safe to call on each apply): a real spanner's colSpan is its columns
+    // still showing, and it vanishes once all are hidden.
+    const applySpan = () => {
+      for (const c of spanCells) {
+        let gone = 0;
+        for (let j = c._start; j < c._start + c._span; j++) if (hidden.has(j)) gone++;
+        c.colSpan = Math.max(1, c._span - gone);
+        c.hidden = gone >= c._span;
+      }
+    };
     // show/hide column i everywhere it lives: the <col> (fixed layout only) and,
     // one row at a time, every per-column cell — the header labels, the filter
-    // boxes, the body cells, and a plot's axis footer. The spanner row is the one
-    // row whose merged cells break the 1:1 column-to-cell index, so skip it; the
-    // setCell colspan guard skips the other full-width rows (search bar, detail,
-    // footnotes, pager). <thead>/<tfoot> survive a <tbody> swap, so this one pass
-    // keeps them in sync; only the fresh <tbody> is re-hidden (via postSwap).
+    // boxes, the body cells, and a plot's axis footer, plus the spanner row via
+    // applySpan. The setCell colspan guard skips the other full-width rows
+    // (search bar, detail, footnotes, pager). <thead>/<tfoot> survive a <tbody>
+    // swap, so this one pass keeps them in sync; only the fresh <tbody> is
+    // re-hidden (via postSwap).
     const apply = i => {
       const on = hidden.has(i);
       if (layout?.dataCs[i]) layout.dataCs[i].hidden = on;
       for (const tr of el.rows)
         if (!tr.classList.contains("lt-spanner-row")) setCell(tr, i, on);
+      applySpan();
     };
     const wrap = elem(doc, "span", { className: "lti-cols" }, cell),
           btn = elem(doc, "button", {
