@@ -677,8 +677,8 @@ lt_errorbar = function(
     limits = if (length(v)) range(v) else c(0, 1)
   }
   cl = plot_colors(color, labels, vals)
-  # stack more series into a taller cell by default (fits ~12px per series)
-  if (is.null(height)) height = if (n > 1) n * 12 + 4 else 16
+  # stack more series into a taller cell by default (~9px per series)
+  if (is.null(height)) height = if (n > 1) n * 9 + 4 else 16
   # the plot is drawn in the first value column's cells; hide the rest
   if (hide && length(hid <- setdiff(all_cols, vals[1])))
     x = add_op(x, 'hide', columns = I(hid))

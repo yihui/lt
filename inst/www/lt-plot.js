@@ -74,7 +74,7 @@
     const num = k => { const v = data[k]?.[r - 1]; return u.isNum(v) ? v : null; };
     const H = eb.height, n = eb.cols.length, x = v => ebX(eb, v),
           yOf = i => stackY(i, n, H),  // one track per series, stacked
-          cap = Math.min(4, (H / n - 1) / 2);  // half-height of the end caps
+          cap = Math.min(3, (H / n - 1) / 2);  // half-height of the end caps
     let s = `<svg class="lt-eb" width="${eb.width}" height="${H}">`;
     if (eb.ref != null)
       s += `<line class="lt-eb-ref" x1="${x(eb.ref)}" y1="0" x2="${x(eb.ref)}" y2="${H}"/>`;

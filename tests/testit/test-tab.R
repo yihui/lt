@@ -218,7 +218,7 @@ assert("lt_errorbar() stacks several series with colors and a legend", {
   (length(op$colors) %==% 2L)
   # scale spans every column's values; default height grows with series count
   (as.numeric(c(op$min, op$max)) %==% c(1, 9))
-  (op$height %==% (2 * 12 + 4))
+  (op$height %==% (2 * 9 + 4))
   # every column but the first value column is hidden
   (op_of(e, "hide")$columns %==% I(c("b", "c", "d", "e", "f")))
   # the merged header labels the first value column with all value names
