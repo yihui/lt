@@ -807,9 +807,9 @@ lt_dotplot = function(
   }
   cl = plot_colors(color, labels, cols)
   colors = cl$colors; labels = cl$labels
-  # a staggered plot needs a taller cell to spread the tracks out (one ~12px
-  # track per column); an un-staggered plot keeps its single-line default
-  if (is.null(height)) height = if (stagger && n > 1) n * 12 + 4 else 16
+  # a staggered plot needs a taller cell to spread the tracks out (one ~9px
+  # track per column, matching lt_errorbar); un-staggered keeps the single line
+  if (is.null(height)) height = if (stagger && n > 1) n * 9 + 4 else 16
   if (hide && n > 1) x = add_op(x, 'hide', columns = I(cols[-1]))
   # the plot replaces the first column's cells but shows every column, so label
   # that header with all the column names joined (not just the first, which is

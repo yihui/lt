@@ -267,7 +267,7 @@ assert("lt_dotplot() records one dot per column, colors, and a legend", {
   (op_of(lt_dotplot(x, ~ a + b + c), "dotplot")$height %==% 16)
   st = op_of(lt_dotplot(x, ~ a + b + c, stagger = TRUE), "dotplot")
   (st$stagger %==% TRUE)
-  (st$height %==% (3 * 12 + 4))
+  (st$height %==% (3 * 9 + 4))
   # an explicit height overrides the staggered default
   (op_of(lt_dotplot(x, ~ a + b + c, stagger = TRUE, height = 20),
     "dotplot")$height %==% 20)
