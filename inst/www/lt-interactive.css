@@ -139,6 +139,15 @@
     }
   }
 
+  /* the CSV download button: an icon button, same footprint as the eye button */
+  .lti-download {
+    border: none;
+    padding: 0;
+    width: 1.2em;
+    height: 1.2em;
+    background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="1.5"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5"/><path d="M2 11v3h12v-3"/></svg>');
+  }
+
   /* typed filter chips sit after the search box in the head bar; each is a label,
    * a summary of the current filter, and a funnel popping up the widget + box */
   .lti-chip {

@@ -12,7 +12,8 @@ lt_interactive(
   pager = c(10, 25, 50, 100),
   resize = FALSE,
   hide = NULL,
-  detail = NULL
+  detail = NULL,
+  download = FALSE
 )
 }
 \arguments{
@@ -80,6 +81,13 @@ called as \verb{(row, index, display)} — \code{row} the raw values, \code{disp
 formatted text, each keyed by column name — and returns a table spec, which
 may carry its own \code{interactive} field to make the detail table interactive.
 \code{NULL} (the default) adds no row detail.}
+
+\item{download}{Whether to add a button that downloads the table as a CSV
+file. The file holds the current view (every row the filters and search
+keep, in sort order, across all pages) of the table's columns, using the
+displayed cell text. \code{TRUE} adds the button with a default file name; a
+string sets the file name (a \code{.csv} extension is added if missing).
+\code{FALSE} (the default) adds no button.}
 }
 \value{
 \code{x} with interactivity enabled.
@@ -130,4 +138,7 @@ lt(head(mtcars)) |> lt_interactive(
   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
     value: [i, d.mpg] } })')
 )
+# a button to download the current view as a CSV file
+lt(head(mtcars)) |> lt_interactive(download = TRUE)
+lt(head(mtcars)) |> lt_interactive(download = 'cars.csv')
 }
