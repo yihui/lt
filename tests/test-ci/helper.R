@@ -88,8 +88,18 @@ by = function(...) list(sort = list(...))
 
 lti_session = function() {
   if (is.null(.browser$b)) {
+    # give Chrome a private temp dir so its scratch files (com.google.Chrome.*)
+    # land there and are deleted with it, not left to trip R CMD check's
+    # detritus NOTE (chromote launches its own browser, so xfun's browser
+    # helpers don't cover this one)
+    .browser$tmp = tempfile('lt-chrome-'); dir.create(.browser$tmp)
+    old = xfun::set_envvar(c(TMPDIR = .browser$tmp))
     .browser$b = chromote::ChromoteSession$new()
-    reg.finalizer(.browser, function(e) try(e$b$close(), silent = TRUE), onexit = TRUE)
+    xfun::set_envvar(old)
+    reg.finalizer(.browser, function(e) {
+      try(e$b$close(), silent = TRUE)
+      unlink(e$tmp, recursive = TRUE, force = TRUE)
+    }, onexit = TRUE)
   }
   .browser$b
 }
