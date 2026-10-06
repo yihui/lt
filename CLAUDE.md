@@ -94,6 +94,23 @@ code already shows:
 4.  **US spelling** in all docs, comments, and example text (e.g., "color" not
     "colour", "center" not "centre").
 
+### JavaScript Code Style
+
+Match the surrounding code in `inst/www/*.js`: 2-space indent, double quotes,
+template literals, arrow functions, compact one-liners where they stay readable.
+Beyond that:
+
+1.  **Prefer modern JS**: use current syntax and built-ins freely (arrow
+    functions, template literals, optional chaining `?.`, nullish coalescing
+    `??`, spread/rest, destructuring, `for...of`, etc.). The runtime targets
+    current browsers; no transpilation, so there is no need to write to an old
+    baseline.
+2.  **Join consecutive `const`s**: collapse a run of adjacent simple `const`
+    declarations into one comma-separated statement (`const a = 1, b = 2;`)
+    rather than one `const` per line. Exceptions, kept on their own line: a
+    `const` whose value is a long or multi-line function, and a `const` that
+    carries its own detailed comment — so the comment and structure read clearly.
+
 ### Git workflow
 
 1.  **Never force push** unless explicitly told to.
