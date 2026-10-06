@@ -31,7 +31,10 @@
     };
     const d = niceNum(niceNum(hi - lo, false) / (n - 1), true),
           dec = Math.max(0, -Math.floor(Math.log10(d))), ticks = [];
-    for (let v = Math.ceil(lo / d) * d; v <= hi + d / 2; v += d)
+    // stay within [lo, hi]: a tick past hi would be clamped onto the right edge
+    // (see ebX), bunching the last gap. The small tolerance only absorbs the
+    // float drift of landing exactly on hi.
+    for (let v = Math.ceil(lo / d) * d; v <= hi + d * 1e-9; v += d)
       ticks.push(+v.toFixed(dec));
     return ticks;
   }
