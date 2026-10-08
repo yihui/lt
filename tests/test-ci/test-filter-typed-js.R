@@ -121,10 +121,20 @@ assert('a "checklist" seeds a `selected` subset and chips when the column is hid
   (lti_eval(x, 't.querySelector(".lti-chip-cur").textContent') %==% 'a')
 })
 
-assert('LT.ui exposes the reusable popover and checklist builders', {
+assert('LT.ui exposes the reusable popover, checklist, and chip builders', {
   x = itbl()
-  (lti_eval(x, 'typeof LT.ui.popover + "," + typeof LT.ui.checklist')
-   %==% 'function,function')
+  (lti_eval(x, 'typeof LT.ui.popover + "," + typeof LT.ui.checklist + "," + typeof LT.ui.chip')
+   %==% 'function,function,function')
+  # the chip builder: a labelled wrapper that holds the caller's control and
+  # exposes mark()/summarize(); its parts carry the same classes as a typed chip
+  chip = 'var c = LT.ui.chip(document, "Group", document.createElement("button"));
+    c.summarize("2 / 3"); c.mark(true); document.body.append(c.el);
+    var el = document.querySelector("body > .lti-chip")'
+  (lti_eval(x,
+    '[el.querySelector(".lti-chip-name").textContent,
+      el.querySelector(".lti-chip-cur").textContent,
+      el.classList.contains("lti-on"),
+      el.querySelector("button") !== null].join("|")', chip) %==% 'Group|2 / 3|true|true')
   # the checklist builder: labels of {value,label}, batch onInput of checked values
   build = 'window.OUT = null;
     var cl = LT.ui.checklist(document, [{value:"a",label:"A"},{value:"b",label:"B"}],

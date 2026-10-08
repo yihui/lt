@@ -165,6 +165,13 @@ reporting it done — the `tests/test-ci/helper.R` helpers (`lti_eval`,
 `lti_rows`) drive one, or use `chromote` / `xfun::browser_dom()`. Check that the
 actual DOM is right, not just that the source matches.
 
+`lti_eval(x, expr, js)` wraps `expr` in `(...)` to stamp it on `<body>`, so
+`expr` must be a single JavaScript *expression* — multi-statement setup (`var`
+declarations, assignments) belongs in the `js` argument, which runs before it.
+Putting statements in `expr` makes `(var c = ...)` a syntax error: the load
+handler never runs, nothing is stamped, and the test fails only as a probe
+timeout (`failed to read the probe value from the browser`), not a clear error.
+
 ### Git workflow
 
 1.  **Never force push** unless explicitly told to.

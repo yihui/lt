@@ -405,14 +405,20 @@
       addColumnToggle(icons, el, hrow, cols, labels, opts.hide, layout, postSwap);
     if (opts.download) addDownload(icons, el, spec, cols, labels, opts.download);
     // the chips share a group so the bar has three parts (icons, chips, search)
-    // with a wider gap between them than within each
-    if (barCols.length) addControlFilters(
-      elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar),
-      barCols, flt.cols, spec.data, state, refresh);
+    // with a wider gap between them than within each. The group is created
+    // whenever there is a bar (even with no typed-filter chips) so a caller can
+    // drop its own chip in beside them via el._lt.chips; an empty group collapses
+    // (CSS :empty) so it adds no gap.
+    const chips = headBar ?
+      elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
+    if (barCols.length) addControlFilters(chips, barCols, flt.cols, spec.data, state, refresh);
     if (opts.search !== false) addSearch(headBar, el, state, refresh);
     // the assembled control bar (`.lti-bar`), or null when the table has no
-    // table-wide controls, so a caller can append its own widget to it
+    // table-wide controls, for a caller to append its own widget to; `chips` is
+    // its chip group (null only when there is no bar), the right home for a
+    // caller's own labelled chip
     el._lt.bar = headBar;
+    el._lt.chips = chips;
     // row detail re-renders through the same seam: toggling a row only changes
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
@@ -928,6 +934,24 @@
     };
   }
 
+  // A control-bar chip: a label, the caller's control (a funnel popover) dropped
+  // in, and a value-summary slot. `mark(on)` toggles the active highlight (color
+  // only, no reflow); `summarize(text)` sets the readout. Returns { el, mark,
+  // summarize }. The typed-filter chips use it, and it is exposed on LT.ui so a
+  // caller building its own control-bar widget (e.g. forestly's treatment-group
+  // picker) gets the same chip rather than hand-rolling the DOM.
+  function makeChip(doc, label, control) {
+    const el = elem(doc, "span", { className: "lti-chip" });
+    elem(doc, "span", { className: "lti-chip-name", textContent: label }, el);
+    const cur = elem(doc, "span", { className: "lti-chip-cur" }, el);
+    if (control) el.appendChild(control);
+    return {
+      el,
+      mark: on => el.classList.toggle("lti-on", !!on),
+      summarize: text => (cur.textContent = text)
+    };
+  }
+
   // A two-thumb range slider from a track, a fill band, and two <button> thumbs —
   // no native <input type=range>, so no vendor pseudo-element CSS and no stacked-
   // input z-index hacks. Thumbs drag via the shared drag() helper and step with
@@ -1080,7 +1104,8 @@
     const cfg = resolveSpec(spec, data[col] || []),
           kind = KINDS[cfg.type],
           editors = [];       // the expression box + widget, kept in sync
-    let mark = () => {};       // paints the active state once `root` exists (below)
+    let mark = () => {},       // paints the active state once `root` exists (below)
+        showSummary = () => {};  // updates the chip's value readout (chip only)
     // set the one term, re-render, and reflect it into every editor but the one
     // that caused the change (`from`), so the slider and box update each other
     const setTerm = (expr, from) => {
@@ -1103,21 +1128,20 @@
       panel.append(...[].concat(wEd.el));
       setTerm(kind.init(cfg), null);              // seed the configured default
     }, () => showSummary());                       // refresh the chip text on close
-    // a hidden column wraps the funnel in a chip (label + value summary); a
-    // visible column shows the bare funnel under its own header
-    let root = wrap, summary;
+    // a hidden column wraps the funnel in a labelled chip (via makeChip); a
+    // visible column shows the bare funnel under its own header. The active-state
+    // class tracks every change, but the chip's value text is variable width, so
+    // a live update while dragging the slider would shift the funnel (and its
+    // popover) sideways; the summary is deferred to the popover's close instead.
+    let root = wrap;
     if (chipLabel != null) {
-      root = elem(doc, "span", { className: "lti-chip" });
-      elem(doc, "span", { className: "lti-chip-name", textContent: chipLabel }, root);
-      summary = elem(doc, "span", { className: "lti-chip-cur" }, root);
-      root.appendChild(wrap);
+      const chip = makeChip(doc, chipLabel, wrap);
+      root = chip.el;
+      mark = chip.mark;
+      showSummary = () => chip.summarize(kind.describe(state.filters[col] || "", cfg));
+    } else {
+      mark = cur => root.classList.toggle("lti-on", !!cur);
     }
-    // the active-state class tracks every change (color only, no reflow), but the
-    // chip's value text is a variable width, so a live update while dragging the
-    // slider would shift the funnel (and its popover) sideways; defer it to close
-    mark = cur => root.classList.toggle("lti-on", !!cur);
-    const showSummary = () =>
-      summary && (summary.textContent = kind.describe(state.filters[col] || "", cfg));
     mark(state.filters[col] || "");  // paint the seeded term
     showSummary();
     return root;
@@ -1185,8 +1209,8 @@
 
   LT.plugins.interactive = { matcher, computeView, pageSlice, enhance };
   // reusable control bits for callers building their own control-bar widgets
-  // (with el._lt.bar): a funnel popover and a checklist of checkboxes
-  LT.ui = Object.assign(LT.ui || {}, { popover, checklist: makeChecklist });
+  // (with el._lt.bar): a labelled chip, a funnel popover, and a checkbox list
+  LT.ui = Object.assign(LT.ui || {}, { popover, checklist: makeChecklist, chip: makeChip });
   LT.onMount.push(onMount);
   // Core drains its render queue before this file loads, so the callback above
   // only sees later renders; enhance the tables already on the page now.

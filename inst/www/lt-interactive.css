@@ -111,6 +111,9 @@
     }
     .lti-chips {
       gap: 0.5em;
+      /* always present as a drop target for a caller's chip (el._lt.chips); when
+         it holds none, collapse it so it adds no gap between icons and search */
+      &:empty { display: none; }
     }
     /* direct child only: a chip's popover holds its own `.lti-search` box */
     & > .lti-search {

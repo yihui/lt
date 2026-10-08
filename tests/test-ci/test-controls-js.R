@@ -37,6 +37,21 @@ assert("el._lt.bar exposes the control bar for a caller to append a widget", {
   (lti_eval(itbl(search = FALSE, pager = FALSE), 't._lt.bar === null') %==% 'true')
 })
 
+assert("el._lt.chips is the chip group a caller drops a labelled chip into", {
+  # the group exists whenever there is a bar (even with no typed-filter chips), so
+  # a caller's own chip (e.g. forestly's group picker) sits beside lt's own
+  x = itbl()
+  (lti_eval(x, 't._lt.chips.className') %==% 'lti-chips')
+  (lti_eval(x, 't._lt.chips.parentNode === t._lt.bar') %==% 'true')
+  # empty by default, so CSS :empty collapses it (no stray gap) until a chip lands
+  (lti_eval(x, 't._lt.chips.children.length') %==% '0')
+  add = 't._lt.chips.appendChild(
+    LT.ui.chip(document, "G", document.createElement("button")).el)'
+  (lti_eval(x, 't.querySelectorAll(".lti-bar .lti-chips .lti-chip").length', add) %==% '1')
+  # no bar means no chip group either
+  (lti_eval(itbl(search = FALSE, pager = FALSE), 't._lt.chips === null') %==% 'true')
+})
+
 assert("a table rendered on demand is enhanced like one rendered in place", {
   # forestly's lazy path: a spec turned into a table long after the page loaded
   x = itbl(pager = 2)
