@@ -979,7 +979,7 @@ LT.build({
   interactive: {
     search: false, pager: 6,
     filter: { default: true, cols: {
-      cyl: { type: "checklist" }, wt: { type: "range" }, gear: { type: "select" }
+      cyl: { type: "select" }, wt: { type: "range" }, hp: { type: "checklist" }
     } }
   }
 });
