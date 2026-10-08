@@ -12,7 +12,7 @@ $(document).ready(() => {
       const el = it.href
         ? Object.assign(document.createElement('link'), { rel: 'stylesheet', href: it.href })
         : Object.assign(document.createElement('style'), { textContent: it.content });
-      document.head.appendChild(el);
+      document.head.append(el);
     }
   };
   const binding = new Shiny.OutputBinding();

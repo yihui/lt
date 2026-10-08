@@ -578,9 +578,9 @@
         const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
         onType(input, v => { v ? (state.filters[c] = v) : delete state.filters[c]; refresh(); });
       } else                                       // a typed funnel under the header
-        cell.appendChild(typedFilter(doc, c, spec, data, state, refresh, null));
+        cell.append(typedFilter(doc, c, spec, data, state, refresh, null));
     });
-    hrow.parentNode.appendChild(row);
+    hrow.after(row);
   }
 
   // Expandable row detail. `detailOpt` is either an array of column names (the
@@ -944,7 +944,7 @@
     const el = elem(doc, "span", { className: "lti-chip" });
     elem(doc, "span", { className: "lti-chip-name", textContent: label }, el);
     const cur = elem(doc, "span", { className: "lti-chip-cur" }, el);
-    if (control) el.appendChild(control);
+    if (control) el.append(control);
     return {
       el,
       mark: on => el.classList.toggle("lti-on", !!on),
@@ -1160,7 +1160,7 @@
   function addControlFilters(cell, barCols, cfg, data, state, refresh) {
     const doc = cell.ownerDocument;
     for (const col of barCols)
-      cell.appendChild(
+      cell.append(
         typedFilter(doc, col, cfg[col], data, state, refresh, cfg[col].label || col));
   }
 
@@ -1188,7 +1188,7 @@
       b.onclick = () => { state.page = steps[i](state.page); repage(); };
       return b;
     });
-    bar.appendChild(pos);
+    bar.append(pos);
     // no dropdown when even the smallest size holds every row (none would split)
     if (sizes.length > 1 && nRow > Math.min(...sizes.filter(n => n > 0))) {
       const sel = elem(doc, "select", { "aria-label": "Rows per page" }, bar);
