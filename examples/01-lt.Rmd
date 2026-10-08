@@ -848,13 +848,13 @@ can keep several at once.
 A typed filter on a column hidden with `lt_hide()` has no header to sit
 under, so it moves into the control bar as a labelled chip showing the
 column's name and the current value; clicking anywhere on the chip opens its
-control. Here `gear` is hidden yet still filterable through its chip.
+control. Here `mpg` is hidden yet still filterable through its chip.
 
 ```{r}
 lt(d) |>
-  lt_hide(~ gear) |>
+  lt_hide(~ mpg) |>
   lt_interactive(
-    filter = list(TRUE, cyl = "checklist", wt = "range", gear = "select"),
+    filter = list(TRUE, mpg = "range", cyl = "checklist", wt = "range", gear = "select"),
     search = FALSE, pager = 5
   )
 ```
