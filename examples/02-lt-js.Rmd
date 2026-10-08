@@ -970,16 +970,21 @@ LT.build({
 });
 ```
 
-Typed filters — a checklist on `cyl`, a range slider on `wt`, a dropdown on
-`gear` — with a plain box as the default for the other columns:
+Typed filters — a dropdown on `cyl`, a range slider on `wt`, a checklist on
+`hp` — with a plain box as the default for the other columns. A typed filter
+on a *hidden* column has no header to sit under, so it moves into the control
+bar as a labelled chip (clicking anywhere on the chip opens its control):
+here `gear` is hidden yet still filterable through its chip.
 
 ```{js}
 LT.build({
   data: mtcars,
   interactive: {
     search: false, pager: 6,
+    hide: { hidden: ["gear"] },
     filter: { default: true, cols: {
-      cyl: { type: "select" }, wt: { type: "range" }, hp: { type: "checklist" }
+      cyl: { type: "select" }, wt: { type: "range" }, hp: { type: "checklist" },
+      gear: { type: "select" }
     } }
   }
 });

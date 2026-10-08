@@ -166,6 +166,10 @@
   /* typed filter chips sit after the search box in the head bar; each is a label,
    * a summary of the current filter, and a funnel popping up the widget + box */
   .lti-chip {
+    /* the whole chip is the popover's click target and the box its panel is
+     * positioned against, so the panel opens flush with the chip's left edge */
+    position: relative;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 0.3em;
@@ -182,6 +186,8 @@
       color: #555;
       font-variant-numeric: tabular-nums;
     }
+    /* let the panel resolve against the chip, not the inner funnel wrap */
+    .lti-pop { position: static; }
   }
   .lti-pop {
     position: relative;

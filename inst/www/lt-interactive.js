@@ -578,9 +578,9 @@
         const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
         onType(input, v => { v ? (state.filters[c] = v) : delete state.filters[c]; refresh(); });
       } else                                       // a typed funnel under the header
-        cell.appendChild(typedFilter(doc, c, spec, data, state, refresh, null));
+        cell.append(typedFilter(doc, c, spec, data, state, refresh, null));
     });
-    hrow.parentNode.appendChild(row);
+    hrow.after(row);
   }
 
   // Expandable row detail. `detailOpt` is either an array of column names (the
@@ -944,7 +944,7 @@
     const el = elem(doc, "span", { className: "lti-chip" });
     elem(doc, "span", { className: "lti-chip-name", textContent: label }, el);
     const cur = elem(doc, "span", { className: "lti-chip-cur" }, el);
-    if (control) el.appendChild(control);
+    if (control) el.append(control);
     return {
       el,
       mark: on => el.classList.toggle("lti-on", !!on),
@@ -1008,8 +1008,10 @@
   }
 
   // A funnel button that toggles a floating panel built by `build(panel)`; closes
-  // on an outside click or Escape. Returns the wrapper element.
-  function popover(doc, label, build, onClose) {
+  // on an outside click or Escape. Returns the wrapper element. `host`, when
+  // given, is a larger element (a chip) that becomes the click target in place of
+  // the funnel, so the whole chip toggles and its panel aligns with the chip.
+  function popover(doc, label, build, onClose, host) {
     const wrap = elem(doc, "span", { className: "lti-pop" }),
           btn = elem(doc, "button", {
             type: "button", className: "lti-funnel", title: label,
@@ -1037,8 +1039,12 @@
       btn.setAttribute("aria-expanded", String(on));
       if (on) place(); else if (was) onClose && onClose();
     };
-    btn.onclick = e => { e.stopPropagation(); open(panel.hidden); };
-    on(doc, "click", e => { if (!wrap.contains(e.target)) open(false); });
+    // the click target is the whole chip when hosted in one (so a chip's panel
+    // opens flush with the chip's left edge via CSS), else the funnel wrap; a
+    // click inside the open panel must not toggle it shut
+    const anchor = host || wrap;
+    anchor.onclick = e => { if (!panel.contains(e.target)) open(panel.hidden); };
+    on(doc, "click", e => { if (!anchor.contains(e.target)) open(false); });
     on(doc, "keydown", e => { if (e.key === "Escape") open(false); });
     return wrap;
   }
@@ -1115,6 +1121,11 @@
       editors.forEach(e => e !== from && e.reflect(cur));
       mark(cur);
     };
+    // a hidden column wraps the funnel in a labelled chip (via makeChip), which
+    // also becomes the popover's click target; a visible column shows the bare
+    // funnel under its own header. Build the chip first so it can host the
+    // popover.
+    const chip = chipLabel && makeChip(doc, chipLabel);
     const wrap = popover(doc, `Filter ${cfg.label || col}`, panel => {
       const box = elem(doc, "input", {
         type: "search", className: "lti-search",
@@ -1127,15 +1138,13 @@
       editors.push(wEd);
       panel.append(...[].concat(wEd.el));
       setTerm(kind.init(cfg), null);              // seed the configured default
-    }, () => showSummary());                       // refresh the chip text on close
-    // a hidden column wraps the funnel in a labelled chip (via makeChip); a
-    // visible column shows the bare funnel under its own header. The active-state
-    // class tracks every change, but the chip's value text is variable width, so
-    // a live update while dragging the slider would shift the funnel (and its
-    // popover) sideways; the summary is deferred to the popover's close instead.
+    }, () => showSummary(), chip && chip.el);      // refresh the chip text on close
+    // the active-state class tracks every change, but the chip's value text is
+    // variable width, so a live update while dragging the slider would shift the
+    // chip (and its popover) sideways; the summary is deferred to the close.
     let root = wrap;
-    if (chipLabel != null) {
-      const chip = makeChip(doc, chipLabel, wrap);
+    if (chip) {
+      chip.el.append(wrap);
       root = chip.el;
       mark = chip.mark;
       showSummary = () => chip.summarize(kind.describe(state.filters[col] || "", cfg));
@@ -1151,7 +1160,7 @@
   function addControlFilters(cell, barCols, cfg, data, state, refresh) {
     const doc = cell.ownerDocument;
     for (const col of barCols)
-      cell.appendChild(
+      cell.append(
         typedFilter(doc, col, cfg[col], data, state, refresh, cfg[col].label || col));
   }
 
@@ -1179,7 +1188,7 @@
       b.onclick = () => { state.page = steps[i](state.page); repage(); };
       return b;
     });
-    bar.appendChild(pos);
+    bar.append(pos);
     // no dropdown when even the smallest size holds every row (none would split)
     if (sizes.length > 1 && nRow > Math.min(...sizes.filter(n => n > 0))) {
       const sel = elem(doc, "select", { "aria-label": "Rows per page" }, bar);
