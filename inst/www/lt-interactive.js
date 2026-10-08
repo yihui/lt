@@ -1008,8 +1008,10 @@
   }
 
   // A funnel button that toggles a floating panel built by `build(panel)`; closes
-  // on an outside click or Escape. Returns the wrapper element.
-  function popover(doc, label, build, onClose) {
+  // on an outside click or Escape. Returns the wrapper element. `host`, when
+  // given, is a larger element (a chip) that becomes the click target in place of
+  // the funnel, so the whole chip toggles and its panel aligns with the chip.
+  function popover(doc, label, build, onClose, host) {
     const wrap = elem(doc, "span", { className: "lti-pop" }),
           btn = elem(doc, "button", {
             type: "button", className: "lti-funnel", title: label,
@@ -1037,8 +1039,12 @@
       btn.setAttribute("aria-expanded", String(on));
       if (on) place(); else if (was) onClose && onClose();
     };
-    btn.onclick = e => { e.stopPropagation(); open(panel.hidden); };
-    on(doc, "click", e => { if (!wrap.contains(e.target)) open(false); });
+    // the click target is the whole chip when hosted in one (so a chip's panel
+    // opens flush with the chip's left edge via CSS), else the funnel wrap; a
+    // click inside the open panel must not toggle it shut
+    const anchor = host || wrap;
+    anchor.onclick = e => { if (!panel.contains(e.target)) open(panel.hidden); };
+    on(doc, "click", e => { if (!anchor.contains(e.target)) open(false); });
     on(doc, "keydown", e => { if (e.key === "Escape") open(false); });
     return wrap;
   }
@@ -1115,6 +1121,11 @@
       editors.forEach(e => e !== from && e.reflect(cur));
       mark(cur);
     };
+    // a hidden column wraps the funnel in a labelled chip (via makeChip), which
+    // also becomes the popover's click target; a visible column shows the bare
+    // funnel under its own header. Build the chip first so it can host the
+    // popover.
+    const chip = chipLabel && makeChip(doc, chipLabel);
     const wrap = popover(doc, `Filter ${cfg.label || col}`, panel => {
       const box = elem(doc, "input", {
         type: "search", className: "lti-search",
@@ -1127,15 +1138,13 @@
       editors.push(wEd);
       panel.append(...[].concat(wEd.el));
       setTerm(kind.init(cfg), null);              // seed the configured default
-    }, () => showSummary());                       // refresh the chip text on close
-    // a hidden column wraps the funnel in a labelled chip (via makeChip); a
-    // visible column shows the bare funnel under its own header. The active-state
-    // class tracks every change, but the chip's value text is variable width, so
-    // a live update while dragging the slider would shift the funnel (and its
-    // popover) sideways; the summary is deferred to the popover's close instead.
+    }, () => showSummary(), chip && chip.el);      // refresh the chip text on close
+    // the active-state class tracks every change, but the chip's value text is
+    // variable width, so a live update while dragging the slider would shift the
+    // chip (and its popover) sideways; the summary is deferred to the close.
     let root = wrap;
-    if (chipLabel != null) {
-      const chip = makeChip(doc, chipLabel, wrap);
+    if (chip) {
+      chip.el.append(wrap);
       root = chip.el;
       mark = chip.mark;
       showSummary = () => chip.summarize(kind.describe(state.filters[col] || "", cfg));

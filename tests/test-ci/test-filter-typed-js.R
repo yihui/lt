@@ -54,6 +54,24 @@ assert('a typed filter on a hidden column becomes a labelled control-bar chip', 
   (lti_rows(x) %==% c('Nausea', 'Itch'))
 })
 
+assert('a chip opens its popover on a click anywhere, aligned to the chip left edge', {
+  x = lt(tdf()) |> lt_hide(~ grp) |> lt_interactive(
+    filter = list(grp = list(type = 'select', label = 'Group')), pager = FALSE)
+  # clicking the label (not the funnel) toggles the popover: the whole chip is the
+  # click target
+  open = 't.querySelector(".lti-chip-name").click()'
+  (lti_eval(x, '!t.querySelector(".lti-pop-panel").hidden', open) %==% 'true')
+  # and the panel opens flush with the chip's left edge, not the funnel's
+  align = paste(open,
+    'var p = t.querySelector(".lti-pop-panel").getBoundingClientRect(),
+         c = t.querySelector(".lti-chip").getBoundingClientRect()',
+    sep = ';')
+  (lti_eval(x, 'Math.abs(p.left - c.left) <= 2', align) %==% 'true')
+  # a click inside the open panel leaves it open
+  stay = paste(open, 't.querySelector(".lti-pop-panel").click()', sep = ';')
+  (lti_eval(x, '!t.querySelector(".lti-pop-panel").hidden', stay) %==% 'true')
+})
+
 assert('an unnamed default entry boxes the other columns alongside a typed column', {
   # grp gets a dropdown funnel; every other visible column (name, n) a plain box
   x = lt(tdf()) |> lt_interactive(filter = list(TRUE, grp = 'select'), pager = FALSE)
