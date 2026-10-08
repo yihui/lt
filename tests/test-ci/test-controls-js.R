@@ -25,6 +25,18 @@ assert("the controls are rows of the table, so they match its width", {
      'lt-source-note,lti-pager-row')
 })
 
+assert("el._lt.bar exposes the control bar for a caller to append a widget", {
+  # forestly adds its own funnel to the bar through this handle; itbl() has a
+  # search box, so a bar exists
+  x = itbl()
+  (lti_eval(x, 't._lt.bar.className') %==% 'lti-bar')
+  add = 't._lt.bar.appendChild(Object.assign(
+    document.createElement("button"), { className: "mine" }))'
+  (lti_eval(x, 't.querySelector(".lti-bar .mine") !== null', add) %==% 'true')
+  # a table with no table-wide controls has no bar, so the handle is null
+  (lti_eval(itbl(search = FALSE, pager = FALSE), 't._lt.bar === null') %==% 'true')
+})
+
 assert("a table rendered on demand is enhanced like one rendered in place", {
   # forestly's lazy path: a spec turned into a table long after the page loaded
   x = itbl(pager = 2)

@@ -64,6 +64,25 @@ assert("detail = column names builds a one-row table of displayed values", {
    %==% '5.0|p')
 })
 
+assert("el._lt.resetDetail rebuilds an open detail from its callback", {
+  # the callback's output depends on a page flag the caller can flip (e.g.
+  # forestly's "hide placebo" funnel); the detail is memoized per row at first
+  # expand, so a caller must bust it to pick up the new flag
+  x = itbl(detail = js('(row) => ({ data: { d: [window.HIDE ? "H" : row.name] } })'))
+  cell = 't.querySelector(".lti-detail .lt-table td").textContent'
+  caret = 't.querySelectorAll("tbody .lti-expand")[0].click()'
+  (lti_eval(x, cell, caret) %==% 'Rash')
+  # closing, flipping the flag, and reopening alone shows the stale cached value
+  stale = paste(caret, caret, 'window.HIDE = true', caret, sep = ';')
+  (lti_eval(x, cell, stale) %==% 'Rash')
+  # resetDetail() drops the cache and re-renders the open detail from the callback
+  reset = paste(caret, 'window.HIDE = true', 't._lt.resetDetail()', sep = ';')
+  (lti_eval(x, cell, reset) %==% 'H')
+  # a single-row argument busts only that row's detail
+  reset1 = paste(caret, 'window.HIDE = true', 't._lt.resetDetail(1)', sep = ';')
+  (lti_eval(x, cell, reset1) %==% 'H')
+})
+
 assert("a detail table is itself interactive when its spec opts in", {
   # the callback returns a spec with its own `interactive` field: the mounted
   # detail table enhances like any other (here its headers become sortable)

@@ -353,6 +353,8 @@
     // raw values (`{col: value}`, including hidden columns) under an id,
     // replacing or (with a null `fn`) removing it, then re-render. `spec`/`state`
     // are exposed for reading (a widget's choices come from `el._ltSpec.data`).
+    // `bar` (set once the control bar is built) and `resetDetail` (set when the
+    // table has row detail) are added below.
     el._lt = {
       spec, state,
       refresh: () => refresh(),
@@ -408,11 +410,19 @@
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar),
       barCols, flt.cols, spec.data, state, refresh);
     if (opts.search !== false) addSearch(headBar, el, state, refresh);
+    // the assembled control bar (`.lti-bar`), or null when the table has no
+    // table-wide controls, so a caller can append its own widget to it
+    el._lt.bar = headBar;
     // row detail re-renders through the same seam: toggling a row only changes
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
-    if (opts.detail)
-      postSwap.push(addDetail(el, spec, nAll, state, opts.detail, () => refresh(false)));
+    if (opts.detail) {
+      const detail = addDetail(el, spec, nAll, state, opts.detail, () => refresh(false));
+      postSwap.push(detail);
+      // bust the per-row detail cache and re-render open details (one row, or
+      // all); for a caller whose widget changes what the detail callback returns
+      el._lt.resetDetail = detail.reset;
+    }
     // `pager` is the page sizes to offer, the first one being the initial
     if (opts.pager) {
       const sizes = Array.isArray(opts.pager) ? opts.pager : [10, 25, 50, 100];
@@ -610,7 +620,7 @@
       state.expanded.has(r) ? state.expanded.delete(r) : state.expanded.add(r);
       rerender();
     };
-    return (body, rows) => [...body.rows].forEach((tr, i) => {
+    const decorate = (body, rows) => [...body.rows].forEach((tr, i) => {
       const r = rows[i];
       if (typeof r !== "number") return;  // a separator group-header row
       // the first data cell (past any leading rowspan group cell), so the caret
@@ -631,6 +641,17 @@
         LT.render(elem(doc, "div", {}, cell), child);
       }
     });
+    // drop the memoized detail for one row (or every row, no argument) and
+    // re-render, so an already-opened detail is rebuilt from its callback — e.g.
+    // a caller's control-bar widget changed what the callback should return.
+    // Rebuilding re-runs the callback, so a detail table's own sort/filter state
+    // is reset along with its data.
+    decorate.reset = r => {
+      if (r == null) for (const k in cache) delete cache[k];
+      else delete cache[r];
+      rerender();
+    };
+    return decorate;
   }
 
   // The table's <colgroup>, created when core emitted none (it only does so for
