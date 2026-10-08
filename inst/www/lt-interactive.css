@@ -142,6 +142,12 @@
         white-space: nowrap;
         cursor: pointer;
       }
+      /* a spanner's label, above its (indented) columns */
+      .lti-group {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .lti-sub { padding-left: 1em; }
     }
   }
 

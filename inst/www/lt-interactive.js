@@ -778,9 +778,11 @@
             "aria-label": "Show or hide columns", "aria-expanded": "false"
           }, wrap),
           menu = elem(doc, "div", { className: "lti-menu", hidden: true }, wrap);
-    cols.forEach((c, i) => {
+    // one checkbox per column; `sub` indents it under a spanner group header
+    const addBox = (i, sub) => {
+      const c = cols[i];
       if (c == null) return;
-      const label = elem(doc, "label", {}, menu),
+      const label = elem(doc, "label", sub ? { className: "lti-sub" } : {}, menu),
             box = elem(doc, "input", { type: "checkbox", checked: true }, label);
       label.append(labels[i] ?? c);
       if (start.includes(c)) { box.checked = false; hidden.add(i); }
@@ -788,7 +790,17 @@
         box.checked ? hidden.delete(i) : hidden.add(i);
         apply(i);
       };
-    });
+    };
+    // Group the checkboxes under their spanners: the same column label can repeat
+    // across spanners (e.g. auto-span's "Sepal.Length"/"Petal.Length" both show as
+    // "Length"), so a flat list would be ambiguous. Walk the spanner row, emitting
+    // a group header before a real spanner's columns and listing a non-spanned
+    // column on its own. With no spanner row, list columns flat.
+    if (spanCells.length) for (const c of spanCells) {
+      const span = c.classList.contains("lt-spanner");
+      if (span) elem(doc, "div", { className: "lti-group", textContent: c.textContent }, menu);
+      for (let i = c._start; i < c._start + c._span; i++) addBox(i, span);
+    } else cols.forEach((_, i) => addBox(i));
     cols.forEach((_, i) => apply(i));  // reflect any columns that start hidden
     const open = on => {
       menu.hidden = !on;

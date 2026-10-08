@@ -104,6 +104,23 @@ assert("hiding a column keeps the spanner row aligned with the body", {
   (lti_eval(x, paste0(g1, ".hidden"), back) %==% 'false')
 })
 
+assert("the menu groups columns under their spanners, indenting the children", {
+  # a spanner's columns are listed under a group header and indented, so the
+  # same column label repeating across spanners (here auto-span turns both
+  # Sepal.Length and Petal.Length into "Length") is no longer ambiguous
+  x = lt(iris) |> lt_spanner() |> lt_interactive(hide = TRUE)
+  rows = paste0(
+    '[...t.querySelector(".lti-menu").children].map(e => ',
+    'e.className + ":" + e.textContent.trim()).join("|")')
+  (lti_eval(x, rows) %==% paste(
+    'lti-group:Sepal', 'lti-sub:Length', 'lti-sub:Width',
+    'lti-group:Petal', 'lti-sub:Length', 'lti-sub:Width',
+    ':Species', sep = '|'))
+  # the boxes stay in column order, so hiding box 0 hides the first data column
+  off0 = box_click(0)
+  (lti_eval(x, cell_hidden(0), off0) %==% 'true')
+})
+
 assert("hiding a column leaves an open detail row's full-width cell alone", {
   # the hide loop keys cells by column index, but a detail row has one cell
   # spanning every column; it must skip that cell, not take it for column 0's
