@@ -460,13 +460,22 @@
     return elem(sect.ownerDocument, "td", { colSpan: nCol }, row);
   }
 
+  // Run `fn` (which reads its own live state) only after `ms` of quiet; `.now()`
+  // flushes a pending call at once (Enter, drag end). Used by the search/filter
+  // boxes and the range slider.
+  function debounce(fn, ms = 150) {
+    let timer;
+    const run = () => { clearTimeout(timer); timer = setTimeout(fn, ms); };
+    run.now = () => { clearTimeout(timer); fn(); };
+    return run;
+  }
+
   // Debounce typing so a long list is not re-rendered per keystroke; Enter (or
   // leaving the box) applies at once.
   function onType(input, apply) {
-    let timer;
-    const go = () => apply(input.value);
-    input.oninput = () => { clearTimeout(timer); timer = setTimeout(go, 150); };
-    input.onchange = () => { clearTimeout(timer); go(); };
+    const go = debounce(() => apply(input.value));
+    input.oninput = go;
+    input.onchange = go.now;
   }
 
   // Table-wide search box, appended to the shared head cell.
@@ -969,6 +978,9 @@
           }, track),
           thumbs = [mk("Minimum"), mk("Maximum")];
     let val = [min, max];
+    // paint() tracks the thumb live, but the costly onInput filter is debounced
+    // (and flushed on release) so a large table isn't re-filtered per move.
+    const fire = debounce(() => onInput(val.slice()));
     const pct = v => (v - min) / span * 100,
           snap = v => {
             const s = Math.round((v - min) / step) * step + min;
@@ -986,14 +998,14 @@
             val[i] = snap(v);
             if (val[0] > val[1]) val = [Math.min(...val), Math.max(...val)];
             paint();
-            onInput(val.slice());
+            fire();
           };
     thumbs.forEach((t, i) => {
       const at = clientX => {
         const r = track.getBoundingClientRect();
         return min + span * Math.min(1, Math.max(0, (clientX - r.left) / r.width));
       };
-      t.onpointerdown = e => { t.focus(); drag(e, ev => setOne(i, at(ev.clientX))); };
+      t.onpointerdown = e => { t.focus(); drag(e, ev => setOne(i, at(ev.clientX)), fire.now); };
       t.onkeydown = e => {
         const d = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
         if (d) setOne(i, val[i] + d * step);
@@ -1002,6 +1014,7 @@
         else return;
         e.preventDefault();
       };
+      t.onkeyup = fire.now;  // commit at once when the key is released
     });
     paint();
     return { el: track, set: v => { val = v.slice(); paint(); } };
