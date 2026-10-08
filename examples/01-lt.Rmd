@@ -802,7 +802,7 @@ is on by default; the page sizes to offer are given as a vector, the
 first of which is used initially.
 
 ```{r}
-d = mtcars[, c("mpg", "cyl", "hp", "wt")]
+d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
 lt(d) |> lt_interactive(pager = c(5, 10, Inf))
 ```
 
@@ -834,15 +834,20 @@ lt(d) |> lt_interactive(filter = TRUE, search = FALSE, pager = 5)
 ```
 
 A column can take a *typed* control instead of a plain box: pass a named
-list where each column maps to `"select"` (a value dropdown) or `"range"`
-(a two-thumb slider). The dropdown's choices and the slider's ends are
-read from the column's data. The control renders as a funnel under the
-header, paired with an expression box that stays in sync. One *unnamed*
-entry is the default for every other column.
+list where each column maps to `"select"` (a value dropdown), `"range"`
+(a two-thumb slider), or `"checklist"` (a popover of checkboxes). The
+dropdown's and checklist's choices and the slider's ends are read from the
+column's data. The control renders as a funnel under the header, paired
+with an expression box that stays in sync. One *unnamed* entry is the
+default for every other column.
+
+A `"select"` keeps the one value chosen; a `"checklist"` keeps every value
+whose box is checked (all checked is the no-filter state), so the reader
+can keep several at once.
 
 ```{r}
 lt(d) |> lt_interactive(
-  filter = list(TRUE, cyl = "select", wt = "range"),
+  filter = list(TRUE, cyl = "checklist", wt = "range", gear = "select"),
   search = FALSE, pager = 5
 )
 ```
