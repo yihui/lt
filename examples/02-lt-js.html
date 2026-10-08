@@ -96,12 +96,12 @@
 </li>
 </ul>
 </div>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.97/css/lt.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.97/css/lt-plot.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.97/css/lt-interactive.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.97/js/lt-plot.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.97/js/lt.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.97/js/lt-interactive.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.98/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.98/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.98/css/lt-interactive.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.98/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.98/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.98/js/lt-interactive.min.js" defer></script>
 <p>This document demonstrates the lt.js runtime directly from JavaScript.
 Each example shows a JSON spec and renders the table with <code>LT.build()</code>.</p>
 <h2 id="sec:including-lt-js"><span class="section-number main-number">1</span> Including lt.js</h2>
@@ -1316,14 +1316,19 @@ instead.</p>
   data: mtcars,
   interactive: { filter: { cols: { mpg: true } }, pager: [3, 6, 0], resize: true }
 });</script>
-<p>Typed filters — a checklist on <code>cyl</code>, a range slider on <code>wt</code>, a dropdown on
-<code>gear</code> — with a plain box as the default for the other columns:</p>
+<p>Typed filters — a dropdown on <code>cyl</code>, a range slider on <code>wt</code>, a checklist on
+<code>hp</code> — with a plain box as the default for the other columns. A typed filter
+on a <em>hidden</em> column has no header to sit under, so it moves into the control
+bar as a labelled chip (clicking anywhere on the chip opens its control):
+here <code>gear</code> is hidden yet still filterable through its chip.</p>
 <pre><code class="language-js">LT.build({
   data: mtcars,
   interactive: {
     search: false, pager: 6,
+    hide: { hidden: [&quot;gear&quot;] },
     filter: { default: true, cols: {
-      cyl: { type: &quot;select&quot; }, wt: { type: &quot;range&quot; }, hp: { type: &quot;checklist&quot; }
+      cyl: { type: &quot;select&quot; }, wt: { type: &quot;range&quot; }, hp: { type: &quot;checklist&quot; },
+      gear: { type: &quot;select&quot; }
     } }
   }
 });
@@ -1332,8 +1337,10 @@ instead.</p>
   data: mtcars,
   interactive: {
     search: false, pager: 6,
+    hide: { hidden: ["gear"] },
     filter: { default: true, cols: {
-      cyl: { type: "select" }, wt: { type: "range" }, hp: { type: "checklist" }
+      cyl: { type: "select" }, wt: { type: "range" }, hp: { type: "checklist" },
+      gear: { type: "select" }
     } }
   }
 });</script>
