@@ -845,11 +845,18 @@ A `"select"` keeps the one value chosen; a `"checklist"` keeps every value
 whose box is checked (all checked is the no-filter state), so the reader
 can keep several at once.
 
+A typed filter on a column hidden with `lt_hide()` has no header to sit
+under, so it moves into the control bar as a labelled chip showing the
+column's name and the current value; clicking anywhere on the chip opens its
+control. Here `gear` is hidden yet still filterable through its chip.
+
 ```{r}
-lt(d) |> lt_interactive(
-  filter = list(TRUE, cyl = "checklist", wt = "range", gear = "select"),
-  search = FALSE, pager = 5
-)
+lt(d) |>
+  lt_hide(~ gear) |>
+  lt_interactive(
+    filter = list(TRUE, cyl = "checklist", wt = "range", gear = "select"),
+    search = FALSE, pager = 5
+  )
 ```
 
 ### Row detail (drill-down)
