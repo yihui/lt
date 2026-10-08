@@ -23,6 +23,8 @@
 
 - `lt_label()` now also accepts a single named list or named character vector mapping column names to labels (e.g., `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`), which is convenient when labels are computed programmatically. Named arguments (e.g., `lt_label(x, mpg = "Miles/Gallon")`) continue to work.
 
+- Added `lt_class()` to add CSS classes to the `.lt-wrap` container that wraps a table, a hook for scoping custom CSS (e.g. from `lt_css()`) to one table.
+
 - `lt_spanner()` no longer requires its `columns` to be listed in the table's visual (left-to-right) order. The columns of an explicit spanner are now reordered to match the final body order (after any `lt_move()`) before rendering, so a spanner is drawn correctly regardless of the order in which its columns were listed. This also makes predicate selectors (e.g., `columns = ~ endsWith(., "_time")`) safe to use for spanners. The columns must still be contiguous in the table body.
 
 - `lt_export()` to PDF or PNG no longer silently drops a stylesheet attached by `lt_css()` with a relative path (e.g. `lt_css(x, "times.css")`). Those renders re-root the page to a temporary directory, where a relative link no longer resolved; existing local stylesheet files are now absolutized for that render pass only (the HTML output keeps relative paths, which are more portable; thanks, @tgerke, #7).

@@ -79,6 +79,8 @@ for a "cheat table" as an overview of these functions.
 - `lt_style()` — apply CSS classes or inline styles to cells, conditionally or
   unconditionally.
 - `lt_css()` — attach an external CSS file or URL to the table.
+- `lt_class()` — add a class to the table's container, to scope custom CSS to
+  one table.
 
 **Column order & visibility**
 

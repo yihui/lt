@@ -304,3 +304,10 @@ assert("lt_css() handles absolute, relative, and URL paths", {
   (lt_css(x, "times.css")$css %==% "times.css")
 })
 
+
+assert("lt_class() accumulates container classes as a vector", {
+  # classes are kept as a vector (the JS runtime joins them)
+  (lt_class(x, "foo")$class %==% "foo")
+  (lt_class(x, c("foo", "bar"))$class %==% c("foo", "bar"))
+  (lt_class(lt_class(x, "foo"), "bar")$class %==% c("foo", "bar"))
+})

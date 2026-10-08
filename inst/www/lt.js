@@ -733,8 +733,11 @@
     spec._indent = indent.some(v => v) ? indent : null;
     spec._rowspan = rowSpans.length ? rowSpans.map(rs => rs.col) : null;
     // Wrap in a div so a wide table can scroll horizontally (`overflow-x`)
-    // instead of overflowing the page.
-    return `<div class="lt-wrap">${out.join("")}</div>`;
+    // instead of overflowing the page. A caller-supplied `spec.class` (a string
+    // or an array of names) is added to this wrapper, a hook for scoping custom
+    // CSS to the table.
+    const wrapCls = ["lt-wrap"].concat(spec.class || []).join(" ");
+    return `<div class="${wrapCls}">${out.join("")}</div>`;
   }
 
   // Plugin seam (see lt-interactive.js): a plugin attaches its handle under
