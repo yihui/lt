@@ -882,9 +882,19 @@
           try { return JSON.parse(m[1]); } catch (e) { return null; }
         };
 
-  // Fill a typed spec's choices (select) or min/max (range) from the column's
-  // data when the R side left them out, so `filter = list(x = "select")` needs no
-  // enumeration. Returns a copy with the gaps filled.
+  // A "nice" slider step for a data span: the 1/2/5 x 10^k value nearest ~1% of
+  // the span (so ~50-100 increments), like pretty()'s tick spacing. An integer
+  // column rounds up to a whole step. Degenerate spans fall back to a tenth / 1.
+  function niceStep(span, integer) {
+    if (!(span > 0) || !isFinite(span)) return integer ? 1 : 0.1;
+    const raw = span / 100, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 5, 10].find(m => m * mag >= raw) * mag;
+    return integer ? Math.max(1, Math.round(step)) : step;
+  }
+
+  // Fill a typed spec's choices (select) or min/max/step (range) from the
+  // column's data when the R side left them out, so `filter = list(x = "select")`
+  // or `list(x = "range")` needs no enumeration or bounds. Returns a filled copy.
   function resolveSpec(spec, column) {
     if (spec.type === "select" || spec.type === "checklist") {
       let choices = spec.choices;
@@ -902,17 +912,28 @@
         choices = [{ value: "", label: "" }, ...choices];
       return { ...spec, choices };
     }
-    let { min, max } = spec;
-    if (min == null || max == null) {
-      let lo = Infinity, hi = -Infinity;
+    let { min, max, step } = spec;
+    let lo = Infinity, hi = -Infinity, allInt = true;
+    if (min == null || max == null || step == null) {
       for (const v of column) {
         const n = Number(v);
-        if (isFinite(n)) { if (n < lo) lo = n; if (n > hi) hi = n; }
+        if (isFinite(n)) {
+          if (n < lo) lo = n;
+          if (n > hi) hi = n;
+          if (!Number.isInteger(n)) allInt = false;
+        }
       }
-      if (min == null) min = isFinite(lo) ? lo : 0;
-      if (max == null) max = isFinite(hi) ? hi : 1;
+      if (!isFinite(lo)) { lo = 0; hi = 1; }
     }
-    return { ...spec, min, max };
+    const loB = min != null ? min : lo, hiB = max != null ? max : hi;
+    if (step == null) step = niceStep(hiB - loB, allInt);
+    // round() clears float dust from the arithmetic below; the derived endpoints
+    // snap out to whole steps so they are round and bracket the data (the extreme
+    // rows stay inside, so none is dropped to float rounding or a step mismatch)
+    const tidy = x => Math.round(x * 1e9) / 1e9;
+    if (min == null) min = tidy(Math.floor(lo / step) * step);
+    if (max == null) max = tidy(Math.ceil(hi / step) * step);
+    return { ...spec, min, max, step };
   }
 
   // A dropdown of {value, label} options; `onInput(value)` fires on change.
