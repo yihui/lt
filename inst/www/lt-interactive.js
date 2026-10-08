@@ -833,13 +833,14 @@
   }
 
   // --- Typed column filters (the `filter` named-list form). A typed spec is
-  // {type:"select"|"range", label?, choices?, min?, max?, step?, value?,
-  // selected?}; it renders as a funnel + popover, under its own header when the
-  // column is visible or as a labelled head-bar chip when it is hidden (the
-  // column still travels in spec.data, which is what computeView filters on). The
-  // popover holds an expression box AND a widget (a value dropdown or a range
-  // slider); both edit the one filter term for that column (state.filters[col])
-  // and stay in sync, so the widget is a friendly face on the same expression a
+  // {type:"select"|"range"|"checklist", label?, choices?, min?, max?, step?,
+  // value?, selected?}; it renders as a funnel + popover, under its own header
+  // when the column is visible or as a labelled head-bar chip when it is hidden
+  // (the column still travels in spec.data, which is what computeView filters
+  // on). The popover holds an expression box AND a widget (a value dropdown, a
+  // range slider, or a checklist of values); both edit the one filter term for
+  // that column (state.filters[col]) and stay in sync, so the widget is a
+  // friendly face on the same expression a
   // reader could type.
 
   // A filter term string <-> a widget value, per type. A `null` parse means the
@@ -855,13 +856,22 @@
         rngParse = s => {
           const m = /^\s*x\s*>=\s*(-?[\d.]+)\s*&&\s*x\s*<=\s*(-?[\d.]+)\s*$/.exec(s || "");
           return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
+        },
+        // a set filter keeps rows whose value is one of the checked ones; every
+        // choice checked -> "" (no filter), none -> "[].includes(x)" (no rows)
+        setExpr = (sel, all) =>
+          sel.length === all.length ? "" : `${JSON.stringify(sel.map(String))}.includes(x)`,
+        setParse = s => {
+          const m = /^\s*(\[[\s\S]*\])\.includes\(\s*x\s*\)\s*$/.exec(s || "");
+          if (!m) return null;
+          try { return JSON.parse(m[1]); } catch (e) { return null; }
         };
 
   // Fill a typed spec's choices (select) or min/max (range) from the column's
   // data when the R side left them out, so `filter = list(x = "select")` needs no
   // enumeration. Returns a copy with the gaps filled.
   function resolveSpec(spec, column) {
-    if (spec.type === "select") {
+    if (spec.type === "select" || spec.type === "checklist") {
       let choices = spec.choices;
       if (!choices) {
         const seen = new Set(), vals = [];
@@ -870,9 +880,11 @@
           ? a - b : String(a).localeCompare(String(b)));
         choices = vals.map(v => ({ value: String(v), label: String(v) }));
       }
-      // a leading blank is the "no filter" choice, so a select shows every row
-      // until the reader picks a value (and can always return to it)
-      if (!choices.some(o => o.value === "")) choices = [{ value: "", label: "" }, ...choices];
+      // a select offers a leading blank "no filter" choice, so it shows every
+      // row until the reader picks a value; a checklist starts with every box
+      // checked (which is itself "no filter"), so it needs no blank
+      if (spec.type === "select" && !choices.some(o => o.value === ""))
+        choices = [{ value: "", label: "" }, ...choices];
       return { ...spec, choices };
     }
     let { min, max } = spec;
@@ -894,6 +906,26 @@
     options.forEach(o => elem(doc, "option", { value: o.value, textContent: o.label }, sel));
     sel.onchange = () => onInput(sel.value);
     return { el: sel, set: v => sel.value = v };
+  }
+
+  // A list of {value, label} checkboxes (every box starts checked); `onInput`
+  // fires with the array of checked values on any change. Returns
+  // { el: [<label>...], set(values) }. Exposed on LT.ui so a caller can drop a
+  // checklist control into its own popover (e.g. forestly's treatment-group
+  // picker in the control bar) and reuse it as the checklist filter's widget.
+  function makeChecklist(doc, options, onInput) {
+    const boxes = options.map(o => {
+      const label = elem(doc, "label", { className: "lti-check" }),
+            box = elem(doc, "input", { type: "checkbox", checked: true, value: o.value }, label);
+      label.append(o.label);
+      return { o, box, label };
+    });
+    const emit = () => onInput(boxes.filter(b => b.box.checked).map(b => b.o.value));
+    boxes.forEach(b => b.box.onchange = emit);
+    return {
+      el: boxes.map(b => b.label),
+      set: vals => boxes.forEach(b => b.box.checked = vals.includes(b.o.value))
+    };
   }
 
   // A two-thumb range slider from a track, a fill band, and two <button> thumbs —
@@ -1019,6 +1051,24 @@
               ed = { el: [w.el, out], reflect: t => { const p = rngParse(t) || [cfg.min, cfg.max]; w.set(p); show(p); } };
         return ed;
       }
+    },
+    checklist: {
+      // the chip summary: the chosen labels (few), else a count; empty when every
+      // box is checked (term "", no filter)
+      describe: (t, cfg) => {
+        const sel = setParse(t);
+        if (sel == null) return t ? "⋯" : "";
+        const labs = cfg.choices.filter(o => sel.includes(o.value)).map(o => o.label);
+        return labs.length <= 2 ? labs.join(", ") : `${labs.length} selected`;
+      },
+      // `[].concat` so a single `selected` value (a scalar from R) still seeds
+      init: cfg => setExpr([].concat(cfg.selected ?? cfg.choices.map(o => o.value)), cfg.choices),
+      build: (doc, cfg, setTerm) => {
+        const all = cfg.choices.map(o => o.value),
+              w = makeChecklist(doc, cfg.choices, sel => setTerm(setExpr(sel, cfg.choices), ed)),
+              ed = { el: w.el, reflect: t => { const sel = setParse(t); w.set(sel == null ? all : sel); } };
+        return ed;
+      }
     }
   };
 
@@ -1134,6 +1184,9 @@
   };
 
   LT.plugins.interactive = { matcher, computeView, pageSlice, enhance };
+  // reusable control bits for callers building their own control-bar widgets
+  // (with el._lt.bar): a funnel popover and a checklist of checkboxes
+  LT.ui = Object.assign(LT.ui || {}, { popover, checklist: makeChecklist });
   LT.onMount.push(onMount);
   // Core drains its render queue before this file loads, so the callback above
   // only sees later renders; enhance the tables already on the page now.

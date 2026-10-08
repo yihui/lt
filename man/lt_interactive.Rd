@@ -38,11 +38,12 @@ column header, matching terms the same way as \code{search} but against that
 column only (a row is kept when it passes every filter and the search). A
 character vector of column names restricts the boxes to those columns. A
 named list gives each named column its own filter: \code{TRUE} for a plain box,
-\code{"select"} for a value dropdown, or \code{"range"} for a two-thumb range slider
-(the dropdown's choices and the slider's ends are taken from the column's
-data). For a custom label or hand-set options, pass a list instead of the
-string, e.g. \code{list(type = "select", label = "Cylinders")} or
-\code{list(type = "range", min = 0, max = 100)}. One \emph{unnamed} entry in the list
+\code{"select"} for a value dropdown, \code{"range"} for a two-thumb range slider, or
+\code{"checklist"} for a popover of checkboxes that keeps the rows whose value is
+checked (the dropdown's / checklist's choices and the slider's ends are
+taken from the column's data). For a custom label or hand-set options, pass
+a list instead of the string, e.g. \code{list(type = "select", label = "Cylinders")} or \code{list(type = "range", min = 0, max = 100)}. One \emph{unnamed}
+entry in the list
 is the default applied to every other visible column, so
 \code{list(TRUE, cyl = "select")} boxes every column but gives \code{cyl} a dropdown.
 A typed filter renders as a funnel + popover (holding the widget \emph{and} an

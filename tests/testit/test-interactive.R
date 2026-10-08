@@ -69,6 +69,18 @@ assert("the filter and pagination options reach the client spec", {
   (grepl('filter|pager', json) %==% FALSE)
 })
 
+assert("a typed filter spec reaches the client with its options", {
+  # a checklist spec keeps its type and label, reshapes `choices` to {value,label}
+  # objects, and keeps a scalar `selected` as a JSON array (so the client seeds it)
+  json = format(lt(d) |> lt_interactive(filter = list(
+    y = list(type = "checklist", label = "Y", choices = c("a", "b"), selected = "a")
+  )), assets = FALSE)
+  (grepl('"type": "checklist"', json) %==% TRUE)
+  (grepl('"label": "Y"', json) %==% TRUE)
+  (grepl('"choices": \\[\\s*\\{\\s*"value": "a",\\s*"label": "a"', json) %==% TRUE)
+  (grepl('"selected": \\["a"\\]', json) %==% TRUE)
+})
+
 assert("a default sort reaches the client spec as ordered name keys", {
   # the names travel as-is, keeping the '-' prefix; the client parses it
   json = format(lt(d) |> lt_interactive(sort = c('x', '-y')), assets = FALSE)
