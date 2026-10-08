@@ -109,6 +109,9 @@
       /* ... but a tight gap between the buttons / chips within a part */
       gap: 0.3em;
     }
+    .lti-chips {
+      gap: 0.5em;
+    }
     /* direct child only: a chip's popover holds its own `.lti-search` box */
     & > .lti-search {
       flex: 1 1 8em;
@@ -157,8 +160,14 @@
     display: inline-flex;
     align-items: center;
     gap: 0.3em;
-    &.lti-on .lti-chip-name {
-      font-weight: 600;
+    /* a pill (border + faint fill) so each chip reads as a separate unit */
+    padding: 0.05em 0.5em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f7f7f7;
+    &.lti-on {
+      border-color: #999;
+      .lti-chip-name { font-weight: 600; }
     }
     .lti-chip-cur {
       color: #555;
