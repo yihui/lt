@@ -5,7 +5,7 @@
   - **Sort**: click-to-sort column headers (cycling ascending, descending, unsorted). Shift-click adds a column as a further tie-breaker, so several columns sort at once; `sort` can also request an initial sort.
   - **Search**: a table-wide search box. Terms match the displayed text case-insensitively (a leading `!` negates); a term that mentions `x` (e.g., `x > 5`) is evaluated as a JavaScript expression against the raw values.
   - **Filter** (`filter`): a per-column box, matching like the search but against one column. A column can instead take a typed `"select"` dropdown, `"range"` slider, or `"checklist"` of checkboxes (each paired with an expression box that stays in sync), rendered as a funnel under its header — or, for a column hidden from the table, as a chip in the control bar.
-  - **Pager** (`pager`): pagination, on by default; `Inf` is a valid page size (all rows).
+  - **Pager** (`pager`): pagination, on by default; `Inf` is a valid page size (all rows). The initial render emits only the first page, so a very large table no longer builds the whole table up front.
   - **Resize** (`resize`): drag a column's right edge to resize it.
   - **Hide** (`hide`): an eye button opening a checklist that toggles columns.
   - **Detail** (`detail`): an expand caret per row that reveals a drill-down table built from that row.

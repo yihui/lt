@@ -491,7 +491,13 @@
           // Whether column `c`'s body cells are raw HTML (see lt_html() on the
           // R side); spec.html_cols is true (all columns) or a name array.
           isRaw = c => rawCol(spec.html_cols, c),
-          out = [`<table class="lt-table"${tableWidth ? ` style="width:${tableWidth}"` : ""}>`];
+          out = [`<table class="lt-table"${tableWidth ? ` style="width:${tableWidth}"` : ""}>`],
+          // Cap the initial render to the first page (pager[0], 0 = all), so a
+          // huge table doesn't build the whole row string before the plugin
+          // pages it down. Only when the plugin is loaded to page the rest back
+          // in; a static bake renders every row. `_viewRows` overrides it.
+          pg = root.LT?.plugins?.interactive && spec.interactive?.pager,
+          lim = (!spec._viewRows && Array.isArray(pg) && pg[0]) ? pg[0] : 0;
     const mark = (type, val) => { const i = fIdx(type, val); return i ? sup(i) : ""; },
           cell = (c, r) => display[c]?.[r - 1] ?? "";
     // ` name="val"` for a truthy val, else "" — for optional HTML attributes.
@@ -668,13 +674,17 @@
         else pushRow(r, info ? info[vi++] : null);
     } else if (groups.length) {
       const seen = {};
+      let n = 0;
       for (const g of groups) {
+        if (lim && n >= lim) break;
         out.push(groupHeader(g.label, g.raw));
-        for (const r of g.rows) { seen[r] = 1; pushRow(r); }
+        for (const r of g.rows) { seen[r] = 1; pushRow(r); if (lim && ++n >= lim) break; }
       }
-      for (let r = 1; r <= nRow; r++) if (!seen[r]) pushRow(r);
+      for (let r = 1; r <= nRow && (!lim || n < lim); r++)
+        if (!seen[r]) { pushRow(r); n++; }
     } else {
-      for (let r = 1; r <= nRow; r++) pushRow(r);
+      const end = lim ? Math.min(nRow, lim) : nRow;
+      for (let r = 1; r <= end; r++) pushRow(r);
     }
     out.push(`</tbody>`);
 

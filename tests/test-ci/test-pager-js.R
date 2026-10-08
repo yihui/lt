@@ -22,6 +22,15 @@ assert("the pager shows one page of rows at a time", {
   (lti_eval(x, 'document.querySelectorAll(".lti-pager select").length') %==% '0')
 })
 
+assert("core caps the initial render to the first page when the plugin is loaded", {
+  # with the plugin and a pager, buildHtml emits only the first page: 2 columns
+  # x 2 rows (page size 2) = 4 body cells
+  cells = 'LT.buildHtml({...t._ltSpec}).match(/<td/g).length'
+  (lti_eval(itbl(pager = 2), cells) %==% '4')
+  # with no pager, every row renders (4 rows x 2 columns = 8 cells)
+  (lti_eval(itbl(pager = FALSE), cells) %==% '8')
+})
+
 assert("paging is on by default; the size selector drops when no size splits", {
   # default sizes, 4 rows: pager shows but no size splits, so no selector
   (lti_eval(itbl(), 'document.querySelector(".lti-pos").textContent') %==% '1–4 / 4')
