@@ -94,6 +94,48 @@ assert('a chip value summary updates only once its popover closes, not while edi
   (lti_eval(x, 'during + "|" + after', js) %==% '|6 – 10')
 })
 
+assert('a "checklist" keeps the checked values (every box checked = no filter)', {
+  x = lt(tdf()) |> lt_interactive(filter = list(grp = 'checklist'), pager = FALSE)
+  # a visible column's checklist sits under its header, one checkbox per value
+  (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-funnel").length') %==% '1')
+  (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-check input").length') %==% '2')
+  # every box checked on load = no filter, so every row shows
+  (length(lti_rows(x)) %==% 4L)
+  # unchecking "b" keeps only grp == "a" rows
+  uncheck = 'var b = [...t.querySelectorAll(".lti-filters .lti-check input")]
+               .find(i => i.value === "b"); b.checked = false; b.onchange()'
+  (lti_rows(x, uncheck) %==% c('Rash', 'Headache'))
+  # the expression box mirrors the set
+  (lti_eval(x, 't.querySelector(".lti-filters .lti-pop .lti-search").value', uncheck)
+   %==% '["a"].includes(x)')
+})
+
+assert('a "checklist" seeds a `selected` subset and chips when the column is hidden', {
+  x = lt(tdf()) |> lt_hide(~ grp) |> lt_interactive(
+    filter = list(grp = list(type = 'checklist', selected = 'a', label = 'Group')),
+    pager = FALSE)
+  # seeded to keep only "a" on load
+  (lti_rows(x) %==% c('Rash', 'Headache'))
+  # a hidden column renders as a chip; its summary names the single kept value
+  (lti_eval(x, 't.querySelector(".lti-chip-name").textContent') %==% 'Group')
+  (lti_eval(x, 't.querySelector(".lti-chip-cur").textContent') %==% 'a')
+})
+
+assert('LT.ui exposes the reusable popover and checklist builders', {
+  x = itbl()
+  (lti_eval(x, 'typeof LT.ui.popover + "," + typeof LT.ui.checklist')
+   %==% 'function,function')
+  # the checklist builder: labels of {value,label}, batch onInput of checked values
+  build = 'window.OUT = null;
+    var cl = LT.ui.checklist(document, [{value:"a",label:"A"},{value:"b",label:"B"}],
+      v => window.OUT = v.join(","));
+    document.body.append(...cl.el);
+    var b = [...document.querySelectorAll("body > .lti-check input")]
+      .find(i => i.value === "b"); b.checked = false; b.onchange()'
+  (lti_eval(x, 'document.querySelectorAll("body > .lti-check").length + "|" + window.OUT', build)
+   %==% '2|a')
+})
+
 assert('a popover flips to the funnel right against the scroll box, not the viewport', {
   x = lt(tdf()) |> lt_interactive(filter = list(grp = 'select'), search = FALSE, pager = FALSE)
   # a narrow scroll box with room to spare in the viewport: a panel that would

@@ -210,6 +210,14 @@
       padding: 0.6em;
       background: Canvas;
       border: 1px solid;
+      /* a checklist widget's rows: a checkbox beside its label */
+      .lti-check {
+        display: flex;
+        align-items: center;
+        gap: 0.4em;
+        white-space: nowrap;
+        cursor: pointer;
+      }
     }
   }
 

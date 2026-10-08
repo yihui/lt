@@ -38,11 +38,13 @@
 #'   column only (a row is kept when it passes every filter and the search). A
 #'   character vector of column names restricts the boxes to those columns. A
 #'   named list gives each named column its own filter: `TRUE` for a plain box,
-#'   `"select"` for a value dropdown, or `"range"` for a two-thumb range slider
-#'   (the dropdown's choices and the slider's ends are taken from the column's
-#'   data). For a custom label or hand-set options, pass a list instead of the
-#'   string, e.g. `list(type = "select", label = "Cylinders")` or
-#'   `list(type = "range", min = 0, max = 100)`. One *unnamed* entry in the list
+#'   `"select"` for a value dropdown, `"range"` for a two-thumb range slider, or
+#'   `"checklist"` for a popover of checkboxes that keeps the rows whose value is
+#'   checked (the dropdown's / checklist's choices and the slider's ends are
+#'   taken from the column's data). For a custom label or hand-set options, pass
+#'   a list instead of the string, e.g. `list(type = "select", label =
+#'   "Cylinders")` or `list(type = "range", min = 0, max = 100)`. One *unnamed*
+#'   entry in the list
 #'   is the default applied to every other visible column, so
 #'   `list(TRUE, cyl = "select")` boxes every column but gives `cyl` a dropdown.
 #'   A typed filter renders as a funnel + popover (holding the widget *and* an
@@ -165,14 +167,16 @@ normalize_filter = function(filter) {
 }
 
 # One column's filter spec: `TRUE` (a plain box) passes through; a `"select"` /
-# `"range"` string becomes `list(type = ...)`; a list is a hand-set spec, its
-# `choices` reshaped to {value, label} objects and `value` kept as a JSON array.
+# `"range"` / `"checklist"` string becomes `list(type = ...)`; a list is a
+# hand-set spec, its `choices` reshaped to {value, label} objects and its
+# `value` (range) / `selected` (checklist) default kept as a JSON array.
 normalize_spec = function(spec) {
   if (isTRUE(spec)) return(TRUE)
   if (is.character(spec) && length(spec) == 1) return(list(type = spec))
   if (is.list(spec)) {
     if (!is.null(spec$choices)) spec$choices = choice_objs(spec$choices)
     if (!is.null(spec$value)) spec$value = I(spec$value)
+    if (!is.null(spec$selected)) spec$selected = I(spec$selected)
     return(spec)
   }
   stop('invalid filter spec: ', toString(spec))

@@ -925,10 +925,14 @@ optional:
   spec applied to every visible column left unnamed; `cols` maps a column
   to its own spec. A spec is `true` for a plain box (matching that column
   the same way as the search), or `{ type: "select" }` / `{ type: "range" }`
-  for a value dropdown or a two-thumb slider (its choices / ends read from
-  the column data, or set explicitly with `choices` / `min`+`max`). So
-  `{ default: true }` boxes every column, `{ cols: { mpg: true } }` boxes
-  one, and `{ cols: { cyl: { type: "select" } } }` gives `cyl` a dropdown;
+  / `{ type: "checklist" }` for a value dropdown, a two-thumb slider, or a
+  popover of checkboxes (choices / ends read from the column data, or set
+  explicitly with `choices` / `min`+`max`; `selected` seeds the dropdown's
+  value or the checklist's checked set). A `"select"` keeps the one chosen
+  value, a `"checklist"` keeps every checked value (all checked = no
+  filter). So `{ default: true }` boxes every column, `{ cols: { mpg: true
+  } }` boxes one, and `{ cols: { cyl: { type: "select" } } }` gives `cyl` a
+  dropdown;
 - `pager`: the page sizes to offer, as an array whose first element is
   the initial size; `0` means every row on one page. Omit the field for
   the default sizes, or set it to `false` to show all rows with no
@@ -966,15 +970,17 @@ LT.build({
 });
 ```
 
-Typed filters — a dropdown on `cyl`, a range slider on `wt` — with a plain
-box as the default for the other columns:
+Typed filters — a checklist on `cyl`, a range slider on `wt`, a dropdown on
+`gear` — with a plain box as the default for the other columns:
 
 ```{js}
 LT.build({
   data: mtcars,
   interactive: {
     search: false, pager: 6,
-    filter: { default: true, cols: { cyl: { type: "select" }, wt: { type: "range" } } }
+    filter: { default: true, cols: {
+      cyl: { type: "select" }, wt: { type: "range" }, hp: { type: "checklist" }
+    } }
   }
 });
 ```
