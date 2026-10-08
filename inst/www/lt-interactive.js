@@ -988,7 +988,7 @@
   // the arrow keys (Home/End jump to the ends); the low thumb never passes the
   // high one. `cfg` is {min, max, step}; `onInput([lo, hi])` fires as a thumb
   // moves. Returns { el, set([lo, hi]) }.
-  function makeSlider(doc, cfg, onInput) {
+  function makeSlider(doc, cfg, onInput, onMove) {
     const min = cfg.min, max = cfg.max, span = max - min || 1,
           step = cfg.step || span / 100,
           track = elem(doc, "div", { className: "lti-slider" }),
@@ -999,8 +999,11 @@
           }, track),
           thumbs = [mk("Minimum"), mk("Maximum")];
     let val = [min, max];
-    // paint() tracks the thumb live, but the costly onInput filter is debounced
-    // (and flushed on release) so a large table isn't re-filtered per move.
+    // paint() tracks the thumb live; the onInput filter never fires mid-drag. A
+    // live filter re-flows the table (and shifts the chip the thumb lives in)
+    // out from under the cursor, so a mouse drag only commits on release. The
+    // keyboard commits on key-up too, but debounces held arrows so an autorepeat
+    // doesn't re-filter a large table per step.
     const fire = debounce(() => onInput(val.slice()));
     const pct = v => (v - min) / span * 100,
           snap = v => {
@@ -1015,24 +1018,26 @@
             fill.style.left = pct(val[0]) + "%";
             fill.style.right = `${100 - pct(val[1])}%`;
           },
-          setOne = (i, v) => {
+          move = (i, v) => {       // update + repaint a thumb, without filtering
             val[i] = snap(v);
             if (val[0] > val[1]) val = [Math.min(...val), Math.max(...val)];
             paint();
-            fire();
+            onMove && onMove(val.slice());  // live readout; filtering waits for commit
           };
     thumbs.forEach((t, i) => {
       const at = clientX => {
         const r = track.getBoundingClientRect();
         return min + span * Math.min(1, Math.max(0, (clientX - r.left) / r.width));
       };
-      t.onpointerdown = e => { t.focus(); drag(e, ev => setOne(i, at(ev.clientX)), fire.now); };
+      // drag repaints live but filters only on release (fire.now via onEnd)
+      t.onpointerdown = e => { t.focus(); drag(e, ev => move(i, at(ev.clientX)), fire.now); };
       t.onkeydown = e => {
         const d = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
-        if (d) setOne(i, val[i] + d * step);
-        else if (e.key === "Home") setOne(i, min);
-        else if (e.key === "End") setOne(i, max);
+        if (d) move(i, val[i] + d * step);
+        else if (e.key === "Home") move(i, min);
+        else if (e.key === "End") move(i, max);
         else return;
+        fire();
         e.preventDefault();
       };
       t.onkeyup = fire.now;  // commit at once when the key is released
@@ -1111,7 +1116,7 @@
       build: (doc, cfg, setTerm) => {
         const out = elem(doc, "span", { className: "lti-slider-out" }),
               show = p => out.textContent = `${p[0]} – ${p[1]}`,
-              w = makeSlider(doc, cfg, v => { show(v); setTerm(rngExpr(v[0], v[1], cfg.min, cfg.max), ed); }),
+              w = makeSlider(doc, cfg, v => { show(v); setTerm(rngExpr(v[0], v[1], cfg.min, cfg.max), ed); }, show),
               ed = { el: [w.el, out], reflect: t => { const p = rngParse(t) || [cfg.min, cfg.max]; w.set(p); show(p); } };
         return ed;
       }
