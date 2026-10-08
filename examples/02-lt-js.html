@@ -96,12 +96,12 @@
 </li>
 </ul>
 </div>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.100/css/lt.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.100/css/lt-plot.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.100/css/lt-interactive.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.100/js/lt-plot.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.100/js/lt.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.100/js/lt-interactive.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.101/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.101/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.101/css/lt-interactive.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.101/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.101/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.101/js/lt-interactive.min.js" defer></script>
 <p>This document demonstrates the lt.js runtime directly from JavaScript.
 Each example shows a JSON spec and renders the table with <code>LT.build()</code>.</p>
 <h2 id="sec:including-lt-js"><span class="section-number main-number">1</span> Including lt.js</h2>
@@ -1344,6 +1344,13 @@ here <code>gear</code> is hidden yet still filterable through its chip.</p>
     } }
   }
 });</script>
+<p>A <code>&quot;range&quot;</code> slider has two thumbs, for the low and high ends. Drag a thumb to
+move it: the readout tracks it live, but the filter is applied only on release,
+so the table does not reflow (and shift the thumb) out from under the cursor
+mid-drag. A thumb can also be driven from the keyboard once focused — the arrow
+keys step it by one step and <code>Home</code> / <code>End</code> jump it to the ends. With <code>min</code>/
+<code>max</code> (and <code>step</code>) omitted, they are derived from the column data as round,
+data-bracketing values.</p>
 <p>Open the eye menu to toggle columns; <code>hp</code> and <code>wt</code> start hidden here:</p>
 <pre><code class="language-js">LT.build({
   data: mtcars,

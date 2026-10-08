@@ -990,6 +990,14 @@ LT.build({
 });
 ```
 
+A `"range"` slider has two thumbs, for the low and high ends. Drag a thumb to
+move it: the readout tracks it live, but the filter is applied only on release,
+so the table does not reflow (and shift the thumb) out from under the cursor
+mid-drag. A thumb can also be driven from the keyboard once focused — the arrow
+keys step it by one step and `Home` / `End` jump it to the ends. With `min`/
+`max` (and `step`) omitted, they are derived from the column data as round,
+data-bracketing values.
+
 Open the eye menu to toggle columns; `hp` and `wt` start hidden here:
 
 ```{js}
