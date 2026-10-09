@@ -358,6 +358,17 @@
     // external predicates) and row-detail toggles route through a busy wrapper.
     const wrap = el.closest(".lt-wrap");
     const uiRefresh = busyRender(wrap, (stale = true) => refresh(stale));
+    // While the controls are being built, a seeded filter/sort would each fire
+    // its own full-table body render (forestly seeds a parameter select and an
+    // incidence slider), every one thrown away by the next — and the early ones
+    // run before the pager sets a page size, so they render *every* matching row.
+    // Suppress body renders during construction and coalesce them into the one
+    // final render below (`building` is cleared just before it).
+    let building = true, dirty = false;
+    const requestRefresh = (stale = true) => {
+      if (building) { dirty = true; return; }
+      uiRefresh(stale);
+    };
 
     // a small controller for driving the table from outside (e.g. forestly's
     // own dropdown and range-slider widgets): register a predicate over a row's
@@ -400,11 +411,11 @@
     const labels = dataCells(hrow).map(th => th.textContent);
     // wire sort before adding the filter row, so it sees the header row only;
     // `allCols` so every header cell binds (a group header is sortable too)
-    if (opts.sort !== false) addSort(hrow, allCols, state, uiRefresh);
+    if (opts.sort !== false) addSort(hrow, allCols, state, requestRefresh);
     // the under-header filter row: needed when a default applies to visible
     // columns or any named column is itself visible
     if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => cols.includes(c)))))
-      addFilter(hrow, cols, flt, spec.data, state, uiRefresh, nGroup);
+      addFilter(hrow, cols, flt, spec.data, state, requestRefresh, nGroup);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     // the icon buttons sit together in a group that keeps its natural width;
@@ -422,8 +433,8 @@
     // (CSS :empty) so it adds no gap.
     const chips = headBar ?
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
-    if (barCols.length) addControlFilters(chips, barCols, flt.cols, spec.data, state, uiRefresh);
-    if (opts.search !== false) addSearch(headBar, el, state, uiRefresh);
+    if (barCols.length) addControlFilters(chips, barCols, flt.cols, spec.data, state, requestRefresh);
+    if (opts.search !== false) addSearch(headBar, el, state, requestRefresh);
     // the assembled control bar (`.lti-bar`), or null when the table has no
     // table-wide controls, for a caller to append its own widget to; `chips` is
     // its chip group (null only when there is no bar), the right home for a
@@ -440,14 +451,16 @@
       // all); for a caller whose widget changes what the detail callback returns
       el._lt.resetDetail = detail.reset;
     }
+    // controls are built; let the coalesced final render(s) below run
+    building = false;
     // `pager` is the page sizes to offer, the first one being the initial
     if (opts.pager) {
       const sizes = Array.isArray(opts.pager) ? opts.pager : [10, 25, 50, 100];
       sync = addPaginate(el, nAll, sizes, nRow, state, () => refresh(false));
       refresh();  // cut the full render down to the first page
-    } else if (state.sort.length || opts.detail) {
+    } else if (state.sort.length || opts.detail || dirty) {
       // core rendered the rows in file order; re-render to apply an initial
-      // sort and/or to add the expand carets
+      // sort, a seeded filter (`dirty`), and/or to add the expand carets
       refresh();
     }
   }
