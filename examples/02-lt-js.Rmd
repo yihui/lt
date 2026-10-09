@@ -788,6 +788,21 @@ LT.build({
 .lt-table .na { background: #fee; }
 ```
 
+### Scoping styles to one table
+
+A top-level `class` (a string or an array of names) is added to the table's
+container (the `.lt-wrap` div), which a stylesheet can target so its rules apply
+to that table alone, not every `lt` table on the page. Here the container is
+tagged `striped`, and a rule keyed on `.striped` zebra-stripes only this table.
+
+```{js}
+LT.build({ data: mtcars, class: "striped" });
+```
+
+```{css}
+.striped tbody tr:nth-child(even) td { background: #f2f6ff; }
+```
+
 ## HTML content
 
 By default every cell value and text field is HTML-escaped, so characters

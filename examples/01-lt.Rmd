@@ -687,6 +687,21 @@ lt(d) |>
   lt_css(.na = list(background = "#fee"))
 ```
 
+### Scoping styles to one table
+
+`lt_class()` adds a class to the table's container (the `.lt-wrap` div), which
+a stylesheet can target so its rules apply to that table alone and not to every
+`lt` table on the page. Here the container is tagged `striped`, and a rule keyed
+on `.striped` zebra-stripes only this table.
+
+```{r}
+lt(head(mtcars, 4)) |> lt_class("striped")
+```
+
+```{css}
+.striped tbody tr:nth-child(even) td { background: #f2f6ff; }
+```
+
 ### HTML content
 
 By default, every cell value and text label is HTML-escaped, so characters
