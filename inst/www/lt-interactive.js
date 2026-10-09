@@ -353,26 +353,11 @@
     };
 
     // refresh() rebuilds the body synchronously, freezing the page on a large
-    // table. uiRefresh() shows a busy state (.lti-busy) during that freeze. The
-    // flag can only paint if set *before* the blocking pass, so we predict from
-    // the previous recompute's cost: skip it unless that was over BUSY_MS. Only
-    // view recomputes (search, sort, filter, external predicates) route here;
-    // the initial render, paging and detail toggles stay synchronous.
-    const wrap = el.closest(".lt-wrap"), BUSY_MS = 120;
-    let busyFrame, lastCost = 0;
-    const timed = stale => {
-      const t = performance.now();
-      refresh(stale);
-      lastCost = performance.now() - t;
-    };
-    const uiRefresh = (stale = true) => {
-      if (!wrap || lastCost < BUSY_MS) return timed(stale);
-      wrap.classList.add("lti-busy");
-      cancelAnimationFrame(busyFrame);
-      busyFrame = requestAnimationFrame(() => requestAnimationFrame(() => {
-        try { timed(stale); } finally { wrap.classList.remove("lti-busy"); }
-      }));
-    };
+    // table. uiRefresh() shows a busy state during that freeze (see busyRender).
+    // Paging stays synchronous (cheap); view recomputes (search, sort, filter,
+    // external predicates) and row-detail toggles route through a busy wrapper.
+    const wrap = el.closest(".lt-wrap");
+    const uiRefresh = busyRender(wrap, (stale = true) => refresh(stale));
 
     // a small controller for driving the table from outside (e.g. forestly's
     // own dropdown and range-slider widgets): register a predicate over a row's
@@ -449,7 +434,10 @@
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
     if (opts.detail) {
-      const detail = addDetail(el, spec, nAll, state, opts.detail, () => refresh(false));
+      // a big detail table can freeze the page while LT.render builds it, so the
+      // toggle re-render shows the same busy state as a slow view recompute
+      const detail = addDetail(el, spec, nAll, state, opts.detail,
+        busyRender(wrap, () => refresh(false)));
       postSwap.push(detail);
       // bust the per-row detail cache and re-render open details (one row, or
       // all); for a caller whose widget changes what the detail callback returns
@@ -494,6 +482,30 @@
     const run = () => { clearTimeout(timer); timer = setTimeout(fn, ms); };
     run.now = () => { clearTimeout(timer); fn(); };
     return run;
+  }
+
+  // Wrap a synchronous, page-freezing render so a slow one shows a busy state
+  // (.lti-busy on `wrap`: wait cursor + dimmed body). The busy class can only
+  // paint if set *before* the blocking pass, so predict from the previous call's
+  // cost: run inline unless the last run was over BUSY_MS. `run(arg)` does the
+  // work; the returned function forwards its argument. Shared by view recomputes
+  // (search, sort, filter, external predicates) and row-detail toggles.
+  function busyRender(wrap, run) {
+    const BUSY_MS = 120;
+    let frame, lastCost = 0;
+    const timed = arg => {
+      const t = performance.now();
+      run(arg);
+      lastCost = performance.now() - t;
+    };
+    return arg => {
+      if (!wrap || lastCost < BUSY_MS) return timed(arg);
+      wrap.classList.add("lti-busy");
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => requestAnimationFrame(() => {
+        try { timed(arg); } finally { wrap.classList.remove("lti-busy"); }
+      }));
+    };
   }
 
   // Debounce typing so a long list is not re-rendered per keystroke; Enter (or
