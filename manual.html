@@ -829,7 +829,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmplcoQWB/file122665f98fda.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpMyLdF5/file43cd7d1c5b0d.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -943,7 +943,7 @@ if (lt:::has_browser()) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmplcoQWB/file12267f14e82d.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/36/tjdph2t965j8snz9_vkdnw0r0000gn/T//RtmpMyLdF5/file43cd6f09b5cb.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
