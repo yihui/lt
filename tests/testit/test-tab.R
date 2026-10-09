@@ -168,8 +168,11 @@ assert("lt_move() with after = NULL moves to start", {
   (m$ops %==% list(list(type = "move", columns = I("b"))))
 })
 
-# find the single op of a given type
-op_of = function(x, type) Filter(function(o) o$type == type, x$ops)[[1]]
+# find the single op of a given type (NULL when there is none)
+op_of = function(x, type) {
+  ops = Filter(function(o) o$type == type, x$ops)
+  if (length(ops)) ops[[1]]
+}
 
 assert("lt_errorbar() records columns, scale, and reference line", {
   # a two-sided formula: estimate on the LHS, bounds on the RHS. The value
@@ -201,6 +204,40 @@ assert("lt_errorbar() records columns, scale, and reference line", {
   (op3$axis_label %==% "Effect")
   # each series must name exactly three columns
   (has_error(lt_errorbar(x, a ~ b)) %==% TRUE)
+})
+
+assert("lt_dotplot()/lt_errorbar() draw into a dedicated `into` column", {
+  # `into` records the target name and an `add_col` op registers the new column;
+  # every source column, including the first, is hidden
+  e = lt_errorbar(x, a ~ b + c, into = "fig")
+  (op_of(e, "errorbar")$into %==% "fig")
+  (op_of(e, "add_col")$column %==% "fig")
+  ("fig" %in% names(e$data) %==% FALSE)
+  (op_of(e, "hide")$columns %==% I(c("a", "b", "c")))
+  # hide = FALSE keeps every value column visible alongside the plot column
+  (length(Filter(function(o) o$type == "hide",
+    lt_errorbar(x, a ~ b + c, into = "fig", hide = FALSE)$ops)) %==% 0L)
+  # the merged multi-series header labels the `into` column, not the first value
+  x3 = lt(data.frame(a = 1:3, b = 4:6, c = 7:9, d = 2:4, e = 1:3, f = 5:7))
+  e2 = lt_errorbar(x3, a ~ b + c, d ~ e + f, into = "fig")
+  (op_of(e2, "label")$labels[["fig"]] %==% "a / d")
+  # into omitted: unchanged (no `into` key, no add_col op)
+  eb0 = lt_errorbar(x, a ~ b + c)
+  (is.null(op_of(eb0, "errorbar")$into) %==% TRUE)
+  (is.null(op_of(eb0, "add_col")) %==% TRUE)
+
+  # dotplot behaves the same: scalar name + add_col op, all sources hidden
+  p = lt_dotplot(x, ~ a + b + c, into = "plot")
+  (op_of(p, "dotplot")$into %==% "plot")
+  (op_of(p, "add_col")$column %==% "plot")
+  (op_of(p, "hide")$columns %==% I(c("a", "b", "c")))
+  (op_of(p, "label")$labels[["plot"]] %==% "a / b / c")
+
+  # when `into` is an existing column, it is never hidden (it holds the plot)
+  # and no `add_col` op is emitted (the column already exists)
+  q = lt_dotplot(x, ~ a + b + c, into = "b")
+  (op_of(q, "hide")$columns %==% I(c("a", "c")))
+  (is.null(op_of(q, "add_col")) %==% TRUE)
 })
 
 assert("lt_errorbar() stacks several series with colors and a legend", {

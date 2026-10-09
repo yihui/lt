@@ -11,6 +11,7 @@ lt_dotplot(
   color = FALSE,
   labels = NULL,
   stagger = FALSE,
+  into = NULL,
   width = 160,
   height = NULL,
   hide = TRUE,
@@ -22,21 +23,21 @@ lt_dotplot(
 
 \item{columns}{The value column(s): one dot is drawn per column, read left to
 right across the row, all on a scale shared across the columns. The plot is
-drawn in the first column's cells. A one-sided formula (\code{~ a + b + c}),
-names, or integer positions.}
+drawn in the first column's cells, or into \code{into} when given. A one-sided
+formula (\code{~ a + b + c}), names, or integer positions.}
 
 \item{limits}{Numeric \code{c(min, max)} for the shared horizontal scale. Defaults
 to the range of all the columns' finite values. Values outside the scale
 are clamped to the edges.}
 
-\item{color}{Dot colors by column. \code{FALSE} (default) draws every dot in one
+\item{color}{Series colors. \code{FALSE} (default) draws every series in one
 default color; \code{TRUE} assigns colors from the current palette
 (\code{\link[grDevices:palette]{grDevices::palette()}}); a character vector of CSS colors sets them
-explicitly (recycled to the number of columns). When colored, a legend is
+explicitly (recycled to the number of series). When colored, a legend is
 drawn below the plot in the footer.}
 
-\item{labels}{Legend labels, one per column, used when the plot is colored.
-Defaults to the column names.}
+\item{labels}{Legend labels, one per series, used when colored. Defaults to
+the series' value-column names.}
 
 \item{stagger}{If \code{TRUE}, spread the dots onto separate vertical tracks (one
 per column) instead of a single baseline, so near-equal values do not
@@ -44,12 +45,21 @@ overlap. The vertical position is only cosmetic separation; the value is
 still read horizontally. The cell is made taller to fit the tracks (unless
 \code{height} is set). \code{FALSE} (default) draws all dots on one line.}
 
+\item{into}{Optional name of a dedicated column to draw the plot into,
+instead of the first series' value column. The series columns (\code{...}) are
+still read for their values and stay visible unless \code{hide} drops them, so
+you can show every value column as text \emph{and} a plot in its own column. A
+column of this name is created when it does not already exist (added as a
+new, extra column -- use \code{\link[=lt_move]{lt_move()}} to position it). When \code{NULL}
+(default), the plot is drawn into the first series' value column.}
+
 \item{width, height}{Pixel size of each cell's SVG. \code{height} defaults to a
 size that fits the tracks when \code{stagger} is set, else a single line.}
 
-\item{hide}{If \code{TRUE} (default) and several columns are drawn, those after the
-first are hidden (their values are drawn into the plot); set to \code{FALSE} to
-keep them visible.}
+\item{hide}{If \code{TRUE} (default), the columns the plot reads are hidden, since
+their values are drawn into it: all but the one holding the plot, or --
+when \code{into} names a separate target column -- all of them. Set to \code{FALSE}
+to keep them visible.}
 
 \item{axis}{Draw a shared horizontal axis (a baseline with tick marks and
 labels at "nice" round values) in the table footer under the plot column,
@@ -84,4 +94,6 @@ lt(d) |> lt_dotplot(
   ~ before + after, color = c("#999", "#1a9641"),
   labels = c("Baseline", "Follow-up")
 )
+# draw into a dedicated column, keeping the value columns visible as text
+lt(d) |> lt_dotplot(~ before + after, into = "plot", hide = FALSE)
 }

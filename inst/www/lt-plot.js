@@ -138,33 +138,39 @@
     return s + `</svg>`;
   }
 
-  // Error-bar cell renderer. columns = [value, lower, upper]; the plot replaces
-  // the value column's cells on a scale shared across the column. A renderer is
-  // an object with: resolve(op) -> { col: config } (the per-column setup, run
-  // once in resolveSpec); cellClass(cfg) -> extra <td> class; cell(cfg, data,
-  // r, u) -> body-cell HTML; foot(cfg, u) -> footer (axis) HTML or "".
-  cells.errorbar = {
+  // Build an axis-capable plot renderer (error bar, dot plot) from its per-cell
+  // SVG drawer -- all they differ by. The plot draws into the `into` column (or
+  // the first of `columns`), on a scale shared across the column; `extra(op)`
+  // adds the renderer-specific config (bounds for the error bar, stagger for
+  // the dot plot).
+  const axisPlot = (extra, draw) => ({
     resolve(op) {
-      const cols = op.columns || [], v = cols[0];
-      if (!v) return {};
-      const eb = {
-        col: v, cols, los: op.lowers || [], his: op.uppers || [],
-        colors: op.colors, labels: op.labels,
-        min: op.min, max: op.max, ref: op.ref, axis: op.axis,
-        axisLabel: op.axis_label, width: op.width || 160, height: op.height || 16
+      const cols = op.columns || [], v = op.into || cols[0];
+      if (!v || !cols.length) return {};
+      const cfg = {
+        col: v, cols, colors: op.colors, labels: op.labels,
+        min: op.min, max: op.max, axisLabel: op.axis_label,
+        width: op.width || 160, height: op.height || 16, ...extra(op)
       };
       // When an axis is requested, the same nice ticks drive both the footer
       // axis and the faint in-cell gridlines; their count is capped so the
       // labels do not crowd at the given width.
-      if (op.axis) eb.ticks = niceTicks(eb.min, eb.max, nAxisTicks(eb));
-      return { [v]: eb };
+      if (op.axis) cfg.ticks = niceTicks(cfg.min, cfg.max, nAxisTicks(cfg));
+      return { [v]: cfg };
     },
     // lt-eb-cell zeroes the cell's vertical padding so the stretched gridline
     // background can run unbroken from one row to the next.
-    cellClass: eb => eb.ticks ? "lt-eb-cell" : "",
-    cell: (eb, data, r, u) => (eb.ticks ? svgGrid(eb) : "") + svgErrorbar(eb, data, r, u),
-    foot: (eb, u) => (eb.ticks ? svgAxis(eb, u) : "") + legend(eb, u)
-  };
+    cellClass: cfg => cfg.ticks ? "lt-eb-cell" : "",
+    cell: (cfg, data, r, u) => (cfg.ticks ? svgGrid(cfg) : "") + draw(cfg, data, r, u),
+    foot: (cfg, u) => (cfg.ticks ? svgAxis(cfg, u) : "") + legend(cfg, u)
+  });
+
+  // Error-bar cell renderer. columns = [value, lower, upper] per series; the
+  // plot draws a point-and-bar per series on the column's shared scale.
+  cells.errorbar = axisPlot(
+    op => ({ los: op.lowers || [], his: op.uppers || [], ref: op.ref }),
+    svgErrorbar
+  );
 
   // Padding (px) inside a sparkline SVG, so the line/bars never touch the edge.
   const SP_PAD = 2;
@@ -275,25 +281,10 @@
     return `<div class="lt-plot-legend">${items}</div>`;
   }
 
-  // Dot-plot cell renderer. columns = the value columns (one dot each); the plot
-  // is drawn in the first column's cells on a scale shared across them. Shares
-  // the error-bar axis/gridline machinery (ticks, svgGrid, svgAxis, lt-eb-cell).
-  cells.dotplot = {
-    resolve(op) {
-      const cols = op.columns || [], v = cols[0];
-      if (!v) return {};
-      const dp = {
-        col: v, cols, colors: op.colors, labels: op.labels, stagger: op.stagger,
-        min: op.min, max: op.max, axisLabel: op.axis_label,
-        width: op.width || 160, height: op.height || 16
-      };
-      if (op.axis) dp.ticks = niceTicks(dp.min, dp.max, nAxisTicks(dp));
-      return { [v]: dp };
-    },
-    cellClass: dp => dp.ticks ? "lt-eb-cell" : "",
-    cell: (dp, data, r, u) => (dp.ticks ? svgGrid(dp) : "") + svgDotplot(dp, data, r, u),
-    foot: (dp, u) => (dp.ticks ? svgAxis(dp, u) : "") + legend(dp, u)
-  };
+  // Dot-plot cell renderer. columns = the value columns (one dot each); the
+  // plot draws on a scale shared across them. Shares the error-bar axis/gridline
+  // machinery via axisPlot (ticks, svgGrid, svgAxis, lt-eb-cell, legend).
+  cells.dotplot = axisPlot(op => ({ stagger: op.stagger }), svgDotplot);
 
   // If core already built a table before this module loaded (a doc where an
   // earlier plain table pulled in lt.js first, so its renderer was missing),

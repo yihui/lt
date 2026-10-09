@@ -586,6 +586,30 @@ plot_colors = function(color, labels, names) {
   list(colors = colors, labels = labels)
 }
 
+# Shared scale for a column plot: the given `limits`, else the range of all the
+# plotted columns' finite values (a degenerate column falls back to [0, 1]).
+plot_limits = function(limits, data, cols) {
+  if (!is.null(limits)) return(limits)
+  v = unlist(data[cols], use.names = FALSE); v = v[is.finite(v)]
+  if (length(v)) range(v) else c(0, 1)
+}
+
+# Shared setup for a column plot (lt_dotplot()/lt_errorbar()): the plot draws
+# into `target` -- the first shown column, or a new `into` column. Hide the
+# source columns (`src`) except the target when `hide` is set, and label a
+# multi-column plot's target header with the `shown` names joined.
+plot_setup = function(x, into, src, shown, hide) {
+  target = if (is.null(into)) shown[1] else into
+  if (!is.null(into) && !into %in% names(x$data))
+    x = add_op(x, 'add_col', column = into)
+  if (hide && length(hid <- setdiff(src, target)))
+    x = add_op(x, 'hide', columns = I(hid))
+  if (length(shown) > 1)
+    x = add_op(x, 'label',
+      labels = stats::setNames(list(paste(shown, collapse = ' / ')), target))
+  x
+}
+
 #' Draw an inline error-bar plot in a column
 #'
 #' Render a numeric column's cells as a small inline SVG: a point at the
@@ -608,17 +632,25 @@ plot_colors = function(color, labels, names) {
 #'   `value ~ lower + upper` (estimate on the left, bounds on the right) or a
 #'   length-3 character vector / integer positions `c(value, lower, upper)`.
 #'   Give several to stack several series per cell. The plot is drawn in the
-#'   first series' `value` column's cells.
+#'   first series' `value` column's cells, or into `into` when given.
 #' @param limits Numeric `c(min, max)` for the shared horizontal scale. Defaults
 #'   to the range of all the columns' finite values. Values outside the scale
 #'   are clamped to the edges.
 #' @param ref Optional value at which to draw a vertical reference line (e.g.
 #'   `0` for a risk difference, `1` for an odds ratio).
+#' @param into Optional name of a dedicated column to draw the plot into,
+#'   instead of the first series' value column. The series columns (`...`) are
+#'   still read for their values and stay visible unless `hide` drops them, so
+#'   you can show every value column as text *and* a plot in its own column. A
+#'   column of this name is created when it does not already exist (added as a
+#'   new, extra column -- use [lt_move()] to position it). When `NULL`
+#'   (default), the plot is drawn into the first series' value column.
 #' @param width,height Pixel size of each cell's SVG. `height` defaults to a
 #'   size that fits the number of series (taller for more).
-#' @param hide If `TRUE` (default), every column except the first series' value
-#'   column is hidden, since they are drawn into the plot; set to `FALSE` to
-#'   keep them visible.
+#' @param hide If `TRUE` (default), the columns the plot reads are hidden, since
+#'   their values are drawn into it: all but the one holding the plot, or --
+#'   when `into` names a separate target column -- all of them. Set to `FALSE`
+#'   to keep them visible.
 #' @param axis Draw a shared horizontal axis (a baseline with tick marks and
 #'   labels at "nice" round values) in the table footer under the plot column,
 #'   plus faint vertical gridlines inside each cell at the same tick positions
@@ -643,6 +675,8 @@ plot_colors = function(color, labels, names) {
 #' lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
 #' # keep the bounds columns visible and add a labeled axis
 #' lt(d) |> lt_errorbar(est ~ lo + hi, hide = FALSE, axis = "Effect")
+#' # draw into a dedicated column, keeping every value column visible as text
+#' lt(d) |> lt_errorbar(est ~ lo + hi, into = "forest", hide = FALSE)
 #' # several series stacked in each cell, colored with a footer legend
 #' d2 = data.frame(
 #'   term = c("A", "B"), e1 = c(0.2, 0.4), l1 = c(0, 0.2), u1 = c(0.4, 0.6),
@@ -653,7 +687,7 @@ plot_colors = function(color, labels, names) {
 #'   labels = c("Drug A", "Drug B")
 #' )
 lt_errorbar = function(
-  x, ..., limits = NULL, ref = NULL, width = 160, height = NULL,
+  x, ..., limits = NULL, ref = NULL, into = NULL, width = 160, height = NULL,
   hide = TRUE, axis = FALSE, color = FALSE, labels = NULL
 ) {
   series = list(...)  # one `value ~ lower + upper` triple per series
@@ -671,25 +705,13 @@ lt_errorbar = function(
   his = vapply(trip, `[`, character(1), 3L)
   n = length(vals)
   all_cols = unlist(trip, use.names = FALSE)
-  if (is.null(limits)) {
-    v = unlist(x$data[all_cols], use.names = FALSE)
-    v = v[is.finite(v)]
-    limits = if (length(v)) range(v) else c(0, 1)
-  }
+  limits = plot_limits(limits, x$data, all_cols)
   cl = plot_colors(color, labels, vals)
   # stack more series into a taller cell by default (~9px per series)
   if (is.null(height)) height = if (n > 1) n * 9 + 4 else 16
-  # the plot is drawn in the first value column's cells; hide the rest
-  if (hide && length(hid <- setdiff(all_cols, vals[1])))
-    x = add_op(x, 'hide', columns = I(hid))
-  # the cell shows every series, so label the header with the value-column names
-  # joined (not just the first, which is misleading); lt_label() can override.
-  if (n > 1) {
-    hdr = list(paste(vals, collapse = ' / '))
-    names(hdr) = vals[1]
-    x = add_op(x, 'label', labels = hdr)
-  }
+  x = plot_setup(x, into, all_cols, vals, hide)
   add_op(x, 'errorbar', columns = I(vals), lowers = I(los), uppers = I(his),
+    into = into,
     colors = if (!is.null(cl$colors)) I(cl$colors),
     labels = if (!is.null(cl$labels)) I(cl$labels),
     min = limits[1], max = limits[2], ref = ref, width = width, height = height,
@@ -761,23 +783,13 @@ lt_sparkline = function(
 #' @inheritParams lt_errorbar
 #' @param columns The value column(s): one dot is drawn per column, read left to
 #'   right across the row, all on a scale shared across the columns. The plot is
-#'   drawn in the first column's cells. A one-sided formula (`~ a + b + c`),
-#'   names, or integer positions.
-#' @param color Dot colors by column. `FALSE` (default) draws every dot in one
-#'   default color; `TRUE` assigns colors from the current palette
-#'   ([grDevices::palette()]); a character vector of CSS colors sets them
-#'   explicitly (recycled to the number of columns). When colored, a legend is
-#'   drawn below the plot in the footer.
-#' @param labels Legend labels, one per column, used when the plot is colored.
-#'   Defaults to the column names.
+#'   drawn in the first column's cells, or into `into` when given. A one-sided
+#'   formula (`~ a + b + c`), names, or integer positions.
 #' @param stagger If `TRUE`, spread the dots onto separate vertical tracks (one
 #'   per column) instead of a single baseline, so near-equal values do not
 #'   overlap. The vertical position is only cosmetic separation; the value is
 #'   still read horizontally. The cell is made taller to fit the tracks (unless
 #'   `height` is set). `FALSE` (default) draws all dots on one line.
-#' @param hide If `TRUE` (default) and several columns are drawn, those after the
-#'   first are hidden (their values are drawn into the plot); set to `FALSE` to
-#'   keep them visible.
 #' @param width,height Pixel size of each cell's SVG. `height` defaults to a
 #'   size that fits the tracks when `stagger` is set, else a single line.
 #' @return `x` with the dot-plot column recorded.
@@ -793,33 +805,23 @@ lt_sparkline = function(
 #'   ~ before + after, color = c("#999", "#1a9641"),
 #'   labels = c("Baseline", "Follow-up")
 #' )
+#' # draw into a dedicated column, keeping the value columns visible as text
+#' lt(d) |> lt_dotplot(~ before + after, into = "plot", hide = FALSE)
 lt_dotplot = function(
   x, columns, limits = NULL, color = FALSE, labels = NULL, stagger = FALSE,
-  width = 160, height = NULL, hide = TRUE, axis = TRUE
+  into = NULL, width = 160, height = NULL, hide = TRUE, axis = TRUE
 ) {
   cols = as.character(f_cols(columns, x$data))
   n = length(cols)
   if (n < 1) stop('`columns` must name at least one column.')
-  if (is.null(limits)) {
-    v = unlist(x$data[cols], use.names = FALSE)
-    v = v[is.finite(v)]
-    limits = if (length(v)) range(v) else c(0, 1)
-  }
+  limits = plot_limits(limits, x$data, cols)
   cl = plot_colors(color, labels, cols)
   colors = cl$colors; labels = cl$labels
   # a staggered plot needs a taller cell to spread the tracks out (one ~9px
   # track per column, matching lt_errorbar); un-staggered keeps the single line
   if (is.null(height)) height = if (stagger && n > 1) n * 9 + 4 else 16
-  if (hide && n > 1) x = add_op(x, 'hide', columns = I(cols[-1]))
-  # the plot replaces the first column's cells but shows every column, so label
-  # that header with all the column names joined (not just the first, which is
-  # misleading). A later lt_label() on the same column overrides this.
-  if (n > 1) {
-    hdr = list(paste(cols, collapse = ' / '))
-    names(hdr) = cols[1]
-    x = add_op(x, 'label', labels = hdr)
-  }
-  add_op(x, 'dotplot', columns = I(cols),
+  x = plot_setup(x, into, cols, cols, hide)
+  add_op(x, 'dotplot', columns = I(cols), into = into,
     colors = if (!is.null(colors)) I(colors),
     labels = if (!is.null(labels)) I(labels),
     stagger = if (isTRUE(stagger)) TRUE,

@@ -9,6 +9,7 @@ lt_errorbar(
   ...,
   limits = NULL,
   ref = NULL,
+  into = NULL,
   width = 160,
   height = NULL,
   hide = TRUE,
@@ -25,7 +26,7 @@ lower bound, and the upper bound, in that order: either a two-sided formula
 \code{value ~ lower + upper} (estimate on the left, bounds on the right) or a
 length-3 character vector / integer positions \code{c(value, lower, upper)}.
 Give several to stack several series per cell. The plot is drawn in the
-first series' \code{value} column's cells.}
+first series' \code{value} column's cells, or into \code{into} when given.}
 
 \item{limits}{Numeric \code{c(min, max)} for the shared horizontal scale. Defaults
 to the range of all the columns' finite values. Values outside the scale
@@ -34,12 +35,21 @@ are clamped to the edges.}
 \item{ref}{Optional value at which to draw a vertical reference line (e.g.
 \code{0} for a risk difference, \code{1} for an odds ratio).}
 
+\item{into}{Optional name of a dedicated column to draw the plot into,
+instead of the first series' value column. The series columns (\code{...}) are
+still read for their values and stay visible unless \code{hide} drops them, so
+you can show every value column as text \emph{and} a plot in its own column. A
+column of this name is created when it does not already exist (added as a
+new, extra column -- use \code{\link[=lt_move]{lt_move()}} to position it). When \code{NULL}
+(default), the plot is drawn into the first series' value column.}
+
 \item{width, height}{Pixel size of each cell's SVG. \code{height} defaults to a
 size that fits the number of series (taller for more).}
 
-\item{hide}{If \code{TRUE} (default), every column except the first series' value
-column is hidden, since they are drawn into the plot; set to \code{FALSE} to
-keep them visible.}
+\item{hide}{If \code{TRUE} (default), the columns the plot reads are hidden, since
+their values are drawn into it: all but the one holding the plot, or --
+when \code{into} names a separate target column -- all of them. Set to \code{FALSE}
+to keep them visible.}
 
 \item{axis}{Draw a shared horizontal axis (a baseline with tick marks and
 labels at "nice" round values) in the table footer under the plot column,
@@ -85,6 +95,8 @@ d = data.frame(
 lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
 # keep the bounds columns visible and add a labeled axis
 lt(d) |> lt_errorbar(est ~ lo + hi, hide = FALSE, axis = "Effect")
+# draw into a dedicated column, keeping every value column visible as text
+lt(d) |> lt_errorbar(est ~ lo + hi, into = "forest", hide = FALSE)
 # several series stacked in each cell, colored with a footer legend
 d2 = data.frame(
   term = c("A", "B"), e1 = c(0.2, 0.4), l1 = c(0, 0.2), u1 = c(0.4, 0.6),

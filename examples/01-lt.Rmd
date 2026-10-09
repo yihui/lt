@@ -569,6 +569,17 @@ lt(d_eff) |>
   lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = "Effect (95% CI)")
 ```
 
+By default the plot is drawn into the first value column's cells. Pass `into`
+to draw it into a dedicated column instead, so every value column stays visible
+as text alongside the plot. The named column is created when it does not exist;
+use `lt_move()` to place it.
+
+```{r}
+lt(d_eff) |>
+  lt_errorbar(Est ~ Lo + Hi, ref = 0, into = "Forest", hide = FALSE,
+    axis = "Effect (95% CI)")
+```
+
 Several series can share one cell: pass one `value ~ lower + upper` per series
 and each row stacks one point-and-bar on the same scale (e.g. a risk difference
 for each of several treatment arms). `color` and `labels` key the series in a
