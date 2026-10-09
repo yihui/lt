@@ -100,6 +100,39 @@ assert("lt_dotplot stagger puts each column's dot on its own vertical track", {
   (count_str(staggered, 'cy="20"') %==% 1L)
 })
 
+assert("lt_errorbar/lt_dotplot `into` draws into a runtime-synthesized column", {
+  # `into` names a target column not in the data: an `add_col` op makes the
+  # runtime materialize it, draw the plot into it, and leave the value columns
+  # rendering as text. `fig` is that column.
+  spec = list(
+    data = list(est = c(0.5, 0.2), lo = c(0, 0.1), hi = c(1, 0.3)),
+    ops = list(
+      list(type = "add_col", column = "fig"),
+      list(type = "errorbar", columns = I("est"), lowers = I("lo"),
+        uppers = I("hi"), into = "fig", min = 0, max = 1, width = 80,
+        height = 16))
+  )
+  html = build(spec)
+  # the synthesized column carries a header and one SVG per row
+  (grepl(">fig</th>", html, fixed = TRUE) %==% TRUE)
+  (count_str(html, '<svg class="lt-eb"') %==% 2L)
+  # the value column still renders its numbers as data cells (not consumed)
+  (grepl(">0.5</td>", html, fixed = TRUE) %==% TRUE)
+  (grepl(">0.2</td>", html, fixed = TRUE) %==% TRUE)
+  # a dot plot into a (missing) dedicated column behaves the same
+  dp = build(list(
+    data = list(a = c(1, 2), b = c(3, 4)),
+    ops = list(
+      list(type = "add_col", column = "plot"),
+      list(type = "dotplot", columns = c("a", "b"), into = "plot",
+        min = 0, max = 4, width = 80, height = 16))
+  ))
+  (grepl(">plot</th>", dp, fixed = TRUE) %==% TRUE)
+  (count_str(dp, '<svg class="lt-dot"') %==% 2L)
+  (grepl(">1</td>", dp, fixed = TRUE) %==% TRUE)
+  (grepl(">4</td>", dp, fixed = TRUE) %==% TRUE)
+})
+
 assert("lt_errorbar renders SVG only for the current page (deferred)", {
   # six rows, paged three at a time: the SVG is drawn in the browser, so only
   # the visible page's rows carry one -- the payload ships numbers, not SVG

@@ -476,8 +476,25 @@
     }
   }
 
+  // Materialize columns from `add_col` ops: build an empty column (filled with
+  // op.value ?? "") from the shipped column name, so the rest of the runtime
+  // treats it as an ordinary data column. Appended last (use lt_move() to
+  // position it).
+  function addColumns(spec) {
+    const data = spec.data || (spec.data = {}),
+          nRow = data[colOrder(spec)[0]]?.length || 0;
+    for (const op of (spec.ops || []))
+      if (op.type === "add_col" && op.column && !(op.column in data)) {
+        data[op.column] = new Array(nRow).fill(op.value ?? "");
+        // when an explicit column order is shipped, keep the new column in it
+        if (spec.columns && !spec.columns.includes(op.column))
+          spec.columns = [...spec.columns, op.column];
+      }
+  }
+
   function buildHtml(spec) {
     sortByGroups(spec);
+    addColumns(spec);
     const data = spec.data || {},
           { display, nRow } = applyOps(spec),
           { visible: cols, align, colLabels, colWidths, tableWidth, indent,
