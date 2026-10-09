@@ -1044,7 +1044,10 @@
     // (fire.now via onEnd). Arrow keys repaint live too but only debounce the
     // filter — no commit on key-up — so stepping several times quickly (or an
     // autorepeat) batches into one filter rather than re-filtering per step.
-    const fire = debounce(() => onInput(val.slice()));
+    const fire = debounce(() => onInput(val.slice())),
+          // a no-op gesture (a bare thumb click, or an arrow key at an end) leaves
+          // the range untouched, so only fire the filter when `val` actually moved
+          changed = from => val[0] !== from[0] || val[1] !== from[1];
     const pct = v => (v - min) / span * 100,
           snap = v => {
             const s = Math.round((v - min) / step) * step + min;
@@ -1069,15 +1072,21 @@
         const r = track.getBoundingClientRect();
         return min + span * Math.min(1, Math.max(0, (clientX - r.left) / r.width));
       };
-      // drag repaints live but filters only on release (fire.now via onEnd)
-      t.onpointerdown = e => { t.focus(); drag(e, ev => move(i, at(ev.clientX)), fire.now); };
+      // drag repaints live but filters only on release (fire.now via onEnd), and
+      // only if the drag moved the range off where it started (not a bare click)
+      t.onpointerdown = e => {
+        t.focus();
+        const from = val.slice();
+        drag(e, ev => move(i, at(ev.clientX)), () => changed(from) && fire.now());
+      };
       t.onkeydown = e => {
         const d = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+        const from = val.slice();
         if (d) move(i, val[i] + d * step);
         else if (e.key === "Home") move(i, min);
         else if (e.key === "End") move(i, max);
         else return;
-        fire();
+        changed(from) && fire();
         e.preventDefault();
       };
     });

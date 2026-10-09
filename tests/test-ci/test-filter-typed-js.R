@@ -98,6 +98,33 @@ assert('a "range" filter renders a two-thumb slider whose box filters numericall
    %==% 'true')
 })
 
+assert('a bare thumb click (pointer down + up, no move) does not re-filter', {
+  # clicking a thumb without dragging leaves the range unchanged, so it must not
+  # commit a filter and rebuild <tbody>. A fresh <tbody> would drop a stamp we
+  # put on the current one, so its survival proves no re-render happened.
+  x = lt(tdf()) |> lt_interactive(filter = list(n = 'range'), pager = FALSE)
+  js = 't.querySelector(".lti-filters .lti-funnel").click();
+    var th = t.querySelectorAll(".lti-thumb")[0], cx = th.getBoundingClientRect().left;
+    var ev = (n, c) => new PointerEvent(n, {bubbles: true, cancelable: true, clientX: c});
+    t.tBodies[0].dataset.probe = "1";
+    th.dispatchEvent(ev("pointerdown", cx));
+    document.dispatchEvent(ev("pointerup", cx))'
+  (lti_eval(x, 't.tBodies[0].dataset.probe === "1"', js) %==% 'true')
+})
+
+assert('dragging a thumb to a new value commits the narrowed range on release', {
+  # the positive path: an actual drag (down, move, up) must re-filter. Pulling the
+  # low thumb to the track center raises the lower bound, dropping the small values.
+  x = lt(tdf()) |> lt_interactive(filter = list(n = 'range'), pager = FALSE)
+  js = 't.querySelector(".lti-filters .lti-funnel").click();
+    var th = t.querySelectorAll(".lti-thumb")[0], r = th.closest(".lti-slider").getBoundingClientRect();
+    var ev = (n, c) => new PointerEvent(n, {bubbles: true, cancelable: true, clientX: c});
+    th.dispatchEvent(ev("pointerdown", r.left));
+    document.dispatchEvent(ev("pointermove", r.left + r.width / 2));
+    document.dispatchEvent(ev("pointerup", r.left + r.width / 2))'
+  (length(lti_rows(x, js)) < 4L)
+})
+
 assert('a chip value summary updates only once its popover closes, not while editing', {
   # the chip text is variable width; updating it live while dragging would shift
   # the funnel (and popover) sideways, so it is deferred until the popover closes
