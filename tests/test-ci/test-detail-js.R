@@ -30,6 +30,21 @@ assert("expanding a row reveals its detail, which follows the row", {
   ) %==% 'true')
 })
 
+assert("expanding or collapsing a row on the same page does not rebuild <tbody>", {
+  x = itbl(detail = js('(row) => ({ data: { d: [row.name] } })'))
+  caret = function(i) sprintf('t.querySelectorAll("tbody .lti-expand")[%d].click()', i)
+  # pin a sibling data row by reference, then expand and collapse the first row.
+  # A full <tbody> rebuild would detach the pinned row and swap in a fresh one, so
+  # its staying connected proves the toggle touched only the one row.
+  js = paste('window.PIN = t.querySelectorAll("tbody tr")[1]',
+             caret(0), caret(0), sep = ';')
+  (lti_eval(x, 'window.PIN.isConnected', js) %==% 'true')
+  # expanding alone keeps the sibling connected and inserts exactly one detail row
+  js1 = paste('window.PIN = t.querySelectorAll("tbody tr")[1]', caret(0), sep = ';')
+  (lti_eval(x, 'window.PIN.isConnected + "," + t.querySelectorAll(".lti-detail").length', js1)
+   %==% 'true,1')
+})
+
 assert("row detail takes an inline js() callback and sees hidden columns", {
   # `secret` is hidden from the main table but still reaches the callback,
   # which travels verbatim in the spec (no function need be defined on the page)

@@ -353,26 +353,11 @@
     };
 
     // refresh() rebuilds the body synchronously, freezing the page on a large
-    // table. uiRefresh() shows a busy state (.lti-busy) during that freeze. The
-    // flag can only paint if set *before* the blocking pass, so we predict from
-    // the previous recompute's cost: skip it unless that was over BUSY_MS. Only
-    // view recomputes (search, sort, filter, external predicates) route here;
-    // the initial render, paging and detail toggles stay synchronous.
-    const wrap = el.closest(".lt-wrap"), BUSY_MS = 120;
-    let busyFrame, lastCost = 0;
-    const timed = stale => {
-      const t = performance.now();
-      refresh(stale);
-      lastCost = performance.now() - t;
-    };
-    const uiRefresh = (stale = true) => {
-      if (!wrap || lastCost < BUSY_MS) return timed(stale);
-      wrap.classList.add("lti-busy");
-      cancelAnimationFrame(busyFrame);
-      busyFrame = requestAnimationFrame(() => requestAnimationFrame(() => {
-        try { timed(stale); } finally { wrap.classList.remove("lti-busy"); }
-      }));
-    };
+    // table. uiRefresh() shows a busy state during that freeze (see busyRender).
+    // Paging stays synchronous (cheap); view recomputes (search, sort, filter,
+    // external predicates) and row-detail toggles route through a busy wrapper.
+    const wrap = el.closest(".lt-wrap");
+    const uiRefresh = busyRender(wrap, (stale = true) => refresh(stale));
 
     // a small controller for driving the table from outside (e.g. forestly's
     // own dropdown and range-slider widgets): register a predicate over a row's
@@ -494,6 +479,30 @@
     const run = () => { clearTimeout(timer); timer = setTimeout(fn, ms); };
     run.now = () => { clearTimeout(timer); fn(); };
     return run;
+  }
+
+  // Wrap a synchronous, page-freezing render so a slow one shows a busy state
+  // (.lti-busy on `wrap`: wait cursor + dimmed body). The busy class can only
+  // paint if set *before* the blocking pass, so predict from the previous call's
+  // cost: run inline unless the last run was over BUSY_MS. `run(arg)` does the
+  // work; the returned function forwards its argument. Shared by view recomputes
+  // (search, sort, filter, external predicates) and row-detail toggles.
+  function busyRender(wrap, run) {
+    const BUSY_MS = 120;
+    let frame, lastCost = 0;
+    const timed = arg => {
+      const t = performance.now();
+      run(arg);
+      lastCost = performance.now() - t;
+    };
+    return arg => {
+      if (!wrap || lastCost < BUSY_MS) return timed(arg);
+      wrap.classList.add("lti-busy");
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => requestAnimationFrame(() => {
+        try { timed(arg); } finally { wrap.classList.remove("lti-busy"); }
+      }));
+    };
   }
 
   // Debounce typing so a long list is not re-rendered per keystroke; Enter (or
@@ -658,9 +667,33 @@
       }
       return cache[r] = out;
     };
-    const toggle = r => {
-      state.expanded.has(r) ? state.expanded.delete(r) : state.expanded.add(r);
-      rerender();
+    // a slow render (a large detail table, or a full rebuild on reset) shows a
+    // busy state; `busy(fn)` runs `fn` through it
+    const wrap = el.closest(".lt-wrap"), busy = busyRender(wrap, fn => fn());
+    const setCaret = (btn, open) => {
+      btn.textContent = open ? "▾" : "▸";
+      btn.setAttribute("aria-expanded", String(open));
+    };
+    // insert a row's detail after its <tr> (spec built once, cached); none if the
+    // callback yields none
+    const openDetail = (tr, r) => {
+      const child = build(r);
+      if (!child) return;
+      const row = elem(doc, "tr", { className: "lti-detail" });
+      tr.after(row);
+      LT.render(elem(doc, "div", {}, elem(doc, "td", { colSpan: nCol }, row)), child);
+    };
+    // toggle one row in place, no <tbody> rebuild: collapse drops its detail row,
+    // expand builds+inserts it (behind the busy state). A page/sort/filter rebuild
+    // restores open rows' details via decorate.
+    const toggle = (tr, btn, r) => {
+      const open = state.expanded.has(r);
+      open ? state.expanded.delete(r) : state.expanded.add(r);
+      setCaret(btn, !open);
+      if (open) {
+        const d = tr.nextElementSibling;
+        if (d?.classList.contains("lti-detail")) d.remove();
+      } else busy(() => openDetail(tr, r));
     };
     const decorate = (body, rows) => [...body.rows].forEach((tr, i) => {
       const r = rows[i];
@@ -670,28 +703,20 @@
       const td0 = dataCells(tr)[0], open = state.expanded.has(r);
       if (!td0) return;
       const btn = elem(doc, "button", {
-        type: "button", className: "lti-expand", textContent: open ? "▾" : "▸",
-        "aria-expanded": String(open), "aria-label": "Toggle detail"
+        type: "button", className: "lti-expand", "aria-label": "Toggle detail"
       });
-      btn.onclick = () => toggle(r);
+      setCaret(btn, open);
+      btn.onclick = () => toggle(tr, btn, r);
       td0.prepend(btn);
-      const child = open && build(r);
-      if (child) {
-        const row = elem(doc, "tr", { className: "lti-detail" });
-        tr.after(row);
-        const cell = elem(doc, "td", { colSpan: nCol }, row);
-        LT.render(elem(doc, "div", {}, cell), child);
-      }
+      if (open) openDetail(tr, r);
     });
-    // drop the memoized detail for one row (or every row, no argument) and
-    // re-render, so an already-opened detail is rebuilt from its callback — e.g.
-    // a caller's control-bar widget changed what the callback should return.
-    // Rebuilding re-runs the callback, so a detail table's own sort/filter state
-    // is reset along with its data.
+    // drop a row's cached detail (or every row's) and re-render, so the callback
+    // re-runs and the detail — and its own sort/filter state — rebuilds fresh,
+    // e.g. after a caller's widget changes what the callback returns.
     decorate.reset = r => {
       if (r == null) for (const k in cache) delete cache[k];
       else delete cache[r];
-      rerender();
+      busy(rerender);
     };
     return decorate;
   }
@@ -1032,7 +1057,10 @@
     // (fire.now via onEnd). Arrow keys repaint live too but only debounce the
     // filter — no commit on key-up — so stepping several times quickly (or an
     // autorepeat) batches into one filter rather than re-filtering per step.
-    const fire = debounce(() => onInput(val.slice()));
+    const fire = debounce(() => onInput(val.slice())),
+          // a no-op gesture (a bare thumb click, or an arrow key at an end) leaves
+          // the range untouched, so only fire the filter when `val` actually moved
+          changed = from => val[0] !== from[0] || val[1] !== from[1];
     const pct = v => (v - min) / span * 100,
           snap = v => {
             const s = Math.round((v - min) / step) * step + min;
@@ -1057,15 +1085,21 @@
         const r = track.getBoundingClientRect();
         return min + span * Math.min(1, Math.max(0, (clientX - r.left) / r.width));
       };
-      // drag repaints live but filters only on release (fire.now via onEnd)
-      t.onpointerdown = e => { t.focus(); drag(e, ev => move(i, at(ev.clientX)), fire.now); };
+      // drag repaints live but filters only on release (fire.now via onEnd), and
+      // only if the drag moved the range off where it started (not a bare click)
+      t.onpointerdown = e => {
+        t.focus();
+        const from = val.slice();
+        drag(e, ev => move(i, at(ev.clientX)), () => changed(from) && fire.now());
+      };
       t.onkeydown = e => {
         const d = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+        const from = val.slice();
         if (d) move(i, val[i] + d * step);
         else if (e.key === "Home") move(i, min);
         else if (e.key === "End") move(i, max);
         else return;
-        fire();
+        changed(from) && fire();
         e.preventDefault();
       };
     });
