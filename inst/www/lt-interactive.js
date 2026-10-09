@@ -312,7 +312,11 @@
           // the table's full column count: a full-width row (control bar, pager,
           // no-match placeholder, detail) must span the leading group columns too
           nAll = nGroup + cols.length;
-    const disp = captureDisplay(el, cols, order),
+    // buildHtml computed the displayed text for *every* row (spec._display),
+    // independent of the first-page render cap, so use it for substring
+    // matching. The DOM holds only the initial page, so scraping it (the
+    // fallback) would make filters miss every off-page row.
+    const disp = spec._display || captureDisplay(el, cols, order),
           // the bottom header row: the one whose cells line up with `cols`
           hrow = [...$$(el, "thead tr")].pop(),
           // an array `sort` on the options is an initial sort (a list of key
@@ -348,6 +352,28 @@
       sync(view.length);
     };
 
+    // refresh() rebuilds the body synchronously, freezing the page on a large
+    // table. uiRefresh() shows a busy state (.lti-busy) during that freeze. The
+    // flag can only paint if set *before* the blocking pass, so we predict from
+    // the previous recompute's cost: skip it unless that was over BUSY_MS. Only
+    // view recomputes (search, sort, filter, external predicates) route here;
+    // the initial render, paging and detail toggles stay synchronous.
+    const wrap = el.closest(".lt-wrap"), BUSY_MS = 120;
+    let busyFrame, lastCost = 0;
+    const timed = stale => {
+      const t = performance.now();
+      refresh(stale);
+      lastCost = performance.now() - t;
+    };
+    const uiRefresh = (stale = true) => {
+      if (!wrap || lastCost < BUSY_MS) return timed(stale);
+      wrap.classList.add("lti-busy");
+      cancelAnimationFrame(busyFrame);
+      busyFrame = requestAnimationFrame(() => requestAnimationFrame(() => {
+        try { timed(stale); } finally { wrap.classList.remove("lti-busy"); }
+      }));
+    };
+
     // a small controller for driving the table from outside (e.g. forestly's
     // own dropdown and range-slider widgets): register a predicate over a row's
     // raw values (`{col: value}`, including hidden columns) under an id,
@@ -357,14 +383,14 @@
     // table has row detail) are added below.
     el._lt = {
       spec, state,
-      refresh: () => refresh(),
+      refresh: () => uiRefresh(),
       // the current filtered + sorted row indices (1-based, every row, not just
       // the page) — e.g. for a "download what's shown" button that must honor the
       // typed filters (which live in state.filters, not external predicates)
       view: () => view || computeView(spec, disp, state),
       filter(id, fn) {
         fn ? (state.predicates[id] = fn) : (delete state.predicates[id]);
-        refresh();
+        uiRefresh();
       }
     };
 
@@ -389,11 +415,11 @@
     const labels = dataCells(hrow).map(th => th.textContent);
     // wire sort before adding the filter row, so it sees the header row only;
     // `allCols` so every header cell binds (a group header is sortable too)
-    if (opts.sort !== false) addSort(hrow, allCols, state, refresh);
+    if (opts.sort !== false) addSort(hrow, allCols, state, uiRefresh);
     // the under-header filter row: needed when a default applies to visible
     // columns or any named column is itself visible
     if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => cols.includes(c)))))
-      addFilter(hrow, cols, flt, spec.data, state, refresh, nGroup);
+      addFilter(hrow, cols, flt, spec.data, state, uiRefresh, nGroup);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     // the icon buttons sit together in a group that keeps its natural width;
@@ -411,8 +437,8 @@
     // (CSS :empty) so it adds no gap.
     const chips = headBar ?
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
-    if (barCols.length) addControlFilters(chips, barCols, flt.cols, spec.data, state, refresh);
-    if (opts.search !== false) addSearch(headBar, el, state, refresh);
+    if (barCols.length) addControlFilters(chips, barCols, flt.cols, spec.data, state, uiRefresh);
+    if (opts.search !== false) addSearch(headBar, el, state, uiRefresh);
     // the assembled control bar (`.lti-bar`), or null when the table has no
     // table-wide controls, for a caller to append its own widget to; `chips` is
     // its chip group (null only when there is no bar), the right home for a
@@ -463,7 +489,7 @@
   // Run `fn` (which reads its own live state) only after `ms` of quiet; `.now()`
   // flushes a pending call at once (Enter, drag end). Used by the search/filter
   // boxes and the range slider.
-  function debounce(fn, ms = 150) {
+  function debounce(fn, ms = 400) {
     let timer;
     const run = () => { clearTimeout(timer); timer = setTimeout(fn, ms); };
     run.now = () => { clearTimeout(timer); fn(); };
@@ -471,9 +497,10 @@
   }
 
   // Debounce typing so a long list is not re-rendered per keystroke; Enter (or
-  // leaving the box) applies at once.
+  // leaving the box) applies at once. Longer than the default debounce: a filter
+  // recompute is far heavier than a slider nudge, so wait out a typist's gaps.
   function onType(input, apply) {
-    const go = debounce(() => apply(input.value));
+    const go = debounce(() => apply(input.value), 1000);
     input.oninput = go;
     input.onchange = go.now;
   }
@@ -1001,9 +1028,10 @@
     let val = [min, max];
     // paint() tracks the thumb live; the onInput filter never fires mid-drag. A
     // live filter re-flows the table (and shifts the chip the thumb lives in)
-    // out from under the cursor, so a mouse drag only commits on release. The
-    // keyboard commits on key-up too, but debounces held arrows so an autorepeat
-    // doesn't re-filter a large table per step.
+    // out from under the cursor, so a mouse drag only commits on release
+    // (fire.now via onEnd). Arrow keys repaint live too but only debounce the
+    // filter — no commit on key-up — so stepping several times quickly (or an
+    // autorepeat) batches into one filter rather than re-filtering per step.
     const fire = debounce(() => onInput(val.slice()));
     const pct = v => (v - min) / span * 100,
           snap = v => {
@@ -1040,7 +1068,6 @@
         fire();
         e.preventDefault();
       };
-      t.onkeyup = fire.now;  // commit at once when the key is released
     });
     paint();
     return { el: track, set: v => { val = v.slice(); paint(); } };

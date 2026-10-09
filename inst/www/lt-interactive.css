@@ -285,3 +285,15 @@
     margin: 0 auto 0 0.3em;
   }
 }
+
+/* Busy state during a view recompute that freezes the page (see
+ * lt-interactive.js): wait cursor over the whole table and a dimmed body. */
+.lti-busy {
+  /* !important beats the controls' own pointer/resize cursors */
+  &, & * {
+    cursor: wait !important;
+  }
+  & tbody {
+    opacity: 0.5;
+  }
+}
