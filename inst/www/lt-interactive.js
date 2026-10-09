@@ -434,10 +434,7 @@
     // which rows carry a detail block, so a plain re-render (no new view) is
     // enough
     if (opts.detail) {
-      // a big detail table can freeze the page while LT.render builds it, so the
-      // toggle re-render shows the same busy state as a slow view recompute
-      const detail = addDetail(el, spec, nAll, state, opts.detail,
-        busyRender(wrap, () => refresh(false)));
+      const detail = addDetail(el, spec, nAll, state, opts.detail, () => refresh(false));
       postSwap.push(detail);
       // bust the per-row detail cache and re-render open details (one row, or
       // all); for a caller whose widget changes what the detail callback returns
@@ -670,9 +667,33 @@
       }
       return cache[r] = out;
     };
-    const toggle = r => {
-      state.expanded.has(r) ? state.expanded.delete(r) : state.expanded.add(r);
-      rerender();
+    // a slow render (a large detail table, or a full rebuild on reset) shows a
+    // busy state; `busy(fn)` runs `fn` through it
+    const wrap = el.closest(".lt-wrap"), busy = busyRender(wrap, fn => fn());
+    const setCaret = (btn, open) => {
+      btn.textContent = open ? "▾" : "▸";
+      btn.setAttribute("aria-expanded", String(open));
+    };
+    // insert a row's detail after its <tr> (spec built once, cached); none if the
+    // callback yields none
+    const openDetail = (tr, r) => {
+      const child = build(r);
+      if (!child) return;
+      const row = elem(doc, "tr", { className: "lti-detail" });
+      tr.after(row);
+      LT.render(elem(doc, "div", {}, elem(doc, "td", { colSpan: nCol }, row)), child);
+    };
+    // toggle one row in place, no <tbody> rebuild: collapse drops its detail row,
+    // expand builds+inserts it (behind the busy state). A page/sort/filter rebuild
+    // restores open rows' details via decorate.
+    const toggle = (tr, btn, r) => {
+      const open = state.expanded.has(r);
+      open ? state.expanded.delete(r) : state.expanded.add(r);
+      setCaret(btn, !open);
+      if (open) {
+        const d = tr.nextElementSibling;
+        if (d?.classList.contains("lti-detail")) d.remove();
+      } else busy(() => openDetail(tr, r));
     };
     const decorate = (body, rows) => [...body.rows].forEach((tr, i) => {
       const r = rows[i];
@@ -682,28 +703,20 @@
       const td0 = dataCells(tr)[0], open = state.expanded.has(r);
       if (!td0) return;
       const btn = elem(doc, "button", {
-        type: "button", className: "lti-expand", textContent: open ? "▾" : "▸",
-        "aria-expanded": String(open), "aria-label": "Toggle detail"
+        type: "button", className: "lti-expand", "aria-label": "Toggle detail"
       });
-      btn.onclick = () => toggle(r);
+      setCaret(btn, open);
+      btn.onclick = () => toggle(tr, btn, r);
       td0.prepend(btn);
-      const child = open && build(r);
-      if (child) {
-        const row = elem(doc, "tr", { className: "lti-detail" });
-        tr.after(row);
-        const cell = elem(doc, "td", { colSpan: nCol }, row);
-        LT.render(elem(doc, "div", {}, cell), child);
-      }
+      if (open) openDetail(tr, r);
     });
-    // drop the memoized detail for one row (or every row, no argument) and
-    // re-render, so an already-opened detail is rebuilt from its callback — e.g.
-    // a caller's control-bar widget changed what the callback should return.
-    // Rebuilding re-runs the callback, so a detail table's own sort/filter state
-    // is reset along with its data.
+    // drop a row's cached detail (or every row's) and re-render, so the callback
+    // re-runs and the detail — and its own sort/filter state — rebuilds fresh,
+    // e.g. after a caller's widget changes what the callback returns.
     decorate.reset = r => {
       if (r == null) for (const k in cache) delete cache[k];
       else delete cache[r];
-      rerender();
+      busy(rerender);
     };
     return decorate;
   }
