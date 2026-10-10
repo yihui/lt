@@ -5,6 +5,7 @@
 [![R-CMD-check](https://github.com/yihui/lt/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/yihui/lt/actions/workflows/R-CMD-check.yaml)
 [![CRAN release](https://www.r-pkg.org/badges/version/lt)](https://cran.r-project.org/package=lt)
 [![lt on r-universe](https://yihui.r-universe.dev/badges/lt)](https://yihui.r-universe.dev/lt)
+[![lt.min.js size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js?compression=gzip&label=lt.min.js%20gzip)](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)
 
 <!-- badges: end -->
 
@@ -13,14 +14,18 @@ Lightweight tables for R, inspired by [gt](https://gt.rstudio.com).
 **lt** provides a small grammar of tables that covers the structure most reports
 need — titles, column spanners, row groups, footnotes, and number formatting —
 without the heavy dependency stack. It targets HTML only (no LaTeX or RTF),
-which keeps the implementation minimal: the entire runtime is a single
-vanilla-JS file ([about 10 KB
-minified](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)).
+which keeps the implementation minimal: the entire runtime is a single, tiny
+vanilla-JS file (see the size badge above).
 
-Tables can also be made interactive — sorting, searching, per-column filtering,
-pagination, resizable columns, and expandable row detail — with
-`lt_interactive()`. The interactivity is a separate opt-in extension, loaded
-only for tables that ask for it, so static tables stay as light as ever.
+Tables can also hold inline plots (`lt_errorbar()`, `lt_sparkline()`,
+`lt_dotplot()`) and be made interactive — sorting, searching, per-column
+filtering, pagination, resizable columns, column hiding, expandable row detail,
+and CSV download — with `lt_interactive()`.
+
+Both inline plots and interactivity live in separate extensions on top of the
+core runtime (`lt-plot.js` and `lt-interactive.js`), each loaded only for the
+tables that use it. A plain static table pulls in neither, so it stays as light
+as ever.
 
 ## Installation
 
@@ -68,9 +73,24 @@ for a "cheat table" as an overview of these functions.
   `NA` with `"n/a"`).
 - `lt_merge()` — merge several columns into one using a sprintf-style pattern.
 - `lt_indent()` — indent selected rows (useful for hierarchical row labels).
-- `lt_errorbar()` — draw an inline error-bar plot (point + confidence bar) in a
-  column, on a scale shared across rows (a forest plot of effect sizes). Only
-  the numbers travel to the client; the SVG is drawn in the browser.
+
+**Inline plots**
+
+Drawn as SVG in the browser from the numbers alone — nothing but the data
+travels to the client, and an interactive table draws only the visible rows.
+
+- `lt_errorbar()` — a point estimate with lower/upper bounds on a scale shared
+  across rows (a forest plot of effect sizes); several series can stack in one
+  cell, with a colored legend and optional reference line and axis.
+- `lt_sparkline()` — a per-row line or bar chart, from a list-column or several
+  numeric columns read across the row.
+- `lt_dotplot()` — one dot per column on a shared scale, optionally colored with
+  a legend and staggered onto separate tracks so near-equal values do not
+  overlap.
+
+By default a plot draws into the first value column's cells; `lt_errorbar()` and
+`lt_dotplot()` also take `into=` to name a dedicated column to draw into
+(created when it does not exist), keeping the value columns visible as text.
 
 **Appearance**
 
@@ -91,9 +111,10 @@ for a "cheat table" as an overview of these functions.
 **Interactivity**
 
 - `lt_interactive()` — opt a table into client-side sorting, a search box,
-  per-column filters, pagination, resizable columns, and expandable row detail
-  (drill-down). Features are handled by a small JavaScript extension loaded only
-  for interactive tables.
+  per-column filters (text, dropdown, range slider, or checklist), pagination,
+  resizable columns, column hiding, expandable row detail (drill-down), and CSV
+  download of the current view. Features are handled by a small JavaScript
+  extension loaded only for interactive tables.
 
 **Export**
 

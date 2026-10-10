@@ -7,9 +7,11 @@ Authors@R: person('Yihui', 'Xie', email = 'xie@yihui.name', role = c('aut', 'cre
 Description: A lightweight grammar of tables. Build a table by declaring a JSON
     spec (titles, spanners, row groups, footnotes, formatting functions, etc.); a tiny
     vanilla JavaScript runtime builds the HTML table from the spec on page
-    load. Tables can optionally be made interactive (sorting, searching,
-    filtering, pagination, and expandable row detail) via a separate extension
-    loaded only when requested. No 'sass', no 'V8', no 'htmlwidgets' — just base
+    load. Cells can hold inline plots (error bars, sparklines, dot plots) drawn
+    as SVG in the browser from the numbers alone. Tables can optionally be made
+    interactive (sorting, searching, filtering, pagination, column hiding,
+    expandable row detail, and CSV download) via a separate extension loaded
+    only when requested. No 'sass', no 'V8', no 'htmlwidgets' — just base
     R and 'xfun' ('htmltools' is used only for the optional Shiny binding and
     for embedding tables in other HTML output).
 License: MIT + file LICENSE
