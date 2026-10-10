@@ -876,20 +876,31 @@ lt_css = function(x, ...) {
   x
 }
 
-#' Add a class to the table's container
+#' Set attributes on the table's container
 #'
-#' Add one or more CSS classes to the `<div class="lt-wrap">` that wraps the
-#' rendered table, a hook for scoping custom CSS (e.g. attached with [lt_css()])
-#' to this table alone.
+#' Set arbitrary HTML attributes on the `<div class="lt-wrap">` that wraps the
+#' rendered table (e.g. `style`, `id`, `data-*`). A `class` is appended to the
+#' base `lt-wrap` class rather than replacing it, and accumulates across repeated
+#' calls. Common uses are scoping custom CSS (e.g. attached with [lt_css()]) to
+#' this table alone, or giving the container a fixed width.
 #'
 #' @inheritParams lt_align
-#' @param class A character vector of class names to add to the container.
-#' @return `x` with the container classes recorded.
+#' @param ... Named HTML attributes for the container, e.g. `class = "striped"`,
+#'   `style = "width:800px"`, `id = "tbl1"`.
+#' @return `x` with the container attributes recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_class("my-table")
-lt_class = function(x, class) {
-  x$class = c(x$class, class)   # kept as a vector; the JS runtime joins them
+#' lt(head(mtcars)) |> lt_wrap(class = "my-table", style = "width:400px")
+lt_wrap = function(x, ...) {
+  attrs = list(...)
+  if (length(attrs) == 0) return(x)
+  prev = if (is.null(x$wrap)) list() else x$wrap
+  # class is appended to any class set by an earlier lt_wrap(); the JS runtime
+  # further prepends the base `lt-wrap`. Other attributes overwrite.
+  if (!is.null(attrs$class) && !is.null(prev$class))
+    attrs$class = paste(prev$class, attrs$class)
+  prev[names(attrs)] = attrs
+  x$wrap = prev
   x
 }
 

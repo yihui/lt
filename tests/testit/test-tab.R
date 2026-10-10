@@ -342,9 +342,7 @@ assert("lt_css() handles absolute, relative, and URL paths", {
 })
 
 
-assert("lt_class() accumulates container classes as a vector", {
-  # classes are kept as a vector (the JS runtime joins them)
-  (lt_class(x, "foo")$class %==% "foo")
-  (lt_class(x, c("foo", "bar"))$class %==% c("foo", "bar"))
-  (lt_class(lt_class(x, "foo"), "bar")$class %==% c("foo", "bar"))
+assert("lt_wrap() appends class across repeated calls", {
+  # class from a later call is appended to an earlier one (JS prepends lt-wrap)
+  (lt_wrap(lt_wrap(x, class = "foo"), class = "bar")$wrap$class %==% "foo bar")
 })

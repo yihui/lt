@@ -21,6 +21,13 @@ assert("table is wrapped in a div for horizontal scroll", {
   (matches(html, '.*<div class="lt-wrap"><table.*</table></div>.*') %==% "")
 })
 
+assert("lt_wrap attributes land on the wrapper, class appended, values escaped", {
+  html = build(list(data = list(x = 1), wrap = list(
+    class = "foo", style = 'width:1px', id = 'a"b'
+  )))
+  (matches(html, '.*<div class="lt-wrap foo" style="width:1px" id="a&quot;b"><table.*') %==% "")
+})
+
 assert("cells are HTML-escaped by default", {
   html = build(list(data = list(x = c("<b>a</b>", "c & d"))))
   (matches(html, ".*>&lt;b&gt;a&lt;/b&gt;</td>.*>c &amp; d</td>.*") %==% "")
