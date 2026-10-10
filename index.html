@@ -47,9 +47,11 @@
 <td>A lightweight grammar of tables. Build a table by declaring a JSON
 spec (titles, spanners, row groups, footnotes, formatting functions, etc.); a tiny
 vanilla JavaScript runtime builds the HTML table from the spec on page
-load. Tables can optionally be made interactive (sorting, searching,
-filtering, pagination, and expandable row detail) via a separate extension
-loaded only when requested. No sass, no V8, no htmlwidgets — just base
+load. Cells can hold inline plots (error bars, sparklines, dot plots) drawn
+as SVG in the browser from the numbers alone. Tables can optionally be made
+interactive (sorting, searching, filtering, pagination, column hiding,
+expandable row detail, and CSV download) via a separate extension loaded
+only when requested. No sass, no V8, no htmlwidgets — just base
 R and xfun (htmltools is used only for the optional Shiny binding and
 for embedding tables in other HTML output).</td>
 </tr>
@@ -94,19 +96,20 @@ testit</td>
 <!-- badges: start -->
 <p><a href="https://github.com/yihui/lt/actions/workflows/R-CMD-check.yaml"><img src="https://github.com/yihui/lt/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check" /></a>
 <a href="https://cran.r-project.org/package=lt"><img src="https://www.r-pkg.org/badges/version/lt" alt="CRAN release" /></a>
-<a href="https://yihui.r-universe.dev/lt"><img src="https://yihui.r-universe.dev/badges/lt" alt="lt on r-universe" /></a></p>
+<a href="https://yihui.r-universe.dev/lt"><img src="https://yihui.r-universe.dev/badges/lt" alt="lt on r-universe" /></a>
+<a href="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js"><img src="https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js?compression=gzip&amp;label=lt.min.js%20gzip" alt="lt.min.js size" /></a></p>
 <!-- badges: end -->
 <p>Lightweight tables for R, inspired by <a href="https://gt.rstudio.com">gt</a>.</p>
 <p><strong>lt</strong> provides a small grammar of tables that covers the structure most reports
 need — titles, column spanners, row groups, footnotes, and number formatting —
 without the heavy dependency stack. It targets HTML only (no LaTeX or RTF),
-which keeps the implementation minimal: the entire runtime is a single
-vanilla-JS file (<a href="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js">about 10 KB
-minified</a>).</p>
+which keeps the implementation minimal: the entire runtime is a single, tiny
+vanilla-JS file (see the size badge above).</p>
 <p>Tables can also be made interactive — sorting, searching, per-column filtering,
-pagination, resizable columns, and expandable row detail — with
-<code>lt_interactive()</code>. The interactivity is a separate opt-in extension, loaded
-only for tables that ask for it, so static tables stay as light as ever.</p>
+pagination, resizable columns, column hiding, expandable row detail, and CSV
+download — with <code>lt_interactive()</code>. The interactivity is a separate opt-in
+extension, loaded only for tables that ask for it, so static tables stay as
+light as ever.</p>
 <h2 id="sec:installation"><span class="section-number main-number">1</span> Installation</h2>
 <pre><code class="language-r"># CRAN version
 install.packages(&quot;lt&quot;)
@@ -147,10 +150,23 @@ prefix/suffix, percentage, scientific notation, etc.</li>
 <code>NA</code> with <code>&quot;n/a&quot;</code>).</li>
 <li><code>lt_merge()</code> — merge several columns into one using a sprintf-style pattern.</li>
 <li><code>lt_indent()</code> — indent selected rows (useful for hierarchical row labels).</li>
-<li><code>lt_errorbar()</code> — draw an inline error-bar plot (point + confidence bar) in a
-column, on a scale shared across rows (a forest plot of effect sizes). Only
-the numbers travel to the client; the SVG is drawn in the browser.</li>
 </ul>
+<p><strong>Inline plots</strong></p>
+<p>Drawn as SVG in the browser from the numbers alone — nothing but the data
+travels to the client, and an interactive table draws only the visible rows.</p>
+<ul>
+<li><code>lt_errorbar()</code> — a point estimate with lower/upper bounds on a scale shared
+across rows (a forest plot of effect sizes); several series can stack in one
+cell, with a colored legend and optional reference line and axis.</li>
+<li><code>lt_sparkline()</code> — a per-row line or bar chart, from a list-column or several
+numeric columns read across the row.</li>
+<li><code>lt_dotplot()</code> — one dot per column on a shared scale, optionally colored with
+a legend and staggered onto separate tracks so near-equal values do not
+overlap.</li>
+</ul>
+<p>By default a plot draws into the first value column’s cells; <code>lt_errorbar()</code> and
+<code>lt_dotplot()</code> also take <code>into=</code> to name a dedicated column to draw into
+(created when it does not exist), keeping the value columns visible as text.</p>
 <p><strong>Appearance</strong></p>
 <ul>
 <li><code>lt_align()</code> — set column alignment (left / center / right).</li>
@@ -170,9 +186,10 @@ data, so an interactive row detail can surface them).</li>
 <p><strong>Interactivity</strong></p>
 <ul>
 <li><code>lt_interactive()</code> — opt a table into client-side sorting, a search box,
-per-column filters, pagination, resizable columns, and expandable row detail
-(drill-down). Features are handled by a small JavaScript extension loaded only
-for interactive tables.</li>
+per-column filters (text, dropdown, range slider, or checklist), pagination,
+resizable columns, column hiding, expandable row detail (drill-down), and CSV
+download of the current view. Features are handled by a small JavaScript
+extension loaded only for interactive tables.</li>
 </ul>
 <p><strong>Export</strong></p>
 <ul>
