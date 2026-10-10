@@ -105,11 +105,14 @@ need — titles, column spanners, row groups, footnotes, and number formatting �
 without the heavy dependency stack. It targets HTML only (no LaTeX or RTF),
 which keeps the implementation minimal: the entire runtime is a single, tiny
 vanilla-JS file (see the size badge above).</p>
-<p>Tables can also be made interactive — sorting, searching, per-column filtering,
-pagination, resizable columns, column hiding, expandable row detail, and CSV
-download — with <code>lt_interactive()</code>. The interactivity is a separate opt-in
-extension, loaded only for tables that ask for it, so static tables stay as
-light as ever.</p>
+<p>Tables can also hold inline plots (<code>lt_errorbar()</code>, <code>lt_sparkline()</code>,
+<code>lt_dotplot()</code>) and be made interactive — sorting, searching, per-column
+filtering, pagination, resizable columns, column hiding, expandable row detail,
+and CSV download — with <code>lt_interactive()</code>.</p>
+<p>Both inline plots and interactivity live in separate extensions on top of the
+core runtime (<code>lt-plot.js</code> and <code>lt-interactive.js</code>), each loaded only for the
+tables that use it. A plain static table pulls in neither, so it stays as light
+as ever.</p>
 <h2 id="sec:installation"><span class="section-number main-number">1</span> Installation</h2>
 <pre><code class="language-r"># CRAN version
 install.packages(&quot;lt&quot;)
