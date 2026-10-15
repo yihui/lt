@@ -84,24 +84,21 @@ add_op = function(x, type, ...) {
 
 camel2dash = function(x) gsub('([A-Z])', '-\\L\\1', x, perl = TRUE)
 
-# Canonicalize the `...` of the name = value setters (lt_label(), lt_width(),
-# lt_css(), lt_wrap()) into a named list. Three forms are accepted
-# and produce the same result:
-#   f(a = 1, b = 2)              # named arguments
-#   f(c(a = 1, b = 2))           # a single named vector or list
-#   f(list(c("a", "b"), c(1, 2)))# a single list(names, values) of two parallel
-#                                #   vectors
-# The latter two let the names come from a variable, which named arguments
-# cannot (their names must be literals). Any other `...` is returned unchanged,
-# so a function's own unnamed-argument handling (e.g. a whole-table width or a
-# CSS file path) still sees it.
+# Canonicalize a `...`-style name = value mapping into a named list. Three forms
+# produce the same result:
+#   f(a = 1, b = 2)               # named arguments
+#   f(c(a = 1, b = 2))            # a single named vector or list
+#   f(list(c("a", "b"), c(1, 2))) # a single list(names, values) of two parallel
+#                                 #   vectors
+# Any other `...` is returned unchanged, so a caller's own unnamed-argument
+# handling still sees it.
 name_value_args = function(...) {
   args = list(...)
   if (length(args) != 1 || !is.null(names(args))) return(args)
   a = args[[1]]
   if (!is.null(names(a))) return(as.list(a))               # single named vector/list
   if (is.list(a) && length(a) == 2)                        # single list(names, values)
-    return(stats::setNames(as.list(a[[2]]), as.character(a[[1]])))
+    return(`names<-`(as.list(a[[2]]), a[[1]]))
   args
 }
 

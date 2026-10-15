@@ -13,10 +13,8 @@ lt_label(x, ...)
 label in \code{\link[=I]{I()}} to treat it as raw HTML. Alternatively, pass a single named
 list or named character vector mapping column names to labels, which is
 convenient when the labels are computed programmatically, e.g.
-\code{lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))}. The names and
-labels can also be given as a single unnamed \code{list(names, labels)} of two
-parallel vectors, which supplies the names from a variable (impossible with
-\code{name = value}, whose names must be literals).}
+\code{lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))}, or as a single
+\code{list(names, labels)} of two parallel vectors.}
 }
 \value{
 \code{x} with the column label overrides recorded.
@@ -30,7 +28,6 @@ lt(head(mtcars)) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
 lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
 # a single named list or vector of labels
 lt(head(mtcars)) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
-# names held in variables, as a list(names, labels) of parallel vectors
-cols = c("mpg", "cyl")
-lt(head(mtcars)) |> lt_label(list(cols, c("Miles/Gallon", "Cylinders")))
+# a single list(names, labels) of two parallel vectors
+lt(head(mtcars)) |> lt_label(list(c("mpg", "cyl"), c("Miles/Gallon", "Cylinders")))
 }

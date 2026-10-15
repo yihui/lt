@@ -30,6 +30,23 @@ assert("camel2dash() converts camelCase to dash-case", {
     c("border-left", "background-color", "color"))
 })
 
+assert("name_value_args() canonicalizes the name = value forms", {
+  expected = list(a = "A", b = "B")
+  # named arguments
+  (name_value_args(a = "A", b = "B") %==% expected)
+  # a single named vector or list
+  (name_value_args(c(a = "A", b = "B")) %==% expected)
+  (name_value_args(list(a = "A", b = "B")) %==% expected)
+  # a single list(names, values) of two parallel vectors
+  (name_value_args(list(c("a", "b"), c("A", "B"))) %==% expected)
+  # a single name/value pair is the degenerate case
+  (name_value_args(list("a", "A")) %==% list(a = "A"))
+  # anything else is returned unchanged (an unnamed scalar, a mix, nothing)
+  (name_value_args("80%") %==% list("80%"))
+  (name_value_args(a = "A", "80%") %==% list(a = "A", "80%"))
+  (name_value_args() %==% list())
+})
+
 assert("add_op() appends an operation", {
   x = lt(d)
   x = add_op(x, "test", foo = "bar")

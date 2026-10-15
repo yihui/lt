@@ -323,10 +323,8 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #'   label in [I()] to treat it as raw HTML. Alternatively, pass a single named
 #'   list or named character vector mapping column names to labels, which is
 #'   convenient when the labels are computed programmatically, e.g.
-#'   `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`. The names and
-#'   labels can also be given as a single unnamed `list(names, labels)` of two
-#'   parallel vectors, which supplies the names from a variable (impossible with
-#'   `name = value`, whose names must be literals).
+#'   `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`, or as a single
+#'   `list(names, labels)` of two parallel vectors.
 #' @return `x` with the column label overrides recorded.
 #' @export
 #' @examples
@@ -335,9 +333,8 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #' lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
 #' # a single named list or vector of labels
 #' lt(head(mtcars)) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
-#' # names held in variables, as a list(names, labels) of parallel vectors
-#' cols = c("mpg", "cyl")
-#' lt(head(mtcars)) |> lt_label(list(cols, c("Miles/Gallon", "Cylinders")))
+#' # a single list(names, labels) of two parallel vectors
+#' lt(head(mtcars)) |> lt_label(list(c("mpg", "cyl"), c("Miles/Gallon", "Cylinders")))
 lt_label = function(x, ...) {
   add_op(x, 'label', labels = name_value_args(...))
 }
@@ -506,18 +503,15 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
 #'   widths of individual columns. A single unnamed scalar sets the width
 #'   of the whole table. Widths can be any CSS value (e.g., `"100px"`,
 #'   `"20%"`, `"8em"`). The column widths can instead be given as a single
-#'   unnamed `list(names, widths)` of two parallel vectors, which supplies the
-#'   names from a variable (impossible with `name = value`, whose names must be
-#'   literals).
+#'   `list(names, widths)` of two parallel vectors.
 #' @return `x` with the widths recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
 #' # set the whole-table width, optionally with column widths
 #' lt(head(mtcars)) |> lt_width("80%", mpg = "100px")
-#' # names held in variables, as a list(names, widths) of parallel vectors
-#' cols = c("mpg", "cyl")
-#' lt(head(mtcars)) |> lt_width(list(cols, c("100px", "50px")))
+#' # a single list(names, widths) of two parallel vectors
+#' lt(head(mtcars)) |> lt_width(list(c("mpg", "cyl"), c("100px", "50px")))
 lt_width = function(x, ...) {
   args = name_value_args(...)
   nms = names(args)

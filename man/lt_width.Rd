@@ -13,9 +13,7 @@ lt_width(x, ...)
 widths of individual columns. A single unnamed scalar sets the width
 of the whole table. Widths can be any CSS value (e.g., \code{"100px"},
 \code{"20\%"}, \code{"8em"}). The column widths can instead be given as a single
-unnamed \code{list(names, widths)} of two parallel vectors, which supplies the
-names from a variable (impossible with \code{name = value}, whose names must be
-literals).}
+\code{list(names, widths)} of two parallel vectors.}
 }
 \value{
 \code{x} with the widths recorded.
@@ -27,7 +25,6 @@ Set column and table widths
 lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
 # set the whole-table width, optionally with column widths
 lt(head(mtcars)) |> lt_width("80\%", mpg = "100px")
-# names held in variables, as a list(names, widths) of parallel vectors
-cols = c("mpg", "cyl")
-lt(head(mtcars)) |> lt_width(list(cols, c("100px", "50px")))
+# a single list(names, widths) of two parallel vectors
+lt(head(mtcars)) |> lt_width(list(c("mpg", "cyl"), c("100px", "50px")))
 }
