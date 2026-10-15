@@ -105,16 +105,14 @@ assert("lt_label() accepts a single named list or vector of labels", {
   (lt_label(x, a = "Alpha", b = "Beta")$ops %==% expected)
 })
 
-assert("lt_label() accepts list(name, value) tuples", {
+assert("lt_label() accepts a list(names, values) of parallel vectors", {
   expected = list(list(type = "label", labels = list(a = "Alpha", b = "Beta")))
-  ca = "a"; cb = "b"
-  # a column name held in a variable, keyed via a tuple
-  (lt_label(x, list(ca, "Alpha"), list(cb, "Beta"))$ops %==% expected)
-  # tuples mix with named arguments
-  (lt_label(x, a = "Alpha", list(cb, "Beta"))$ops %==% expected)
-  # the tuple value is passed through untouched (I() survives)
-  op = lt_label(x, list(ca, I("<b>A</b>")))$ops[[1]]
-  (inherits(op$labels$a, "AsIs"))
+  cols = c("a", "b")
+  # names supplied from a variable
+  (lt_label(x, list(cols, c("Alpha", "Beta")))$ops %==% expected)
+  # a single column is the degenerate case
+  (lt_label(x, list("a", "Alpha"))$ops %==%
+    list(list(type = "label", labels = list(a = "Alpha"))))
 })
 
 assert("lt_html() marks columns as raw HTML", {
@@ -174,16 +172,11 @@ assert("lt_width() adds width op", {
 
   (has_error(lt_width(x, "80%", "90%")))
 
-  # a column name held in a variable, keyed via a tuple
-  ca = "a"
-  w = lt_width(x, list(ca, "100px"), b = "50%")
+  # column widths as a single list(names, widths) of parallel vectors, with the
+  # names supplied from a variable
+  cols = c("a", "b")
+  w = lt_width(x, list(cols, c("100px", "50%")))
   (w$ops %==% list(list(type = "width", widths = list(a = "100px", b = "50%"))))
-
-  # a tuple and the whole-table width combine
-  w = lt_width(x, "80%", list(ca, "100px"))
-  (w$ops %==% list(list(
-    type = "width", widths = list(a = "100px"), table = "80%"
-  )))
 })
 
 assert("lt_move() with after = NULL moves to start", {

@@ -10,11 +10,12 @@ lt_width(x, ...)
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{...}{Named arguments of the form \code{col_name = "width"} set the
-widths of individual columns. A single unnamed argument sets the width
+widths of individual columns. A single unnamed scalar sets the width
 of the whole table. Widths can be any CSS value (e.g., \code{"100px"},
-\code{"20\%"}, \code{"8em"}). A column name held in a variable can be passed as an
-unnamed \code{list(col, "width")} tuple (first element the name, second the
-width).}
+\code{"20\%"}, \code{"8em"}). The column widths can instead be given as a single
+unnamed \code{list(names, widths)} of two parallel vectors, which supplies the
+names from a variable (impossible with \code{name = value}, whose names must be
+literals).}
 }
 \value{
 \code{x} with the widths recorded.
@@ -26,7 +27,7 @@ Set column and table widths
 lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
 # set the whole-table width, optionally with column widths
 lt(head(mtcars)) |> lt_width("80\%", mpg = "100px")
-# a column name held in a variable, via a list(name, value) tuple
-col = "mpg"
-lt(head(mtcars)) |> lt_width(list(col, "100px"))
+# names held in variables, as a list(names, widths) of parallel vectors
+cols = c("mpg", "cyl")
+lt(head(mtcars)) |> lt_width(list(cols, c("100px", "50px")))
 }

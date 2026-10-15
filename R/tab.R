@@ -323,10 +323,10 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #'   label in [I()] to treat it as raw HTML. Alternatively, pass a single named
 #'   list or named character vector mapping column names to labels, which is
 #'   convenient when the labels are computed programmatically, e.g.
-#'   `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`. A column name
-#'   held in a variable can be passed as an unnamed `list(col, "Label")` tuple
-#'   (first element the name, second the label), which `col = "Label"` cannot
-#'   express.
+#'   `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`. The names and
+#'   labels can also be given as a single unnamed `list(names, labels)` of two
+#'   parallel vectors, which supplies the names from a variable (impossible with
+#'   `name = value`, whose names must be literals).
 #' @return `x` with the column label overrides recorded.
 #' @export
 #' @examples
@@ -335,9 +335,9 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #' lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
 #' # a single named list or vector of labels
 #' lt(head(mtcars)) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
-#' # a column name held in a variable, via a list(name, value) tuple
-#' col = "mpg"
-#' lt(head(mtcars)) |> lt_label(list(col, "Miles/Gallon"))
+#' # names held in variables, as a list(names, labels) of parallel vectors
+#' cols = c("mpg", "cyl")
+#' lt(head(mtcars)) |> lt_label(list(cols, c("Miles/Gallon", "Cylinders")))
 lt_label = function(x, ...) {
   labels = list(...)
   # allow a single named list/vector of labels instead of named `...`
@@ -509,20 +509,21 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
 #'
 #' @inheritParams lt_align
 #' @param ... Named arguments of the form `col_name = "width"` set the
-#'   widths of individual columns. A single unnamed argument sets the width
+#'   widths of individual columns. A single unnamed scalar sets the width
 #'   of the whole table. Widths can be any CSS value (e.g., `"100px"`,
-#'   `"20%"`, `"8em"`). A column name held in a variable can be passed as an
-#'   unnamed `list(col, "width")` tuple (first element the name, second the
-#'   width).
+#'   `"20%"`, `"8em"`). The column widths can instead be given as a single
+#'   unnamed `list(names, widths)` of two parallel vectors, which supplies the
+#'   names from a variable (impossible with `name = value`, whose names must be
+#'   literals).
 #' @return `x` with the widths recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
 #' # set the whole-table width, optionally with column widths
 #' lt(head(mtcars)) |> lt_width("80%", mpg = "100px")
-#' # a column name held in a variable, via a list(name, value) tuple
-#' col = "mpg"
-#' lt(head(mtcars)) |> lt_width(list(col, "100px"))
+#' # names held in variables, as a list(names, widths) of parallel vectors
+#' cols = c("mpg", "cyl")
+#' lt(head(mtcars)) |> lt_width(list(cols, c("100px", "50px")))
 lt_width = function(x, ...) {
   args = name_value_args(list(...))
   nms = names(args)
