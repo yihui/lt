@@ -129,7 +129,7 @@ count = function(p, x) sum(gregexpr(p, x)[[1]] > 0)
 # knit_print() uses to dedup assets (knitr resets them between real knits).
 knit_doc = function(...) {
   for (f in c(.knit_flag, .int_flag))
-    knitr::opts_knit$set(stats::setNames(list(NULL), f))
+    knitr::opts_knit$set(set_names(list(NULL), f))
   paste(unlist(lapply(list(...), knit_print.lt_tbl)), collapse = '\n')
 }
 

@@ -235,7 +235,7 @@ print.lt_tbl = function(x, ...) {
 # return FALSE): the gate that emits each shared asset bundle once per document.
 knit_once = function(flag) {
   first = !isTRUE(knitr::opts_knit$get(flag))
-  if (first) knitr::opts_knit$set(stats::setNames(list(TRUE), flag))
+  if (first) knitr::opts_knit$set(set_names(list(TRUE), flag))
   first
 }
 
@@ -261,7 +261,7 @@ knit_print.lt_tbl = function(x, ...) {
   seen = knitr::opts_knit$get(.css_flag)
   x$css = setdiff(x$css, seen)
   if (length(x$css))
-    knitr::opts_knit$set(stats::setNames(list(c(seen, x$css)), .css_flag))
+    knitr::opts_knit$set(set_names(list(c(seen, x$css)), .css_flag))
   html = format(x, assets = first)
   # A late extension goes where format() would: the interactivity script after
   # the core runtime; the graphics module (whose renderer must exist before

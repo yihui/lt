@@ -157,8 +157,8 @@ assert("lt_spec() is the payload spec_block() serializes", {
 if (requireNamespace("knitr", quietly = TRUE)) {
   assert("knit_once() fires only on the first use of a flag per document", {
     f = "lt.test_once"
-    knitr::opts_knit$set(stats::setNames(list(NULL), f))  # reset to unseen
-    on.exit(knitr::opts_knit$set(stats::setNames(list(NULL), f)))
+    knitr::opts_knit$set(set_names(list(NULL), f))  # reset to unseen
+    on.exit(knitr::opts_knit$set(set_names(list(NULL), f)))
     (knit_once(f) %==% TRUE)   # first table emits the bundle
     (knit_once(f) %==% FALSE)  # later tables skip it
     (knit_once(f) %==% FALSE)

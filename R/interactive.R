@@ -158,7 +158,7 @@ lt_interactive = function(
 normalize_filter = function(filter) {
   if (isTRUE(filter)) return(list(default = TRUE))
   if (is.character(filter))
-    return(list(cols = stats::setNames(rep(list(TRUE), length(filter)), filter)))
+    return(list(cols = set_names(rep(list(TRUE), length(filter)), filter)))
   if (is.list(filter)) {
     nm = names(filter)
     if (is.null(nm)) nm = rep('', length(filter))
@@ -220,7 +220,7 @@ formula_sort = function(f) {
       if (op == '-') return(if (length(e) == 3L)
         c(walk(e[[2]], neg), walk(e[[3]], !neg)) else walk(e[[2]], !neg))
     }
-    stats::setNames(neg, as.character(e))
+    set_names(neg, as.character(e))
   }
   d = walk(f[[length(f)]])  # the right-hand side
   ifelse(d, paste0('-', names(d)), names(d))

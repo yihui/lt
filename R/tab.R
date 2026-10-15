@@ -621,7 +621,7 @@ plot_setup = function(x, into, src, shown, hide) {
     x = add_op(x, 'hide', columns = I(hid))
   if (length(shown) > 1)
     x = add_op(x, 'label',
-      labels = stats::setNames(list(paste(shown, collapse = ' / ')), target))
+      labels = set_names(list(paste(shown, collapse = ' / ')), target))
   x
 }
 
