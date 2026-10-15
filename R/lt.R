@@ -84,6 +84,25 @@ add_op = function(x, type, ...) {
 
 camel2dash = function(x) gsub('([A-Z])', '-\\L\\1', x, perl = TRUE)
 
+# Normalize `...`-style name = value arguments. Besides named arguments, accept
+# an unnamed `list(name, value)` 2-tuple: its first element is the name and its
+# second the value. This lets a caller key an entry by a name held in a variable
+# (e.g. `list(col, "Label")`), which `name = value` can't express because its
+# name must be a literal. Named arguments and non-tuple unnamed ones are left
+# untouched.
+name_value_args = function(args) {
+  nms = names(args)
+  if (is.null(nms)) nms = character(length(args))
+  for (i in which(!nzchar(nms))) {
+    a = args[[i]]
+    if (length(a) == 2 && is.null(names(a))) {
+      nms[i] = as.character(a[[1]])
+      args[[i]] = a[[2]]
+    }
+  }
+  stats::setNames(args, nms)
+}
+
 # Resolve a column selection to column names. `cols` may be:
 # - a one-sided formula; if its right-hand side references the pronoun `.`
 #   (the character vector of column names), it is evaluated as a predicate and

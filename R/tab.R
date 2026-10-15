@@ -323,7 +323,10 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #'   label in [I()] to treat it as raw HTML. Alternatively, pass a single named
 #'   list or named character vector mapping column names to labels, which is
 #'   convenient when the labels are computed programmatically, e.g.
-#'   `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`.
+#'   `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`. A column name
+#'   held in a variable can be passed as an unnamed `list(col, "Label")` tuple
+#'   (first element the name, second the label), which `col = "Label"` cannot
+#'   express.
 #' @return `x` with the column label overrides recorded.
 #' @export
 #' @examples
@@ -332,11 +335,16 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #' lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
 #' # a single named list or vector of labels
 #' lt(head(mtcars)) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
+#' # a column name held in a variable, via a list(name, value) tuple
+#' col = "mpg"
+#' lt(head(mtcars)) |> lt_label(list(col, "Miles/Gallon"))
 lt_label = function(x, ...) {
   labels = list(...)
   # allow a single named list/vector of labels instead of named `...`
   if (length(labels) == 1 && is.null(names(labels)) && !is.null(names(labels[[1]])))
     labels = as.list(labels[[1]])
+  else
+    labels = name_value_args(labels)
   add_op(x, 'label', labels = labels)
 }
 
@@ -503,15 +511,20 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
 #' @param ... Named arguments of the form `col_name = "width"` set the
 #'   widths of individual columns. A single unnamed argument sets the width
 #'   of the whole table. Widths can be any CSS value (e.g., `"100px"`,
-#'   `"20%"`, `"8em"`).
+#'   `"20%"`, `"8em"`). A column name held in a variable can be passed as an
+#'   unnamed `list(col, "width")` tuple (first element the name, second the
+#'   width).
 #' @return `x` with the widths recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
 #' # set the whole-table width, optionally with column widths
 #' lt(head(mtcars)) |> lt_width("80%", mpg = "100px")
+#' # a column name held in a variable, via a list(name, value) tuple
+#' col = "mpg"
+#' lt(head(mtcars)) |> lt_width(list(col, "100px"))
 lt_width = function(x, ...) {
-  args = list(...)
+  args = name_value_args(list(...))
   nms = names(args)
   named = if (is.null(nms)) rep(FALSE, length(args)) else nzchar(nms)
   widths = args[named]

@@ -41,6 +41,8 @@
 
 - `lt_width()` can set the width of the whole table via an unnamed argument, e.g., `lt_width("80%")`. It can be combined with named column widths.
 
+- `lt_label()` and `lt_width()` accept an unnamed `list(name, value)` tuple in addition to a `name = value` argument, e.g., `lt_label(x, list(col, "Label"))`. This keys an entry by a column name held in a variable, which `name = value` can't express (its name must be a literal).
+
 - Column selection now accepts integer positions in addition to column names and one-sided formulas, e.g., `lt_align(x, 1:2, "center")` or `lt_spanner(x, "Grp", columns = 2:3)`. This applies to all functions that select columns (`lt_align()`, `lt_spanner()`, `lt_format()`, `lt_date()`, `lt_footnote()`, `lt_html()`, `lt_sub()`, `lt_merge()`, `lt_style()`, `lt_move()`, and `lt_group()`).
 
 # CHANGES IN lt VERSION 0.2
