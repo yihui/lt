@@ -45,6 +45,9 @@ assert("name_value_args() canonicalizes the name = value forms", {
   (name_value_args("80%") %==% list("80%"))
   (name_value_args(a = "A", "80%") %==% list(a = "A", "80%"))
   (name_value_args() %==% list())
+  # a value's class is preserved (e.g. I() raw HTML survives the split)
+  (inherits(name_value_args(list("a", I("<b>A</b>")))$a, "AsIs"))
+  (inherits(name_value_args(list(a = I("<b>A</b>")))$a, "AsIs"))
 })
 
 assert("add_op() appends an operation", {

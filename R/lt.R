@@ -84,6 +84,17 @@ add_op = function(x, type, ...) {
 
 camel2dash = function(x) gsub('([A-Z])', '-\\L\\1', x, perl = TRUE)
 
+# Like as.list() for a vector, but preserve each element's class: subset with
+# `[` (which dispatches the class's own method) instead of the `[[` that as.list
+# uses (which drops it), and carry the names to the list. So a value wrapped in
+# I() (raw HTML) survives being split into a one-element list.
+as_list = function(x) {
+  if (is.list(x)) return(x)
+  out = lapply(seq_along(x), function(i) unname(x[i]))
+  names(out) = names(x)
+  out
+}
+
 # Canonicalize a `...`-style name = value mapping into a named list. Three forms
 # produce the same result:
 #   f(a = 1, b = 2)               # named arguments
@@ -96,9 +107,9 @@ name_value_args = function(...) {
   args = list(...)
   if (length(args) != 1 || !is.null(names(args))) return(args)
   a = args[[1]]
-  if (!is.null(names(a))) return(as.list(a))               # single named vector/list
+  if (!is.null(names(a))) return(as_list(a))               # single named vector/list
   if (is.list(a) && length(a) == 2)                        # single list(names, values)
-    return(`names<-`(as.list(a[[2]]), a[[1]]))
+    return(`names<-`(as_list(a[[2]]), a[[1]]))
   args
 }
 
