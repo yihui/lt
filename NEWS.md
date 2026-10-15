@@ -41,7 +41,7 @@
 
 - `lt_width()` can set the width of the whole table via an unnamed argument, e.g., `lt_width("80%")`. It can be combined with named column widths.
 
-- `lt_label()` and `lt_width()` accept the column names and values as a single unnamed `list(names, values)` of two parallel vectors, e.g., `lt_label(x, list(cols, labels))`. This supplies the names from a variable, which `name = value` can't express (its names must be literals).
+- The `name = value` setters (`lt_label()`, `lt_width()`, `lt_css()`, `lt_wrap()`) accept their names and values as a single unnamed `list(names, values)` of two parallel vectors, e.g., `lt_label(x, list(cols, labels))`. This supplies the names from a variable, which `name = value` can't express (its names must be literals). They also all accept a single named vector or list (previously only `lt_label()` did).
 
 - Column selection now accepts integer positions in addition to column names and one-sided formulas, e.g., `lt_align(x, 1:2, "center")` or `lt_spanner(x, "Grp", columns = 2:3)`. This applies to all functions that select columns (`lt_align()`, `lt_spanner()`, `lt_format()`, `lt_date()`, `lt_footnote()`, `lt_html()`, `lt_sub()`, `lt_merge()`, `lt_style()`, `lt_move()`, and `lt_group()`).
 

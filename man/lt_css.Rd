@@ -18,7 +18,9 @@ Named arguments define inline CSS rules scoped to \code{.lt-table}. Names
 are selectors (e.g., \code{.na}, \code{td.highlight}) and values are either a
 CSS string or a named list of properties:
 \code{lt_css(x, .na = "background: #eee")} or
-\code{lt_css(x, .na = list(background = "#eee"))}.}
+\code{lt_css(x, .na = list(background = "#eee"))}. The selectors and rules can
+also be given as a single \code{list(selectors, rules)} of two parallel vectors
+(see \code{\link[=lt_label]{lt_label()}}).}
 }
 \value{
 \code{x} with the stylesheets recorded.

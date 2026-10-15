@@ -177,6 +177,10 @@ assert("lt_width() adds width op", {
   cols = c("a", "b")
   w = lt_width(x, list(cols, c("100px", "50%")))
   (w$ops %==% list(list(type = "width", widths = list(a = "100px", b = "50%"))))
+
+  # a single named vector also works (same normalization as lt_label())
+  w = lt_width(x, c(a = "100px", b = "50%"))
+  (w$ops %==% list(list(type = "width", widths = list(a = "100px", b = "50%"))))
 })
 
 assert("lt_move() with after = NULL moves to start", {
@@ -361,6 +365,12 @@ assert("lt_css() with list-style rules", {
   (c1$rules %==% "  .hi { color: red; font-weight: bold; }")
 })
 
+assert("lt_css() accepts a list(selectors, rules) of parallel vectors", {
+  sels = c(".na", ".hi")
+  c1 = lt_css(x, list(sels, c("background: #eee", "color: red")))
+  (c1$rules %==% c("  .na { background: #eee }", "  .hi { color: red }"))
+})
+
 assert("lt_css() resolves bundled stylesheets", {
   c1 = lt_css(x, "lt.css")
   (length(c1$css) %==% 1L)
@@ -386,4 +396,10 @@ assert("lt_css() handles absolute, relative, and URL paths", {
 assert("lt_wrap() appends class across repeated calls", {
   # class from a later call is appended to an earlier one (JS prepends lt-wrap)
   (lt_wrap(lt_wrap(x, class = "foo"), class = "bar")$wrap$class %==% "foo bar")
+})
+
+assert("lt_wrap() accepts a list(names, values) of parallel vectors", {
+  w = lt_wrap(x, list(c("class", "id"), c("striped", "tbl1")))
+  (w$wrap$class %==% "striped")
+  (w$wrap$id %==% "tbl1")
 })

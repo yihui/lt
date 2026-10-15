@@ -10,7 +10,9 @@ lt_wrap(x, ...)
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
 \item{...}{Named HTML attributes for the container, e.g. \code{class = "striped"},
-\code{style = "width:800px"}, \code{id = "tbl1"}.}
+\code{style = "width:800px"}, \code{id = "tbl1"}. The names and values can also be
+given as a single \code{list(names, values)} of two parallel vectors (see
+\code{\link[=lt_label]{lt_label()}}).}
 }
 \value{
 \code{x} with the container attributes recorded.

@@ -339,13 +339,7 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #' cols = c("mpg", "cyl")
 #' lt(head(mtcars)) |> lt_label(list(cols, c("Miles/Gallon", "Cylinders")))
 lt_label = function(x, ...) {
-  labels = list(...)
-  # allow a single named list/vector of labels instead of named `...`
-  if (length(labels) == 1 && is.null(names(labels)) && !is.null(names(labels[[1]])))
-    labels = as.list(labels[[1]])
-  else
-    labels = name_value_args(labels)
-  add_op(x, 'label', labels = labels)
+  add_op(x, 'label', labels = name_value_args(...))
 }
 
 
@@ -525,7 +519,7 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
 #' cols = c("mpg", "cyl")
 #' lt(head(mtcars)) |> lt_width(list(cols, c("100px", "50px")))
 lt_width = function(x, ...) {
-  args = name_value_args(list(...))
+  args = name_value_args(...)
   nms = names(args)
   named = if (is.null(nms)) rep(FALSE, length(args)) else nzchar(nms)
   widths = args[named]
@@ -890,7 +884,9 @@ lt_dotplot = function(
 #'   are selectors (e.g., `.na`, `td.highlight`) and values are either a
 #'   CSS string or a named list of properties:
 #'   `lt_css(x, .na = "background: #eee")` or
-#'   `lt_css(x, .na = list(background = "#eee"))`.
+#'   `lt_css(x, .na = list(background = "#eee"))`. The selectors and rules can
+#'   also be given as a single `list(selectors, rules)` of two parallel vectors
+#'   (see [lt_label()]).
 #' @return `x` with the stylesheets recorded.
 #' @export
 #' @examples
@@ -899,7 +895,7 @@ lt_dotplot = function(
 #'   lt_style("mpg", test = "v => v > 20", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
 lt_css = function(x, ...) {
-  args = list(...)
+  args = name_value_args(...)
   nms = names(args)
   named = if (!is.null(nms)) nms != ""
   if (length(named) && any(named)) {
@@ -931,13 +927,15 @@ lt_css = function(x, ...) {
 #'
 #' @inheritParams lt_align
 #' @param ... Named HTML attributes for the container, e.g. `class = "striped"`,
-#'   `style = "width:800px"`, `id = "tbl1"`.
+#'   `style = "width:800px"`, `id = "tbl1"`. The names and values can also be
+#'   given as a single `list(names, values)` of two parallel vectors (see
+#'   [lt_label()]).
 #' @return `x` with the container attributes recorded.
 #' @export
 #' @examples
 #' lt(head(mtcars)) |> lt_wrap(class = "my-table", style = "width:400px")
 lt_wrap = function(x, ...) {
-  attrs = list(...)
+  attrs = name_value_args(...)
   if (length(attrs) == 0) return(x)
   prev = if (is.null(x$wrap)) list() else x$wrap
   # class is appended to any class set by an earlier lt_wrap(); the JS runtime
