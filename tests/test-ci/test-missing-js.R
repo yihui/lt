@@ -25,7 +25,7 @@ assert("missing defaults to an em dash; empty string keeps NA cells blank", {
   (has_match(html, ">a</td>.*>—</td>"))
   # missing = "" overrides the default and leaves NA cells blank
   html = build(list(data = list(x = c("a", NA)), missing = ""))
-  (grepl(">—<", html) %==% FALSE)
+  (has_match(html, !">—<"))
 })
 
 assert("per-column lt_sub(missing=) overrides the global missing text", {

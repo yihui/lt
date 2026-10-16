@@ -22,7 +22,7 @@ assert("rowspan row groups render label + filler cells", {
   (has_match(html, '<th class="lt-row-group" rowspan="2"></th>'))
   (has_match(html, '<th scope="row" class="lt-row-group">B</th>'))
   # the label cell must not span rows itself
-  (grepl('rowspan="[0-9]+">A</th>', html) %==% FALSE)
+  (has_match(html, !'rowspan="[0-9]+">A</th>'))
 })
 
 assert("two-row group filler omits the rowspan attribute", {
@@ -32,7 +32,7 @@ assert("two-row group filler omits the rowspan attribute", {
     row_group = list("g")
   ))
   (has_match(html, '<th class="lt-row-group"></th>'))
-  (grepl('rowspan', html) %==% FALSE)
+  (has_match(html, !'rowspan'))
 })
 
 assert("column widths align past rowspan group columns", {

@@ -14,8 +14,8 @@ assert("format(fragment = FALSE) wraps in DOCTYPE", {
 
 assert("format(assets = FALSE) omits runtime", {
   html = unclass(format(x, assets = FALSE))
-  (has_match(html, "<style>", negate = TRUE))
-  (has_match(html, "LT\\.build", negate = TRUE))
+  (has_match(html, !"<style>"))
+  (has_match(html, !"LT\\.build"))
   (has_match(html, "<script>"))
 })
 
@@ -23,15 +23,15 @@ assert("format() ships the graphics module (before core) only for plot tables", 
   op = options(lt.assets_url = "x/"); on.exit(options(op))
   eb = lt(data.frame(est = 1, lo = 0, hi = 2)) |> lt_errorbar(est ~ lo + hi)
   html = format(eb, inline_assets = FALSE)
-  (grepl('x/lt-plot.js', html, fixed = TRUE))
-  (grepl('x/lt-plot.css', html, fixed = TRUE))
+  (has_match(html, I('x/lt-plot.js')))
+  (has_match(html, I('x/lt-plot.css')))
   # the plot module must precede the core runtime: core reads LT.cells when it
   # drains the queue, so a renderer registered later would miss this table
   (isTRUE(regexpr('x/lt-plot.js', html, fixed = TRUE) <
             regexpr('"x/lt.js"', html, fixed = TRUE)))
   # a plain table pulls in neither plot asset
   plain = format(lt(d), inline_assets = FALSE)
-  (grepl('lt-plot', plain, fixed = TRUE) %==% FALSE)
+  (has_match(plain, !'lt-plot'))
 })
 
 assert("lt_sparkline() records a sparkline op and hides extra columns", {
@@ -96,8 +96,8 @@ assert("spec_block() drops css and rules", {
   x2$rules = ".na { color: red }"
   sb = spec_block(x2)
   html = paste(sb, collapse = "")
-  (has_match(html, "some\\.css", negate = TRUE))
-  (has_match(html, "color: red", negate = TRUE))
+  (has_match(html, !"some\\.css"))
+  (has_match(html, !"color: red"))
   (has_match(html, "window\\.LT"))
 })
 
@@ -105,7 +105,7 @@ assert("spec_block() emits the missing default from the lt.missing option", {
   op = options(lt.missing = NULL); on.exit(options(op), add = TRUE)
   # unset: no `missing` field is shipped (the runtime defaults to an em dash)
   sb = paste(spec_block(lt(data.frame(a = 1))), collapse = "")
-  (grepl('"missing"', sb) %==% FALSE)
+  (has_match(sb, !'"missing"'))
 
   # a custom option value is used verbatim
   options(lt.missing = "n/a")
@@ -128,13 +128,13 @@ assert("spec_block() records explicit column order for array-index names", {
 
   # Ordinary names keep insertion order in JSON, so `columns` is omitted.
   sb2 = paste(spec_block(lt(data.frame(a = 1, b = 2))), collapse = "")
-  (grepl('"columns"', sb2) %==% FALSE)
+  (has_match(sb2, !'"columns"'))
 
   # Non-array-index numeric-looking names are plain string keys — also omitted.
   d3 = data.frame(x = 1, y = 2, check.names = FALSE)
   names(d3) = c("-1", "1.5")
   sb3 = paste(spec_block(lt(d3)), collapse = "")
-  (grepl('"columns"', sb3) %==% FALSE)
+  (has_match(sb3, !'"columns"'))
 })
 
 assert("lt_spec() returns a render-ready spec and drops css/rules", {
@@ -151,7 +151,7 @@ assert("lt_spec() is the payload spec_block() serializes", {
   x2 = lt(d) |> lt_interactive()
   j = xfun::tojson(lt_spec(x2))
   sb = paste(spec_block(x2), collapse = "")
-  (grepl(j, sb, fixed = TRUE))
+  (has_match(sb, I(j)))
 })
 
 if (requireNamespace("knitr", quietly = TRUE)) {

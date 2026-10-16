@@ -16,5 +16,5 @@ assert("merge drops a conditional block when its references are empty", {
                     pattern = "{1}<<({2}/{3})>>"))
   ))
   (has_match(html, ">x</td>"))
-  (has_match(html, "\\(/\\)", negate = TRUE))
+  (has_match(html, !"\\(/\\)"))
 })

@@ -13,18 +13,18 @@ assert("lt_errorbar renders an inline SVG point-and-bar on a shared scale", {
   # the scale is inset by a 4px pad on each side (W = 80 -> inner span 72), so
   # points/bars never touch the cell edge.
   # row 1: est 0.5 -> cx 40 (cy = height/2 = 8); bar from lo 0 (x 4) to hi 1 (x 76)
-  (grepl('<circle cx="40" cy="8"', html, fixed = TRUE) %==% TRUE)
-  (grepl('x1="4" y1="8" x2="76" y2="8"', html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('<circle cx="40" cy="8"')))
+  (has_match(html, I('x1="4" y1="8" x2="76" y2="8"')))
   # short vertical end caps at both ends of the bar (y = 8 ± cap, cap = 3)
-  (grepl('x1="4" y1="5" x2="4" y2="11"', html, fixed = TRUE) %==% TRUE)
-  (grepl('x1="76" y1="5" x2="76" y2="11"', html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('x1="4" y1="5" x2="4" y2="11"')))
+  (has_match(html, I('x1="76" y1="5" x2="76" y2="11"')))
   # row 2 lands on the same scale: est 0.2 -> cx 18.4, bar 0.1..0.3 -> x 11.2..25.6
-  (grepl('<circle cx="18.4" cy="8"', html, fixed = TRUE) %==% TRUE)
-  (grepl('x1="11.2" y1="8" x2="25.6" y2="8"', html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('<circle cx="18.4" cy="8"')))
+  (has_match(html, I('x1="11.2" y1="8" x2="25.6" y2="8"')))
   # a vertical reference line at ref = 0 (x 4, full height)
-  (grepl('class="lt-eb-ref" x1="4" y1="0" x2="4" y2="16"', html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('class="lt-eb-ref" x1="4" y1="0" x2="4" y2="16"')))
   # the numbers stay in the title tooltip, not shipped as inline SVG text
-  (grepl('<title>0.5 (0, 1)</title>', html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('<title>0.5 (0, 1)</title>')))
 })
 
 assert("lt_errorbar axis = TRUE draws one shared axis in the footer", {
@@ -37,17 +37,16 @@ assert("lt_errorbar axis = TRUE draws one shared axis in the footer", {
   html = build(spec)
   # one axis SVG total (not one per row), in the footer
   (count_str(html, '<svg class="lt-eb-axis"') %==% 1L)
-  (grepl("<tfoot", html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I("<tfoot")))
   # "nice" ticks for [0, 1] step at 0.2; end labels inset by the 4px pad, a
   # mid tick (0.4 -> x 32.8) is middle-anchored
-  (grepl('<text x="4" y="15" text-anchor="start">0</text>', html, fixed = TRUE) %==% TRUE)
-  (grepl('<text x="76" y="15" text-anchor="end">1</text>', html, fixed = TRUE) %==% TRUE)
-  (grepl('<text x="32.8" y="15" text-anchor="middle">0.4</text>', html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('<text x="4" y="15" text-anchor="start">0</text>')))
+  (has_match(html, I('<text x="76" y="15" text-anchor="end">1</text>')))
+  (has_match(html, I('<text x="32.8" y="15" text-anchor="middle">0.4</text>')))
   # the same ticks drive a stretched in-cell gridline background (one per row)
   (count_str(html, 'class="lt-eb-grid-bg"') %==% 2L)
   # the axis caption is centered below the ticks
-  (grepl('class="lt-eb-axis-label" x="40" y="28" text-anchor="middle">Effect</text>',
-    html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('class="lt-eb-axis-label" x="40" y="28" text-anchor="middle">Effect</text>')))
 
   # tick count adapts to width so labels do not crowd: a narrow axis keeps only
   # the endpoints, a wide one shows the full 0.2 step
@@ -74,16 +73,16 @@ assert("lt_errorbar stacks several colored series with a footer legend", {
   # (n = 2 at H = 28 -> rows at round(28/3) = 9 and round(56/3) = 19)
   (count_str(html, '<svg class="lt-eb"') %==% 1L)
   # each series takes its own color, as a fill= (point) / stroke= (bar) attr
-  (grepl('<circle fill="#1b9e77" cx="40" cy="9"', html, fixed = TRUE) %==% TRUE)
-  (grepl('<circle fill="#d95f02" cx="25.6" cy="19"', html, fixed = TRUE) %==% TRUE)
-  (grepl('<line stroke="#1b9e77" x1="18.4" y1="9" x2="61.6" y2="9"', html, fixed = TRUE) %==% TRUE)
-  (grepl('<line stroke="#d95f02" x1="11.2" y1="19" x2="40" y2="19"', html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('<circle fill="#1b9e77" cx="40" cy="9"')))
+  (has_match(html, I('<circle fill="#d95f02" cx="25.6" cy="19"')))
+  (has_match(html, I('<line stroke="#1b9e77" x1="18.4" y1="9" x2="61.6" y2="9"')))
+  (has_match(html, I('<line stroke="#d95f02" x1="11.2" y1="19" x2="40" y2="19"')))
   # the tooltip keys each series by its label
-  (grepl('A: 0.5 (0.2, 0.8)', html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('A: 0.5 (0.2, 0.8)')))
   # a single footer legend keyed by color + label (not one per row)
   (count_str(html, 'class="lt-plot-legend"') %==% 1L)
-  (grepl('background:#1b9e77"></i>A</span>', html, fixed = TRUE) %==% TRUE)
-  (grepl('background:#d95f02"></i>B</span>', html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I('background:#1b9e77"></i>A</span>')))
+  (has_match(html, I('background:#d95f02"></i>B</span>')))
 })
 
 assert("lt_dotplot stagger puts each column's dot on its own vertical track", {
@@ -95,8 +94,8 @@ assert("lt_dotplot stagger puts each column's dot on its own vertical track", {
   (count_str(flat, 'cy="20"') %==% 3L)
   # stagger: evenly spaced tracks round((i+1)/(n+1)*H) -> 10, 20, 30
   staggered = build(c(base, list(ops = list(c(op, list(stagger = TRUE))))))
-  (grepl('cy="10"', staggered, fixed = TRUE) %==% TRUE)
-  (grepl('cy="30"', staggered, fixed = TRUE) %==% TRUE)
+  (has_match(staggered, I('cy="10"')))
+  (has_match(staggered, I('cy="30"')))
   (count_str(staggered, 'cy="20"') %==% 1L)
 })
 
@@ -114,11 +113,11 @@ assert("lt_errorbar/lt_dotplot `into` draws into a runtime-synthesized column", 
   )
   html = build(spec)
   # the synthesized column carries a header and one SVG per row
-  (grepl(">fig</th>", html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I(">fig</th>")))
   (count_str(html, '<svg class="lt-eb"') %==% 2L)
   # the value column still renders its numbers as data cells (not consumed)
-  (grepl(">0.5</td>", html, fixed = TRUE) %==% TRUE)
-  (grepl(">0.2</td>", html, fixed = TRUE) %==% TRUE)
+  (has_match(html, I(">0.5</td>")))
+  (has_match(html, I(">0.2</td>")))
   # a dot plot into a (missing) dedicated column behaves the same
   dp = build(list(
     data = list(a = c(1, 2), b = c(3, 4)),
@@ -127,10 +126,10 @@ assert("lt_errorbar/lt_dotplot `into` draws into a runtime-synthesized column", 
       list(type = "dotplot", columns = c("a", "b"), into = "plot",
         min = 0, max = 4, width = 80, height = 16))
   ))
-  (grepl(">plot</th>", dp, fixed = TRUE) %==% TRUE)
+  (has_match(dp, I(">plot</th>")))
   (count_str(dp, '<svg class="lt-dot"') %==% 2L)
-  (grepl(">1</td>", dp, fixed = TRUE) %==% TRUE)
-  (grepl(">4</td>", dp, fixed = TRUE) %==% TRUE)
+  (has_match(dp, I(">1</td>")))
+  (has_match(dp, I(">4</td>")))
 })
 
 assert("lt_errorbar renders SVG only for the current page (deferred)", {

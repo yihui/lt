@@ -151,7 +151,7 @@ if (can_bake())
     # the baked HTML comes back split across lines (joined at write time)
     lines = unlist(strsplit(html, "\n"))
     (length(lines) > 1L)
-    (any(grepl("^  <table", lines)))         # table indented under the wrap
-    (any(grepl("^      <tr>$", lines)))       # rows on their own line
-    (any(grepl("^        <td[ >].*</td>$", lines)))  # each cell a single line
+    (has_match(lines, "(?m)^  <table"))              # table indented under the wrap
+    (has_match(lines, "(?m)^      <tr>$"))            # rows on their own line
+    (has_match(lines, "(?m)^        <td[ >][^\\n]*</td>$"))  # each cell a single line
   })

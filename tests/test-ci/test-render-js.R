@@ -10,10 +10,10 @@ assert("lt_hide drops a column (header and cells) from the rendered table", {
   x = lt(data.frame(x = 1:2, y = c("a", "b"), z = 3:4)) |> lt_hide("y")
   html = as.character(lt_static(x, method = 'node', css = FALSE, fragment = TRUE))
   # the kept columns render, the hidden one leaves no header and no cells
-  (grepl(">x</th>", html) %==% TRUE)
-  (grepl(">z</th>", html) %==% TRUE)
-  (grepl(">y</th>", html) %==% FALSE)
-  (grepl(">a</td>", html) %==% FALSE)
+  (has_match(html, ">x</th>"))
+  (has_match(html, ">z</th>"))
+  (has_match(html, !">y</th>"))
+  (has_match(html, !">a</td>"))
 })
 
 assert("table is wrapped in a div for horizontal scroll", {

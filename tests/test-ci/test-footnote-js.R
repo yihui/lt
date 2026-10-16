@@ -34,7 +34,7 @@ assert("footnote on row groups matches by starts_with", {
   ))
   # Marker attaches to the "Apple" group header, and only one footnote exists.
   (has_match(html, 'Apple<sup class="lt-fnref".*> sn</td>'))
-  (has_match(html, "Banana<sup", negate = TRUE))
+  (has_match(html, !"Banana<sup"))
 })
 
 assert("footnote on row groups renders in rowspan mode", {
@@ -50,5 +50,5 @@ assert("footnote on row groups renders in rowspan mode", {
   ))
   # Marker on the "A" label cell; "B" has no marker; one footnote in tfoot.
   (has_match(html, 'class="lt-row-group lt-row-open">A<sup class="lt-fnref"'))
-  (has_match(html, ">B<sup", negate = TRUE))
+  (has_match(html, !">B<sup"))
 })

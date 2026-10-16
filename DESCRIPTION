@@ -31,6 +31,8 @@ Suggests:
     repr,
     shiny,
     testit
+Remotes:
+    yihui/testit
 Roxygen: list(markdown = TRUE)
 Config/lt.js: 1.14.110
 Config/roxygen2/version: 8.1.1
