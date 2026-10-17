@@ -106,7 +106,7 @@ if (lt:::can_bake())
 # PDF / PNG are rendered in a headless browser and cropped to the table.
 f2 = tempfile(fileext = '.pdf')
 f3 = tempfile(fileext = '.png')
-if (lt:::has_browser()) {
+if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f2)
   lt_export(tbl, f3, width = 400)
 }

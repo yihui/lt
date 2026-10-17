@@ -144,3 +144,7 @@ if (can_bake())
     (any(grepl("^      <tr>$", lines)))       # rows on their own line
     (any(grepl("^        <td[ >].*</td>$", lines)))  # each cell a single line
   })
+
+assert("has_browser(pdf = TRUE) implies a browser that prints a PDF", {
+  (!has_browser(pdf = TRUE) || has_browser())
+})

@@ -507,7 +507,7 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' # PDF / PNG are rendered in a headless browser and cropped to the table.
 #' f2 = tempfile(fileext = '.pdf')
 #' f3 = tempfile(fileext = '.png')
-#' if (lt:::has_browser()) {
+#' if (lt:::has_browser(pdf = TRUE)) {
 #'   lt_export(tbl, f2)
 #'   lt_export(tbl, f3, width = 400)
 #' }
@@ -584,8 +584,17 @@ lt_export = function(
   output
 }
 
-has_browser = function() {
-  tryCatch({xfun:::check_browser(NULL); TRUE}, error = function(e) FALSE)
+# With `pdf = TRUE`, also check that the browser can print a PDF (it may be
+# found but fail, e.g., when sandboxed).
+has_browser = function(pdf = FALSE) {
+  ok = tryCatch({xfun:::check_browser(NULL); TRUE}, error = function(e) FALSE)
+  if (!ok || !pdf) return(ok)
+  out = tempfile(fileext = '.pdf')
+  on.exit(unlink(out))
+  tryCatch({
+    with_temp_html('<title>lt</title>', function(f) xfun::browser_print(f, out))
+    file.exists(out)
+  }, error = function(e) FALSE)
 }
 
 has_node = function() nzchar(Sys.which('node'))
