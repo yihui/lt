@@ -103,12 +103,13 @@ lt_export(tbl, f1, method = 'raw')  # file output
 if (lt:::can_bake())
   lt_export(tbl, NA, method = 'auto', fragment = TRUE, css = FALSE, tidy = TRUE)
 
-# PDF / PNG are rendered in a headless browser and cropped to the table.
+# PDF / PNG are rendered in a headless browser and cropped to the table. Wrapped
+# in try() because a browser may be found but fail to print (e.g., sandboxed).
 f2 = tempfile(fileext = '.pdf')
 f3 = tempfile(fileext = '.png')
 if (lt:::has_browser()) {
-  lt_export(tbl, f2)
-  lt_export(tbl, f3, width = 400)
+  try(lt_export(tbl, f2))
+  try(lt_export(tbl, f3, width = 400))
 }
 
 unlink(c(f1, f2, f3))
