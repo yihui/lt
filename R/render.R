@@ -585,17 +585,21 @@ lt_export = function(
 }
 
 # With `pdf = TRUE`, also check that the browser can print a PDF (it may be
-# found but fail, e.g., when sandboxed).
-has_browser = function(pdf = FALSE) {
-  ok = tryCatch({xfun:::check_browser(NULL); TRUE}, error = function(e) FALSE)
-  if (!ok || !pdf) return(ok)
-  out = tempfile(fileext = '.pdf')
-  on.exit(unlink(out))
-  tryCatch({
-    with_temp_html('<title>lt</title>', function(f) xfun::browser_print(f, out))
-    file.exists(out)
-  }, error = function(e) FALSE)
-}
+# found but fail, e.g., when sandboxed). The probe takes seconds, so cache it.
+has_browser = local({
+  pdf_ok = NULL
+  function(pdf = FALSE) {
+    ok = tryCatch({xfun:::check_browser(NULL); TRUE}, error = function(e) FALSE)
+    if (!ok || !pdf) return(ok)
+    pdf_ok %||% (pdf_ok <<- {
+      out = tempfile(fileext = '.pdf'); on.exit(unlink(out))
+      tryCatch({
+        with_temp_html('<title>lt</title>', function(f) xfun::browser_print(f, out))
+        file.exists(out)
+      }, error = function(e) FALSE)
+    })
+  }
+})
 
 has_node = function() nzchar(Sys.which('node'))
 

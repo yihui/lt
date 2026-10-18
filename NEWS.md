@@ -1,7 +1,5 @@
 # CHANGES IN lt VERSION 0.6
 
-- The `lt_export()` PDF/PNG example is now skipped when the headless browser can't print a PDF (it failed on CRAN's M1mac).
-
 
 # CHANGES IN lt VERSION 0.5
 
