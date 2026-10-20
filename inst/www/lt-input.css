@@ -1,8 +1,10 @@
 /* lt-input.css — an editable table looks like a spreadsheet (see lt-input.js).
-   Collapsed borders so neighbors share one line; !important resets the rules
-   that draw separate row/header lines. */
+   lt.css draws the frame and header gaps from --bd/--bg, so redefining them
+   (the row separator color, #ddd) leaves one uniform grid. */
 .lt-edit {
+  --bd: 1px solid #ddd;
+  --bg: var(--bd);
   border-collapse: collapse;
-  :is(thead, tbody) :is(td, th) { border: 1px solid #d0d0d0 !important; }
+  :is(thead, tbody) :is(td, th) { border: var(--bd); }
   [contenteditable] { cursor: pointer; &:focus { outline: 2px solid #217346; outline-offset: -1px; } }
 }
