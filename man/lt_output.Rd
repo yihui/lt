@@ -33,7 +33,8 @@ formatting, so cells display the values they hold).}
 
 \item{label}{Display label for the input, or \code{NULL} for no label.}
 
-\item{columns}{Names of the editable columns; all columns by default.}
+\item{columns}{Names of the editable columns; all columns by default. For
+\code{lt_update()}, the current editable columns are kept by default.}
 
 \item{session}{The \code{session} object passed to the Shiny server function.}
 }
@@ -48,7 +49,7 @@ Use lt tables in Shiny apps, as outputs or as inputs.
 \details{
 \code{lt_output()} creates a UI placeholder; \code{render_lt()} supplies the table
 spec from the server. Together they render an \code{\link[=lt]{lt()}} table as a custom
-Shiny output — no \code{renderUI()} involved.
+Shiny output.
 
 \code{lt_input()} shows a table whose body cells can be edited in the browser;
 the edited table is available to the server as a data frame in

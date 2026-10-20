@@ -20,3 +20,7 @@ assert('lt_dependency(input = TRUE) adds the editing script', {
   ('lt-input.js' %in% js(input = TRUE))
   (!'lt-input.js' %in% js())
 })
+
+assert('dependencies with different modules do not share a name (htmltools dedups by name)', {
+  (lt_dependency(shiny = TRUE)$name != lt_dependency(input = TRUE)$name)
+})

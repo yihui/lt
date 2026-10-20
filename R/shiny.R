@@ -29,8 +29,12 @@
 lt_dependency = function(
   interactive = FALSE, plot = FALSE, shiny = FALSE, input = FALSE
 )
+  # name by the modules included: dependencies with the same name are
+  # deduplicated by htmltools, which would drop the modules of all but one
   htmltools::htmlDependency(
-    'lt', as.character(utils::packageVersion('lt')),
+    paste(c(
+      'lt', c('interactive', 'plot', 'shiny', 'input')[c(interactive, plot, shiny, input)]
+    ), collapse = '-'), as.character(utils::packageVersion('lt')),
     src = pkg_file('www'),
     stylesheet = c(
       'lt.css', if (plot) 'lt-plot.css', if (interactive) 'lt-interactive.css'
@@ -48,7 +52,7 @@ lt_dependency = function(
 #'
 #' `lt_output()` creates a UI placeholder; `render_lt()` supplies the table
 #' spec from the server. Together they render an [lt()] table as a custom
-#' Shiny output — no `renderUI()` involved.
+#' Shiny output.
 #'
 #' `lt_input()` shows a table whose body cells can be edited in the browser;
 #' the edited table is available to the server as a data frame in
@@ -67,7 +71,8 @@ lt_dependency = function(
 #' @param x An [lt()] table, or a data frame (shown without automatic number
 #'   formatting, so cells display the values they hold).
 #' @param label Display label for the input, or `NULL` for no label.
-#' @param columns Names of the editable columns; all columns by default.
+#' @param columns Names of the editable columns; all columns by default. For
+#'   `lt_update()`, the current editable columns are kept by default.
 #' @param session The `session` object passed to the Shiny server function.
 #' @return `lt_output()` and `lt_input()` return a Shiny UI element;
 #'   `render_lt()` returns a render function; `lt_update()` is called for its
@@ -87,10 +92,11 @@ lt_dependency = function(
 #' }
 #' shinyApp(ui, server)
 #' }
-# Ship the graphics module too: render_lt()'s spec is built at render time, so
-# the UI can't know whether it has a plot cell.
+# Ship the graphics and interactivity modules too: render_lt()'s spec is built
+# at render time, so the UI can't know whether it has a plot cell or
+# lt_interactive().
 lt_output = function(outputId, ...) shiny::tagList(
-  lt_dependency(plot = TRUE, shiny = TRUE),
+  lt_dependency(interactive = TRUE, plot = TRUE, shiny = TRUE),
   shiny::div(id = outputId, class = 'lt-output')
 )
 
@@ -126,13 +132,13 @@ lt_input = function(inputId, x, label = NULL, columns = NULL) {
 #' @rdname lt_output
 #' @export
 lt_update = function(session, inputId, x, columns = NULL)
-  session$sendInputMessage(inputId, list(spec = input_spec(x, columns)))
+  session$sendInputMessage(inputId, list(spec = input_spec(x, columns, !is.null(columns))))
 
 # JSON spec of an editable table; `input` lists the editable columns
-input_spec = function(x, columns = NULL) {
+input_spec = function(x, columns = NULL, set = TRUE) {
   if (!inherits(x, 'lt_tbl')) x = lt(x, auto_format = FALSE)
   if (!is.null(x$interactive)) stop('lt_interactive() tables cannot be edited')
-  x$input = I(f_cols(columns, x$data) %||% names(x$data))
+  if (set) x$input = I(as.character(f_cols(columns, x$data) %||% names(x$data)))
   xfun::tojson(lt_spec(x))
 }
 

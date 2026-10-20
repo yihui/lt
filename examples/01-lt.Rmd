@@ -1017,14 +1017,14 @@ Column spanners, styles, and footnotes are no obstacle to interactivity.
 ## Shiny
 
 `lt_output()` and `render_lt()` show a table as a Shiny output: the server sends
-the table spec and the browser builds the `<table>`, with no `renderUI()`.
+the table spec and the browser builds the `<table>`.
 
 ```{r, eval = FALSE}
 library(shiny)
 ui = fluidPage(lt_output("tbl"))
 server = function(input, output) {
   output$tbl = render_lt(
-    lt(head(mtcars)) |> lt_header("Motor Trend") |> lt_interactive()
+    lt(mtcars) |> lt_header("Motor Trend") |> lt_interactive()
   )
 }
 shinyApp(ui, server)

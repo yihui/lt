@@ -60,6 +60,6 @@
     getValue: el => el._tbl._ltSpec.data,
     subscribe: (el, cb) => $(el).on("lt-edit.lt", () => cb(true)),
     unsubscribe: el => $(el).off(".lt"),
-    receiveMessage: (el, msg) => { draw(el, msg.spec); $(el).trigger("lt-edit"); }
+    receiveMessage: (el, msg) => { draw(el, { input: el._tbl._ltSpec.input, ...msg.spec }); $(el).trigger("lt-edit"); }
   }), "lt.input");
 })(typeof window !== "undefined" ? window : globalThis);
