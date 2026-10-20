@@ -28,7 +28,7 @@ core runtime (`lt-plot.js` and `lt-interactive.js`), each loaded only for the
 tables that use it. A plain static table pulls in neither, so it stays as light
 as ever.
 
-![An lt cheat table demonstrating the package's functions.](https://yihui.github.io/lt/examples/01-lt.png)
+[![An lt cheat table demonstrating the package's functions.](https://pkg.yihui.org/lt/examples/01-lt.png)](https://pkg.yihui.org/lt/examples/01-lt.html)
 
 ## Installation
 
