@@ -117,7 +117,7 @@ lt_input = function(inputId, x, label = NULL, columns = NULL) {
   shiny::registerInputHandler('lt.table', input_data, force = TRUE)
   shiny::div(
     class = 'form-group shiny-input-container',
-    lt_dependency(plot = TRUE, input = TRUE),
+    lt_dependency(input = TRUE),
     if (!is.null(label)) shiny::tags$label(label, `for` = inputId),
     shiny::div(id = inputId, class = 'lt-input', `data-spec` = input_spec(x, columns))
   )
