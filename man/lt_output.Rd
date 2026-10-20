@@ -3,11 +3,17 @@
 \name{lt_output}
 \alias{lt_output}
 \alias{render_lt}
+\alias{lt_input}
+\alias{lt_update}
 \title{Shiny bindings for lt}
 \usage{
 lt_output(outputId, ...)
 
 render_lt(expr, env = parent.frame(), quoted = FALSE)
+
+lt_input(inputId, x, label = NULL, columns = NULL)
+
+lt_update(session, inputId, x, columns = NULL)
 }
 \arguments{
 \item{outputId}{Output variable name to read the table from.}
@@ -19,22 +25,50 @@ render_lt(expr, env = parent.frame(), quoted = FALSE)
 \item{env}{Environment in which to evaluate \code{expr}.}
 
 \item{quoted}{Whether \code{expr} is already quoted.}
+
+\item{inputId}{The input slot that will be used to access the value.}
+
+\item{x}{An \code{\link[=lt]{lt()}} table, or a data frame (shown without automatic number
+formatting, so cells display the values they hold).}
+
+\item{label}{Display label for the input, or \code{NULL} for no label.}
+
+\item{columns}{Names of the editable columns; all columns by default.}
+
+\item{session}{The \code{session} object passed to the Shiny server function.}
 }
 \value{
-\code{lt_output()} returns a Shiny UI element; \code{render_lt()} returns a
-render function.
+\code{lt_output()} and \code{lt_input()} return a Shiny UI element;
+\code{render_lt()} returns a render function; \code{lt_update()} is called for its
+side effect.
 }
 \description{
+Use lt tables in Shiny apps, as outputs or as inputs.
+}
+\details{
 \code{lt_output()} creates a UI placeholder; \code{render_lt()} supplies the table
 spec from the server. Together they render an \code{\link[=lt]{lt()}} table as a custom
 Shiny output — no \code{renderUI()} involved.
+
+\code{lt_input()} shows a table whose body cells can be edited in the browser;
+the edited table is available to the server as a data frame in
+\code{input[[inputId]]}. \code{lt_update()} replaces the table from the server (e.g.,
+to add or remove rows, or to reset the edits). Numeric columns accept only
+numbers (an empty cell is \code{NA}); other columns hold text. Press \code{Enter} to
+commit a cell and move down a row. Editing does not work with row groups
+shown as spanning cells, nor with \code{\link[=lt_interactive]{lt_interactive()}}, which reorders rows.
 }
 \examples{
 if (interactive()) {
 library(shiny)
-ui = fluidPage(lt_output("tbl"))
+ui = fluidPage(
+  lt_output("tbl"),
+  lt_input("m", head(mtcars[, 1:3]), "Edit the cells:"),
+  verbatimTextOutput("out")
+)
 server = function(input, output) {
   output$tbl = render_lt(lt(head(mtcars)) |> lt_header("Motor Trend"))
+  output$out = renderPrint(input$m)
 }
 shinyApp(ui, server)
 }

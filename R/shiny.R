@@ -44,24 +44,46 @@ lt_dependency = function(
 
 #' Shiny bindings for lt
 #'
+#' Use lt tables in Shiny apps, as outputs or as inputs.
+#'
 #' `lt_output()` creates a UI placeholder; `render_lt()` supplies the table
 #' spec from the server. Together they render an [lt()] table as a custom
 #' Shiny output — no `renderUI()` involved.
+#'
+#' `lt_input()` shows a table whose body cells can be edited in the browser;
+#' the edited table is available to the server as a data frame in
+#' `input[[inputId]]`. `lt_update()` replaces the table from the server (e.g.,
+#' to add or remove rows, or to reset the edits). Numeric columns accept only
+#' numbers (an empty cell is `NA`); other columns hold text. Press `Enter` to
+#' commit a cell and move down a row. Editing does not work with row groups
+#' shown as spanning cells, nor with [lt_interactive()], which reorders rows.
 #'
 #' @param outputId Output variable name to read the table from.
 #' @param ... Reserved for future use.
 #' @param expr An expression that returns an [lt()] object.
 #' @param env Environment in which to evaluate `expr`.
 #' @param quoted Whether `expr` is already quoted.
-#' @return `lt_output()` returns a Shiny UI element; `render_lt()` returns a
-#'   render function.
+#' @param inputId The input slot that will be used to access the value.
+#' @param x An [lt()] table, or a data frame (shown without automatic number
+#'   formatting, so cells display the values they hold).
+#' @param label Display label for the input, or `NULL` for no label.
+#' @param columns Names of the editable columns; all columns by default.
+#' @param session The `session` object passed to the Shiny server function.
+#' @return `lt_output()` and `lt_input()` return a Shiny UI element;
+#'   `render_lt()` returns a render function; `lt_update()` is called for its
+#'   side effect.
 #' @export
 #' @examples
 #' if (interactive()) {
 #' library(shiny)
-#' ui = fluidPage(lt_output("tbl"))
+#' ui = fluidPage(
+#'   lt_output("tbl"),
+#'   lt_input("m", head(mtcars[, 1:3]), "Edit the cells:"),
+#'   verbatimTextOutput("out")
+#' )
 #' server = function(input, output) {
 #'   output$tbl = render_lt(lt(head(mtcars)) |> lt_header("Motor Trend"))
+#'   output$out = renderPrint(input$m)
 #' }
 #' shinyApp(ui, server)
 #' }
@@ -88,3 +110,34 @@ render_lt = function(expr, env = parent.frame(), quoted = FALSE) {
     list(spec = with_col_order(result))
   }, lt_output)
 }
+
+#' @rdname lt_output
+#' @export
+lt_input = function(inputId, x, label = NULL, columns = NULL) {
+  shiny::registerInputHandler('lt.table', input_data, force = TRUE)
+  shiny::div(
+    class = 'form-group shiny-input-container',
+    lt_dependency(plot = TRUE, input = TRUE),
+    if (!is.null(label)) shiny::tags$label(label, `for` = inputId),
+    shiny::div(id = inputId, class = 'lt-input', `data-spec` = input_spec(x, columns))
+  )
+}
+
+#' @rdname lt_output
+#' @export
+lt_update = function(session, inputId, x, columns = NULL)
+  session$sendInputMessage(inputId, list(spec = input_spec(x, columns)))
+
+# JSON spec of an editable table; `input` lists the editable columns
+input_spec = function(x, columns = NULL) {
+  if (!inherits(x, 'lt_tbl')) x = lt(x, auto_format = FALSE)
+  if (!is.null(x$interactive)) stop('lt_interactive() tables cannot be edited')
+  x$input = I(f_cols(columns, x$data) %||% names(x$data))
+  xfun::tojson(lt_spec(x))
+}
+
+# Turn the column lists sent by the browser into a data frame
+input_data = function(x, ...) as.data.frame(
+  lapply(x, function(v) unlist(lapply(v, function(e) e %||% NA))),
+  stringsAsFactors = FALSE, check.names = FALSE, optional = TRUE
+)
