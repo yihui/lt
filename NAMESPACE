@@ -20,6 +20,7 @@ export(lt_header)
 export(lt_hide)
 export(lt_html)
 export(lt_indent)
+export(lt_input)
 export(lt_interactive)
 export(lt_label)
 export(lt_merge)
@@ -34,6 +35,7 @@ export(lt_sub)
 export(lt_width)
 export(lt_wrap)
 export(render_lt)
+export(update_lt_input)
 importFrom(xfun,
   js,
   record_print

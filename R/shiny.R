@@ -19,12 +19,16 @@
 #'   Its script loads before the core runtime so plot cells render.
 #' @param shiny Whether to include the Shiny output binding (only needed by
 #'   [lt_output()] / [render_lt()]).
+#' @param input Whether to include the editing extension and Shiny input
+#'   binding (only needed by [lt_input()]).
 #' @return An `html_dependency` object.
 #' @export
 #' @examples
 #' if (requireNamespace('htmltools', quietly = TRUE))
 #'   lt_dependency(interactive = TRUE)
-lt_dependency = function(interactive = FALSE, plot = FALSE, shiny = FALSE)
+lt_dependency = function(
+  interactive = FALSE, plot = FALSE, shiny = FALSE, input = FALSE
+)
   htmltools::htmlDependency(
     'lt', as.character(utils::packageVersion('lt')),
     src = pkg_file('www'),
@@ -33,7 +37,8 @@ lt_dependency = function(interactive = FALSE, plot = FALSE, shiny = FALSE)
     ),
     script = c(
       if (plot) 'lt-plot.js', 'lt.js',
-      if (interactive) 'lt-interactive.js', if (shiny) 'lt-binding.js'
+      if (interactive) 'lt-interactive.js', if (shiny) 'lt-binding.js',
+      if (input) 'lt-input.js'
     )
   )
 
