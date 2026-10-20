@@ -11,8 +11,15 @@ assert('input_spec() rejects interactive tables', {
 })
 
 assert('input_data() rebuilds a typed data frame, with NA for null cells', {
-  x = input_data(list(a = list(1, NULL), b = list('x', 'y')))
+  x = input_data(list(data = list(a = list(1, NULL), b = list('x', 'y'))))
   (x %==% data.frame(a = c(1, NA), b = c('x', 'y')))
+})
+
+assert('a matrix input comes back as a matrix', {
+  (has_match(input_spec(as.matrix(d[1])), '"matrix": true'))
+  (has_match(input_spec(d), 'matrix', negate = TRUE))
+  x = input_data(list(data = list(a = list(1, NULL), b = list(3, 4)), matrix = TRUE))
+  (x %==% cbind(a = c(1, NA), b = c(3, 4)))
 })
 
 assert('lt_dependency(input = TRUE) adds the editing script', {

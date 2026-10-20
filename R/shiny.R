@@ -69,8 +69,10 @@ lt_dependency = function(
 #' @param env Environment in which to evaluate `expr`.
 #' @param quoted Whether `expr` is already quoted.
 #' @param inputId The input slot that will be used to access the value.
-#' @param x An [lt()] table, or a data frame (shown without automatic number
-#'   formatting, so cells display the values they hold).
+#' @param x An [lt()] table, a data frame, or a matrix (the latter two shown
+#'   without automatic number formatting, so cells display the values they
+#'   hold). The server gets the edited table back as a matrix if `x` is one,
+#'   and as a data frame otherwise.
 #' @param label Display label for the input, or `NULL` for no label.
 #' @param columns Names of the editable columns; all columns by default. For
 #'   `lt_update()`, the current editable columns are kept by default.
@@ -137,14 +139,19 @@ lt_update = function(session, inputId, x, columns = NULL)
 
 # JSON spec of an editable table; `input` lists the editable columns
 input_spec = function(x, columns = NULL, set = TRUE) {
+  m = is.matrix(x)
   if (!inherits(x, 'lt_tbl')) x = lt(x, auto_format = FALSE)
+  if (m) x$matrix = TRUE
   if (!is.null(x$interactive)) stop('lt_interactive() tables cannot be edited')
   if (set) x$input = I(as.character(f_cols(columns, x$data) %||% names(x$data)))
   xfun::tojson(lt_spec(x))
 }
 
-# Turn the column lists sent by the browser into a data frame
-input_data = function(x, ...) as.data.frame(
-  lapply(x, function(v) unlist(lapply(v, function(e) e %||% NA))),
-  stringsAsFactors = FALSE, check.names = FALSE, optional = TRUE
-)
+# Turn the column lists sent by the browser into a data frame (or a matrix, if
+# the table was made from one)
+input_data = function(x, ...) {
+  d = lapply(x$data, function(v) unlist(lapply(v, function(e) e %||% NA)))
+  if (isTRUE(x$matrix)) do.call(cbind, d) else as.data.frame(
+    d, stringsAsFactors = FALSE, check.names = FALSE, optional = TRUE
+  )
+}

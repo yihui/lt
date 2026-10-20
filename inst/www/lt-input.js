@@ -58,7 +58,7 @@
     find: scope => $(scope).find(".lt-input"),
     initialize: el => draw(el, JSON.parse(el.dataset.spec)),
     getType: () => "lt.table",
-    getValue: el => el._tbl._ltSpec.data,
+    getValue: el => { const s = el._tbl._ltSpec; return { data: s.data, matrix: s.matrix }; },
     subscribe: (el, cb) => $(el).on("lt-edit.lt", () => cb(true)),
     unsubscribe: el => $(el).off(".lt"),
     receiveMessage: (el, msg) => { draw(el, { input: el._tbl._ltSpec.input, ...msg.spec }); $(el).trigger("lt-edit"); }

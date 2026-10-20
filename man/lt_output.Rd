@@ -28,8 +28,10 @@ lt_update(session, inputId, x, columns = NULL)
 
 \item{inputId}{The input slot that will be used to access the value.}
 
-\item{x}{An \code{\link[=lt]{lt()}} table, or a data frame (shown without automatic number
-formatting, so cells display the values they hold).}
+\item{x}{An \code{\link[=lt]{lt()}} table, a data frame, or a matrix (the latter two shown
+without automatic number formatting, so cells display the values they
+hold). The server gets the edited table back as a matrix if \code{x} is one,
+and as a data frame otherwise.}
 
 \item{label}{Display label for the input, or \code{NULL} for no label.}
 

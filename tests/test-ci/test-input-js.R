@@ -4,9 +4,10 @@
 edit = function(x, expr, js = '') lti_eval(
   x, expr, paste(xfun::file_string(asset_path('lt-input.js')), js, sep = ';')
 )
-# type `v` into body cell (row r, column ci), then leave it
+# type `v` into body cell (row r, column ci), then leave it; focusout is fired
+# by hand since real focus()/blur() events are unreliable in headless macOS
 type = function(r, ci, v) sprintf(
-  'var td = t.tBodies[0].rows[%d].cells[%d]; td.focus(); td.textContent = "%s"; td.blur()',
+  'var td = t.tBodies[0].rows[%d].cells[%d]; td.textContent = "%s"; td.dispatchEvent(new Event("focusout", {bubbles: true}))',
   r, ci, v
 )
 
