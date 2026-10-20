@@ -17,7 +17,6 @@
   const MIN_COL = 24;  // px: min dragged column width
   let coll;  // lazy locale-aware comparator
   // Numeric if first non-null value is a number (same rule as core lt.js).
-  const numCol = col => typeof col.find(v => v != null) === "number";
   // Subscript digits (₁ ₂ …) for sort-order ordinals.
   const sub = n => String(n).replace(/\d/g, d => "₀₁₂₃₄₅₆₇₈₉"[d]);
   // Sort key `"col"`, `"-col"` (desc), or `{col, dir}` -> `{col, dir}`.
@@ -30,10 +29,7 @@
   };
 
   // --- Small DOM helpers ---
-  const $ = (el, sel) => el.querySelector(sel),
-        $$ = (el, sel) => el.querySelectorAll(sel),
-        on = (t, type, fn, opts) => t.addEventListener(type, fn, opts),
-        off = (t, type, fn) => t.removeEventListener(type, fn);
+  const { $, $$, on, off, numCol } = LT;
   // A row's data cells in column order: children minus leading rowspan group
   // cells (`lt-row-group`), which aren't in `spec._cols` and are missing on a
   // run's later rows. Class-based, not positional, so index code stays correct.

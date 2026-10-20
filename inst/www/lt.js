@@ -6,7 +6,11 @@
   "use strict";
   if (root.LT?.buildHtml) return;  // duplicate include: no-op
 
-  const $ = (el, sel) => el.querySelector(sel);
+  // DOM helpers, shared with the extensions via LT.
+  const $ = (el, sel) => el.querySelector(sel),
+        $$ = (el, sel) => el.querySelectorAll(sel),
+        on = (t, type, fn, opts) => t.addEventListener(type, fn, opts),
+        off = (t, type, fn) => t.removeEventListener(type, fn);
 
   // Inline-graphics cell renderers keyed by op type, registered by lt-plot.js
   // (loaded before core). Live reference re-exposed on root.LT, so plot
@@ -810,5 +814,6 @@
   root.LT = {
     build: spec => mount(document.currentScript, spec),
     render, refresh, buildHtml, plugins, onMount, cells: cellRenderers, q,
+    $, $$, on, off, numCol,
   };
 })(window);
