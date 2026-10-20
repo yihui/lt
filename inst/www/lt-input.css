@@ -1,6 +1,5 @@
-/* lt-input.css — editable cells look like spreadsheet cells (see lt-input.js). */
-.lt-table [contenteditable] {
-  outline: 1px solid #d0d0d0;
-  outline-offset: -1px;
-  &:focus { outline: 2px solid #217346; }
+/* lt-input.css — an editable table looks like a spreadsheet (see lt-input.js). */
+.lt-edit {
+  :is(td, th) { outline: 1px solid #d0d0d0; outline-offset: -1px; }
+  [contenteditable]:focus { outline: 2px solid #217346; }
 }

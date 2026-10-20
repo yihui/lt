@@ -20,6 +20,7 @@
             const td = e.target.closest?.("td[contenteditable]");
             return td && [td, cols[td.cellIndex], rows.indexOf(td.parentNode)];
           };
+    tbl.classList.add("lt-edit");
     rows.forEach(tr => cols.forEach((c, i) => {
       if (spec.input.includes(c)) tr.cells[i].contentEditable = "plaintext-only";
     }));
