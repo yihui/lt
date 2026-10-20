@@ -37,7 +37,8 @@ lt_dependency = function(
     ), collapse = '-'), as.character(utils::packageVersion('lt')),
     src = pkg_file('www'),
     stylesheet = c(
-      'lt.css', if (plot) 'lt-plot.css', if (interactive) 'lt-interactive.css'
+      'lt.css', if (plot) 'lt-plot.css', if (interactive) 'lt-interactive.css',
+      if (input) 'lt-input.css'
     ),
     script = c(
       if (plot) 'lt-plot.js', 'lt.js',

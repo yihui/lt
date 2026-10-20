@@ -1,0 +1,5 @@
+/* lt-input.css — mark editable cells (see lt-input.js). */
+.lt-table [contenteditable] {
+  background: #f4f8fd;
+  &:hover { background: #e4eefa; }
+}
