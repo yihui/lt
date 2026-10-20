@@ -128,6 +128,7 @@ By default a plot draws into the first value column's cells; `lt_errorbar()` and
 **Shiny**
 
 - `lt_output()` / `render_lt()` — Shiny UI and server bindings.
+- `lt_input()` / `lt_update()` — an editable table as a Shiny input.
 
 **Embedding**
 

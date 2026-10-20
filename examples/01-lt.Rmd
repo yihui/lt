@@ -1013,3 +1013,39 @@ lt(d3) |> lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |> lt_interactive(pager = 5)
 ```
 
 Column spanners, styles, and footnotes are no obstacle to interactivity.
+
+## Shiny
+
+`lt_output()` and `render_lt()` show a table as a Shiny output: the server sends
+the table spec and the browser builds the `<table>`, with no `renderUI()`.
+
+```{r, eval = FALSE}
+library(shiny)
+ui = fluidPage(lt_output("tbl"))
+server = function(input, output) {
+  output$tbl = render_lt(
+    lt(head(mtcars)) |> lt_header("Motor Trend") |> lt_interactive()
+  )
+}
+shinyApp(ui, server)
+```
+
+`lt_input()` goes the other way: a table whose cells can be edited in the
+browser. The server reads the edited table as a data frame (numeric columns stay
+numeric), and `lt_update()` replaces it, e.g., to add a row or reset the edits.
+Use `columns` to make only some columns editable.
+
+```{r, eval = FALSE}
+library(shiny)
+d = data.frame(Time = c(12, 24), Rate = c(0.8, 0.6), Note = c("a", "b"))
+ui = fluidPage(
+  lt_input("m", d, label = "Edit the cells:", columns = c("Time", "Rate")),
+  actionButton("add", "Add row"),
+  verbatimTextOutput("out")
+)
+server = function(input, output, session) {
+  output$out = renderPrint(input$m)
+  observeEvent(input$add, lt_update(session, "m", rbind(input$m, NA)))
+}
+shinyApp(ui, server)
+```
