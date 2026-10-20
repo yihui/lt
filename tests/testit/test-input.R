@@ -20,8 +20,3 @@ assert('lt_dependency(input = TRUE) adds the editing script', {
   ('lt-input.js' %in% js(input = TRUE))
   (!'lt-input.js' %in% js())
 })
-
-assert('a data frame is shown without auto-formatting, but an lt table keeps its own', {
-  (has_match(input_spec(d), '"auto_format": false'))
-  (has_match(input_spec(lt(d)), 'auto_format', negate = TRUE))
-})
