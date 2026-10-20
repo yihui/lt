@@ -2,12 +2,12 @@
 % Please edit documentation in R/input.R
 \name{lt_input}
 \alias{lt_input}
-\alias{update_lt_input}
+\alias{lt_update}
 \title{Editable table as a Shiny input}
 \usage{
 lt_input(inputId, x, columns = NULL)
 
-update_lt_input(session, inputId, x, columns = NULL)
+lt_update(session, inputId, x, columns = NULL)
 }
 \arguments{
 \item{inputId}{The input slot that will be used to access the value.}
@@ -19,13 +19,13 @@ update_lt_input(session, inputId, x, columns = NULL)
 \item{session}{The \code{session} object passed to the Shiny server function.}
 }
 \value{
-\code{lt_input()} returns a Shiny UI element; \code{update_lt_input()} is
+\code{lt_input()} returns a Shiny UI element; \code{lt_update()} is
 called for its side effect.
 }
 \description{
 \code{lt_input()} shows an \code{\link[=lt]{lt()}} table whose body cells can be edited in the
 browser; the edited table is available to the server as a data frame in
-\code{input[[inputId]]}. \code{update_lt_input()} replaces the table from the server
+\code{input[[inputId]]}. \code{lt_update()} replaces the table from the server
 (e.g., to add or remove rows, or to reset the edits).
 }
 \details{

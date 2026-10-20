@@ -32,10 +32,10 @@ export(lt_sparkline)
 export(lt_spec)
 export(lt_style)
 export(lt_sub)
+export(lt_update)
 export(lt_width)
 export(lt_wrap)
 export(render_lt)
-export(update_lt_input)
 importFrom(xfun,
   js,
   record_print

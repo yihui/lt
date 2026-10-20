@@ -2,7 +2,7 @@
 #'
 #' `lt_input()` shows an [lt()] table whose body cells can be edited in the
 #' browser; the edited table is available to the server as a data frame in
-#' `input[[inputId]]`. `update_lt_input()` replaces the table from the server
+#' `input[[inputId]]`. `lt_update()` replaces the table from the server
 #' (e.g., to add or remove rows, or to reset the edits).
 #'
 #' Numeric columns accept only numbers (an empty cell is `NA`); other columns
@@ -14,7 +14,7 @@
 #' @param x An [lt()] table, or a data frame.
 #' @param columns Names of the editable columns; all columns by default.
 #' @param session The `session` object passed to the Shiny server function.
-#' @return `lt_input()` returns a Shiny UI element; `update_lt_input()` is
+#' @return `lt_input()` returns a Shiny UI element; `lt_update()` is
 #'   called for its side effect.
 #' @export
 #' @examples
@@ -34,7 +34,7 @@ lt_input = function(inputId, x, columns = NULL) {
 
 #' @rdname lt_input
 #' @export
-update_lt_input = function(session, inputId, x, columns = NULL)
+lt_update = function(session, inputId, x, columns = NULL)
   session$sendInputMessage(inputId, list(spec = input_spec(x, columns)))
 
 # JSON spec of an editable table; `input` lists the editable columns

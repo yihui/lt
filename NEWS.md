@@ -1,6 +1,6 @@
 # CHANGES IN lt VERSION 0.6
 
-- Added `lt_input()` and `update_lt_input()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
+- Added `lt_input()` and `lt_update()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
 
 
 # CHANGES IN lt VERSION 0.5
