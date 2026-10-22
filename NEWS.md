@@ -1,6 +1,8 @@
 # CHANGES IN lt VERSION 0.6
 
-- `lt_interactive(hide = list(label = ))` shows the column-visibility menu as a labeled chip at the end of the control bar instead of the eye icon.
+- `lt_interactive(hide = list(label = ))` shows the column-visibility menu as a labeled chip in the control bar instead of the eye icon.
+
+- The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, CSV download), and the column menu button's tooltip reads "Show/Hide columns".
 
 - Added `lt_input()` and `lt_update()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
 

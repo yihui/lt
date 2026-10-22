@@ -349,8 +349,8 @@
     const flt = opts.filter,
           barCols = flt?.cols ?
             Object.keys(flt.cols).filter(c => flt.cols[c] !== true && !cols.includes(c)) : [];
-    // Table-wide controls share one head row: icons (column menu, download), chips,
-    // then search (absorbs free space)
+    // Table-wide controls share one head row: search (absorbs free space), chips,
+    // then icons (column menu, download)
     const headBar = (opts.search !== false || opts.hide || barCols.length || opts.download) ?
       elem(el.ownerDocument, "div", { className: "lti-bar" },
         fullRow(el.tHead || el.createTHead(), "lti-head", nAll, 0)) : null;
@@ -365,22 +365,19 @@
       addFilter(hrow, cols, flt, spec.data, state, requestRefresh, nGroup);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
-    // Icon group (natural width); append before chips/search so DOM order = visual
-    // A labeled column menu is a chip at the bar's end instead (below)
-    const labeled = opts.hide?.label,
-          icons = ((opts.hide && !labeled) || opts.download) ?
-      elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
-    if (opts.hide && !labeled)
-      addColumnToggle(icons, el, hrow, cols, labels, opts.hide, layout, postSwap);
-    if (opts.download) addDownload(icons, el, spec, cols, labels, opts.download);
-    // Chips group makes three bar parts with wider gaps between. Always created
-    // with a bar so callers can add chips via el._lt.chips; empty collapses
-    // (CSS :empty).
+    // DOM order = visual order. Chips group is always created with a bar so callers
+    // can add chips via el._lt.chips; empty collapses (CSS :empty). A labeled
+    // column menu is a chip; otherwise an icon.
+    if (opts.search !== false) addSearch(headBar, el, state, requestRefresh);
     const chips = headBar ?
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
     if (barCols.length) addControlFilters(chips, barCols, flt.cols, spec.data, state, requestRefresh);
-    if (opts.search !== false) addSearch(headBar, el, state, requestRefresh);
-    if (labeled) addColumnToggle(headBar, el, hrow, cols, labels, opts.hide, layout, postSwap);
+    const labeled = opts.hide?.label,
+          icons = ((opts.hide && !labeled) || opts.download) ?
+      elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
+    if (opts.hide)
+      addColumnToggle(labeled ? chips : icons, el, hrow, cols, labels, opts.hide, layout, postSwap);
+    if (opts.download) addDownload(icons, el, spec, cols, labels, opts.download);
     // Control bar (`.lti-bar`; null if no table-wide controls) for callers to add
     // widgets to; `chips` is its chip group (null only without a bar), home for
     // caller chips
@@ -818,8 +815,8 @@
           btn = opt?.label ?
             Object.assign(makeChip(doc, opt.label).el, { role: "button", tabIndex: 0 }) :
             elem(doc, "button", {
-              type: "button", title: "Show or hide columns",
-              "aria-label": "Show or hide columns"
+              type: "button", title: "Show/Hide columns",
+              "aria-label": "Show/Hide columns"
             });
     btn.setAttribute("aria-expanded", "false");
     wrap.append(btn);

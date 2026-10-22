@@ -129,15 +129,21 @@ assert("hiding a column leaves an open detail row's full-width cell alone", {
   (lti_eval(x, cell_hidden(0), off0) %==% 'true')
 })
 
-assert("hide = list(label=) shows a labeled chip at the bar's end instead of the eye", {
+assert("hide = list(label=) shows a labeled chip in the bar instead of the eye", {
   x = itbl(hide = list(label = 'Show/Hide columns', columns = 'n'))
   (lti_eval(x, 't.querySelectorAll(".lti-cols > button").length') %==% '0')
   (lti_eval(x, 't.querySelector(".lti-cols .lti-chip-name").textContent')
    %==% 'Show/Hide columns')
-  # the chip is the last bar part, and opens the same checklist
-  (lti_eval(x, 't.querySelector(".lti-bar").lastElementChild.classList.contains("lti-cols")')
-   %==% 'true')
+  # the chip sits in the chips group, and opens the same checklist
+  (lti_eval(x, 't.querySelectorAll(".lti-bar .lti-chips .lti-cols .lti-chip").length')
+   %==% '1')
   open = 't.querySelector(".lti-chip").click()'
   (lti_eval(x, 't.querySelector(".lti-menu").hidden', open) %==% 'false')
   (lti_eval(x, th_hidden(1)) %==% 'true')
+})
+
+assert("the control bar orders search, chips, then icons", {
+  x = itbl(hide = TRUE, download = TRUE, search = TRUE)
+  (lti_eval(x, '[...t.querySelector(".lti-bar").children].map(e => e.className.split(" ")[0]).join()')
+   %==% 'lti-search,lti-chips,lti-icons')
 })

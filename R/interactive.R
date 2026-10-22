@@ -71,14 +71,14 @@
 #'   it (double-clicking the edge fits the column to its content). Widening a
 #'   column widens the table, leaving the other columns as they are. Initial
 #'   widths can be set with [lt_width()].
-#' @param hide Column-visibility control: an eye button at the start of the
-#'   search row opens a checklist of every column, where unchecking a column
+#' @param hide Column-visibility control: an eye button in the
+#'   control bar opens a checklist of every column, where unchecking a column
 #'   hides it (header and cells) and re-checking restores it. `TRUE` adds the
 #'   menu with all columns shown; column names (a character vector or a one-sided
 #'   formula, e.g. `~ x + y`) adds it with those columns hidden to begin with
 #'   (every column is still listed, so any can be toggled). To label the button
 #'   instead of showing the eye icon, use a list with `label` (a string, shown as
-#'   a chip at the far right of the control bar) and optionally `columns` (the
+#'   a chip in the control bar) and optionally `columns` (the
 #'   columns hidden to begin with), e.g. `list(label = "Show/Hide columns")`.
 #'   `NULL` (the default) adds no menu.
 #' @param detail Row detail (drill-down). An expand caret is added to each row;

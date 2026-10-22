@@ -82,8 +82,8 @@
     }
   }
 
-  /* control bar: icons, chips, search. Only search grows, taking free space
-   * (right-aligned); it fills the bar when alone. */
+  /* control bar: search, chips, icons. Only search grows, taking free space; it
+   * fills the bar when alone. */
   .lti-bar {
     display: flex;
     align-items: center;
@@ -143,8 +143,6 @@
       }
       .lti-sub { padding-left: 1em; }
     }
-    /* a labeled chip sits at the bar's end: open leftward, inside the table */
-    .lti-chip + .lti-menu { left: auto; right: 0; }
   }
 
   /* CSV download icon button */
