@@ -143,6 +143,8 @@
       }
       .lti-sub { padding-left: 1em; }
     }
+    /* a labeled chip sits at the bar's end: open leftward, inside the table */
+    .lti-chip + .lti-menu { left: auto; right: 0; }
   }
 
   /* CSV download icon button */

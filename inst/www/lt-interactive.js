@@ -366,17 +366,16 @@
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     // DOM order = visual order. Chips group is always created with a bar so callers
-    // can add chips via el._lt.chips; empty collapses (CSS :empty). A labeled
-    // column menu is a chip; otherwise an icon.
+    // can add chips via el._lt.chips (empty collapses, CSS :empty); the column menu
+    // stays in the icons group, even as a labeled chip, so filter chips stay together.
     if (opts.search !== false) addSearch(headBar, el, state, requestRefresh);
     const chips = headBar ?
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
     if (barCols.length) addControlFilters(chips, barCols, flt.cols, spec.data, state, requestRefresh);
-    const labeled = opts.hide?.label,
-          icons = ((opts.hide && !labeled) || opts.download) ?
+    const icons = (opts.hide || opts.download) ?
       elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
     if (opts.hide)
-      addColumnToggle(labeled ? chips : icons, el, hrow, cols, labels, opts.hide, layout, postSwap);
+      addColumnToggle(icons, el, hrow, cols, labels, opts.hide, layout, postSwap);
     if (opts.download) addDownload(icons, el, spec, cols, labels, opts.download);
     // Control bar (`.lti-bar`; null if no table-wide controls) for callers to add
     // widgets to; `chips` is its chip group (null only without a bar), home for

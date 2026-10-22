@@ -134,8 +134,8 @@ assert("hide = list(label=) shows a labeled chip in the bar instead of the eye",
   (lti_eval(x, 't.querySelectorAll(".lti-cols > button").length') %==% '0')
   (lti_eval(x, 't.querySelector(".lti-cols .lti-chip-name").textContent')
    %==% 'Show/Hide columns')
-  # the chip sits in the chips group, and opens the same checklist
-  (lti_eval(x, 't.querySelectorAll(".lti-bar .lti-chips .lti-cols .lti-chip").length')
+  # the chip sits with the icons, after the filter chips, and opens the same checklist
+  (lti_eval(x, 't.querySelectorAll(".lti-bar .lti-icons .lti-cols .lti-chip").length')
    %==% '1')
   open = 't.querySelector(".lti-chip").click()'
   (lti_eval(x, 't.querySelector(".lti-menu").hidden', open) %==% 'false')
