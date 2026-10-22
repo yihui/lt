@@ -70,6 +70,16 @@ the empty string (\code{options(lt.missing = "")}) to leave \code{NA} cells blan
 Use \code{\link[=lt_sub]{lt_sub()}} with \verb{missing =} to override the text for specific columns.
 }
 
+\section{Repeated data in \code{litedown::fuse()} documents}{
+
+When several tables in one document are built from the same data, the data
+is encoded only once in the output (child documents included) and the other
+tables refer to it. To limit this to data frames larger than a given size,
+set the \code{lt.share_size} global option (in bytes), e.g.
+\code{options(lt.share_size = 1e4)}; smaller data is embedded in each table.
+Use \code{Inf} to turn sharing off.
+}
+
 \examples{
 lt(head(mtcars[, 1:4]))
 }

@@ -784,7 +784,10 @@
     return tbl;
   };
 
-  const mount = (s, spec) => {
+  // `data` may be a key into LT.d (data shared across tables); shallow-copy
+  // so per-table column changes don't leak into the shared store.
+  const store = root.LT?.d || {}, mount = (s, spec) => {
+    if (typeof spec.data == "string") spec.data = {...store[spec.data]};
     s.insertAdjacentHTML("afterend", buildHtml(spec));
     ready($(s.nextElementSibling, "table"), spec);
   };
@@ -813,7 +816,7 @@
   (root.LT?.q || []).forEach(q.push);
   root.LT = {
     build: spec => mount(document.currentScript, spec),
-    render, refresh, buildHtml, plugins, onMount, cells: cellRenderers, q,
+    render, refresh, buildHtml, plugins, onMount, cells: cellRenderers, q, d: store,
     $, $$, on, off, numCol,
   };
 })(window);

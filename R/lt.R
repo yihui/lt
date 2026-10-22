@@ -52,6 +52,13 @@
 #' `lt.missing` global option, e.g. `options(lt.missing = "n/a")`; set it to
 #' the empty string (`options(lt.missing = "")`) to leave `NA` cells blank.
 #' Use [lt_sub()] with `missing =` to override the text for specific columns.
+#' @section Repeated data in `litedown::fuse()` documents:
+#' When several tables in one document are built from the same data, the data
+#' is encoded only once in the output (child documents included) and the other
+#' tables refer to it. To limit this to data frames larger than a given size,
+#' set the `lt.share_size` global option (in bytes), e.g.
+#' `options(lt.share_size = 1e4)`; smaller data is embedded in each table.
+#' Use `Inf` to turn sharing off.
 #' @return A table object that can be piped into `lt_*()` functions.
 #' @export
 #' @examples

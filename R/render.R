@@ -117,12 +117,48 @@ lt_spec = function(x) {
   x[lengths(x) > 0L]
 }
 
+# Inside a running litedown::fuse(), key a data frame (bigger than the
+# `lt.share_size` option, if set) and record it in the document-level store
+# (shared with child documents; fresh for each fuse() whose output isn't
+# included in its caller). Returns the key and whether it was already emitted,
+# or NULL when the data should be inlined.
+data_key = function(d) {
+  doc = if ('litedown' %in% loadedNamespaces()) litedown::get_context('doc')
+  if (!is.environment(doc)) return()
+  if (!is.null(size <- getOption('lt.share_size')) && utils::object.size(d) < size)
+    return()
+  # hashtab() (R >= 4.2) finds seen data faster than md5 and holds references
+  # (no copies); otherwise look up by md5
+  ht = if (getRversion() >= '4.2.0') doc$lt_data %||% (doc$lt_data = utils::hashtab('identical'))
+  if (!is.null(ht) && !is.null(k <- utils::gethash(ht, d)))
+    return(list(key = k, seen = TRUE))
+  m = xfun::md5(d); reg = doc$lt_keys  # named: key = md5
+  if (is.null(ht) && m %in% reg) return(list(key = names(reg)[match(m, reg)], seen = TRUE))
+  # shortest md5 prefix not yet used by another dataset in this document
+  n = 1L
+  while ((k <- substr(m, 1, n)) %in% names(reg)) n = n + 1L
+  doc$lt_keys = c(reg, structure(m, names = k))
+  if (!is.null(ht)) utils::sethash(ht, d, k)
+  list(key = k, seen = FALSE)
+}
+
 # Per-table block: queue the spec with a reference to the current script;
-# runtime drains the queue on load.
-spec_block = function(x) {
+# runtime drains the queue on load. With `share`, data repeated across tables
+# is encoded once into LT.d and referenced by key.
+spec_block = function(x, share = FALSE) {
+  x = lt_spec(x)
+  d = NULL
+  if (share && !is.null(k <- data_key(x$data))) {
+    if (!k$seen) d = c(
+      sprintf('<script>((window.LT=window.LT||{}).d=window.LT.d||{})["%s"]=', k$key),
+      inline_safe(xfun::tojson(x$data)), '</script>'
+    )
+    x$data = k$key
+  }
   c(
+    d,
     '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
-    inline_safe(xfun::tojson(lt_spec(x))),
+    inline_safe(xfun::tojson(x)),
     '})</script>'
   )
 }
@@ -278,7 +314,7 @@ record_print.lt_tbl = function(x, ...) {
     css_block(c('lt.css', if (plot) 'lt-plot.css', if (int) 'lt-interactive.css'),
       inline = FALSE),
     user_css_block(x$css, local = TRUE),
-    rules_block(x$rules), spec_block(x),
+    rules_block(x$rules), spec_block(x, share = TRUE),
     js_block(c(if (plot) 'lt-plot.js', 'lt.js', if (int) 'lt-interactive.js'),
       inline = FALSE), ''
   ), 'asis')

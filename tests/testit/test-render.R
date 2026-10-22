@@ -187,3 +187,39 @@ assert("tidy_html() indents block tags and keeps rows on one line", {
   (lines[length(lines) - 1] %==% '  </table>')
   (lines[length(lines)] %==% '</div>')
 })
+
+# which tables in a fuse()d document define (`def`) or reference (`ref`) keyed
+# data, or embed it (`inline`)
+share_show = function(dir, f) {
+  out = litedown::fuse(file.path(dir, f), 'markdown', envir = environment(), quiet = TRUE)
+  x = unlist(strsplit(out, '\n'))
+  x = x[grepl('LT.d||', x, fixed = TRUE) | grepl('^ *"data": ', x)]
+  ifelse(grepl('LT.d||', x, fixed = TRUE), 'def', ifelse(grepl('"data": *"', x), 'ref', 'inline'))
+}
+
+# needs litedown's document-level store (.env$doc)
+if (xfun::pkg_available('litedown', '0.11.9'))
+assert("fuse() encodes repeated data once, across child documents but not separate fuse() calls", {
+  dir = tempfile(); dir.create(dir)
+  # chunk types: table, child document, or fuse() whose output isn't included
+  rmd = function(...) unlist(lapply(c(...), function(z) switch(z,
+    lt = c('```{r}', 'lt::lt(data.frame(x = 1:200, y = 200:1))', '```'),
+    fuse = c('```{r}', 'invisible(litedown::fuse(file.path(dir, "inner.Rmd"), "markdown", envir = environment(), quiet = TRUE))', '```'),
+    c(sprintf('```{r, child="%s.Rmd"}', z), '```')
+  )))
+  w = function(f, ...) writeLines(rmd(...), file.path(dir, f))
+  w('child.Rmd', 'lt'); w('inner.Rmd', 'lt')
+  w('a.Rmd', 'lt', 'child', 'lt')  # parent first, then child, then parent
+  (share_show(dir, 'a.Rmd') %==% c('def', 'ref', 'ref', 'ref'))
+  w('b.Rmd', 'child', 'lt')  # child first: parent reuses its data
+  (share_show(dir, 'b.Rmd') %==% c('def', 'ref', 'ref'))
+  # a fuse() inside a chunk doesn't share with its caller
+  w('c.Rmd', 'fuse', 'lt')
+  (share_show(dir, 'c.Rmd') %==% c('def', 'ref'))
+  # nothing leaks from one top-level fuse() call to the next
+  (share_show(dir, 'a.Rmd') %==% c('def', 'ref', 'ref', 'ref'))
+
+  # data below `lt.share_size` stays inline; Inf disables sharing
+  op = options(lt.share_size = 1e6); on.exit(options(op))
+  (share_show(dir, 'a.Rmd') %==% rep('inline', 3))
+})
