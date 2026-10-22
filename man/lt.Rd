@@ -72,12 +72,21 @@ Use \code{\link[=lt_sub]{lt_sub()}} with \verb{missing =} to override the text f
 
 \section{Repeated data in \code{litedown::fuse()} documents}{
 
-When several tables in one document are built from the same data, the data
-is encoded only once in the output (child documents included) and the other
-tables refer to it. To limit this to data frames larger than a given size,
-set the \code{lt.share_size} global option (in bytes), e.g.
-\code{options(lt.share_size = 1e4)}; smaller data is embedded in each table.
-Use \code{Inf} to turn sharing off.
+A document often shows several tables built from the same data, e.g., one
+data frame with different columns, groups, or formatting in each table.
+To keep the output file small, \code{lt()} writes the data into the document only
+once; the other tables just point to that copy instead of repeating the
+data. This happens automatically when the document is rendered by
+\code{\link[litedown:fuse]{litedown::fuse()}}, including documents that include child documents.
+
+Sharing saves space except for tiny data: a data frame with roughly 15 cells
+or fewer (e.g., 5 rows by 3 columns) is about as small as the pointer to it,
+so sharing it gains nothing and may add a few bytes. For anything larger, the
+saving grows with the size of the data and the number of tables using it.
+To share only data frames above a certain size, set the \code{lt.share_size}
+global option (in bytes, as reported by \code{\link[utils:object.size]{utils::object.size()}}), e.g.,
+\code{options(lt.share_size = 1e4)}; smaller data is then written into each
+table. Use \code{options(lt.share_size = Inf)} to turn sharing off.
 }
 
 \examples{

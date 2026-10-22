@@ -2,7 +2,7 @@
 
 - Added `lt_input()` and `lt_update()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
 
-- In `litedown::fuse()` documents, multiple tables built from the same data frame now encode the data once and share it instead of repeating it in every table, including across child documents. Set the `lt.share_size` global option (in bytes) to share only data frames above that size.
+- In `litedown::fuse()` documents, tables built from the same data frame now write the data to the output only once and refer to it from the other tables, which makes the output file smaller. This also works across child documents. Set the `lt.share_size` global option (in bytes) to share only data frames above that size.
 
 # CHANGES IN lt VERSION 0.5
 
