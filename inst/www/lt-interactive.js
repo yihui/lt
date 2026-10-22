@@ -366,9 +366,11 @@
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     // Icon group (natural width); append before chips/search so DOM order = visual
-    const icons = (opts.hide || opts.download) ?
+    // A labeled column menu is a chip at the bar's end instead (below)
+    const labeled = opts.hide?.label,
+          icons = ((opts.hide && !labeled) || opts.download) ?
       elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
-    if (opts.hide)
+    if (opts.hide && !labeled)
       addColumnToggle(icons, el, hrow, cols, labels, opts.hide, layout, postSwap);
     if (opts.download) addDownload(icons, el, spec, cols, labels, opts.download);
     // Chips group makes three bar parts with wider gaps between. Always created
@@ -378,6 +380,7 @@
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
     if (barCols.length) addControlFilters(chips, barCols, flt.cols, spec.data, state, requestRefresh);
     if (opts.search !== false) addSearch(headBar, el, state, requestRefresh);
+    if (labeled) addColumnToggle(headBar, el, hrow, cols, labels, opts.hide, layout, postSwap);
     // Control bar (`.lti-bar`; null if no table-wide controls) for callers to add
     // widgets to; `chips` is its chip group (null only without a bar), home for
     // caller chips
@@ -763,7 +766,8 @@
     });
   }
 
-  // Column-visibility menu: eye button opening a checklist, one box per column.
+  // Column-visibility menu: eye button (or a chip, if `opt.label`) opening a
+  // checklist, one box per column.
   // Unchecking sets `hidden` on the header and body cells (a <tbody> swap drops
   // it, so postSwap re-applies). `opt` = `true` (all shown) or `{ hidden: [...] }`
   // (start hidden). `layout` (resize) also hides the <col> so a fixed table reflows.
@@ -811,11 +815,15 @@
       applySpan();
     };
     const wrap = elem(doc, "span", { className: "lti-cols" }, cell),
-          btn = elem(doc, "button", {
-            type: "button", title: "Show or hide columns",
-            "aria-label": "Show or hide columns", "aria-expanded": "false"
-          }, wrap),
-          menu = elem(doc, "div", { className: "lti-menu", hidden: true }, wrap);
+          btn = opt?.label ?
+            Object.assign(makeChip(doc, opt.label).el, { role: "button", tabIndex: 0 }) :
+            elem(doc, "button", {
+              type: "button", title: "Show or hide columns",
+              "aria-label": "Show or hide columns"
+            });
+    btn.setAttribute("aria-expanded", "false");
+    wrap.append(btn);
+    const menu = elem(doc, "div", { className: "lti-menu", hidden: true }, wrap);
     // checkbox per column; `sub` indents under a spanner header
     const addBox = (i, sub) => {
       const c = cols[i];
@@ -844,6 +852,7 @@
       btn.setAttribute("aria-expanded", String(on));
     };
     btn.onclick = e => { e.stopPropagation(); open(menu.hidden); };
+    btn.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); btn.click(); } };
     on(doc, "click", e => { if (!wrap.contains(e.target)) open(false); });
     on(doc, "keydown", e => { if (e.key === "Escape") open(false); });
   }

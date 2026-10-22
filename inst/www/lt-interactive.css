@@ -110,7 +110,7 @@
   }
 
   /* shared size of eye and download buttons */
-  .lti-cols button, .lti-download {
+  .lti-cols > button, .lti-download {
     border: none;
     padding: 0;
     width: 1.2em;
@@ -120,7 +120,7 @@
   /* column-visibility menu: eye button + checklist popup */
   .lti-cols {
     position: relative;
-    button {
+    & > button {
       background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="1.5"><path d="M1 8s2.5-4.5 7-4.5 7 4.5 7 4.5-2.5 4.5-7 4.5-7-4.5-7-4.5z"/><circle cx="8" cy="8" r="2"/></svg>');
     }
     .lti-menu {
@@ -143,6 +143,8 @@
       }
       .lti-sub { padding-left: 1em; }
     }
+    /* a labeled chip sits at the bar's end: open leftward, inside the table */
+    .lti-chip + .lti-menu { left: auto; right: 0; }
   }
 
   /* CSV download icon button */

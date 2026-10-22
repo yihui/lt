@@ -1,5 +1,7 @@
 # CHANGES IN lt VERSION 0.6
 
+- `lt_interactive(hide = list(label = ))` shows the column-visibility menu as a labeled chip at the end of the control bar instead of the eye icon.
+
 - Added `lt_input()` and `lt_update()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
 
 - In `litedown::fuse()` documents, tables built from the same data frame now write the data to the output only once and refer to it from the other tables, which makes the output file smaller. This also works across child documents. Set the `lt.share_size` global option (in bytes) to share only data frames above that size.

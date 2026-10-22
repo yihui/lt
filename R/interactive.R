@@ -76,8 +76,11 @@
 #'   hides it (header and cells) and re-checking restores it. `TRUE` adds the
 #'   menu with all columns shown; column names (a character vector or a one-sided
 #'   formula, e.g. `~ x + y`) adds it with those columns hidden to begin with
-#'   (every column is still listed, so any can be toggled). `NULL` (the default)
-#'   adds no menu.
+#'   (every column is still listed, so any can be toggled). To label the button
+#'   instead of showing the eye icon, use a list with `label` (a string, shown as
+#'   a chip at the far right of the control bar) and optionally `columns` (the
+#'   columns hidden to begin with), e.g. `list(label = "Show/Hide columns")`.
+#'   `NULL` (the default) adds no menu.
 #' @param detail Row detail (drill-down). An expand caret is added to each row;
 #'   clicking it reveals a table built from that row below it. Give the columns
 #'   to show, as a character vector of names or a one-sided formula (e.g.
@@ -112,6 +115,8 @@
 #' # a column-visibility menu (all columns shown, or with some hidden to start)
 #' lt(head(mtcars)) |> lt_interactive(hide = TRUE)
 #' lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)
+#' # a labeled button instead of the eye icon
+#' lt(head(mtcars)) |> lt_interactive(hide = list(label = 'Show/Hide columns'))
 #' # an initial sort by cyl, then mpg descending within each
 #' lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
 #' # expandable row detail (drill-down): name the columns to show. Here gear and
@@ -145,8 +150,17 @@ lt_interactive = function(
     opts$pager = I(as.integer(sizes))
   }
   if (isTRUE(resize)) opts$resize = TRUE
-  if (!is.null(hide) && !isFALSE(hide)) opts$hide = if (isTRUE(hide)) TRUE else
-    list(hidden = I(as.character(f_cols(hide, x$data))))
+  if (!is.null(hide) && !isFALSE(hide)) {
+    label = NULL
+    if (is.list(hide)) {
+      label = hide$label
+      hide = hide$columns %||% TRUE
+    }
+    opts$hide = if (isTRUE(hide) && is.null(label)) TRUE else drop_null(list(
+      label = label,
+      hidden = if (!isTRUE(hide)) I(as.character(f_cols(hide, x$data)))
+    ))
+  }
   if (!is.null(detail)) opts$detail = if (inherits(detail, 'JS_LITERAL'))
     detail else I(as.character(f_cols(detail, x$data)))
   opts$download = download_opt(download)

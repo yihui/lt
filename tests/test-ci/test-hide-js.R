@@ -128,3 +128,16 @@ assert("hiding a column leaves an open detail row's full-width cell alone", {
   # the real first-column cell is still hidden, as asked
   (lti_eval(x, cell_hidden(0), off0) %==% 'true')
 })
+
+assert("hide = list(label=) shows a labeled chip at the bar's end instead of the eye", {
+  x = itbl(hide = list(label = 'Show/Hide columns', columns = 'n'))
+  (lti_eval(x, 't.querySelectorAll(".lti-cols > button").length') %==% '0')
+  (lti_eval(x, 't.querySelector(".lti-cols .lti-chip-name").textContent')
+   %==% 'Show/Hide columns')
+  # the chip is the last bar part, and opens the same checklist
+  (lti_eval(x, 't.querySelector(".lti-bar").lastElementChild.classList.contains("lti-cols")')
+   %==% 'true')
+  open = 't.querySelector(".lti-chip").click()'
+  (lti_eval(x, 't.querySelector(".lti-menu").hidden', open) %==% 'false')
+  (lti_eval(x, th_hidden(1)) %==% 'true')
+})
