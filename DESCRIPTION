@@ -22,7 +22,6 @@ Encoding: UTF-8
 Imports:
     grDevices,
     xfun (>= 0.62)
-Remotes: yihui/litedown
 Suggests:
     chromote,
     htmltools,
