@@ -216,6 +216,10 @@ assert("fuse() encodes repeated data once, across child documents but not separa
   # a fuse() inside a chunk doesn't share with its caller
   w('c.Rmd', 'fuse', 'lt')
   (share_show(dir, 'c.Rmd') %==% c('def', 'ref'))
+  # keys are md5 prefixes, identical for the same data in separate documents
+  key = function(f) sub('.*\\["([0-9a-f]+)"\\]=.*', '\\1', grep('LT.d\\|\\|', unlist(strsplit(
+    litedown::fuse(file.path(dir, f), 'markdown', envir = environment(), quiet = TRUE), '\n')), value = TRUE))
+  (key('a.Rmd') %==% key('b.Rmd'))
   # nothing leaks from one top-level fuse() call to the next
   (share_show(dir, 'a.Rmd') %==% c('def', 'ref', 'ref', 'ref'))
 
