@@ -93,6 +93,13 @@ lti_session = function() {
     old = xfun::set_envvar(c(TMPDIR = .browser$tmp))
     .browser$b = chromote::ChromoteSession$new()
     xfun::set_envvar(old)
+    # page errors, so a probe that never arrives can say why
+    .browser$errs = character()
+    .browser$b$Runtime$enable()
+    .browser$b$Runtime$exceptionThrown(function(e) {
+      d = e$exceptionDetails
+      .browser$errs = c(.browser$errs, d$exception$description %||% d$text)
+    })
     reg.finalizer(.browser, function(e) {
       try(e$b$close(), silent = TRUE)
       unlink(e$tmp, recursive = TRUE, force = TRUE)
@@ -105,6 +112,7 @@ lti_session = function() {
 # mistaken for "not loaded yet"
 lti_eval_cdp = function(f) {
   b = lti_session()
+  .browser$errs = character()
   b$Page$navigate(paste0('file://', normalizePath(f)), wait_ = FALSE)
   probe = 'document.body.dataset.ready === "1" ? (document.body.dataset.out ?? "") : null'
   for (i in 1:2000) {
@@ -112,13 +120,22 @@ lti_eval_cdp = function(f) {
     if (!is.null(v)) return(v)
     Sys.sleep(0.005)
   }
-  stop('failed to read the probe value from the browser')
+  state = tryCatch(b$Runtime$evaluate(
+    'document.readyState + " ready=" + document.body?.dataset.ready'
+  )$result$value, error = function(e) conditionMessage(e))
+  stop(
+    'failed to read the probe value from the browser (', state, ')',
+    if (length(.browser$errs)) paste0('\npage errors:\n', paste(.browser$errs, collapse = '\n'))
+  )
 }
 
 lti_eval_dump = function(f) {
   dom = xfun::browser_dom(f)
   m = regmatches(dom, regexec('data-out="([^"]*)"', dom))[[1]]
-  if (length(m) != 2L) stop('failed to read the probe value from the browser')
+  if (length(m) != 2L) stop(
+    'failed to read the probe value from the browser; <body>: ',
+    regmatches(dom, regexpr('<body[^>]*>', dom))
+  )
   m[2]
 }
 
