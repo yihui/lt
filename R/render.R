@@ -129,8 +129,9 @@ data_key = function(d) {
     return()
   # hashtab() (R >= 4.2) finds seen data faster than md5 and holds references
   # (no copies); otherwise look up by md5
-  ht = if (getRversion() >= '4.2.0') doc$lt_data %||% (doc$lt_data = utils::hashtab('identical'))
-  if (!is.null(ht) && !is.null(k <- utils::gethash(ht, d)))
+  u = asNamespace('utils')
+  ht = if (is.function(u$hashtab)) doc$lt_data %||% (doc$lt_data = u$hashtab('identical'))
+  if (!is.null(ht) && !is.null(k <- u$gethash(ht, d)))
     return(list(key = k, seen = TRUE))
   m = xfun::md5(d); reg = doc$lt_keys  # named: key = md5
   if (is.null(ht) && m %in% reg) return(list(key = names(reg)[match(m, reg)], seen = TRUE))
@@ -138,7 +139,7 @@ data_key = function(d) {
   n = 1L
   while ((k <- substr(m, 1, n)) %in% names(reg)) n = n + 1L
   doc$lt_keys = c(reg, structure(m, names = k))
-  if (!is.null(ht)) utils::sethash(ht, d, k)
+  if (!is.null(ht)) u$sethash(ht, d, k)
   list(key = k, seen = FALSE)
 }
 
