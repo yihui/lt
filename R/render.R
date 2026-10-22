@@ -144,7 +144,7 @@ data_key = function(d) {
 
 # Per-table block: queue the spec with a reference to the current script;
 # runtime drains the queue on load. With `share`, data repeated across tables
-# is encoded once into LT.d and referenced by key.
+# is encoded once into LT.d and referenced by `data_key`.
 spec_block = function(x, share = FALSE) {
   x = lt_spec(x)
   d = NULL
@@ -153,7 +153,7 @@ spec_block = function(x, share = FALSE) {
       sprintf('<script>((window.LT=window.LT||{}).d=window.LT.d||{})["%s"]=', k$key),
       inline_safe(xfun::tojson(x$data)), '</script>'
     )
-    x$data = k$key
+    x$data = NULL; x$data_key = k$key
   }
   c(
     d,

@@ -784,10 +784,10 @@
     return tbl;
   };
 
-  // `data` may be a key into LT.d (data shared across tables); shallow-copy
-  // so per-table column changes don't leak into the shared store.
+  // `data_key` names data shared across tables in LT.d; shallow-copy so
+  // per-table column changes don't leak into the shared store.
   const store = root.LT?.d || {}, mount = (s, spec) => {
-    if (typeof spec.data == "string") spec.data = {...store[spec.data]};
+    if (spec.data_key) spec.data = {...store[spec.data_key]};
     s.insertAdjacentHTML("afterend", buildHtml(spec));
     ready($(s.nextElementSibling, "table"), spec);
   };

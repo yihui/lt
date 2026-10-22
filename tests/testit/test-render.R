@@ -193,8 +193,8 @@ assert("tidy_html() indents block tags and keeps rows on one line", {
 share_show = function(dir, f) {
   out = litedown::fuse(file.path(dir, f), 'markdown', envir = environment(), quiet = TRUE)
   x = unlist(strsplit(out, '\n'))
-  x = x[grepl('LT.d||', x, fixed = TRUE) | grepl('^ *"data": ', x)]
-  ifelse(grepl('LT.d||', x, fixed = TRUE), 'def', ifelse(grepl('"data": *"', x), 'ref', 'inline'))
+  x = x[grepl('LT.d||', x, fixed = TRUE) | grepl('^ *"data(_key)?": ', x)]
+  ifelse(grepl('LT.d||', x, fixed = TRUE), 'def', ifelse(grepl('"data_key"', x), 'ref', 'inline'))
 }
 
 # needs litedown's document-level store (.env$doc)
