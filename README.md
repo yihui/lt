@@ -7,6 +7,7 @@
 [![lt on r-universe](https://yihui.r-universe.dev/badges/lt)](https://yihui.r-universe.dev/lt)
 [![lt.min.js size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js?compression=gzip&label=lt.min.js%20gzip)](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)
 
+[![Build site](https://github.com/yihui/lt/actions/workflows/litedown-site.yml/badge.svg)](https://github.com/yihui/lt/actions/workflows/litedown-site.yml)
 <!-- badges: end -->
 
 Lightweight tables for R, inspired by [**gt**](https://gt.rstudio.com) and
