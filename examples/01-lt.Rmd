@@ -95,7 +95,7 @@ tbl_cheat = lt(d, auto_format = FALSE) |>
     "column", "Eff") |>
   # lt_note(): the footer note names itself and lt_export()
   lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG.")
-tbl_cheat
+tbl_cheat |> lt_wrap(class = "fullwidth")
 ```
 
 ## Basics
@@ -784,7 +784,7 @@ extension: `.html`, `.pdf`, or (otherwise) `.png`. PDF and PNG are rendered in
 a headless Chromium browser.
 
 ```{r, eval = can_export}
-lt_export(tbl_cheat, "01-lt.png", width = 1000)
+lt_export(tbl_cheat, "01-lt.png")
 ```
 
 :::: {#fig:lt-png .figure}
