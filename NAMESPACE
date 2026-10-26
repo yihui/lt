@@ -36,6 +36,7 @@ export(lt_update)
 export(lt_width)
 export(lt_wrap)
 export(render_lt)
+export(view_lt)
 importFrom(xfun,
   js,
   record_print
