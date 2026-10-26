@@ -784,7 +784,7 @@ extension: `.html`, `.pdf`, or (otherwise) `.png`. PDF and PNG are rendered in
 a headless Chromium browser.
 
 ```{r, eval = can_export}
-lt_export(tbl_cheat, "01-lt.png")
+lt_export(tbl_cheat, "01-lt.png", width = "min-content")
 ```
 
 :::: {#fig:lt-png .figure}

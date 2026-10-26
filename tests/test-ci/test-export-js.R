@@ -105,6 +105,19 @@ if (xfun::loadable("magick"))
     (magick::image_info(magick::image_read(png))$width %==% 400L)
   })
 
+# "min-content" wraps text to the narrowest width that still shows the table.
+if (xfun::loadable("magick"))
+  assert("lt_export() accepts width = 'min-content'", {
+    x = lt(data.frame(a = "alpha beta gamma delta epsilon zeta eta theta"))
+    w = function(...) {
+      png = tempfile(fileext = ".png")
+      on.exit(unlink(png))
+      lt_export(x, png, ...)
+      magick::image_info(magick::image_read(png))$width
+    }
+    (w(width = "min-content") < w())
+  })
+
 # .html output bakes a static table via lt_static().
 if (can_bake())
   assert("lt_export() writes a static HTML file", {

@@ -438,7 +438,8 @@ with_temp_html = function(html, fun) {
 crop_layout = function(pad, width = NULL) sprintf(paste0(
   'html,body{margin:0!important}',
   'body{box-sizing:border-box;padding:%dpx %dpx!important;width:%s}'
-), pad[1L], pad[2L], if (is.null(width)) 'max-content' else paste0(width, 'px'))
+), pad[1L], pad[2L], if (is.null(width)) 'max-content' else
+  if (is.character(width)) width else paste0(width, 'px'))
 
 # Measure the rendered table's full pixel size (including crop padding).
 # Chromium runs lt.js, so the box is known only after JS builds the table:
@@ -508,9 +509,11 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #'   measure the rendered table. Set to `FALSE` for the default full page.
 #'   Cropping PNG output requires the \pkg{magick} package; without it, PNG
 #'   falls back to the full page (with a warning).
-#' @param width The width of the table in CSS pixels. By default (`NULL`) it
-#'   shrinks to the table's natural width. A smaller `width` wraps cell
-#'   content; a larger one pads the table.
+#' @param width The width of the table: a number of CSS pixels, or a CSS width
+#'   string such as `"min-content"`. By default (`NULL`) it shrinks to the
+#'   table's natural width. A smaller `width` wraps cell content; a larger one
+#'   pads the table. `"min-content"` gives the narrowest width that still
+#'   shows every column, wrapping cell text wherever possible.
 #' @param padding Padding in CSS pixels to keep around the table when
 #'   cropping. A single value (all sides) or a length-two vector
 #'   `c(vertical, horizontal)`.
@@ -585,7 +588,7 @@ lt_export = function(
   # width); `w`/`h` are the outer box including padding.
   if (crop || !is.null(width)) {
     d = lt_measure(html, pad, width, browser)
-    w = width %||% d[1L]; h = d[2L]
+    w = if (is.numeric(width)) width else d[1L]; h = d[2L]
     layout = crop_layout(pad, w)
   }
   if (crop && is_pdf) {

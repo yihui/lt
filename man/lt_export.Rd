@@ -46,9 +46,11 @@ measure the rendered table. Set to \code{FALSE} for the default full page.
 Cropping PNG output requires the \pkg{magick} package; without it, PNG
 falls back to the full page (with a warning).}
 
-\item{width}{The width of the table in CSS pixels. By default (\code{NULL}) it
-shrinks to the table's natural width. A smaller \code{width} wraps cell
-content; a larger one pads the table.}
+\item{width}{The width of the table: a number of CSS pixels, or a CSS width
+string such as \code{"min-content"}. By default (\code{NULL}) it shrinks to the
+table's natural width. A smaller \code{width} wraps cell content; a larger one
+pads the table. \code{"min-content"} gives the narrowest width that still
+shows every column, wrapping cell text wherever possible.}
 
 \item{padding}{Padding in CSS pixels to keep around the table when
 cropping. A single value (all sides) or a length-two vector
