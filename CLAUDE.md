@@ -162,7 +162,7 @@ comes from the bullet structure, not from wrapping.
 
 When a change affects rendered HTML/JS, confirm it in a headless browser before
 reporting it done — the `tests/test-ci/helper.R` helpers (`lti_eval`,
-`lti_rows`) drive one, or use `chromote` / `xfun::browser_dom()`. Check that the
+`lti_rows`) drive one, or use `xfun::browser_session()` (one shared Chrome). Check that the
 actual DOM is right, not just that the source matches.
 
 `lti_eval(x, expr, js)` wraps `expr` in `(...)` to stamp it on `<body>`, so

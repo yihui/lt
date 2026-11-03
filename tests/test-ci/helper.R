@@ -80,31 +80,13 @@ by = function(...) list(sort = list(...))
 # End-to-end in a headless browser: the extension must find the table lt.js
 # already mounted, wire the controls, and re-render <tbody> on interaction.
 
-# One headless Chrome shared across probes (navigate per call). Created lazily,
-# closed on R exit. Falls back to one-shot dump without chromote.
+# One headless Chrome shared across probes (navigated per call). Created
+# lazily; xfun closes it when the session is garbage-collected or R exits.
 .browser = new.env(parent = emptyenv())
 
+# the shared session; same window size chromote used to default to
 lti_session = function() {
-  if (is.null(.browser$b)) {
-    # private temp dir so Chrome's scratch files (com.google.Chrome.*) are
-    # deleted with it, not left to trip R CMD check's detritus NOTE (xfun's
-    # browser helpers don't cover chromote)
-    .browser$tmp = tempfile('lt-chrome-'); dir.create(.browser$tmp)
-    old = xfun::set_envvar(c(TMPDIR = .browser$tmp))
-    .browser$b = chromote::ChromoteSession$new()
-    xfun::set_envvar(old)
-    # page errors, so a probe that never arrives can say why
-    .browser$errs = character()
-    .browser$b$Runtime$enable()
-    .browser$b$Runtime$exceptionThrown(function(e) {
-      d = e$exceptionDetails
-      .browser$errs = c(.browser$errs, d$exception$description %||% d$text)
-    })
-    reg.finalizer(.browser, function(e) {
-      try(e$b$close(), silent = TRUE)
-      unlink(e$tmp, recursive = TRUE, force = TRUE)
-    }, onexit = TRUE)
-  }
+  if (is.null(.browser$b)) .browser$b = xfun::browser_session(size = c(992, 1323))
   .browser$b
 }
 
@@ -112,31 +94,8 @@ lti_session = function() {
 # mistaken for "not loaded yet"
 lti_eval_cdp = function(f) {
   b = lti_session()
-  .browser$errs = character()
-  b$Page$navigate(paste0('file://', normalizePath(f)), wait_ = FALSE)
-  probe = 'document.body.dataset.ready === "1" ? (document.body.dataset.out ?? "") : null'
-  for (i in 1:2000) {
-    v = tryCatch(b$Runtime$evaluate(probe)$result$value, error = function(e) NULL)
-    if (!is.null(v)) return(v)
-    Sys.sleep(0.005)
-  }
-  state = tryCatch(b$Runtime$evaluate(
-    'document.readyState + " ready=" + document.body?.dataset.ready'
-  )$result$value, error = function(e) conditionMessage(e))
-  stop(
-    'failed to read the probe value from the browser (', state, ')',
-    if (length(.browser$errs)) paste0('\npage errors:\n', paste(.browser$errs, collapse = '\n'))
-  )
-}
-
-lti_eval_dump = function(f) {
-  dom = xfun::browser_dom(f)
-  m = regmatches(dom, regexec('data-out="([^"]*)"', dom))[[1]]
-  if (length(m) != 2L) stop(
-    'failed to read the probe value from the browser; <body>: ',
-    regmatches(dom, regexpr('<body[^>]*>', dom))
-  )
-  m[2]
+  b$open(f, wait = 'document.body.dataset.ready === "1"')
+  b$eval('document.body.dataset.out ?? ""')
 }
 
 # Render `x`, run `js` after load (table element bound to `t`), then read `expr`
@@ -154,7 +113,7 @@ lti_eval = function(x, expr, js = '') {
   on.exit(unlink(f), add = TRUE)
   xfun::write_utf8(html, f)
   # the full document, not a fragment: the value is stamped on <body> itself
-  if (xfun::loadable('chromote')) lti_eval_cdp(f) else lti_eval_dump(f)
+  lti_eval_cdp(f)
 }
 
 # the first-column text of each rendered body row, in rendered order

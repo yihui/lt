@@ -247,7 +247,7 @@ assert("an auto-fit plot tracks a column-only width change (browser)", {
   ), format(x, fragment = FALSE), fixed = TRUE)
   f = tempfile(fileext = '.html'); on.exit(unlink(f), add = TRUE)
   xfun::write_utf8(html, f)
-  out = if (xfun::loadable('chromote')) lti_eval_cdp(f) else lti_eval_dump(f)
+  out = lti_eval_cdp(f)
   v = as.integer(strsplit(out, ",", fixed = TRUE)[[1]])
   (v[1] > 250)       # started wide (320px column)
   (v[2] < v[1])      # refit narrower after column shrank
@@ -297,7 +297,7 @@ assert("a plot refit keeps the current page, not resetting to the first (browser
   ), format(x, fragment = FALSE), fixed = TRUE)
   f = tempfile(fileext = '.html'); on.exit(unlink(f), add = TRUE)
   xfun::write_utf8(html, f)
-  out = if (xfun::loadable('chromote')) lti_eval_cdp(f) else lti_eval_dump(f)
+  out = lti_eval_cdp(f)
   (out %==% "DEF")  # still page 2, not reset to "ABC"
 })
 
