@@ -1,4 +1,4 @@
-# Claude Instructions
+# Agent Instructions
 
 ## Testing locally with litedown::fuse()
 
@@ -171,6 +171,17 @@ declarations, assignments) belongs in the `js` argument, which runs before it.
 Putting statements in `expr` makes `(var c = ...)` a syntax error: the load
 handler never runs, nothing is stamped, and the test fails only as a probe
 timeout (`failed to read the probe value from the browser`), not a clear error.
+
+### Site groups
+
+The manual and examples pages of the site are grouped in `site/_litedown.yml`
+(fields `manual` and `examples` under `site`). When you add a new exported
+function (help page), add its topic to a group under `manual`; when you add a
+new file under `examples/`, add it to a group under `examples` by its number
+prefix (e.g., `"04-*"`), or create a new group if none fits. Items that do not
+belong to any group are put in an `Other` group, and a name in the config that
+matches nothing is an error, so also update the config when you rename or
+delete a function or an example.
 
 ### Git workflow
 
