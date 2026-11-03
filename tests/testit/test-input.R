@@ -1,9 +1,9 @@
 d = data.frame(a = c(1, 2), b = c('x', 'y'))
 
 assert('input_spec() marks editable columns, default all', {
-  (has_match(input_spec(d), '"input": \\["a", "b"\\]'))
-  (has_match(input_spec(d, 'b'), '"input": \\["b"\\]'))
-  (has_match(input_spec(d, ~ a), '"input": \\["a"\\]'))
+  (has_match(input_spec(d), I('"input": ["a", "b"]')))
+  (has_match(input_spec(d, 'b'), I('"input": ["b"]')))
+  (has_match(input_spec(d, ~ a), I('"input": ["a"]')))
 })
 
 assert('input_spec() rejects interactive tables', {

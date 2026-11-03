@@ -13,7 +13,7 @@ assert("format(fragment = FALSE) wraps in DOCTYPE", {
 assert("format(assets = FALSE) omits runtime", {
   html = unclass(format(x, assets = FALSE))
   (has_match(html, "<style>", negate = TRUE))
-  (has_match(html, "LT\\.build", negate = TRUE))
+  (has_match(html, !I("LT.build")))
   (has_match(html, "<script>"))
 })
 
@@ -61,8 +61,8 @@ assert("lt_sparkline() records a sparkline op and hides extra columns", {
 })
 
 assert("inline_safe() escapes </script in content", {
-  (has_match(inline_safe("x</script>y"), "<\\\\/script"))
-  (has_match(inline_safe("x</SCRIPT>y"), "<\\\\/SCRIPT"))
+  (has_match(inline_safe("x</script>y"), I("<\\/script")))
+  (has_match(inline_safe("x</SCRIPT>y"), I("<\\/SCRIPT")))
   # other tags unchanged
   (inline_safe("x</div>y") %==% "x</div>y")
 })

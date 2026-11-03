@@ -51,16 +51,16 @@ assert("the filter and pagination options reach the client spec", {
   # column vector boxes just those columns: each maps to `true` under `cols`
   (has_match(json, '"filter": \\{\\s*"cols": \\{\\s*"y": true'))
   # page sizes keep given order: first is initial size
-  (has_match(json, '"pager": \\[20, 5\\]'))
+  (has_match(json, I('"pager": [20, 5]')))
   # single size still serializes as array
-  (has_match(format(lt(d) |> lt_interactive(pager = 5), assets = FALSE), '"pager": \\[5\\]'))
+  (has_match(format(lt(d) |> lt_interactive(pager = 5), assets = FALSE), I('"pager": [5]')))
   # Inf (every row on one page) travels as 0, which runtime reads as such
-  (has_match(format(lt(d) |> lt_interactive(pager = c(5, Inf)), assets = FALSE), '"pager": \\[5, 0\\]'))
+  (has_match(format(lt(d) |> lt_interactive(pager = c(5, Inf)), assets = FALSE), I('"pager": [5, 0]')))
   # filtering every column needs no column list: just default box
   (has_match(format(lt(d) |> lt_interactive(filter = TRUE), assets = FALSE), '"filter": \\{\\s*"default": true\\s*\\}'))
   # paging is on by default; filtering is not
   json = format(lt(d) |> lt_interactive(), assets = FALSE)
-  (has_match(json, '"pager": \\[10, 25, 50, 100\\]'))
+  (has_match(json, I('"pager": [10, 25, 50, 100]')))
   (has_match(json, !'filter'))
   # both can be turned off
   json = format(lt(d) |> lt_interactive(pager = FALSE), assets = FALSE)
@@ -76,16 +76,16 @@ assert("a typed filter spec reaches the client with its options", {
   (has_match(json, '"type": "checklist"'))
   (has_match(json, '"label": "Y"'))
   (has_match(json, '"choices": \\[\\s*\\{\\s*"value": "a",\\s*"label": "a"'))
-  (has_match(json, '"selected": \\["a"\\]'))
+  (has_match(json, I('"selected": ["a"]')))
 })
 
 assert("a default sort reaches the client spec as ordered name keys", {
   # names travel as-is, keeping '-' prefix; client parses it
   json = format(lt(d) |> lt_interactive(sort = c('x', '-y')), assets = FALSE)
-  (has_match(json, '"sort": \\["x", "-y"\\]'))
+  (has_match(json, I('"sort": ["x", "-y"]')))
   # one-sided formula is equivalent way to spell same keys
-  (has_match(format(lt(d) |> lt_interactive(sort = ~ x + -y), assets = FALSE), '"sort": \\["x", "-y"\\]'))
-  (has_match(format(lt(d) |> lt_interactive(sort = ~ x - y), assets = FALSE), '"sort": \\["x", "-y"\\]'))
+  (has_match(format(lt(d) |> lt_interactive(sort = ~ x + -y), assets = FALSE), I('"sort": ["x", "-y"]')))
+  (has_match(format(lt(d) |> lt_interactive(sort = ~ x - y), assets = FALSE), I('"sort": ["x", "-y"]')))
   # logical passes through unchanged (enable/disable click-to-sort)
   (has_match(format(lt(d) |> lt_interactive(), assets = FALSE), '"sort": true'))
   (has_match(format(lt(d) |> lt_interactive(sort = FALSE), assets = FALSE), '"sort": false'))

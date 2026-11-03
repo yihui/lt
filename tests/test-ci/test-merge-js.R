@@ -5,7 +5,7 @@ assert("merge with pattern", {
     data = list(a = "x", b = "y"),
     ops = list(list(type = "merge", columns = list("a", "b"), pattern = "{1} ({2})", hide = TRUE))
   ))
-  (has_match(html, '>x \\(y\\)</td>'))
+  (has_match(html, I('>x (y)</td>')))
 })
 
 assert("merge drops a conditional block when its references are empty", {
@@ -16,5 +16,5 @@ assert("merge drops a conditional block when its references are empty", {
                     pattern = "{1}<<({2}/{3})>>"))
   ))
   (has_match(html, ">x</td>"))
-  (has_match(html, !"\\(/\\)"))
+  (has_match(html, !I("(/)")))
 })
