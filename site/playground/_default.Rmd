@@ -1,0 +1,82 @@
+---
+title: Hello lt
+---
+
+**lt** turns a data frame into a good-looking table. Run the code below to see
+it, then change it to try your own data.
+
+## A publication-style table
+
+Start with `lt()`, then pipe in `lt_*()` functions to add a header, group rows,
+span columns, format numbers, and attach footnotes.
+
+```{r}
+library(lt)
+
+d = data.frame(
+  Group = c("Treatment", "Treatment", "Control", "Control"),
+  Endpoint = c("Primary", "Secondary", "Primary", "Secondary"),
+  Estimate = c(0.6123, 0.7891, 0.4567, 0.5432),
+  CI_Lower = c(0.4012, 0.5678, 0.2345, 0.3210),
+  CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
+  P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
+)
+lt(d) |>
+  lt_group(~ Group) |>
+  lt_header("Study Results", "Primary and secondary endpoints") |>
+  lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |>
+  lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |>
+  lt_format(~ P_Value, decimals = 4) |>
+  lt_footnote("Two-sided p-value from log-rank test.", "column", ~ P_Value)
+```
+
+## Interactive tables
+
+Add `lt_interactive()` to sort by clicking a header (shift-click for several
+columns), search, page, and resize columns. With `filter = 'auto'`, each column
+gets a widget that fits its data: sliders for numbers and checklists for
+categories.
+
+```{r}
+lt(penguins) |> lt_interactive(filter = 'auto', pager = c(10, 20, Inf))
+```
+
+Rows can also expand to reveal more fields, and columns can be toggled.
+
+```{r}
+lt(head(mtcars, 10)) |>
+  lt_hide(~ gear + carb) |>
+  lt_interactive(detail = ~ gear + carb, hide = TRUE, sort = ~ cyl + -mpg)
+```
+
+## Plots in cells
+
+Error bars, sparklines, and dot plots are drawn as tiny SVGs in the browser,
+so a table can double as a chart. Here is a forest plot:
+
+```{r}
+f = data.frame(
+  Subgroup = c("Overall", "Age < 65", "Age >= 65", "Female", "Male"),
+  HR = c(0.82, 0.75, 0.91, 0.70, 0.95),
+  Lower = c(0.70, 0.58, 0.72, 0.53, 0.76),
+  Upper = c(0.96, 0.97, 1.15, 0.92, 1.19)
+)
+lt(f) |>
+  lt_format(~ HR + Lower + Upper, decimals = 2) |>
+  lt_errorbar(HR ~ Lower + Upper, into = "Forest", hide = FALSE,
+    ref = 1, width = "100%", axis = "Hazard ratio")
+```
+
+Sparklines show a trend per row, and dot plots compare values across columns:
+
+```{r}
+s = data.frame(city = c("Oslo", "Cairo", "Lima"))
+s$temp = list(c(-4, -3, 2, 7, 13, 17), c(14, 16, 20, 25, 30, 33),
+  c(22, 23, 22, 20, 18, 17))
+lt(s) |> lt_sparkline(~ temp, type = "bar")
+
+p = data.frame(arm = c("A", "B", "C"), before = c(3, 5, 4), after = c(6, 7, 5))
+lt(p) |> lt_dotplot(~ before + after, color = TRUE, labels = c("Baseline", "Follow-up"))
+```
+
+Learn more at <https://pkg.yihui.org/lt/>.

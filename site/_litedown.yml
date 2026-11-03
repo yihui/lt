@@ -1,0 +1,37 @@
+site:
+  manual:
+    Build tables:
+      desc: Create a table and add titles, spanners, row groups, notes, and layout.
+      contents: [lt, lt_header, lt_spanner, lt_group, lt_footnote, lt_note, lt_indent, lt_merge, lt_move, lt_hide]
+    Format cells:
+      desc: Format values, dates, and labels, and align and size columns.
+      contents: [lt_format, lt_date, lt_label, lt_html, lt_sub, lt_align, lt_width]
+    Style tables:
+      desc: Style cells and wrap or theme the table with CSS.
+      contents: [lt_style, lt_css, lt_wrap]
+    Inline graphics:
+      desc: Draw error bars, sparklines, and dot plots inside cells.
+      contents: [lt_errorbar, lt_sparkline, lt_dotplot]
+    Interactivity:
+      desc: Sort, search, filter, page, resize, and drill down in the browser.
+      contents: [lt_interactive]
+    Output and export:
+      desc: Print, serialize, and export tables as HTML, images, or PDF.
+      contents: [print.lt_tbl, format.lt_tbl, lt_spec, lt_export]
+    Shiny:
+      desc: Use lt tables as Shiny outputs and inputs.
+      contents: [lt_output, lt_dependency]
+  examples:
+    Get started:
+      desc: An overview of lt and migrating from gt.
+      contents: ["01-*", "03-*"]
+    JavaScript:
+      desc: Use the lt.js runtime directly.
+      contents: ["02-*"]
+
+output:
+  html:
+    meta:
+      include_after: "_footer.md"
+    options:
+      number_sections: true

@@ -2,7 +2,7 @@
 #
 # Publish lt's JS/CSS assets to npm via the lite.js (@xiee/utils) repo.
 #
-# Steps (mirrors the "Publish lt to npm" section of CLAUDE.md):
+# Steps (mirrors the "Publish lt to npm" section of AGENTS.md):
 #   1. Ensure ../lite.js exists (clone it if missing); pull --rebase first, so
 #      the sync happens on a clean tree before any asset is copied in.
 #   2. Copy lt's assets from inst/www into lite.js.
