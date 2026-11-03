@@ -183,6 +183,12 @@ belong to any group are put in an `Other` group, and a name in the config that
 matches nothing is an error, so also update the config when you rename or
 delete a function or an example.
 
+Manual names are Rd topic names (the `\name{}`, not an alias), and only
+non-internal topics appear on the site. Do not list a topic that is
+`@keywords internal` (e.g., `lt-package`, `reexports`): the build fails. Check
+each name against `man/` before committing, since litedown stops at the first
+miss.
+
 ### Git workflow
 
 1.  **Never force push** unless explicitly told to.
