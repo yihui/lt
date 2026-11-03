@@ -115,18 +115,19 @@ assert("the table pre-sizes to its first row detail so expanding does not jump",
   f = tempfile(fileext = '.html'); on.exit(unlink(f), add = TRUE)
   xfun::write_utf8(format(x, fragment = FALSE), f)
   b = lti_session()
-  b$Page$navigate(paste0('file://', normalizePath(f)), wait_ = FALSE)
-  ev = function(e) tryCatch(b$Runtime$evaluate(e)$result$value, error = function(.) NULL)
+  b$open(f)
+  ev = function(e) tryCatch(b$eval(e), error = function(.) NULL)
+  num = function(e) as.numeric(ev(e))
   # poll until pre-size has set an explicit width (sized via `width`, not min-width)
   w = ''
   for (i in 1:2000) { w = ev('(document.querySelector(".lt-table")||{style:{}}).style.width || ""')
     if (nzchar(w)) break; Sys.sleep(0.005) }
   (nzchar(w) %==% TRUE)
-  (ev('(document.querySelector(".lt-table").style.minWidth || "") === ""') %==% TRUE)
+  (ev('(document.querySelector(".lt-table").style.minWidth || "") === ""') %==% 'true')
   # expanding the first row does not change the (already pre-sized) table width
-  before = ev('Math.round(document.querySelector(".lt-table").getBoundingClientRect().width)')
+  before = num('Math.round(document.querySelector(".lt-table").getBoundingClientRect().width)')
   ev('t = document.querySelector(".lt-table"); t.querySelectorAll("tbody .lti-expand")[0].click()')
-  after = ev('Math.round(document.querySelector(".lt-table").getBoundingClientRect().width)')
+  after = num('Math.round(document.querySelector(".lt-table").getBoundingClientRect().width)')
   (abs(before - after) <= 1)
 })
 
@@ -139,19 +140,20 @@ assert("a later, wider detail grows the table width when first opened", {
   f = tempfile(fileext = '.html'); on.exit(unlink(f), add = TRUE)
   xfun::write_utf8(format(x, fragment = FALSE), f)
   b = lti_session()
-  b$Page$navigate(paste0('file://', normalizePath(f)), wait_ = FALSE)
-  ev = function(e) tryCatch(b$Runtime$evaluate(e)$result$value, error = function(.) NULL)
+  b$open(f)
+  ev = function(e) tryCatch(b$eval(e), error = function(.) NULL)
+  num = function(e) as.numeric(ev(e))
   width = 'Math.round(document.querySelector(".lt-table").getBoundingClientRect().width)'
   # wait until presize has run (it builds the first row's detail, kept hidden)
-  for (i in 1:2000) { if (isTRUE(ev('!!document.querySelector(".lti-detail")'))) break
+  for (i in 1:2000) { if (identical(ev('!!document.querySelector(".lti-detail")'), 'true')) break
     Sys.sleep(0.005) }
-  base = ev(width)
+  base = num(width)
   # open the second row (Nausea), whose detail is far wider -> the table grows
   ev('t = document.querySelector(".lt-table"); t.querySelectorAll("tbody .lti-expand")[1].click()')
-  wide = ev(width)
+  wide = num(width)
   (wide > base)
   # close and reopen it: now the width is pinned, so it does not jump
   ev('t.querySelectorAll("tbody .lti-expand")[1].click()')
   ev('t.querySelectorAll("tbody .lti-expand")[1].click()')
-  (abs(ev(width) - wide) <= 1)
+  (abs(num(width) - wide) <= 1)
 })
