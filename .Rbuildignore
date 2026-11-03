@@ -3,9 +3,9 @@
 ^\.github$
 ^\.git$
 ^README\.Rmd$
-^CLAUDE\.md$
+^AGENTS\.md$
 ^LICENSE\.md$
 ^examples$
-^playground$
+^site$
 ^\.claude$
 ^tools$
