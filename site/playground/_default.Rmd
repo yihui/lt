@@ -2,10 +2,8 @@
 title: Hello lt
 ---
 
-**lt** turns a data frame into a lightweight HTML table: no sass, no V8, no
-htmltools, just base R and [xfun](https://github.com/yihui/xfun). Edit this
-R Markdown on the left and click **Run** (or press Ctrl/Cmd + Shift + Enter)
-to see the output on the right.
+**lt** turns a data frame into a good-looking table. Run the code below to see
+it, then change it to try your own data.
 
 ## A publication-style table
 
