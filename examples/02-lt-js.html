@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.141/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.6</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.7</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -102,12 +102,12 @@
 </li>
 </ul>
 </nav>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.120/css/lt.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.120/css/lt-plot.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.120/css/lt-interactive.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.120/js/lt-plot.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.120/js/lt.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.120/js/lt-interactive.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.142/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.142/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.142/css/lt-interactive.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.142/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.142/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.142/js/lt-interactive.min.js" defer></script>
 <p>This document demonstrates the lt.js runtime directly from JavaScript.
 Each example shows a JSON spec and renders the table with <code>LT.build()</code>.</p>
 <h2 id="sec:including-lt-js"><span class="section-number main-number">1</span> Including lt.js</h2>
@@ -1296,7 +1296,10 @@ popover of checkboxes (choices / ends read from the column data, or set
 explicitly with <code>choices</code> / <code>min</code>+<code>max</code>; <code>selected</code> seeds the dropdown’s
 value or the checklist’s checked set). A <code>&quot;select&quot;</code> keeps the one chosen
 value, a <code>&quot;checklist&quot;</code> keeps every checked value (all checked = no
-filter). So <code>{ default: true }</code> boxes every column, <code>{ cols: { mpg: true } }</code> boxes one, and <code>{ cols: { cyl: { type: &quot;select&quot; } } }</code> gives <code>cyl</code> a
+filter). <code>{ type: &quot;auto&quot; }</code> picks the control from the column’s data: a
+slider for numbers (a plain box if constant), a checklist for strings with
+at most 10 distinct values, a plain box otherwise. So <code>{ default: true }</code>
+boxes every column, <code>{ cols: { mpg: true } }</code> boxes one, and <code>{ cols: { cyl: { type: &quot;select&quot; } } }</code> gives <code>cyl</code> a
 dropdown;</li>
 <li><code>pager</code>: the page sizes to offer, as an array whose first element is
 the initial size; <code>0</code> means every row on one page. Omit the field for
@@ -1362,6 +1365,17 @@ here <code>gear</code> is hidden yet still filterable through its chip.</p>
       gear: { type: "select" }
     } }
   }
+});</script>
+<p>With <code>{ type: &quot;auto&quot; }</code> as the default, each column gets the control that suits
+its data: a slider for the numeric columns and a checklist for <code>Species</code>.</p>
+<pre><code class="language-js">LT.build({
+  data: iris,
+  interactive: { search: false, pager: 5, filter: { default: { type: &quot;auto&quot; } } }
+});
+</code></pre>
+<script>LT.build({
+  data: iris,
+  interactive: { search: false, pager: 5, filter: { default: { type: "auto" } } }
 });</script>
 <p>A <code>&quot;range&quot;</code> slider has two thumbs, for the low and high ends. Drag a thumb to
 move it: the readout tracks it live, but the filter is applied only on release,

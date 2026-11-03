@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.141/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.6</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.7</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -931,6 +931,16 @@ dropdown's and checklist's choices and the slider's ends are read from the
 column's data. The control renders as a funnel under the header, paired
 with an expression box that stays in sync. One *unnamed* entry is the
 default for every other column.
+
+`filter = &quot;auto&quot;` chooses the control for each column from its data: a
+range slider for numbers (a plain box when every value is the same), a
+checklist for text with at most 10 distinct values, and a plain box for
+anything else. It can also be the unnamed default in a list, so
+`list(&quot;auto&quot;, cyl = &quot;select&quot;)` overrides just `cyl`.
+
+```{r}
+lt(iris) |&gt; lt_interactive(filter = &quot;auto&quot;, search = FALSE, pager = 5)
+```
 
 A `&quot;select&quot;` keeps the one value chosen; a `&quot;checklist&quot;` keeps every value
 whose box is checked (all checked is the no-filter state), so the reader
@@ -2060,7 +2070,10 @@ optional:
   explicitly with `choices` / `min`+`max`; `selected` seeds the dropdown's
   value or the checklist's checked set). A `&quot;select&quot;` keeps the one chosen
   value, a `&quot;checklist&quot;` keeps every checked value (all checked = no
-  filter). So `{ default: true }` boxes every column, `{ cols: { mpg: true
+  filter). `{ type: &quot;auto&quot; }` picks the control from the column's data: a
+  slider for numbers (a plain box if constant), a checklist for strings with
+  at most 10 distinct values, a plain box otherwise. So `{ default: true }`
+  boxes every column, `{ cols: { mpg: true
   } }` boxes one, and `{ cols: { cyl: { type: &quot;select&quot; } } }` gives `cyl` a
   dropdown;
 - `pager`: the page sizes to offer, as an array whose first element is
@@ -2117,6 +2130,16 @@ LT.build({
       gear: { type: &quot;select&quot; }
     } }
   }
+});
+```
+
+With `{ type: &quot;auto&quot; }` as the default, each column gets the control that suits
+its data: a slider for the numeric columns and a checklist for `Species`.
+
+```{js}
+LT.build({
+  data: iris,
+  interactive: { search: false, pager: 5, filter: { default: { type: &quot;auto&quot; } } }
 });
 ```
 
