@@ -28,7 +28,7 @@ assert("fmt_number formats significant digits across magnitudes", {
     data = list(x = -0.0042857),
     ops = list(list(type = "fmt_number", columns = list("x"), sig_digits = 2))
   ))
-  (has_match(html, ">−0\\.0043</td>"))
+  (has_match(html, I(">−0.0043</td>")))
 })
 
 assert("auto-format picks decimals from value width", {

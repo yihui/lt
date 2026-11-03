@@ -16,7 +16,7 @@ assert("_viewRows sets tbody row order and subset", {
   # original row indices (order + subset), not all rows.
   html = build(list(data = list(x = c(10, 20, 30)), `_viewRows` = c(3L, 1L)))
   (has_match(html, ">30</td>.*>10</td>"))
-  (grepl(">20<", html) %==% FALSE)
+  (has_match(html, !">20<"))
   # row-indexed styles stay keyed to original index after reordering
   html = build(list(
     data = list(x = c(10, 20, 30)), `_viewRows` = c(3L, 1L),
