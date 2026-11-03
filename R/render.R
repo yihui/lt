@@ -1,9 +1,8 @@
 # Rendering: turn an lt_tbl into HTML.
 #
-# Strategy: emit a <script> block that pushes a JSON spec (raw data +
-# declarative ops) onto LT.q. The JS runtime (lt.js) applies ops
-# (format, sub, merge, etc.) to the raw data and renders the <table>.
-# One runtime per page renders any number of tables.
+# Strategy: emit a <script> that pushes a JSON spec (raw data + declarative
+# ops) onto LT.q. The JS runtime (lt.js) applies ops (format, sub, merge, etc.)
+# and renders the <table>. One runtime per page renders any number of tables.
 
 pkg_file = function(...) {
   system.file(..., package = 'lt', mustWork = TRUE)
@@ -33,42 +32,38 @@ asset_url = function(file) {
   )
 }
 
-# Op types rendered as inline graphics by the lt-plot.js module (error bars,
-# and later sparklines). A table using any of them needs that module's assets
-# (lt-plot.js, lt-plot.css) in addition to the core runtime.
+# Op types rendered as inline graphics by lt-plot.js (error bars, later
+# sparklines). Tables using any need that module's assets (lt-plot.js,
+# lt-plot.css) besides the core runtime.
 .plot_ops = c('errorbar', 'sparkline', 'dotplot')
 has_plot = function(x) any(vapply(
   x$ops, function(o) isTRUE(o$type %in% .plot_ops), logical(1)
 ))
 
-# Anything inlined inside a <script>...</script> wrapper must not contain
-# the literal sequence `</script` (case-insensitive) — the HTML parser
-# would end the script there. `<\/script` is harmless inside JS strings,
-# JSON, and comments. We do NOT touch other `</tag>` sequences: rewriting
-# them inside a JS regex literal (e.g. `/</g`) would break the regex.
-# lt.js itself uses `[<]` instead of `<` in its only HTML-escape regex
-# specifically so this minimal escape is sufficient.
+# Inlined <script> content must not contain `</script` (case-insensitive); the
+# HTML parser would end the script there. `<\/script` is harmless in JS strings,
+# JSON, and comments. Other `</tag>` sequences stay untouched: rewriting them
+# inside a JS regex literal (e.g. `/</g`) would break it. lt.js uses `[<]` in
+# its only HTML-escape regex so this minimal escape suffices.
 inline_safe = function(s) gsub(
   '</(script)', '<\\\\/\\1', s, perl = TRUE, ignore.case = TRUE
 )
 
-# Inline the CSS/JS runtime assets. `files` are file names under inst/www, so
-# the interactivity extension rides along for the tables that opt in. Emit once
-# per page; the runtime is idempotent if included twice, but the bytes are
-# wasteful — pass `inline = FALSE` for the linked form (litedown dedups
-# identical <link>/<script src> tags).
+# Inline CSS/JS runtime assets. `files` are names under inst/www, so the
+# interactivity extension rides along for opt-in tables. Emit once per page;
+# runtime is idempotent but repeats waste bytes. `inline = FALSE` gives linked
+# form (litedown dedups identical <link>/<script src> tags).
 css_block = function(files, inline = TRUE) {
   if (!length(files)) return()
   if (inline) c('<style>', unlist(lapply(files, read_asset)), '</style>')
   else sprintf('<link rel="stylesheet" href="%s">', vapply(files, asset_url, ''))
 }
 
-# User CSS path -> tag. URLs and relative paths become <link> (browser
-# dedups identical hrefs). Absolute paths are inlined as <style> by default
-# because file:// URLs only resolve on the client's local filesystem — which
-# breaks RStudio Server, Shiny Server, and any remote-render scenario. The
-# `local` flag opts into file:// for the record_print path, where litedown
-# inlines such files at document-assembly time.
+# User CSS path -> tag. URLs and relative paths become <link> (browser dedups
+# identical hrefs). Absolute paths are inlined as <style> by default: file://
+# only resolves on the client's filesystem, breaking RStudio Server, Shiny
+# Server, and remote renders. `local` opts into file:// for record_print, where
+# litedown inlines such files at assembly time.
 user_css_tag = function(p, local = FALSE) {
   if (is_url(p) || !xfun::is_abs_path(p))
     sprintf('<link rel="stylesheet" href="%s">', p)
@@ -86,8 +81,8 @@ rules_block = function(rules) {
   if (length(rules)) c('<style>.lt-table {', rules, '}</style>')
 }
 
-# Each asset gets its own <script>: they are separate top-level programs, and
-# `defer` keeps linked ones executing in document order (core before plugins).
+# One <script> per asset: separate top-level programs. `defer` keeps linked
+# ones in document order (core before plugins).
 js_block = function(files, inline = TRUE) {
   unlist(lapply(files, function(f) if (inline)
     c('<script>', inline_safe(read_asset(f)), '</script>')
@@ -115,32 +110,67 @@ js_block = function(files, inline = TRUE) {
 #' str(spec, max.level = 1)
 #' xfun::tojson(spec)  # ship this, then LT.render(container, spec) in the browser
 lt_spec = function(x) {
-  # Drop css/rules (emitted separately as <link>/<style>, or attached via
-  # lt_dependency()) and prep exactly as the render/queue paths expect.
+  # Drop css/rules (emitted separately as <link>/<style> or via
+  # lt_dependency()); prep as the render/queue paths expect.
   x$css = x$rules = NULL
   x = with_missing(with_col_order(x))
   x[lengths(x) > 0L]
 }
 
-# Per-table block: queue the spec with a reference to the current script.
-# The runtime drains the queue when it loads.
-spec_block = function(x) {
+# Inside a running litedown::fuse(), key a data frame (bigger than the
+# `lt.share_size` option, if set) and record it in the document-level store
+# (shared with child documents; fresh for each fuse() whose output isn't
+# included in its caller). Returns the key and whether it was already emitted,
+# or NULL when the data should be inlined.
+data_key = function(d) {
+  doc = if ('litedown' %in% loadedNamespaces()) litedown::get_context('doc')
+  if (!is.environment(doc)) return()
+  if (!is.null(size <- getOption('lt.share_size')) && utils::object.size(d) < size)
+    return()
+  # hashtab() (R >= 4.2) finds seen data faster than md5 and holds references
+  # (no copies); otherwise look up by md5
+  u = asNamespace('utils')
+  ht = if (is.function(u$hashtab)) doc$lt_data %||% (doc$lt_data = u$hashtab('identical'))
+  if (!is.null(ht) && !is.null(k <- u$gethash(ht, d)))
+    return(list(key = k, seen = TRUE))
+  m = xfun::md5(d); reg = doc$lt_keys  # named: key = md5
+  if (is.null(ht) && m %in% reg) return(list(key = names(reg)[match(m, reg)], seen = TRUE))
+  # md5 prefix (>= 8 chars, so keys rarely clash across documents, e.g. book
+  # chapters) not yet used by another dataset in this document
+  n = 8L
+  while ((k <- substr(m, 1, n)) %in% names(reg)) n = n + 1L
+  doc$lt_keys = c(reg, structure(m, names = k))
+  if (!is.null(ht)) u$sethash(ht, d, k)
+  list(key = k, seen = FALSE)
+}
+
+# Per-table block: queue the spec with a reference to the current script;
+# runtime drains the queue on load. With `share`, data repeated across tables
+# is encoded once into LT.d and referenced by `data_key`.
+spec_block = function(x, share = FALSE) {
+  x = lt_spec(x)
+  d = NULL
+  if (share && !is.null(k <- data_key(x$data))) {
+    if (!k$seen) d = c(
+      sprintf('<script>((window.LT=window.LT||{}).d=window.LT.d||{})["%s"]=', k$key),
+      inline_safe(xfun::tojson(x$data)), '</script>'
+    )
+    x$data = NULL; x$data_key = k$key
+  }
   c(
+    d,
     '<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:',
-    inline_safe(xfun::tojson(lt_spec(x))),
+    inline_safe(xfun::tojson(x)),
     '})</script>'
   )
 }
 
-# Record the data frame's column order explicitly, but only when it is at risk.
-# A JSON object reorders "array index" keys: strings that are the canonical
-# form of an integer in 0 .. 2^32 - 2 are sorted ascending and moved ahead of
-# all other keys (JS spec). So a column named "1" or "2" would jump to the
-# front, scrambling the rendered order. Other numeric-looking names ("-1",
-# "1.5", "01", "+1") are ordinary string keys and keep insertion order, so
-# they need no help. When any column name is an array index, we ship the full
-# order and lt.js reads `columns` in preference to Object.keys(); otherwise the
-# field is omitted (it would just duplicate the data's key order).
+# Record column order explicitly, only when at risk. A JSON object moves
+# "array index" keys (canonical integers in 0 .. 2^32 - 2) ahead of all other
+# keys (JS spec), so a column named "1" would jump to the front. Other
+# numeric-looking names ("-1", "1.5", "01", "+1") keep insertion order. When
+# any name is an array index, ship the full order (lt.js prefers `columns` to
+# Object.keys()); else omit it as redundant.
 any_array_index = function(nms) {
   any(i <- grepl('^(0|[1-9][0-9]*)$', nms)) && any(as.numeric(nms[i]) < 2^32 - 1)
 }
@@ -150,10 +180,10 @@ with_col_order = function(x) {
   x
 }
 
-# Display text for missing (NA) cells. The runtime defaults to an em dash, so
-# we only ship `missing` when the `lt.missing` option is set: to a replacement
-# string, or to "" to keep NAs blank (an empty string is still serialized, to
-# override the runtime default). A per-column lt_sub(missing=) overrides this.
+# Display text for NA cells. Runtime default is an em dash, so ship `missing`
+# only when the `lt.missing` option is set: a replacement string, or "" to
+# keep NAs blank (still serialized, to override the default). Per-column
+# lt_sub(missing=) overrides.
 with_missing = function(x) {
   if (is.null(x$missing) && !is.null(m <- getOption('lt.missing'))) x$missing = m
   x
@@ -193,8 +223,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
   if (isFALSE(assets)) assets = character()
   int = !is.null(x$interactive)
   plot = has_plot(x)
-  # lt-plot.js must load before core (core reads LT.cells when it drains the
-  # queue), so it leads the script list.
+  # lt-plot.js leads: core reads LT.cells when draining the queue.
   body = c(
     css_block(if ('css' %in% assets)
       c('lt.css', if (plot) 'lt-plot.css', if (int) 'lt-interactive.css'),
@@ -223,24 +252,23 @@ print.lt_tbl = function(x, ...) {
   invisible(x)
 }
 
-# knit_print: dedup the CSS+JS runtime within a document via opts_knit
-# (per-document, auto-resets between knits). knitr is loaded when
-# knit_print fires, so this never reaches knitr:: when knitr is absent.
+# knit_print: dedup CSS+JS runtime per document via opts_knit (auto-resets
+# between knits). knitr is already loaded when this fires.
 .knit_flag = 'lt.assets_added'
 .css_flag = 'lt.css_added'
 .int_flag = 'lt.interactive_added'
 .plot_flag = 'lt.plot_added'
 
-# TRUE the first time `flag` is seen in this knit (recording it, so later calls
-# return FALSE): the gate that emits each shared asset bundle once per document.
+# TRUE the first time `flag` is seen in this knit (recorded, so later calls
+# return FALSE): emits each shared asset bundle once per document.
 knit_once = function(flag) {
   first = !isTRUE(knitr::opts_knit$get(flag))
   if (first) knitr::opts_knit$set(set_names(list(TRUE), flag))
   first
 }
 
-# Wrap rendered table HTML with extra asset tags — used to attach a late
-# extension's tags around a table whose format() emitted no core assets.
+# Wrap table HTML with extra asset tags, to attach a late extension's tags
+# when format() emitted no core assets.
 wrap_assets = function(html, before = NULL, after = NULL)
   paste(c(before, html, after), collapse = '\n')
 
@@ -249,23 +277,22 @@ knit_print.lt_tbl = function(x, ...) {
     do.call(lt_static, c(list(x), opts)), class = 'knit_asis'
   ))
   first = knit_once(.knit_flag)
-  # Each extension is gated on its own flag: the first table that uses it need
-  # not be the first table overall, so when it isn't, format() has no core
-  # assets to carry it and we wrap its tags around the table below.
+  # Each extension has its own flag: the first table using it may not be the
+  # first overall, so format() has no core assets to carry it; wrap its tags
+  # around the table below.
   int_first  = !is.null(x$interactive) && knit_once(.int_flag)
   plot_first = has_plot(x) && knit_once(.plot_flag)
-  # Dedup user CSS (from lt_css()) across the document: a stylesheet shared
-  # by many tables (e.g. a package theme) should be emitted once. Identical
-  # <link> hrefs would dedup in the browser, but inlined <style> blocks
-  # (absolute paths) would not — so filter against what's already emitted.
+  # Dedup user CSS (lt_css()) across the document: a stylesheet shared by many
+  # tables should be emitted once. Identical <link> hrefs dedup in the
+  # browser, inlined <style> blocks (absolute paths) don't, so filter here.
   seen = knitr::opts_knit$get(.css_flag)
   x$css = setdiff(x$css, seen)
   if (length(x$css))
     knitr::opts_knit$set(set_names(list(c(seen, x$css)), .css_flag))
   html = format(x, assets = first)
-  # A late extension goes where format() would: the interactivity script after
-  # the core runtime; the graphics module (whose renderer must exist before
-  # core builds) entirely before the table.
+  # Late extension goes where format() would put it: interactivity script
+  # after core; graphics module (renderer must exist before core builds)
+  # entirely before the table.
   if (int_first && !first)
     html = wrap_assets(html, css_block('lt-interactive.css'), js_block('lt-interactive.js'))
   if (plot_first && !first)
@@ -273,8 +300,8 @@ knit_print.lt_tbl = function(x, ...) {
   structure(xfun::raw_string(html), class = c('knit_asis', 'html'))
 }
 
-# record_print (litedown / xfun::record): for HTML output emit assets + spec;
-# for non-HTML output (markdown), render to static HTML via lt_static().
+# record_print (litedown / xfun::record): HTML output emits assets + spec;
+# non-HTML (markdown) renders static HTML via lt_static().
 
 #' @importFrom xfun record_print
 #' @export
@@ -282,29 +309,28 @@ record_print.lt_tbl = function(x, ...) {
   if (is.list(opts <- getOption('lt.lt_static')))
     return(xfun::new_record(c(do.call(lt_static, c(list(x), opts)), ''), 'asis'))
   # litedown dedups identical linked tags across the document, so the
-  # extension's <link>/<script src> can be emitted for every interactive table.
+  # extension's tags can be emitted for every interactive table.
   int = !is.null(x$interactive)
   plot = has_plot(x)
   xfun::new_record(c(
     css_block(c('lt.css', if (plot) 'lt-plot.css', if (int) 'lt-interactive.css'),
       inline = FALSE),
     user_css_block(x$css, local = TRUE),
-    rules_block(x$rules), spec_block(x),
+    rules_block(x$rules), spec_block(x, share = TRUE),
     js_block(c(if (plot) 'lt-plot.js', 'lt.js', if (int) 'lt-interactive.js'),
       inline = FALSE), ''
   ), 'asis')
 }
 
-# Each Jupyter cell is rendered as a sandboxed document, so we always emit
-# a complete page with assets — no cross-cell dedup possible.
+# Each Jupyter cell is a sandboxed document: always emit a full page with
+# assets; no cross-cell dedup.
 repr_html.lt_tbl = function(obj, ...) format(obj, fragment = FALSE)
 
 repr_text.lt_tbl = function(obj, ...) {
   sprintf('lt_tbl (%d rows x %d cols)', nrow(obj$data), ncol(obj$data))
 }
 
-# Register S3 methods for knitr / repr (Jupyter) without hard dependencies:
-# wire the methods at .onLoad.
+# Register S3 methods for knitr / repr (Jupyter) at .onLoad, no hard deps.
 register_s3 = function(pkgs, generics) {
   for (i in seq_along(pkgs)) local({
     pkg = pkgs[[i]]; generic = generics[[i]]
@@ -319,16 +345,15 @@ register_s3 = function(pkgs, generics) {
 }
 
 
-# Build the HTML for lt_export()'s .html output. `method`:
-#   "raw"     -> the JavaScript-spec HTML (the table is built client-side by
-#                lt.js at view time); no external tool runs.
+# Build HTML for lt_export()'s .html output. `method`:
+#   "raw"     -> JavaScript-spec HTML (lt.js builds the table at view time);
+#                no external tool.
 #   "node"    -> run lt.js in Node.js to bake a static <table>.
-#   "browser" -> run lt.js in a headless Chromium browser (via browser_dom).
+#   "browser" -> run lt.js in headless Chromium (via browser_dom).
 #   "auto"    -> node if available, else browser.
-# `css` includes the lt.css runtime stylesheet (user CSS from lt_css() always
-# is); `fragment = FALSE` wraps the result in a full HTML document. `tidy`
-# pretty-prints the baked <table> with line breaks and indentation (ignored
-# for method = "raw", which is a JS spec, not a static table).
+# `css` includes the lt.css runtime stylesheet (lt_css() CSS is always
+# included); `fragment = FALSE` wraps in a full HTML document. `tidy`
+# pretty-prints the baked <table> (ignored for "raw", a JS spec).
 lt_static = function(
   x, method = c('auto', 'node', 'browser', 'raw'), css = TRUE, fragment = FALSE,
   tidy = FALSE
@@ -348,13 +373,11 @@ lt_static = function(
 }
 
 # Pretty-print lt's baked <table> HTML: break before each structural tag and
-# indent by nesting depth. lt controls the exact markup (a fixed set of `lt-*`
-# tags, no arbitrary user HTML), so a targeted tag-based indenter is enough;
-# this is not a general HTML tidier.
+# indent by depth. lt controls the markup (fixed `lt-*` tags, no arbitrary user
+# HTML), so a targeted indenter suffices; not a general tidier.
 tidy_html = function(html) {
-  # Containers get their own line for both open and close tags; cells (th/td)
-  # break before the opening tag only, so a leaf like <td>1</td> stays on one
-  # line with its content inline.
+  # Containers break on open and close tags; cells (th/td) break before the
+  # opening tag only, keeping a leaf like <td>1</td> on one line.
   box = 'div|table|thead|tbody|tfoot|caption|colgroup|tr'
   html = gsub(sprintf('(</?(?:%s)\\b|<t[hd]\\b)', box), '\n\\1', html, perl = TRUE)
   lines = unlist(strsplit(html, '\n'))
@@ -364,8 +387,8 @@ tidy_html = function(html) {
     ln = lines[i]
     if (grepl('^</', ln)) depth = max(0L, depth - 1L)
     out[i] = paste0(strrep('  ', depth), ln)
-    # An opening tag whose matching close isn't on the same line opens a deeper
-    # level for the following lines; a leaf tag (e.g. <td>1</td>) does not.
+    # An opening tag whose close isn't on the same line deepens the following
+    # lines; a leaf (e.g. <td>1</td>) doesn't.
     if (grepl('^<[^/]', ln) && !grepl('^<(\\w+)\\b[^>]*>.*</\\1>\\s*$', ln, perl = TRUE))
       depth = depth + 1L
   }
@@ -382,7 +405,7 @@ lt_static_browser = function(x, css = TRUE) {
 lt_static_node = function(x, css = TRUE) {
   runner = pkg_file('js', 'run-lt.js')
   plot = has_plot(x)
-  # lt-plot.js before lt.js so its renderer is registered when core builds.
+  # lt-plot.js before lt.js: its renderer must be registered when core builds.
   js = pkg_file('www', c(if (plot) 'lt-plot.js', 'lt.js'))
   spec = x; spec$css = spec$rules = NULL
   if (!length(spec$ops)) spec$ops = NULL
@@ -397,9 +420,9 @@ lt_static_node = function(x, css = TRUE) {
   )
 }
 
-# Write `html` to a temp file, run it through headless Chromium via
-# `fun`, and clean up. Shared by the measure pass (browser_dom) and the
-# render pass (browser_print).
+# Write `html` to a temp file, run it through headless Chromium via `fun`,
+# clean up. Shared by the measure (browser_dom) and render (browser_print)
+# passes.
 with_temp_html = function(html, fun) {
   f = tempfile(fileext = '.html')
   on.exit(unlink(f), add = TRUE)
@@ -407,25 +430,24 @@ with_temp_html = function(html, fun) {
   fun(f)
 }
 
-# Layout CSS shared by the measure and render passes: zero the page margins
-# so the table sits flush at the top-left, add the crop padding, and set the
-# body width. Both passes MUST use identical layout so the size measured in
-# pass 1 matches what pass 2 renders. `pad` is c(vertical, horizontal) in CSS
-# pixels; `width` is the outer body width in pixels (NULL = shrink to the
+# Layout CSS shared by measure and render passes: zero page margins so the
+# table sits flush top-left, add crop padding, set body width. Both passes MUST
+# use identical layout so pass-1 size matches pass 2. `pad` is c(vertical,
+# horizontal) in CSS px; `width` is outer body width in px (NULL = shrink to
 # table's natural width). box-sizing keeps `padding` inside `width`.
 crop_layout = function(pad, width = NULL) sprintf(paste0(
   'html,body{margin:0!important}',
   'body{box-sizing:border-box;padding:%dpx %dpx!important;width:%s}'
-), pad[1L], pad[2L], if (is.null(width)) 'max-content' else paste0(width, 'px'))
+), pad[1L], pad[2L], if (is.null(width)) 'max-content' else
+  if (is.character(width)) width else paste0(width, 'px'))
 
-# Measure the rendered table's full pixel size (including the crop padding).
-# Chromium runs lt.js, so the box is only known after the JS builds the
-# table; inject a load handler that stamps body.scrollWidth/scrollHeight onto
-# <body> as data attributes, dump the DOM, and parse them back. We measure
-# the body's scroll size rather than the table's bounding box because parts
-# of the table (caption border, footer spacing) extend beyond the table's
-# own border-box; using the table box alone undercounts the height and makes
-# the PDF spill onto a second page. Returns integer c(width, height).
+# Measure the rendered table's full pixel size (including crop padding).
+# Chromium runs lt.js, so the box is known only after JS builds the table:
+# inject a load handler that stamps body.scrollWidth/scrollHeight onto <body>
+# as data attributes, dump the DOM, parse them back. Body scroll size, not the
+# table's bounding box, because parts of the table (caption border, footer
+# spacing) extend past its border-box; the table box alone undercounts height
+# and spills the PDF onto a second page. Returns integer c(width, height).
 lt_measure = function(html, pad, width = NULL, browser = NULL) {
   inject = paste0(
     '<style>', crop_layout(pad, width), '</style>',
@@ -438,18 +460,16 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
   m = regmatches(dom, regexec('data-ltw="([0-9]+)" data-lth="([0-9]+)"', dom))[[1]]
   if (length(m) != 3L) stop('Failed to measure the table dimensions.')
   d = as.integer(m[-1L])
-  # scrollWidth is the floor of the table's fractional natural width. Pinning
-  # the body to that floored width leaves it a sub-pixel too narrow, so a cell
-  # wraps and the table grows taller than the measured height, spilling the
-  # PDF onto a second page (platform-dependent: seen on macOS, not Linux). Add
-  # 1px so the body is never narrower than the content and never re-wraps.
+  # scrollWidth floors the table's fractional natural width. Pinning the body
+  # to that leaves it a sub-pixel too narrow, so a cell wraps and the table
+  # grows taller than measured, spilling the PDF onto a second page
+  # (platform-dependent: macOS, not Linux). Add 1px so the body never re-wraps.
   d[1L] = d[1L] + 1L
   # scrollHeight is rounded to an integer, and the 0.85em footer text gives the
-  # body a fractional height (e.g., 316.39px with two footnote rows, rounded
-  # down to 316). A page box of exactly scrollHeight px then overflows by a
-  # sub-pixel, and Chromium starts a second page holding the repeated <thead>
-  # and the <tfoot> (also seen on macOS). Add 1px so the page is never
-  # shorter than the content.
+  # body a fractional height (e.g., 316.39px rounded down to 316). A page box
+  # of exactly scrollHeight px then overflows by a sub-pixel, and Chromium
+  # starts a second page with the repeated <thead> and <tfoot> (also macOS).
+  # Add 1px so the page is never shorter than the content.
   d[2L] = d[2L] + 1L
   d
 }
@@ -489,9 +509,11 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #'   measure the rendered table. Set to `FALSE` for the default full page.
 #'   Cropping PNG output requires the \pkg{magick} package; without it, PNG
 #'   falls back to the full page (with a warning).
-#' @param width The width of the table in CSS pixels. By default (`NULL`) it
-#'   shrinks to the table's natural width. A smaller `width` wraps cell
-#'   content; a larger one pads the table.
+#' @param width The width of the table: a number of CSS pixels, or a CSS width
+#'   string such as `"min-content"`. By default (`NULL`) it shrinks to the
+#'   table's natural width. A smaller `width` wraps cell content; a larger one
+#'   pads the table. `"min-content"` gives the narrowest width that still
+#'   shows every column, wrapping cell text wherever possible.
 #' @param padding Padding in CSS pixels to keep around the table when
 #'   cropping. A single value (all sides) or a length-two vector
 #'   `c(vertical, horizontal)`.
@@ -526,7 +548,7 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' # PDF / PNG are rendered in a headless browser and cropped to the table.
 #' f2 = tempfile(fileext = '.pdf')
 #' f3 = tempfile(fileext = '.png')
-#' if (lt:::has_browser()) {
+#' if (lt:::has_browser(pdf = TRUE)) {
 #'   lt_export(tbl, f2)
 #'   lt_export(tbl, f3, width = 400)
 #' }
@@ -537,41 +559,40 @@ lt_export = function(
   css = TRUE, fragment = FALSE, tidy = FALSE, crop = TRUE, width = NULL,
   padding = 8, browser = NULL, ...
 ) {
-  # HTML output (also the target when `output` is NA, since there's no
-  # extension to infer a format from): no browser needed at view time.
+  # HTML output (also when `output` is NA: no extension to infer a format
+  # from): no browser needed at view time.
   if (is.na(output) || tolower(xfun::file_ext(output)) == 'html') {
     html = lt_static(x, method, css, fragment, tidy)
     if (is.na(output)) return(html)
     xfun::write_utf8(html, output)
     return(output)
   }
-  # PDF/PNG are rendered from a temporary directory (with_temp_html), so a
-  # relative user-CSS href would not resolve there. Absolutize existing local
-  # files for this render only; x$css itself stays as the user gave it, keeping
-  # HTML output portable.
+  # PDF/PNG render from a temp directory (with_temp_html), where a relative
+  # user-CSS href wouldn't resolve. Absolutize existing local files for this
+  # render only; x$css stays as given, keeping HTML output portable.
   if (length(p <- x$css) && any(i <- file.exists(p)))
     x$css[i] = xfun::normalize_path(p[i])
 
   html = format(x, fragment = FALSE)
   is_pdf = tolower(xfun::file_ext(output)) == 'pdf'
-  # PNG cropping needs magick to trim Chromium's screenshot (its --screenshot
-  # size is the window size, which we can't shrink below Chromium's minimums).
-  # PDF cropping needs no extra package: an @page rule sets the page box.
+  # PNG cropping needs magick to trim Chromium's screenshot (its size is the
+  # window size, which can't shrink below Chromium's minimums). PDF cropping
+  # needs no extra package: an @page rule sets the page box.
   if (crop && !is_pdf && !xfun::loadable('magick')) {
     warning('Cropping PNG output requires the magick package; ',
             'exporting the full page instead.')
     crop = FALSE
   }
   pad = rep_len(padding, 2L)  # c(vertical, horizontal)
-  # When cropping or when the user fixes a width, measure the rendered size
-  # (at that width); `w`/`h` are the outer box including padding.
+  # When cropping or width is fixed, measure the rendered size (at that
+  # width); `w`/`h` are the outer box including padding.
   if (crop || !is.null(width)) {
     d = lt_measure(html, pad, width, browser)
-    w = width %||% d[1L]; h = d[2L]
+    w = if (is.numeric(width)) width else d[1L]; h = d[2L]
     layout = crop_layout(pad, w)
   }
   if (crop && is_pdf) {
-    # @page size drives the PDF page box exactly; no image post-processing.
+    # @page size sets the PDF page box exactly; no image post-processing.
     style = sprintf('<style>@page{size:%dpx %dpx;margin:0}%s</style>', w, h, layout)
     html = sub('</head>', paste0(style, '</head>'), html, fixed = TRUE)
     with_temp_html(html, function(f)
@@ -579,10 +600,9 @@ lt_export = function(
     return(output)
   }
   if (crop) {
-    # PNG: render onto a window large enough that the table is drawn
-    # unscaled at the top-left (Chromium clamps the window to a minimum size
-    # and reserves some height, and scales content that overflows the
-    # viewport), then crop the screenshot to the exact table box with magick.
+    # PNG: render in a window large enough to draw the table unscaled at
+    # top-left (Chromium clamps the window to a minimum, reserves some height,
+    # and scales overflowing content), then crop to the table box with magick.
     html = sub('</head>', paste0('<style>', layout, '</style></head>'), html, fixed = TRUE)
     png = tempfile(fileext = '.png')
     on.exit(unlink(png), add = TRUE)
@@ -593,8 +613,8 @@ lt_export = function(
     magick::image_write(img, output, format = 'png')
     return(output)
   }
-  # No crop: honor an explicit width via body layout + window_size, else fall
-  # back to browser_print's default full page.
+  # No crop: honor an explicit width via body layout + window_size, else use
+  # browser_print's default full page.
   args = list(browser = browser, ...)
   if (!is.null(width)) {
     html = sub('</head>', paste0('<style>', layout, '</style></head>'), html, fixed = TRUE)
@@ -605,16 +625,28 @@ lt_export = function(
   output
 }
 
-has_browser = function() {
-  tryCatch({xfun:::check_browser(NULL); TRUE}, error = function(e) FALSE)
-}
+# With `pdf = TRUE`, also check that the browser can print a PDF (it may be
+# found but fail, e.g., when sandboxed). The probe takes seconds, so cache it.
+has_browser = local({
+  pdf_ok = NULL
+  function(pdf = FALSE) {
+    ok = tryCatch({xfun:::check_browser(NULL); TRUE}, error = function(e) FALSE)
+    if (!ok || !pdf) return(ok)
+    pdf_ok %||% (pdf_ok <<- {
+      out = tempfile(fileext = '.pdf'); on.exit(unlink(out))
+      tryCatch({
+        with_temp_html('<title>lt</title>', function(f) xfun::browser_print(f, out))
+        file.exists(out)
+      }, error = function(e) FALSE)
+    })
+  }
+})
 
 has_node = function() nzchar(Sys.which('node'))
 
 # Whether a static <table> can be baked (method = 'node'/'browser'), i.e. an
-# external renderer is available. FALSE in environments without one, e.g. webR
-# (which has neither Node.js nor a launchable headless browser), where
-# lt_export()'s baking/PDF/PNG paths would error.
+# external renderer exists. FALSE where none does, e.g. webR (no Node.js or
+# launchable headless browser), where lt_export()'s baking/PDF/PNG would error.
 can_bake = function() has_node() || has_browser()
 
 .onLoad = function(...) {

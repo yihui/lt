@@ -9,7 +9,7 @@ assert("merge with pattern", {
 })
 
 assert("merge drops a conditional block when its references are empty", {
-  # "<<...>>" blocks are emitted only if all {n} refs are non-empty.
+  # "<<...>>" blocks emitted only if all {n} refs non-empty.
   html = build(list(
     data = list(a = "x", b = "", c = ""),
     ops = list(list(type = "merge", columns = list("a", "b", "c"),

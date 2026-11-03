@@ -21,7 +21,7 @@ $(document).ready(() => {
     renderValue: (el, data) => {
       if (!data) { el.innerHTML = ''; return; }
       ensureCss(data.spec && data.spec.css);
-      el.innerHTML = LT.buildHtml(data.spec);
+      LT.render(el, data.spec);
     },
     renderError: (el, err) => { console.error('lt:', err.message); }
   });

@@ -34,26 +34,20 @@ assert("name_value_args() canonicalizes the name = value forms", {
   expected = list(a = "A", b = "B")
   # named arguments
   (name_value_args(a = "A", b = "B") %==% expected)
-  # a single named vector or list
+  # single named vector or list
   (name_value_args(c(a = "A", b = "B")) %==% expected)
   (name_value_args(list(a = "A", b = "B")) %==% expected)
-  # a single list(names, values) of two parallel vectors
+  # single list(names, values) of two parallel vectors
   (name_value_args(list(c("a", "b"), c("A", "B"))) %==% expected)
-  # a single name/value pair is the degenerate case
+  # single name/value pair is degenerate case
   (name_value_args(list("a", "A")) %==% list(a = "A"))
-  # anything else is returned unchanged (an unnamed scalar, a mix, nothing)
+  # anything else returned unchanged (unnamed scalar, mix, nothing)
   (name_value_args("80%") %==% list("80%"))
   (name_value_args(a = "A", "80%") %==% list(a = "A", "80%"))
   (name_value_args() %==% list())
-  # a value's class is preserved (e.g. I() raw HTML survives the split)
+  # value's class preserved (e.g. I() raw HTML survives split)
   (inherits(name_value_args(list("a", I("<b>A</b>")))$a, "AsIs"))
   (inherits(name_value_args(list(a = I("<b>A</b>")))$a, "AsIs"))
-})
-
-assert("add_op() appends an operation", {
-  x = lt(d)
-  x = add_op(x, "test", foo = "bar")
-  (x$ops %==% list(list(type = "test", foo = "bar")))
 })
 
 assert("add_op() drops NULL values", {

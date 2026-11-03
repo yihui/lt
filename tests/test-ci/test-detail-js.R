@@ -33,9 +33,8 @@ assert("expanding a row reveals its detail, which follows the row", {
 assert("expanding or collapsing a row on the same page does not rebuild <tbody>", {
   x = itbl(detail = js('(row) => ({ data: { d: [row.name] } })'))
   caret = function(i) sprintf('t.querySelectorAll("tbody .lti-expand")[%d].click()', i)
-  # pin a sibling data row by reference, then expand and collapse the first row.
-  # A full <tbody> rebuild would detach the pinned row and swap in a fresh one, so
-  # its staying connected proves the toggle touched only the one row.
+  # pin a sibling row, then expand/collapse the first; a full <tbody> rebuild
+  # would detach it, so staying connected proves only one row was touched
   js = paste('window.PIN = t.querySelectorAll("tbody tr")[1]',
              caret(0), caret(0), sep = ';')
   (lti_eval(x, 'window.PIN.isConnected', js) %==% 'true')
@@ -80,9 +79,8 @@ assert("detail = column names builds a one-row table of displayed values", {
 })
 
 assert("el._lt.resetDetail rebuilds an open detail from its callback", {
-  # the callback's output depends on a page flag the caller can flip (e.g.
-  # forestly's "hide placebo" funnel); the detail is memoized per row at first
-  # expand, so a caller must bust it to pick up the new flag
+  # callback output depends on a page flag (e.g. forestly's "hide placebo"
+  # funnel); detail is memoized per row at first expand, so callers must bust it
   x = itbl(detail = js('(row) => ({ data: { d: [window.HIDE ? "H" : row.name] } })'))
   cell = 't.querySelector(".lti-detail:not([hidden]) .lt-table td").textContent'
   caret = 't.querySelectorAll("tbody .lti-expand")[0].click()'
@@ -109,10 +107,9 @@ assert("a detail table is itself interactive when its spec opts in", {
 })
 
 assert("the table pre-sizes to its first row detail so expanding does not jump", {
-  # a detail far wider than the host table: at idle lt opens the first row's
-  # detail, measures how wide it makes the table, and sets the table's `width`
-  # to it -- so a later expand of a same-width detail changes nothing. Pre-sizing
-  # is async (idle), so drive the browser directly and poll for it.
+  # detail far wider than the table: at idle lt opens the first row's detail,
+  # measures it, and sets the table `width`, so later expands change nothing.
+  # Async, so drive the browser directly and poll.
   x = itbl(detail = js('(row) => ({ data: Object.fromEntries(
     Array.from({length: 30}, (_, i) => ["c" + i, ["cell_" + i + "_" + row.name]])) })'))
   f = tempfile(fileext = '.html'); on.exit(unlink(f), add = TRUE)
@@ -134,9 +131,8 @@ assert("the table pre-sizes to its first row detail so expanding does not jump",
 })
 
 assert("a later, wider detail grows the table width when first opened", {
-  # presize only measures the first row's detail (here narrow); a later row with
-  # a far wider detail stays deferred and, when first opened, grows the table to
-  # fit it -- and reopening it then never jumps.
+  # presize measures only the first row's detail (narrow here); a later, far
+  # wider detail grows the table when first opened, then never jumps
   x = itbl(detail = js('(row) => ({ data: Object.fromEntries(
     Array.from({length: row.name === "Rash" ? 1 : 40}, (_, i) =>
       ["c" + i, ["cell_" + i + "_" + row.name]])) })'))

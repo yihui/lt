@@ -10,22 +10,20 @@ assert("fmt_number formats decimals", {
 })
 
 assert("fmt_number formats significant digits across magnitudes", {
-  # 3 sig figs: values spanning orders of magnitude each keep 3 meaningful
-  # digits (small values gain decimals, large ones lose them).
+  # 3 sig figs across magnitudes: small values gain decimals, large lose them
   html = build(list(
     data = list(x = c(0.0042857, 4285.7)),
     ops = list(list(type = "fmt_number", columns = list("x"), sig_digits = 3))
   ))
   (has_match(html, ">0\\.00429</td>.*>4290</td>"))
-  # toPrecision would render 4290 as "4.29e+3"; it is expanded to plain
-  # decimal, and big_mark still applies to the integer part.
+  # toPrecision gives "4.29e+3"; expand to plain decimal, big_mark still applies
   html = build(list(
     data = list(x = 4285.7),
     ops = list(list(type = "fmt_number", columns = list("x"),
                     sig_digits = 2, big_mark = ","))
   ))
   (has_match(html, ">4,300</td>"))
-  # Negative small value uses the typographic minus (U+2212).
+  # typographic minus (U+2212)
   html = build(list(
     data = list(x = -0.0042857),
     ops = list(list(type = "fmt_number", columns = list("x"), sig_digits = 2))
@@ -34,8 +32,7 @@ assert("fmt_number formats significant digits across magnitudes", {
 })
 
 assert("auto-format picks decimals from value width", {
-  # Small values (<1) get up to 4 decimals; the big_mark separator is a
-  # non-breaking space (U+00A0).
+  # Values <1 get up to 4 decimals; big_mark is a non-breaking space (U+00A0)
   html = build(list(data = list(x = c(0.123456, 0.987))))
   (has_match(html, ">0\\.1235</td>.*>0\\.9870</td>"))
   # Large values are rounded to 0 decimals and grouped.
@@ -55,7 +52,7 @@ assert("fmt_number with percent, big_mark, and minus sign", {
                     percent = TRUE, decimals = 1, big_mark = ","))
   ))
   (has_match(html, ">12\\.3%</td>.*>1,234,567\\.8%</td>"))
-  # Negative numbers render with a real minus sign (U+2212), not a hyphen.
+  # real minus (U+2212), not hyphen
   html = build(list(
     data = list(n = -1234567),
     ops = list(list(type = "fmt_number", columns = list("n"), big_mark = ","))
@@ -64,13 +61,13 @@ assert("fmt_number with percent, big_mark, and minus sign", {
 })
 
 assert("infinity renders as ∞, with minus sign depending on formatting", {
-  # Raw (unformatted, non-numeric column) infinities use an ASCII hyphen.
+  # raw infinities in a non-numeric column use ASCII hyphen
   html = build(list(data = list(x = c(Inf, -Inf)), auto_format = FALSE))
   (has_match(html, ">∞</td>.*>-∞</td>"))
-  # Auto-formatted numeric column: minus becomes the typographic minus (U+2212).
+  # auto-formatted numeric column: typographic minus
   html = build(list(data = list(x = c(1.5, Inf, -Inf))))
   (has_match(html, ">∞</td>.*>−∞</td>"))
-  # Explicit fmt_number keeps ±∞ and uses the typographic minus.
+  # explicit fmt_number keeps ±∞, typographic minus
   html = build(list(
     data = list(x = c(Inf, -Inf)),
     ops = list(list(type = "fmt_number", columns = list("x"), decimals = 2))
@@ -118,8 +115,8 @@ assert("fmt_date formats ISO date strings", {
     ops = list(list(type = "fmt_date", columns = list("date"), method = "toUTCString"))
   ))
   (has_match(html, '>Mon, 15 Jan 2024 00:00:00 GMT</td>'))
-  # null values are skipped by fmt_date; the em dash comes from the missing
-  # default injected on the render path (see with_missing()).
+  # fmt_date skips nulls; em dash comes from the missing default injected on
+  # the render path (see with_missing())
   html = build(list(
     data = list(date = list("2024-01-15", NULL)),
     ops = list(list(type = "fmt_date", columns = list("date"), method = "toISOString"))

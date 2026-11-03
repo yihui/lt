@@ -38,8 +38,7 @@ assert("footnote on row groups matches by starts_with", {
 })
 
 assert("footnote on row groups renders in rowspan mode", {
-  # An array row_group uses rowspan mode; the footnote marker must still
-  # attach to the group label cell (previously only separator-row mode did).
+  # array row_group uses rowspan mode; marker must still attach to the label cell
   html = build(list(
     data = list(g = c("A", "A", "B"), v = c(1, 2, 3)),
     row_group = list("g"),

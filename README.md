@@ -6,10 +6,12 @@
 [![CRAN release](https://www.r-pkg.org/badges/version/lt)](https://cran.r-project.org/package=lt)
 [![lt on r-universe](https://yihui.r-universe.dev/badges/lt)](https://yihui.r-universe.dev/lt)
 [![lt.min.js size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js?compression=gzip&label=lt.min.js%20gzip)](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)
+[![Build site](https://github.com/yihui/lt/actions/workflows/litedown-site.yml/badge.svg)](https://github.com/yihui/lt/actions/workflows/litedown-site.yml)
 
 <!-- badges: end -->
 
-Lightweight tables for R, inspired by [gt](https://gt.rstudio.com).
+Lightweight tables for R, inspired by [**gt**](https://gt.rstudio.com) and
+[**DT**](https://github.com/rstudio/DT).
 
 **lt** provides a small grammar of tables that covers the structure most reports
 need — titles, column spanners, row groups, footnotes, and number formatting —
@@ -26,6 +28,8 @@ Both inline plots and interactivity live in separate extensions on top of the
 core runtime (`lt-plot.js` and `lt-interactive.js`), each loaded only for the
 tables that use it. A plain static table pulls in neither, so it stays as light
 as ever.
+
+[![An lt cheat table demonstrating the package's functions.](https://pkg.yihui.org/lt/examples/01-lt.png)](https://pkg.yihui.org/lt/examples/01-lt.html)
 
 ## Installation
 
@@ -125,6 +129,7 @@ By default a plot draws into the first value column's cells; `lt_errorbar()` and
 **Shiny**
 
 - `lt_output()` / `render_lt()` — Shiny UI and server bindings.
+- `lt_input()` / `lt_update()` — an editable table as a Shiny input.
 
 **Embedding**
 
@@ -207,4 +212,6 @@ This package was written with the help of Claude Code. **lt** is directly
 inspired by **gt** by Rich Iannone and the RStudio/Posit team. The grammar of
 tables that **gt** pioneered — layering titles, spanners, footnotes, and
 formatters onto a data frame — is a great idea; **lt** aims to provide a minimal
-re-implementation for contexts where a lighter footprint is preferred.
+re-implementation for contexts where a lighter footprint is preferred. Its
+interactive features (sorting, searching, paging) were inspired by **DT**, which I
+developed with collaborators.

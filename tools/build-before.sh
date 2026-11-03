@@ -37,4 +37,6 @@ for path in inst/www/*.js inst/www/*.css; do
   min=${name%.*}.min.${name##*.}
   echo "  $name <- $sub/$min"
   curl -fsSL "$base/$sub/$min" -o "$path"
+  # drop the trailing source map comment (`//# ...` in JS, `/*# ... */` in CSS)
+  perl -0pi -e 's{\s*(?://|/\*)#\s*sourceMappingURL=[^\n]*\s*\z}{}' "$path"
 done

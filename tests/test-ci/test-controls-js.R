@@ -26,8 +26,7 @@ assert("the controls are rows of the table, so they match its width", {
 })
 
 assert("el._lt.bar exposes the control bar for a caller to append a widget", {
-  # forestly adds its own funnel to the bar through this handle; itbl() has a
-  # search box, so a bar exists
+  # forestly adds its funnel via this handle; itbl() has search, so a bar exists
   x = itbl()
   (lti_eval(x, 't._lt.bar.className') %==% 'lti-bar')
   add = 't._lt.bar.appendChild(Object.assign(
@@ -38,8 +37,8 @@ assert("el._lt.bar exposes the control bar for a caller to append a widget", {
 })
 
 assert("el._lt.chips is the chip group a caller drops a labelled chip into", {
-  # the group exists whenever there is a bar (even with no typed-filter chips), so
-  # a caller's own chip (e.g. forestly's group picker) sits beside lt's own
+  # group exists whenever there is a bar, so a caller's chip (e.g. forestly's
+  # group picker) sits beside lt's own
   x = itbl()
   (lti_eval(x, 't._lt.chips.className') %==% 'lti-chips')
   (lti_eval(x, 't._lt.chips.parentNode === t._lt.bar') %==% 'true')

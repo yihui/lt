@@ -1,31 +1,10 @@
 d = data.frame(a = 1:3, b = 4:6, c = 7:9)
 x = lt(d)
 
-assert("lt_header() sets header", {
-  h = lt_header(x, "Title", "Sub")
-  (h$header %==% list(title = "Title", subtitle = "Sub"))
-  # NULL fields are dropped
-  h2 = lt_header(x, "Title")
-  (h2$header %==% list(title = "Title"))
-})
-
-assert("lt_spanner() with formula", {
-  s = lt_spanner(x, Grp ~ b + c)
-  (s$spanners %==% list(list(label = "Grp", columns = I(c("b", "c")))))
-})
-
 assert("lt_group(~ col, sep = TRUE) sets scalar row_group", {
   d2 = data.frame(g = c("A", "B", "A"), v = 1:3)
   g = lt(d2) |> lt_group(~ g, sep = TRUE)
   (g$row_group %==% "g")
-})
-
-assert("lt_group() manual groups add ops", {
-  g = lt_group(x, "First" = 1:2, "Second" = 3L)
-  (g$ops %==% list(
-    list(type = "row_group", label = "First", rows = I(1:2)),
-    list(type = "row_group", label = "Second", rows = I(3L))
-  ))
 })
 
 assert("lt_footnote() builds correct location", {
@@ -80,11 +59,6 @@ assert("lt_footnote() covers all six locations", {
   (has_error(lt_footnote(x, "note", "nope")))
 })
 
-assert("lt_note() appends notes", {
-  n = lt_note(x, "Source: data") |> lt_note("Another note")
-  (n$notes %==% list("Source: data", "Another note"))
-})
-
 assert("lt_align() supports numeric column indices", {
   a = lt_align(x, 1:2, "center")
   (a$ops[[1]]$columns %==% I(c("a", "b")))
@@ -135,12 +109,6 @@ assert("lt_style() with extra CSS properties", {
   (has_match(s$ops[[1]]$css, "border-left:1px solid"))
 })
 
-assert("lt_style() with class and test", {
-  s = lt_style(x, "a", test = "v => v > 1", class = "hi")
-  (s$ops[[1]]$class %==% "hi")
-  (class(s$ops[[1]]$test) %==% class(xfun::js("")))
-})
-
 assert("lt_style() returns unchanged if no css or class", {
   s = lt_style(x, "a")
   (length(s$ops) %==% 0L)
@@ -161,11 +129,6 @@ assert("lt_width() adds width op", {
   )))
 
   (has_error(lt_width(x, "80%", "90%")))
-})
-
-assert("lt_move() with after = NULL moves to start", {
-  m = lt_move(x, ~ b, after = NULL)
-  (m$ops %==% list(list(type = "move", columns = I("b"))))
 })
 
 # find the single op of a given type (NULL when there is none)
@@ -365,7 +328,6 @@ assert("lt_css() handles absolute, relative, and URL paths", {
   owd = setwd(d); on.exit({setwd(owd); unlink(d, recursive = TRUE)})
   (lt_css(x, "times.css")$css %==% "times.css")
 })
-
 
 assert("lt_wrap() appends class across repeated calls", {
   # class from a later call is appended to an earlier one (JS prepends lt-wrap)

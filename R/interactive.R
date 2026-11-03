@@ -1,6 +1,6 @@
-# Opt-in interactive table features, powered by lt-interactive.js. The options
-# ride on a top-level `spec$interactive` object (not a body op) so the runtime
-# reads them once; the assets are wired in only when a table opts in (render.R).
+# Opt-in interactive features, powered by lt-interactive.js. Options ride on a
+# top-level `spec$interactive` object (not a body op) so the runtime reads them
+# once; assets are wired in only when a table opts in (render.R).
 
 #' Enable interactive table features
 #'
@@ -62,22 +62,25 @@
 #'   first one is used initially. Paging shows that many of the filtered and
 #'   sorted rows at a time, with a pager (first, previous, next, last), the row
 #'   range, and (for more than one size) a selector below the table. `Inf` is a
-#'   valid size (every row on one page), offered as `∞` in the selector. The
-#'   selector is omitted when the table has no more rows than the smallest page
-#'   size (no size would split it), though the pager's nav and row-count readout
-#'   stay, the latter being useful as a filter narrows the rows. Use `FALSE` or
-#'   `NULL` to show all rows with no pager at all.
+#'   valid size (every row on one page), offered as an infinity symbol in the
+#'   selector. The selector is omitted when the table has no more rows than the
+#'   smallest page size (no size would split it), though the pager's nav and
+#'   row-count readout stay, the latter being useful as a filter narrows the
+#'   rows. Use `FALSE` or `NULL` to show all rows with no pager at all.
 #' @param resize Whether to let the reader drag a column's right edge to resize
 #'   it (double-clicking the edge fits the column to its content). Widening a
 #'   column widens the table, leaving the other columns as they are. Initial
 #'   widths can be set with [lt_width()].
-#' @param hide Column-visibility control: an eye button at the start of the
-#'   search row opens a checklist of every column, where unchecking a column
+#' @param hide Column-visibility control: an eye button in the
+#'   control bar opens a checklist of every column, where unchecking a column
 #'   hides it (header and cells) and re-checking restores it. `TRUE` adds the
 #'   menu with all columns shown; column names (a character vector or a one-sided
 #'   formula, e.g. `~ x + y`) adds it with those columns hidden to begin with
-#'   (every column is still listed, so any can be toggled). `NULL` (the default)
-#'   adds no menu.
+#'   (every column is still listed, so any can be toggled). To label the button
+#'   instead of showing the eye icon, use a list with `label` (a string, shown as
+#'   a chip in the control bar) and optionally `columns` (the
+#'   columns hidden to begin with), e.g. `list(label = "Show/Hide columns")`.
+#'   `NULL` (the default) adds no menu.
 #' @param detail Row detail (drill-down). An expand caret is added to each row;
 #'   clicking it reveals a table built from that row below it. Give the columns
 #'   to show, as a character vector of names or a one-sided formula (e.g.
@@ -112,6 +115,8 @@
 #' # a column-visibility menu (all columns shown, or with some hidden to start)
 #' lt(head(mtcars)) |> lt_interactive(hide = TRUE)
 #' lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)
+#' # a labeled button instead of the eye icon
+#' lt(head(mtcars)) |> lt_interactive(hide = list(label = 'Show/Hide columns'))
 #' # an initial sort by cyl, then mpg descending within each
 #' lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
 #' # expandable row detail (drill-down): name the columns to show. Here gear and
@@ -145,8 +150,17 @@ lt_interactive = function(
     opts$pager = I(as.integer(sizes))
   }
   if (isTRUE(resize)) opts$resize = TRUE
-  if (!is.null(hide) && !isFALSE(hide)) opts$hide = if (isTRUE(hide)) TRUE else
-    list(hidden = I(as.character(f_cols(hide, x$data))))
+  if (!is.null(hide) && !isFALSE(hide)) {
+    label = NULL
+    if (is.list(hide)) {
+      label = hide$label
+      hide = hide$columns %||% TRUE
+    }
+    opts$hide = if (isTRUE(hide) && is.null(label)) TRUE else drop_null(list(
+      label = label,
+      hidden = if (!isTRUE(hide)) I(as.character(f_cols(hide, x$data)))
+    ))
+  }
   if (!is.null(detail)) opts$detail = if (inherits(detail, 'JS_LITERAL'))
     detail else I(as.character(f_cols(detail, x$data)))
   opts$download = download_opt(download)
@@ -154,9 +168,9 @@ lt_interactive = function(
   x
 }
 
-# Shape the `download` argument for the client: a bare file name (or `TRUE`)
-# when only the name differs, else an object of the non-default slots, so a
-# plain download never serializes a `mode` key.
+# Shape `download` for the client: a bare file name (or `TRUE`) when only the
+# name differs, else an object of non-default slots; a plain download never
+# serializes a `mode` key.
 download_opt = function(download) {
   if (is.null(download) || isFALSE(download)) return()
   if (isTRUE(download)) return(TRUE)
@@ -167,12 +181,11 @@ download_opt = function(download) {
   drop_null(list(file = download$file, mode = mode))
 }
 
-# Shape the `filter` argument for the client as { default?, cols? }. `TRUE` ->
-# a box on every column (a `default`); a character vector -> boxes on just those
-# columns; a named list -> each named column's own spec in `cols`, with one
-# unnamed entry (if any) kept as the `default` for the other visible columns. The
-# client resolves a typed spec's choices / range from the column data, so nothing
-# here reads `x$data`.
+# Shape `filter` for the client as { default?, cols? }. `TRUE` -> a box on
+# every column (`default`); a character vector -> boxes on just those columns;
+# a named list -> each named column's own spec in `cols`, one unnamed entry (if
+# any) kept as `default` for other visible columns. The client resolves a typed
+# spec's choices / range from column data, so nothing here reads `x$data`.
 normalize_filter = function(filter) {
   if (isTRUE(filter)) return(list(default = TRUE))
   if (is.character(filter))
@@ -191,10 +204,10 @@ normalize_filter = function(filter) {
   TRUE
 }
 
-# One column's filter spec: `TRUE` (a plain box) passes through; a `"select"` /
+# One column's filter spec: `TRUE` (plain box) passes through; a `"select"` /
 # `"range"` / `"checklist"` string becomes `list(type = ...)`; a list is a
-# hand-set spec, its `choices` reshaped to {value, label} objects and its
-# `value` (range) / `selected` (checklist) default kept as a JSON array.
+# hand-set spec, `choices` reshaped to {value, label} objects, `value` (range)
+# / `selected` (checklist) default kept as a JSON array.
 normalize_spec = function(spec) {
   if (isTRUE(spec)) return(TRUE)
   if (is.character(spec) && length(spec) == 1) return(list(type = spec))
@@ -215,21 +228,21 @@ choice_objs = function(ch) {
     list(value = as.character(ch[[i]]), label = labs[i]))
 }
 
-# Normalize the `sort` argument. A logical passes through (enable or disable
-# click-to-sort). An initial multi-column sort can be given as a character
-# vector of column names or as a one-sided formula (e.g. `~ x + -y`); either
-# way a leading `-` on a name, or a negated formula term, means descending. The
-# names travel to the client as-is (the `-` convention is parsed there).
+# Normalize `sort`. A logical passes through (enable/disable click-to-sort).
+# An initial multi-column sort is a character vector of column names or a
+# one-sided formula (e.g. `~ x + -y`); a leading `-` on a name, or a negated
+# formula term, means descending. Names travel to the client as-is (the client
+# parses `-`).
 sort_keys = function(sort) {
   if (inherits(sort, 'formula')) sort = formula_sort(sort)
   if (!is.character(sort)) return(sort)
   I(sort)
 }
 
-# Flatten the right-hand side of a sort formula into `-`-prefixed column names,
+# Flatten a sort formula's right-hand side into `-`-prefixed column names,
 # carrying the sign through nested `+`/`-` (unary `-` or the right side of a
-# binary `-` flips a term to descending), e.g. `~ x + -y` and `~ x - y` both
-# give `c('x', '-y')`.
+# binary `-` flips to descending): `~ x + -y` and `~ x - y` both give
+# `c('x', '-y')`.
 formula_sort = function(f) {
   walk = function(e, neg = FALSE) {
     if (is.call(e)) {

@@ -1,0 +1,11 @@
+/* lt-input.css — an editable table looks like a spreadsheet (see lt-input.js).
+   lt.css draws the frame and header gaps from --bd/--bg, so redefining them
+   (the row separator color, #ddd) leaves one uniform grid. The `tr` in the
+   selector outranks lt.css's cell rules regardless of stylesheet order. */
+.lt-table.lt-edit {
+  --bd: 1px solid #ddd;
+  --bg: var(--bd);
+  border-collapse: collapse;
+  :is(thead, tbody) tr :is(td, th) { border: var(--bd); }
+  [contenteditable] { cursor: pointer; &:focus { outline: 2px solid #217346; outline-offset: -1px; } }
+}

@@ -4,7 +4,7 @@
 \alias{lt_dependency}
 \title{HTML dependency for lt tables}
 \usage{
-lt_dependency(interactive = FALSE, plot = FALSE, shiny = FALSE)
+lt_dependency(interactive = FALSE, plot = FALSE, shiny = FALSE, input = FALSE)
 }
 \arguments{
 \item{interactive}{Whether to also include the interactivity extension (the
@@ -16,6 +16,9 @@ Its script loads before the core runtime so plot cells render.}
 
 \item{shiny}{Whether to include the Shiny output binding (only needed by
 \code{\link[=lt_output]{lt_output()}} / \code{\link[=render_lt]{render_lt()}}).}
+
+\item{input}{Whether to include the editing extension and Shiny input
+binding (only needed by \code{\link[=lt_input]{lt_input()}}).}
 }
 \value{
 An \code{html_dependency} object.

@@ -561,21 +561,18 @@ lt_hide = function(x, columns) {
 }
 
 
-# Resolve one error-bar series (value, lower, upper) to a length-3 character
-# vector of column names: a two-sided formula `value ~ lower + upper` names the
-# estimate on the LHS and the bounds on the RHS; a length-3 vector / integer
-# positions name the three columns directly.
+# Resolve one error-bar series to c(value, lower, upper) column names. Formula
+# `value ~ lower + upper`, or length-3 names / positions.
 eb_triple = function(columns, data) {
   if (inherits(columns, 'formula') && length(columns) == 3)
     c(all.vars(columns[[2]]), f_cols(columns, data))
   else as.character(f_cols(columns, data))
 }
 
-# Resolve the per-series colors + legend labels shared by lt_dotplot() and the
-# multi-series lt_errorbar(): `color = TRUE` pulls from the palette, a character
-# vector is used verbatim (recycled), `FALSE`/`NULL` leaves the series
-# monochrome; `labels` default to the series names when colored. Returns a list
-# with `colors` and `labels` (either may be NULL).
+# Per-series colors + legend labels for lt_dotplot() and lt_errorbar():
+# `color = TRUE` uses the palette, a character vector is recycled, `FALSE`/`NULL`
+# is monochrome. `labels` default to series names when colored. Returns list of
+# `colors` and `labels` (either may be NULL).
 plot_colors = function(color, labels, names) {
   n = length(names)
   colors = if (isTRUE(color)) rep_len(grDevices::palette(), n)
@@ -588,9 +585,9 @@ plot_colors = function(color, labels, names) {
   list(colors = colors, labels = labels)
 }
 
-# Parse a plot's `width`: a number is a fixed px size; a relative CSS width
-# ("100%", "80%") or `list(min =, width =)` auto-fits the column. Returns `width`
-# (the min / starting px, `default` if unset) and `fit` (the CSS width, or NULL).
+# Parse a plot's `width`: a number is fixed px; a CSS width ("100%") or
+# `list(min =, width =)` auto-fits the column. Returns `width` (min / starting
+# px, `default` if unset) and `fit` (CSS width or NULL).
 plot_width = function(width, default) {
   if (is.numeric(width)) return(list(width = width, fit = NULL))
   if (is.list(width)) {
@@ -601,18 +598,17 @@ plot_width = function(width, default) {
   list(width = default, fit = as.character(width))
 }
 
-# Shared scale for a column plot: the given `limits`, else the range of all the
-# plotted columns' finite values (a degenerate column falls back to [0, 1]).
+# Shared plot scale: `limits`, else range of finite values in `cols` ([0, 1] if
+# none).
 plot_limits = function(limits, data, cols) {
   if (!is.null(limits)) return(limits)
   v = unlist(data[cols], use.names = FALSE); v = v[is.finite(v)]
   if (length(v)) range(v) else c(0, 1)
 }
 
-# Shared setup for a column plot (lt_dotplot()/lt_errorbar()): the plot draws
-# into `target` -- the first shown column, or a new `into` column. Hide the
-# source columns (`src`) except the target when `hide` is set, and label a
-# multi-column plot's target header with the `shown` names joined.
+# Shared setup for lt_dotplot()/lt_errorbar(): draw into `target` (first shown
+# column, or new `into` column). If `hide`, hide `src` columns except target.
+# Label target with `shown` names joined when several.
 plot_setup = function(x, into, src, shown, hide) {
   target = if (is.null(into)) shown[1] else into
   if (!is.null(into) && !into %in% names(x$data))
@@ -713,7 +709,7 @@ lt_errorbar = function(
   x, ..., limits = NULL, ref = NULL, into = NULL, width = 160, height = NULL,
   hide = TRUE, axis = FALSE, color = FALSE, labels = NULL
 ) {
-  series = list(...)  # one `value ~ lower + upper` triple per series
+  series = list(...)  # one triple per series
   if (length(series) == 0)
     stop('supply at least one error-bar series, e.g. `value ~ lower + upper`.')
   trip = lapply(series, function(s) {
@@ -730,7 +726,7 @@ lt_errorbar = function(
   all_cols = unlist(trip, use.names = FALSE)
   limits = plot_limits(limits, x$data, all_cols)
   cl = plot_colors(color, labels, vals)
-  # stack more series into a taller cell by default (~9px per series)
+  # taller cell for more series (~9px each)
   if (is.null(height)) height = if (n > 1) n * 9 + 4 else 16
   w = plot_width(width, 160)
   x = plot_setup(x, into, all_cols, vals, hide)
@@ -848,8 +844,7 @@ lt_dotplot = function(
   limits = plot_limits(limits, x$data, cols)
   cl = plot_colors(color, labels, cols)
   colors = cl$colors; labels = cl$labels
-  # a staggered plot needs a taller cell to spread the tracks out (one ~9px
-  # track per column, matching lt_errorbar); un-staggered keeps the single line
+  # staggered: ~9px track per column (as in lt_errorbar); else single line
   if (is.null(height)) height = if (stagger && n > 1) n * 9 + 4 else 16
   w = plot_width(width, 160)
   x = plot_setup(x, into, cols, cols, hide)
@@ -932,8 +927,7 @@ lt_wrap = function(x, ...) {
   attrs = name_value_args(...)
   if (length(attrs) == 0) return(x)
   prev = if (is.null(x$wrap)) list() else x$wrap
-  # class is appended to any class set by an earlier lt_wrap(); the JS runtime
-  # further prepends the base `lt-wrap`. Other attributes overwrite.
+  # append class to earlier lt_wrap() class (JS prepends `lt-wrap`); others overwrite
   if (!is.null(attrs$class) && !is.null(prev$class))
     attrs$class = paste(prev$class, attrs$class)
   prev[names(attrs)] = attrs
@@ -941,9 +935,8 @@ lt_wrap = function(x, ...) {
   x
 }
 
-# A URL or an existing file is used as-is (a relative path is kept relative, so
-# it stays portable). A bare filename that is not in the working directory is
-# resolved against lt's bundled stylesheets.
+# URL or existing file used as-is (relative path stays relative, for
+# portability). Bare filename not in working dir resolves to bundled stylesheets.
 resolve_css = function(p) {
   if (is_url(p) || file.exists(p)) return(p)
   if (basename(p) == p) {

@@ -1,12 +1,12 @@
-/* lt-plot.css — styles for inline graphics cells (see lt-plot.js). */
+/* lt-plot.css — inline graphics cell styles (see lt-plot.js). */
 .lt-table {
-  /* auto-fit plot: SVG takes --fw of its column (min --w); the resizer redraws
-     it at the measured px (see lt-plot.js) */
+  /* auto-fit plot: SVG takes --fw of column (min --w); resizer redraws at
+     measured px (see lt-plot.js) */
   .lt-fit { width: var(--fw, 100%); min-width: var(--w, 0); }
   .lt-eb-cell {
     position: relative;
-    padding: 0;  /* so the gridline background fills the whole cell */
-    text-align: left;  /* keep the plot flush left, aligned with the gridlines */
+    padding: 0;  /* gridline background fills cell */
+    text-align: left;  /* plot flush left with gridlines */
   }
   .lt-eb-grid-bg {
     position: absolute;
@@ -17,35 +17,35 @@
   .lt-eb {
     position: relative;
     vertical-align: middle;
-    /* default only series without a per-series stroke=/fill= attribute, so that
-       attribute still shows; override either via that attr or a `.lt-eb` rule */
+    /* default only series lacking stroke=/fill= attribute, so attribute shows;
+       override via attr or `.lt-eb` rule */
     line:not([stroke]):not(.lt-eb-ref) { stroke: #888; }
     circle:not([fill]) { fill: #333; }
     .lt-eb-ref { stroke: #ccc; }
   }
   .lt-eb-axis {
     display: block;
-    margin-top: 3px;  /* small gap below the body, since the cell has no padding */
+    margin-top: 3px;  /* gap below body; cell has no padding */
     line { stroke: #888; }
     text { fill: #666; font-size: 11px; }
     .lt-eb-axis-label { fill: #333; font-size: 12px; }
   }
   .lt-spark {
     vertical-align: middle;
-    color: #4682b4;  /* line/bars inherit this via currentColor; override inline */
+    color: #4682b4;  /* line/bars inherit via currentColor; override inline */
     .lt-spark-line { fill: none; stroke: currentColor; stroke-width: 1; }
     .lt-spark-bar { fill: currentColor; }
   }
   .lt-dot {
-    position: relative;  /* paint above the absolutely-positioned gridlines */
+    position: relative;  /* paint above absolute gridlines */
     vertical-align: middle;
     color: #333;
-    /* default only the dots without a per-column fill= attribute, so that
-       attribute still shows; override either via `color` or `.lt-dot circle` */
+    /* default only dots lacking fill= attribute, so attribute shows; override
+       via `color` or `.lt-dot circle` */
     circle:not([fill]) { fill: currentColor; }
   }
   .lt-plot-legend {
-    margin-top: 3px;  /* small gap below the axis, since the cell has no padding */
+    margin-top: 3px;  /* gap below axis; cell has no padding */
     font-size: 11px;
     color: #666;
     i {

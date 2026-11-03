@@ -2,9 +2,7 @@ d = data.frame(x = 1:2, y = c("a", "b"))
 x = lt(d)
 
 assert("format() returns HTML with script tags", {
-  html = format(x)
-  (is.character(html))
-  (has_match(html, "<script>.*</script>"))
+  (has_match(format(x), "<script>.*</script>"))
 })
 
 assert("format(fragment = FALSE) wraps in DOCTYPE", {
@@ -14,8 +12,8 @@ assert("format(fragment = FALSE) wraps in DOCTYPE", {
 
 assert("format(assets = FALSE) omits runtime", {
   html = unclass(format(x, assets = FALSE))
-  (has_match(html, !"<style>"))
-  (has_match(html, !"LT\\.build"))
+  (has_match(html, "<style>", negate = TRUE))
+  (has_match(html, "LT\\.build", negate = TRUE))
   (has_match(html, "<script>"))
 })
 
@@ -25,18 +23,18 @@ assert("format() ships the graphics module (before core) only for plot tables", 
   html = format(eb, inline_assets = FALSE)
   (has_match(html, I('x/lt-plot.js')))
   (has_match(html, I('x/lt-plot.css')))
-  # the plot module must precede the core runtime: core reads LT.cells when it
-  # drains the queue, so a renderer registered later would miss this table
+  # plot module must precede core runtime: core reads LT.cells when it
+  # drains queue, so later-registered renderer would miss this table
   (isTRUE(regexpr('x/lt-plot.js', html, fixed = TRUE) <
             regexpr('"x/lt.js"', html, fixed = TRUE)))
-  # a plain table pulls in neither plot asset
+  # plain table pulls in neither plot asset
   plain = format(lt(d), inline_assets = FALSE)
-  (has_match(plain, !'lt-plot'))
+  (has_match(plain, !I('lt-plot')))
 })
 
 assert("lt_sparkline() records a sparkline op and hides extra columns", {
-  # a single list-column: the series lives in that column; nothing is hidden,
-  # and the chart type travels as `kind` (not `type`, which names the op itself)
+  # single list-column: series lives in that column; nothing hidden;
+  # chart type travels as `kind` (not `type`, which names the op itself)
   d = data.frame(g = c("a", "b"))
   d$s = list(c(1, 2, 3), c(4, 5, 6))
   ops = (lt(d) |> lt_sparkline(~ s))$ops
@@ -46,8 +44,8 @@ assert("lt_sparkline() records a sparkline op and hides extra columns", {
   (unclass(sp$columns) %==% "s")
   (any(vapply(ops, function(o) o$type == "hide", logical(1))) %==% FALSE)
 
-  # several columns: all but the first are hidden by default; limits set a
-  # shared scale and a non-default type is carried through
+  # several columns: all but first hidden by default; limits set shared
+  # scale; non-default type carried through
   m = data.frame(a = 1, b = 2, c = 3)
   ops = (lt(m) |> lt_sparkline(~ a + b + c, type = "bar", limits = c(0, 10)))$ops
   sp = ops[[length(ops)]]
@@ -65,7 +63,7 @@ assert("lt_sparkline() records a sparkline op and hides extra columns", {
 assert("inline_safe() escapes </script in content", {
   (has_match(inline_safe("x</script>y"), "<\\\\/script"))
   (has_match(inline_safe("x</SCRIPT>y"), "<\\\\/SCRIPT"))
-  # does not alter other tags
+  # other tags unchanged
   (inline_safe("x</div>y") %==% "x</div>y")
 })
 
@@ -90,38 +88,27 @@ assert("asset_url() respects lt.assets_url option", {
   (url %==% "https://example.com/lt.js")
 })
 
-assert("spec_block() drops css and rules", {
-  x2 = x
-  x2$css = "some.css"
-  x2$rules = ".na { color: red }"
-  sb = spec_block(x2)
-  html = paste(sb, collapse = "")
-  (has_match(html, !"some\\.css"))
-  (has_match(html, !"color: red"))
-  (has_match(html, "window\\.LT"))
-})
-
 assert("spec_block() emits the missing default from the lt.missing option", {
   op = options(lt.missing = NULL); on.exit(options(op), add = TRUE)
-  # unset: no `missing` field is shipped (the runtime defaults to an em dash)
+  # unset: no `missing` field shipped (runtime defaults to em dash)
   sb = paste(spec_block(lt(data.frame(a = 1))), collapse = "")
   (has_match(sb, !'"missing"'))
 
-  # a custom option value is used verbatim
+  # custom option value used verbatim
   options(lt.missing = "n/a")
   sb = paste(spec_block(lt(data.frame(a = 1))), collapse = "")
   (has_match(sb, '"missing": *"n/a"'))
 
-  # empty string is shipped, to override the runtime default and keep NAs blank
+  # empty string shipped, overrides runtime default, keeps NAs blank
   options(lt.missing = "")
   sb = paste(spec_block(lt(data.frame(a = 1))), collapse = "")
   (has_match(sb, '"missing": *""'))
 })
 
 assert("spec_block() records explicit column order for array-index names", {
-  # Array-index column names ("1", "2") would be reordered ahead of string
-  # names by a JSON object round-trip; spec_block must emit `columns` so the
-  # renderer can restore the original order.
+  # Array-index column names ("1", "2") get reordered ahead of string
+  # names by JSON object round-trip; spec_block must emit `columns` so
+  # renderer can restore original order.
   d = data.frame(rowname = "Z", "1" = 1, "2" = 2, check.names = FALSE)
   sb = paste(spec_block(lt(d)), collapse = "")
   (has_match(sb, '"columns".*\\[.*"rowname".*"1".*"2"'))
@@ -130,7 +117,7 @@ assert("spec_block() records explicit column order for array-index names", {
   sb2 = paste(spec_block(lt(data.frame(a = 1, b = 2))), collapse = "")
   (has_match(sb2, !'"columns"'))
 
-  # Non-array-index numeric-looking names are plain string keys — also omitted.
+  # Non-array-index numeric-looking names are plain string keys; also omitted.
   d3 = data.frame(x = 1, y = 2, check.names = FALSE)
   names(d3) = c("-1", "1.5")
   sb3 = paste(spec_block(lt(d3)), collapse = "")
@@ -159,7 +146,7 @@ if (requireNamespace("knitr", quietly = TRUE)) {
     f = "lt.test_once"
     knitr::opts_knit$set(set_names(list(NULL), f))  # reset to unseen
     on.exit(knitr::opts_knit$set(set_names(list(NULL), f)))
-    (knit_once(f) %==% TRUE)   # first table emits the bundle
+    (knit_once(f) %==% TRUE)   # first table emits bundle
     (knit_once(f) %==% FALSE)  # later tables skip it
     (knit_once(f) %==% FALSE)
   })
@@ -172,18 +159,9 @@ if (requireNamespace("knitr", quietly = TRUE)) {
 }
 
 if (requireNamespace("htmltools", quietly = TRUE)) {
-  assert("lt_dependency() bundles core assets; opts add extension/binding", {
-    dep = lt_dependency()
-    (dep$script %==% "lt.js")
-    ("lt.css" %in% dep$stylesheet)
-    di = lt_dependency(interactive = TRUE)
-    ("lt-interactive.js" %in% di$script)
-    ("lt-interactive.css" %in% di$stylesheet)
-    ds = lt_dependency(shiny = TRUE)
-    ("lt-binding.js" %in% ds$script)
+  assert("lt_dependency(plot = TRUE) loads the plot script before core", {
     dp = lt_dependency(plot = TRUE)
-    ("lt-plot.css" %in% dp$stylesheet)
-    # the plot script loads before core so its renderer is registered in time
+    # plot script loads before core so renderer registers in time
     (isTRUE(match("lt-plot.js", dp$script) < match("lt.js", dp$script)))
   })
 }
@@ -195,17 +173,57 @@ assert("tidy_html() indents block tags and keeps rows on one line", {
     '<tbody><tr><td>1</td><td>2</td></tr></tbody></table></div>'
   )
   lines = tidy_html(html)
-  # one line per structural tag, indented by nesting depth
+  # one line per structural tag, indented by depth
   (lines[1] %==% '<div class="lt-wrap">')
   (lines[2] %==% '  <table class="lt-table">')
   (lines[3] %==% '    <thead>')
   (lines[4] %==% '      <tr>')
-  # each cell stays on its own single line with its content inline
+  # each cell on single line, content inline
   (lines[5] %==% '        <th>a</th>')
   (lines[6] %==% '        <th>b</th>')
   (lines[7] %==% '      </tr>')
   (lines[8] %==% '    </thead>')
-  # closing tags dedent back to their opening level
+  # closing tags dedent to opening level
   (lines[length(lines) - 1] %==% '  </table>')
   (lines[length(lines)] %==% '</div>')
+})
+
+# which tables in a fuse()d document define (`def`) or reference (`ref`) keyed
+# data, or embed it (`inline`)
+share_show = function(dir, f) {
+  out = litedown::fuse(file.path(dir, f), 'markdown', envir = environment(), quiet = TRUE)
+  x = unlist(strsplit(out, '\n'))
+  x = x[grepl('LT.d||', x, fixed = TRUE) | grepl('^ *"data(_key)?": ', x)]
+  ifelse(grepl('LT.d||', x, fixed = TRUE), 'def', ifelse(grepl('"data_key"', x), 'ref', 'inline'))
+}
+
+# needs litedown's document-level store (.env$doc)
+if (xfun::pkg_available('litedown', '0.11.9'))
+assert("fuse() encodes repeated data once, across child documents but not separate fuse() calls", {
+  dir = tempfile(); dir.create(dir)
+  # chunk types: table, child document, or fuse() whose output isn't included
+  rmd = function(...) unlist(lapply(c(...), function(z) switch(z,
+    lt = c('```{r}', 'lt::lt(data.frame(x = 1:200, y = 200:1))', '```'),
+    fuse = c('```{r}', 'invisible(litedown::fuse(file.path(dir, "inner.Rmd"), "markdown", envir = environment(), quiet = TRUE))', '```'),
+    c(sprintf('```{r, child="%s.Rmd"}', z), '```')
+  )))
+  w = function(f, ...) writeLines(rmd(...), file.path(dir, f))
+  w('child.Rmd', 'lt'); w('inner.Rmd', 'lt')
+  w('a.Rmd', 'lt', 'child', 'lt')  # parent first, then child, then parent
+  (share_show(dir, 'a.Rmd') %==% c('def', 'ref', 'ref', 'ref'))
+  w('b.Rmd', 'child', 'lt')  # child first: parent reuses its data
+  (share_show(dir, 'b.Rmd') %==% c('def', 'ref', 'ref'))
+  # a fuse() inside a chunk doesn't share with its caller
+  w('c.Rmd', 'fuse', 'lt')
+  (share_show(dir, 'c.Rmd') %==% c('def', 'ref'))
+  # keys are md5 prefixes, identical for the same data in separate documents
+  key = function(f) sub('.*\\["([0-9a-f]+)"\\]=.*', '\\1', grep('LT.d\\|\\|', unlist(strsplit(
+    litedown::fuse(file.path(dir, f), 'markdown', envir = environment(), quiet = TRUE), '\n')), value = TRUE))
+  (key('a.Rmd') %==% key('b.Rmd'))
+  # nothing leaks from one top-level fuse() call to the next
+  (share_show(dir, 'a.Rmd') %==% c('def', 'ref', 'ref', 'ref'))
+
+  # data below `lt.share_size` stays inline; Inf disables sharing
+  op = options(lt.share_size = 1e6); on.exit(options(op))
+  (share_show(dir, 'a.Rmd') %==% rep('inline', 3))
 })

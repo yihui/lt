@@ -17,8 +17,8 @@ output:
 
 ## The cheat sheet (table) {#sec:cheatsheet}
 
-The table below is a self-documenting cheat sheet: every function in this
-package is used to build it, and each function's name is placed where
+The table below is a self-documenting cheat sheet: many functions in this
+package are used to build it, and each function's name is placed where
 that function acts. The title reads `lt_header(title = ...)` because
 `lt_header()` put it there; every column header is the name of the function
 that shaped that column; the row-group label is `lt_group()`; the footnote text
@@ -35,12 +35,15 @@ d = data.frame(
   Date  = as.Date(c("2024-01-15", "2024-02-20", "2024-03-25", "2024-04-30")),
   Align = c(1, 22, 333, 4),
   Width = c("lt_width()", "sets", "column", "widths"),
-  Est   = c("0.61", "0.79", "0.45", "0.90"),
-  CI    = c("(0.40, 0.82)", "(0.57, 1.01)", "(0.20, 0.70)", "(0.71, 1.14)")
+  Est   = c("0.6", "0.8", "0.5", "0.9"),
+  CI    = c("(0.4, 0.8)", "(0.6, 1.0)", "(0.2, 0.7)", "(0.7, 1.1)"),
+  Eff   = c(0.1, -0.3, 0.4, -0.1),
+  EffLo = c(-0.1, -0.4, 0.2, -0.3),
+  EffHi = c(0.3, -0.2, 0.6, 0.1)
 )
 
 library(lt)
-lt(d, auto_format = FALSE) |>
+tbl_cheat = lt(d, auto_format = FALSE) |>
   # lt_group(): the "lt_group()" row-group header on the left
   lt_group(~ Grp) |>
   # lt_header(): the title and subtitle at the top
@@ -56,8 +59,10 @@ lt(d, auto_format = FALSE) |>
   lt_label(
     Grp = "lt_group()", Width = "lt_width()", Label = "lt_label(old = new, ...)",
     Fmt = "lt_format()", Sub = "lt_sub()", Date = "lt_date()",
-    Align = "lt_align()", Est = "lt_merge()"
+    Align = "lt_align()", Est = "lt_merge()", Eff = "lt_errorbar()"
   ) |>
+  # lt_errorbar(): draw an inline forest plot in the "lt_errorbar()" column
+  lt_errorbar(Eff ~ EffLo + EffHi, ref = 0, width = 80) |>
   # lt_html(): render the "Label" column as raw HTML (note the link in row 1)
   lt_html(~ Label) |>
   # lt_align(): center the "lt_align()" column
@@ -68,7 +73,7 @@ lt(d, auto_format = FALSE) |>
   lt_format(~ Fmt, decimals = 1, big_mark = ",") |>
   # lt_date(): format the "lt_date()" column
   lt_date(~ Date, options = list(
-    year = "numeric", month = "short", day = "numeric", timeZone = "UTC"
+    month = "short", day = "numeric", timeZone = "UTC"
   )) |>
   # lt_sub(): NA/zero/small are replaced with self-naming placeholders
   lt_sub(~ Sub, missing = "n/a", zero = "—",
@@ -85,8 +90,12 @@ lt(d, auto_format = FALSE) |>
   lt_footnote(I("Wrap text in <code>I()</code> for raw HTML."), "column", "Label") |>
   # lt_move(): explain it via a footnote, since it has no column of its own here
   lt_footnote("lt_move() can reorder columns as desired.", "column", "Est") |>
+  # lt_errorbar(): point to the other inline plot types via a footnote
+  lt_footnote("lt_sparkline() and lt_dotplot() draw other inline plots.",
+    "column", "Eff") |>
   # lt_note(): the footer note names itself and lt_export()
   lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG.")
+tbl_cheat |> lt_wrap(class = "fullwidth")
 ```
 
 ## Basics
@@ -774,12 +783,8 @@ can_export = lt:::can_bake()
 extension: `.html`, `.pdf`, or (otherwise) `.png`. PDF and PNG are rendered in
 a headless Chromium browser.
 
-```{r}
-tbl = lt(head(penguins))
-```
-
 ```{r, eval = can_export}
-lt_export(tbl, "01-lt.png")
+lt_export(tbl_cheat, "01-lt.png", width = "min-content")
 ```
 
 :::: {#fig:lt-png .figure}
@@ -791,7 +796,7 @@ lt_export(tbl, "01-lt.png")
 ::::
 
 ```{r, eval = can_export}
-lt_export(tbl, "01-lt.pdf")
+lt_export(tbl_cheat, "01-lt.pdf")
 ```
 
 :::: {#fig:lt-pdf .figure}
@@ -807,6 +812,7 @@ by running the lt.js runtime, so the saved file needs no JavaScript to view).
 Set `tidy = TRUE` to pretty-print it with line breaks and indentation:
 
 ```{r, attr.output = '.html', eval = can_export}
+tbl = lt(head(penguins))
 lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 ```
 
@@ -1007,3 +1013,39 @@ lt(d3) |> lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |> lt_interactive(pager = 5)
 ```
 
 Column spanners, styles, and footnotes are no obstacle to interactivity.
+
+## Shiny
+
+`lt_output()` and `render_lt()` show a table as a Shiny output: the server sends
+the table spec and the browser builds the `<table>`.
+
+```{r, eval = FALSE}
+library(shiny)
+ui = fluidPage(lt_output("tbl"))
+server = function(input, output) {
+  output$tbl = render_lt(
+    lt(mtcars) |> lt_header("Motor Trend") |> lt_interactive()
+  )
+}
+shinyApp(ui, server)
+```
+
+`lt_input()` goes the other way: a table whose cells can be edited in the
+browser. The server reads the edited table as a data frame (numeric columns stay
+numeric), and `lt_update()` replaces it, e.g., to add a row or reset the edits.
+Use `columns` to make only some columns editable.
+
+```{r, eval = FALSE}
+library(shiny)
+d = data.frame(Time = c(12, 24), Rate = c(0.8, 0.6), Note = c("a", "b"))
+ui = fluidPage(
+  lt_input("m", d, label = "Edit the cells:", columns = c("Time", "Rate")),
+  actionButton("add", "Add row"),
+  verbatimTextOutput("out")
+)
+server = function(input, output, session) {
+  output$out = renderPrint(input$m)
+  observeEvent(input$add, lt_update(session, "m", rbind(input$m, NA)))
+}
+shinyApp(ui, server)
+```

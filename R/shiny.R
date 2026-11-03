@@ -1,9 +1,9 @@
-# Shiny bindings — htmlDependency + custom output binding (no renderUI).
+# Shiny bindings: htmlDependency + custom output binding (no renderUI).
 #
-# lt_output() returns a placeholder <div class="lt-output"> plus the lt CSS,
-# the lt runtime, and an output binding. render_lt() ships a `{ spec }`
-# payload via shiny::markRenderFunction(); the binding receives the spec
-# and calls LT.build(spec) to swap in the <table>.
+# lt_output() returns a placeholder <div class="lt-output"> plus lt CSS, the
+# runtime, and an output binding. render_lt() ships a `{ spec }` payload via
+# shiny::markRenderFunction(); the binding calls LT.build(spec) to swap in the
+# <table>.
 
 #' HTML dependency for lt tables
 #'
@@ -19,51 +19,87 @@
 #'   Its script loads before the core runtime so plot cells render.
 #' @param shiny Whether to include the Shiny output binding (only needed by
 #'   [lt_output()] / [render_lt()]).
+#' @param input Whether to include the editing extension and Shiny input
+#'   binding (only needed by [lt_input()]).
 #' @return An `html_dependency` object.
 #' @export
 #' @examples
 #' if (requireNamespace('htmltools', quietly = TRUE))
 #'   lt_dependency(interactive = TRUE)
-lt_dependency = function(interactive = FALSE, plot = FALSE, shiny = FALSE)
+lt_dependency = function(
+  interactive = FALSE, plot = FALSE, shiny = FALSE, input = FALSE
+)
+  # name by the modules included: dependencies with the same name are
+  # deduplicated by htmltools, which would drop the modules of all but one
   htmltools::htmlDependency(
-    'lt', as.character(utils::packageVersion('lt')),
+    paste(c(
+      'lt', c('interactive', 'plot', 'shiny', 'input')[c(interactive, plot, shiny, input)]
+    ), collapse = '-'), as.character(utils::packageVersion('lt')),
     src = pkg_file('www'),
     stylesheet = c(
-      'lt.css', if (plot) 'lt-plot.css', if (interactive) 'lt-interactive.css'
+      'lt.css', if (plot) 'lt-plot.css', if (interactive) 'lt-interactive.css',
+      if (input) 'lt-input.css'
     ),
     script = c(
       if (plot) 'lt-plot.js', 'lt.js',
-      if (interactive) 'lt-interactive.js', if (shiny) 'lt-binding.js'
+      if (interactive) 'lt-interactive.js', if (shiny) 'lt-binding.js',
+      if (input) 'lt-input.js'
     )
   )
 
 #' Shiny bindings for lt
 #'
+#' Use lt tables in Shiny apps, as outputs or as inputs.
+#'
 #' `lt_output()` creates a UI placeholder; `render_lt()` supplies the table
 #' spec from the server. Together they render an [lt()] table as a custom
-#' Shiny output — no `renderUI()` involved.
+#' Shiny output.
+#'
+#' `lt_input()` shows a table whose body cells can be edited in the browser;
+#' the edited table is available to the server as a data frame in
+#' `input[[inputId]]`. `lt_update()` replaces the table from the server (e.g.,
+#' to add or remove rows, or to reset the edits). Numeric columns accept only
+#' numbers (an empty cell is `NA`); other columns hold text. Press `Enter` to
+#' commit a cell and move down a row. Editing does not work with row groups
+#' shown as spanning cells, nor with [lt_interactive()], which reorders rows.
 #'
 #' @param outputId Output variable name to read the table from.
 #' @param ... Reserved for future use.
 #' @param expr An expression that returns an [lt()] object.
 #' @param env Environment in which to evaluate `expr`.
 #' @param quoted Whether `expr` is already quoted.
-#' @return `lt_output()` returns a Shiny UI element; `render_lt()` returns a
-#'   render function.
+#' @param inputId The input slot that will be used to access the value.
+#' @param x An [lt()] table, a data frame, or a matrix (the latter two shown
+#'   without automatic number formatting, so cells display the values they
+#'   hold). The server gets the edited table back as a matrix if `x` is one,
+#'   and as a data frame otherwise.
+#' @param label Display label for the input, or `NULL` for no label.
+#' @param columns Names of the editable columns; all columns by default. For
+#'   `lt_update()`, the current editable columns are kept by default.
+#' @param session The `session` object passed to the Shiny server function.
+#' @return `lt_output()` and `lt_input()` return a Shiny UI element;
+#'   `render_lt()` returns a render function; `lt_update()` is called for its
+#'   side effect.
 #' @export
 #' @examples
 #' if (interactive()) {
 #' library(shiny)
-#' ui = fluidPage(lt_output("tbl"))
+#' ui = fluidPage(
+#'   lt_output("tbl"),
+#'   lt_input("m", head(mtcars[, 1:3]), "Edit the cells:"),
+#'   verbatimTextOutput("out")
+#' )
 #' server = function(input, output) {
 #'   output$tbl = render_lt(lt(head(mtcars)) |> lt_header("Motor Trend"))
+#'   output$out = renderPrint(input$m)
 #' }
 #' shinyApp(ui, server)
 #' }
-# Ship the graphics module too: render_lt()'s spec is produced on the server at
-# render time, so the UI cannot know whether it will contain a plot cell.
+# Ship the graphics and interactivity modules too: render_lt()'s spec is built
+# at render time, so the UI can't know whether it has a plot cell or
+# lt_interactive().
 lt_output = function(outputId, ...) shiny::tagList(
-  lt_dependency(plot = TRUE, shiny = TRUE),
+  lt_dependency(interactive = TRUE, plot = TRUE, shiny = TRUE),
   shiny::div(id = outputId, class = 'lt-output')
 )
 
@@ -73,13 +109,49 @@ render_lt = function(expr, env = parent.frame(), quoted = FALSE) {
   func = shiny::installExprFunction(expr, 'func', env, quoted)
   shiny::createRenderFunction(func, function(result, shinysession, name, ...) {
     if (is.null(result)) return(NULL)
-    # Wire format: list of {href} or {content} items. Absolute file paths
-    # are inlined — file:// would resolve against the client's filesystem,
-    # not the Shiny server. URLs and relative paths ride as hrefs.
+    # Wire format: list of {href} or {content} items. Absolute file paths are
+    # inlined (file:// would resolve on the client, not the Shiny server).
+    # URLs and relative paths ride as hrefs.
     if (length(result$css)) result$css = lapply(result$css, function(p) {
       if (is_url(p) || !xfun::is_abs_path(p)) list(href = p)
       else list(content = xfun::file_string(p))
     })
     list(spec = with_col_order(result))
   }, lt_output)
+}
+
+#' @rdname lt_output
+#' @export
+lt_input = function(inputId, x, label = NULL, columns = NULL) {
+  shiny::registerInputHandler('lt.table', input_data, force = TRUE)
+  shiny::div(
+    class = 'form-group shiny-input-container',
+    lt_dependency(input = TRUE),
+    if (!is.null(label)) shiny::tags$label(label, `for` = inputId),
+    shiny::div(id = inputId, class = 'lt-input', `data-spec` = input_spec(x, columns))
+  )
+}
+
+#' @rdname lt_output
+#' @export
+lt_update = function(session, inputId, x, columns = NULL)
+  session$sendInputMessage(inputId, list(spec = input_spec(x, columns, !is.null(columns))))
+
+# JSON spec of an editable table; `input` lists the editable columns
+input_spec = function(x, columns = NULL, set = TRUE) {
+  m = is.matrix(x)
+  if (!inherits(x, 'lt_tbl')) x = lt(x, auto_format = FALSE)
+  if (m) x$matrix = TRUE
+  if (!is.null(x$interactive)) stop('lt_interactive() tables cannot be edited')
+  if (set) x$input = I(as.character(f_cols(columns, x$data) %||% names(x$data)))
+  xfun::tojson(lt_spec(x))
+}
+
+# Turn the column lists sent by the browser into a data frame (or a matrix, if
+# the table was made from one)
+input_data = function(x, ...) {
+  d = lapply(x$data, function(v) unlist(lapply(v, function(e) e %||% NA)))
+  if (isTRUE(x$matrix)) do.call(cbind, d) else as.data.frame(
+    d, stringsAsFactors = FALSE, check.names = FALSE, optional = TRUE
+  )
 }

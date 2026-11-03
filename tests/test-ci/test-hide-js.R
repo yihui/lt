@@ -39,8 +39,7 @@ assert("hide = column names starts those columns hidden; the menu still lists al
 })
 
 assert("with resize on, hiding a column also drops its <col> (fixed layout)", {
-  # the body cells alone would leave a gap in a fixed-layout table; the <col>
-  # must be hidden too for the column to collapse
+  # hiding body cells alone leaves a gap in a fixed layout; hide the <col> too
   x = itbl(hide = TRUE, resize = TRUE)
   off1 = box_click(1)
   (lti_eval(x, 't.querySelectorAll("col")[1].hidden', off1) %==% 'true')
@@ -60,9 +59,8 @@ assert("hide accepts a formula, and the menu lists displayed labels", {
 })
 
 assert("hiding a column also hides its filter-row and plot-axis-footer cells", {
-  # a toggled-off column must disappear from EVERY per-column row, not only the
-  # header and body: the per-column filter boxes and an inline plot's axis
-  # footer too, or (e.g.) the plot's axis ends up shifted off its own column
+  # a hidden column must vanish from EVERY per-column row (filter boxes, plot
+  # axis footer too), or the axis shifts off its column
   x = lt(data.frame(name = sym, a = c(1, 2, 3, 4), b = c(2, 3, 4, 5))) |>
     lt_dotplot(~ a + b, axis = TRUE) |>
     lt_interactive(hide = TRUE, filter = TRUE, pager = FALSE)
@@ -83,10 +81,8 @@ assert("hiding a column also hides its filter-row and plot-axis-footer cells", {
 })
 
 assert("hiding a column keeps the spanner row aligned with the body", {
-  # the spanner row merges cells, so a column is not at cell index i there as in
-  # every other row; the hide loop must shrink the covering spanner's colSpan
-  # (and drop it once all its columns are gone) rather than skip the row, or the
-  # spanners drift off their columns
+  # spanner row merges cells, so column i is not at cell i; hide loop must
+  # shrink the covering colSpan (drop it when empty), or spanners drift
   d = data.frame(a = 1:3, b = 4:6, c = 7:9, e = 10:12)
   x = lt(d) |> lt_spanner("G1", ~ a + b) |> lt_spanner("G2", ~ c + e) |>
     lt_interactive(hide = ~ a, pager = FALSE)
@@ -105,9 +101,9 @@ assert("hiding a column keeps the spanner row aligned with the body", {
 })
 
 assert("the menu groups columns under their spanners, indenting the children", {
-  # a spanner's columns are listed under a group header and indented, so the
-  # same column label repeating across spanners (here auto-span turns both
-  # Sepal.Length and Petal.Length into "Length") is no longer ambiguous
+  # spanner columns are listed under an indented group header, so repeated
+  # labels (auto-span makes both Sepal.Length and Petal.Length "Length") stay
+  # unambiguous
   x = lt(iris) |> lt_spanner() |> lt_interactive(hide = TRUE)
   rows = paste0(
     '[...t.querySelector(".lti-menu").children].map(e => ',
@@ -122,8 +118,8 @@ assert("the menu groups columns under their spanners, indenting the children", {
 })
 
 assert("hiding a column leaves an open detail row's full-width cell alone", {
-  # the hide loop keys cells by column index, but a detail row has one cell
-  # spanning every column; it must skip that cell, not take it for column 0's
+  # hide loop keys cells by column index; a detail row's single spanning cell
+  # must be skipped, not taken for column 0's
   x = itbl(hide = TRUE, detail = ~ n, pager = FALSE)
   expand = 't.querySelector(".lti-expand").click()'
   off0 = paste(expand, box_click(0), sep = ';')
@@ -131,4 +127,23 @@ assert("hiding a column leaves an open detail row's full-width cell alone", {
   (lti_eval(x, 't.querySelector("tr.lti-detail td").colSpan', off0) %==% '2')
   # the real first-column cell is still hidden, as asked
   (lti_eval(x, cell_hidden(0), off0) %==% 'true')
+})
+
+assert("hide = list(label=) shows a labeled chip in the bar instead of the eye", {
+  x = itbl(hide = list(label = 'Show/Hide columns', columns = 'n'))
+  (lti_eval(x, 't.querySelectorAll(".lti-cols > button").length') %==% '0')
+  (lti_eval(x, 't.querySelector(".lti-cols .lti-chip-name").textContent')
+   %==% 'Show/Hide columns')
+  # the chip sits with the icons, after the filter chips, and opens the same checklist
+  (lti_eval(x, 't.querySelectorAll(".lti-bar .lti-icons .lti-cols .lti-chip").length')
+   %==% '1')
+  open = 't.querySelector(".lti-chip").click()'
+  (lti_eval(x, 't.querySelector(".lti-menu").hidden', open) %==% 'false')
+  (lti_eval(x, th_hidden(1)) %==% 'true')
+})
+
+assert("the control bar orders search, chips, then icons", {
+  x = itbl(hide = TRUE, download = TRUE, search = TRUE)
+  (lti_eval(x, '[...t.querySelector(".lti-bar").children].map(e => e.className.split(" ")[0]).join()')
+   %==% 'lti-search,lti-chips,lti-icons')
 })

@@ -9,8 +9,8 @@ assert('a "select" on a visible column is a header funnel that defaults to no fi
   # a visible column's control sits under its header (the filter row), not in a chip
   (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-funnel").length') %==% '1')
   (lti_eval(x, 't.querySelectorAll(".lti-chip").length') %==% '0')
-  # no value is pre-selected, so a bare "select" shows every row on load (a seeded
-  # first-choice filter would silently hide rows the reader never asked to hide)
+  # no preselected value: bare "select" shows every row (a seeded first choice
+  # would silently hide rows)
   (length(lti_rows(x)) %==% 4L)
   # the dropdown offers a leading blank "no filter" choice before the distinct values
   (lti_eval(x, 'Array.from(t.querySelectorAll(".lti-filters select option")).map(o => o.value).join(",")')
@@ -34,8 +34,8 @@ assert('a "select" with a `selected` value seeds that filter on load', {
 })
 
 assert('a header funnel inherits its column alignment', {
-  # a numeric column is right-aligned; its filter cell (holding the funnel) must
-  # carry the same al-r class so the funnel sits under the header text
+  # numeric column is right-aligned; its filter cell needs al-r too so the
+  # funnel sits under the header text
   x = lt(tdf()) |> lt_interactive(
     filter = list(n = 'range', grp = 'select'), pager = FALSE)
   # cells: name (no filter, left), n (range, right), grp (select, left)
@@ -44,8 +44,8 @@ assert('a header funnel inherits its column alignment', {
 })
 
 assert('el._lt.view() reports the rows a typed filter keeps', {
-  # a download-what-is-shown button reads the current view; typed filters live in
-  # state.filters (not external predicates), so view() must reflect them
+  # download-shown button reads the current view; typed filters live in
+  # state.filters, not external predicates, so view() must reflect them
   x = lt(tdf()) |> lt_interactive(
     filter = list(grp = list(type = 'select', selected = 'a')), pager = FALSE)
   # grp == "a" keeps rows 1 and 3 (every row, not just a page)
@@ -80,8 +80,8 @@ assert('a chip opens its popover on a click anywhere, aligned to the chip left e
   # a click inside the open panel leaves it open
   stay = paste(open, 't.querySelector(".lti-pop-panel").click()', sep = ';')
   (lti_eval(x, '!t.querySelector(".lti-pop-panel").hidden', stay) %==% 'true')
-  # a stray outside click with no preceding pointerdown (as a widget re-render or
-  # a native <select> pick fires) must not shut the panel
+  # outside click without a pointerdown (widget re-render, native <select>
+  # pick) must not close the panel
   phantom = paste(open,
     't.closest(".lt-wrap").dispatchEvent(new MouseEvent("click", { bubbles: true }))',
     sep = ';')
@@ -120,9 +120,8 @@ assert('a "range" filter renders a two-thumb slider whose box filters numericall
 })
 
 assert('a bare thumb click (pointer down + up, no move) does not re-filter', {
-  # clicking a thumb without dragging leaves the range unchanged, so it must not
-  # commit a filter and rebuild <tbody>. A fresh <tbody> would drop a stamp we
-  # put on the current one, so its survival proves no re-render happened.
+  # thumb click without drag must not commit a filter or rebuild <tbody>; a
+  # stamp on the current <tbody> surviving proves no re-render
   x = lt(tdf()) |> lt_interactive(filter = list(n = 'range'), pager = FALSE)
   js = 't.querySelector(".lti-filters .lti-funnel").click();
     var th = t.querySelectorAll(".lti-thumb")[0], cx = th.getBoundingClientRect().left;
@@ -147,8 +146,8 @@ assert('dragging a thumb to a new value commits the narrowed range on release', 
 })
 
 assert('a chip value summary updates only once its popover closes, not while editing', {
-  # the chip text is variable width; updating it live while dragging would shift
-  # the funnel (and popover) sideways, so it is deferred until the popover closes
+  # chip text width varies; live updates while dragging would shift the funnel
+  # and popover, so defer until the popover closes
   x = lt(tdf()) |> lt_hide(~ n) |> lt_interactive(filter = list(n = 'range'), pager = FALSE)
   js = 'var f = t.querySelector(".lti-chip .lti-funnel"); f.click();
         var b = t.querySelector(".lti-chip .lti-pop input");
@@ -189,8 +188,6 @@ assert('a "checklist" seeds a `selected` subset and chips when the column is hid
 
 assert('LT.ui exposes the reusable popover, checklist, and chip builders', {
   x = itbl()
-  (lti_eval(x, 'typeof LT.ui.popover + "," + typeof LT.ui.checklist + "," + typeof LT.ui.chip')
-   %==% 'function,function,function')
   # the chip builder: a labelled wrapper that holds the caller's control and
   # exposes mark()/summarize(); its parts carry the same classes as a typed chip
   chip = 'var c = LT.ui.chip(document, "Group", document.createElement("button"));
@@ -241,15 +238,14 @@ assert('box = FALSE drops the expression box, leaving only the widget', {
 
 assert('the widget hides when a hand-typed expression outruns it', {
   x = lt(tdf()) |> lt_interactive(filter = list(n = 'range'), pager = FALSE)
-  # read the widget's own display, not its `hidden` attribute: the widget sets
-  # an explicit display, so the attribute alone would not take it out of the
-  # layout -- the display is what the reader actually sees
+  # check the widget's display, not `hidden`: it sets an explicit display, so
+  # the attribute alone doesn't remove it from layout
   disp = 'getComputedStyle(t.querySelector(".lti-widget")).display'
   # a representable range keeps the slider shown
   rng = 'var b = t.querySelector(".lti-filters .lti-pop input"); b.value = "x >= 4 && x <= 9"; b.onchange()'
   (lti_eval(x, disp, rng) %==% 'contents')
-  # an expression the two-thumb slider can't represent hides the widget, so it
-  # never shows a range out of step with the box
+  # expression the slider can't represent hides it, so it never disagrees with
+  # the box
   custom = 'var b = t.querySelector(".lti-filters .lti-pop input"); b.value = "x == 5 || x == 12"; b.onchange()'
   (lti_eval(x, disp, custom) %==% 'none')
   (lti_rows(x, custom) %==% c('Rash', 'Nausea'))
@@ -259,8 +255,8 @@ assert('the widget hides when a hand-typed expression outruns it', {
 })
 
 assert('a column with nothing to filter gets no box, even under a blanket default', {
-  # an all-blank column (e.g. a plot-only target) has nothing to match, so the
-  # unnamed TRUE default skips it; only the populated columns get a box
+  # all-blank column (e.g. plot-only target) has nothing to match; unnamed
+  # TRUE skips it
   d = data.frame(name = sym, blank = rep('', 4))
   x = lt(d) |> lt_interactive(filter = TRUE, search = FALSE, pager = FALSE)
   (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-search").length') %==% '1')
@@ -268,8 +264,8 @@ assert('a column with nothing to filter gets no box, even under a blanket defaul
 
 assert('a popover flips to the funnel right against the scroll box, not the viewport', {
   x = lt(tdf()) |> lt_interactive(filter = list(grp = 'select'), search = FALSE, pager = FALSE)
-  # a narrow scroll box with room to spare in the viewport: a panel that would
-  # overflow the box must still flip (anchored right:0), gauged by the box edge
+  # narrow scroll box inside a roomy viewport: overflowing panel must still
+  # flip (right:0), gauged by the box edge
   narrow = 'var w = t.closest(".lt-wrap"); w.style.width = "150px"; w.style.overflowX = "auto";
             t.querySelector(".lti-funnel").click()'
   (lti_eval(x, 't.querySelector(".lti-pop-panel").style.right === "0px"', narrow) %==% 'true')

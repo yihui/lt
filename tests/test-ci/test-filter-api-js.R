@@ -1,8 +1,7 @@
 # External filter controller: el._lt.filter() for outside widgets (browser).
 
 assert("el._lt.filter lets outside widgets filter the table, composing with AND", {
-  # forestly builds its own dropdown/range widgets and drives the table through
-  # this controller rather than the built-in boxes
+  # forestly drives the table through this controller, not the built-in boxes
   x = itbl(pager = FALSE)
   rows = 't.querySelectorAll("tbody tr").length'
   (lti_eval(x, rows) %==% '4')
@@ -21,8 +20,7 @@ assert("el._lt.filter lets outside widgets filter the table, composing with AND"
 })
 
 assert("external predicates see hidden columns too (not just the visible ones)", {
-  # forestly's slider/dropdown filter on helper columns that are hidden from the
-  # table; the row object handed to a predicate must still carry them
+  # forestly filters on hidden helper columns; predicate rows must carry them
   x = lt(data.frame(name = sym, n = c(5, 12, 3, 8), g = c("a", "b", "a", "b"))) |>
     lt_hide("g") |> lt_interactive(pager = FALSE)
   rows = 't.querySelectorAll("tbody tr").length'

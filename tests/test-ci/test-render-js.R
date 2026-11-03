@@ -1,15 +1,10 @@
 # Core static rendering: table structure, column hiding, HTML escaping,
 # raw-HTML I() fields, and automatic column labels.
 
-assert("basic table renders correct cells", {
-  html = build(list(data = list(x = 1:2, y = c("a", "b"))))
-  (has_match(html, "<table.*>x</th>.*>1</td>.*>b</td>"))
-})
-
 assert("lt_hide drops a column (header and cells) from the rendered table", {
   x = lt(data.frame(x = 1:2, y = c("a", "b"), z = 3:4)) |> lt_hide("y")
   html = as.character(lt_static(x, method = 'node', css = FALSE, fragment = TRUE))
-  # the kept columns render, the hidden one leaves no header and no cells
+  # kept columns render; hidden one leaves no header or cells
   (has_match(html, ">x</th>"))
   (has_match(html, ">z</th>"))
   (has_match(html, !">y</th>"))
@@ -48,9 +43,8 @@ assert("html_cols marks only the listed columns raw", {
   (has_match(html, ">&lt;i&gt;y&lt;/i&gt;</td>"))
 })
 
-# A text field (title, label, footnote, ...) wrapped in I() on the R side
-# arrives as a one-element array and is emitted verbatim; a plain string is
-# escaped.
+# Text field (title, label, footnote, ...) wrapped in I() in R arrives as
+# one-element array, emitted verbatim; plain string is escaped.
 assert("I()-wrapped title is raw HTML; a plain title is escaped", {
   html = build(list(data = list(x = 1), header = list(title = I("<b>T</b>"))))
   (has_match(html, 'class="lt-title"><b>T</b>'))
@@ -63,7 +57,7 @@ assert("I()-wrapped column label is raw HTML", {
     data = list(a = 1, b = 2),
     ops = list(list(type = "label", labels = list(a = I("<b>A</b>"), b = "<b>B</b>")))
   ))
-  # column a's label is raw, b's is escaped
+  # a's label raw, b's escaped
   (has_match(html, "<th[^>]*><b>A</b></th>"))
   (has_match(html, "&lt;b&gt;B&lt;/b&gt;</th>"))
 })

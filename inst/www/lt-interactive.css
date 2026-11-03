@@ -1,38 +1,32 @@
-/* lt-interactive.css — controls for lt-interactive.js (search box, sortable
- * headers, column filters, pager). Classes are namespaced `lti-*` to avoid
- * clashing with core `lt-*`. Only properties that change a default are
- * declared. */
+/* Controls for lt-interactive.js. `lti-*` classes avoid clashing with core
+ * `lt-*`. Declare only properties that change a default. */
 
 .lt-table {
-  /* the search box and the pager are full-width rows of the table, so they line
-   * up with its edges rather than the cell text */
+  /* full-width rows: align with table edges, not cell text */
   :is(.lti-head, .lti-pager-row) td {
     padding-left: 0;
     padding-right: 0;
   }
 
-  /* Each box fills its cell: the whole table for the search, one column for a
-   * filter. A faded magnifier stands in for a placeholder — it says "type here
-   * to search" in no language — and steps aside once the box has the focus. */
+  /* Box fills its cell. Faded magnifier replaces a (translatable) placeholder;
+   * hidden on focus. */
   .lti-search {
     width: 100%;
     padding: .5em 0 .5em 1.6em;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="2"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l5 5"/></svg>') 0.4em center / 1em no-repeat;
-    /* on focus the magnifier goes away, leaving a small left pad so the caret
-     * sits just inside the edge rather than behind the icon's wider gutter */
+    /* no icon on focus: smaller left pad so caret sits near the edge */
     &:focus {
       padding-left: .5em;
       background-image: none;
     }
   }
 
-  /* the click target is the label span, not the whole cell (so the resize grip
-   * stays separate), so the pointer cursor belongs on the label too */
+  /* click target is the label, not the cell (keeps resize grip separate) */
   .lti-sortable .lti-label {
     cursor: pointer;
     user-select: none;
   }
-  /* the ▲/▼ indicator, set off from the column label */
+  /* ▲/▼ indicator */
   .lti-sort {
     margin-left: 0.3em;
     font-size: 0.8em;
@@ -42,8 +36,7 @@
     text-align: center;
   }
 
-  /* the expand caret leads the first cell of each row; it carries its own
-   * glyph (▸ / ▾), so it needs no borders or background of its own */
+  /* expand caret: glyph is its own (▸ / ▾), so strip button chrome */
   .lti-expand {
     border: none;
     background: none;
@@ -51,13 +44,12 @@
     margin-right: 0.4em;
     cursor: pointer;
   }
-  /* a row's detail spans every column; the inset marks it as belonging to the
-   * row above it */
+  /* inset ties the detail to the row above */
   .lti-detail > td {
     padding-left: 1.5em;
   }
 
-  /* the drag grip sits on a column's right edge, inside its header cell */
+  /* drag grip on a column's right edge */
   th:has(.lti-resizer) {
     position: relative;
   }
@@ -75,65 +67,60 @@
       opacity: 0.3;
     }
   }
-  /* while dragging, the pointer keeps the resize cursor anywhere on the table,
-   * and the drag selects no text */
+  /* keep resize cursor and block text selection during drag */
   &.lti-resizing {
     cursor: col-resize;
     user-select: none;
   }
-  /* column widths are authoritative once frozen, so a drag moves one edge only */
+  /* frozen widths are authoritative: a drag moves one edge only */
   &.lti-fixed {
     table-layout: fixed;
-    /* a shrunk column hides its overflow rather than spilling into the next
-     * column or out under the resize grip, so the grip can shrink it freely;
-     * the detail row (full width, possibly tall) and the popover-bearing
-     * filter/bar cells (<td>) are left to overflow */
+    /* clip a shrunk column so the grip can shrink it freely; detail row and
+     * popover-bearing filter/bar cells (<td>) must overflow */
     thead th, tbody tr:not(.lti-detail) td {
       overflow: hidden;
     }
   }
 
-  /* the control bar lays its parts out left to right: an icon group, the filter
-   * chips, then the search box. Only the search box grows, so all the free space
-   * lands in it (pushing it to the right edge); the icons and chips keep their
-   * natural width. The search still fills the bar when it is the only control. */
+  /* control bar: search, chips, icons. Only search grows, taking free space; it
+   * fills the bar when alone. */
   .lti-bar {
     display: flex;
     align-items: center;
-    /* a wide gap between the three parts (icons, chips, search) ... */
+    /* wide gap between parts ... */
     gap: 1.2em;
     .lti-icons, .lti-chips {
       flex: 0 0 auto;
       display: flex;
       align-items: center;
-      /* ... but a tight gap between the buttons / chips within a part */
+      /* ... tight within a part */
       gap: 0.3em;
     }
     .lti-chips {
       gap: 0.5em;
-      /* always present as a drop target for a caller's chip (el._lt.chips); when
-         it holds none, collapse it so it adds no gap between icons and search */
+      /* always present as a drop target for caller chips (el._lt.chips);
+         collapse when empty to avoid a stray gap */
       &:empty { display: none; }
     }
-    /* direct child only: a chip's popover holds its own `.lti-search` box */
+    /* direct child only: chip popovers hold their own `.lti-search` */
     & > .lti-search {
       flex: 1 1 8em;
       min-width: 6em;
     }
   }
 
-  /* shared footprint for the eye button and the download button */
-  .lti-cols button, .lti-download {
+  /* shared size of eye and download buttons */
+  .lti-cols > button, .lti-download {
     border: none;
     padding: 0;
     width: 1.2em;
     height: 1.2em;
   }
 
-  /* the column-visibility menu: an eye button and the checklist it pops up */
+  /* column-visibility menu: eye button + checklist popup */
   .lti-cols {
     position: relative;
-    button {
+    & > button {
       background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="1.5"><path d="M1 8s2.5-4.5 7-4.5 7 4.5 7 4.5-2.5 4.5-7 4.5-7-4.5-7-4.5z"/><circle cx="8" cy="8" r="2"/></svg>');
     }
     .lti-menu {
@@ -149,31 +136,31 @@
         white-space: nowrap;
         cursor: pointer;
       }
-      /* a spanner's label, above its (indented) columns */
+      /* spanner label above its indented columns */
       .lti-group {
         font-weight: 600;
         white-space: nowrap;
       }
       .lti-sub { padding-left: 1em; }
     }
+    /* a labeled chip sits at the bar's end: open leftward, inside the table */
+    .lti-chip + .lti-menu { left: auto; right: 0; }
   }
 
-  /* the CSV download button: an icon button, same footprint as the eye button */
+  /* CSV download icon button */
   .lti-download {
     background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="1.5"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5"/><path d="M2 11v3h12v-3"/></svg>');
   }
 
-  /* typed filter chips sit after the search box in the head bar; each is a label,
-   * a summary of the current filter, and a funnel popping up the widget + box */
+  /* typed filter chip: label, filter summary, funnel opening widget + box */
   .lti-chip {
-    /* the whole chip is the popover's click target and the box its panel is
-     * positioned against, so the panel opens flush with the chip's left edge */
+    /* whole chip is the click target and panel anchor (panel flush with chip) */
     position: relative;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 0.3em;
-    /* a pill (border + faint fill) so each chip reads as a separate unit */
+    /* pill look separates chips */
     padding: 0.05em 0.5em;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -186,7 +173,7 @@
       color: #555;
       font-variant-numeric: tabular-nums;
     }
-    /* let the panel resolve against the chip, not the inner funnel wrap */
+    /* panel positions against the chip, not the funnel wrap */
     .lti-pop { position: static; }
   }
   .lti-pop {
@@ -199,8 +186,7 @@
       opacity: 0.55;
       background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="gray"><path d="M1 2h14l-5.5 6.5V14l-3 1V8.5z"/></svg>');
     }
-    /* a funnel standing in for a header-level filter reads as active when its
-     * column has a live term */
+    /* active when the column has a live term */
     &.lti-on .lti-funnel {
       opacity: 1;
     }
@@ -219,7 +205,7 @@
       border: 1px solid;
       .lti-widget { display: contents; }
       &[hidden], [hidden] { display: none; }
-      /* a checklist widget's rows: a checkbox beside its label */
+      /* checklist row: checkbox + label */
       .lti-check {
         display: flex;
         align-items: center;
@@ -230,7 +216,7 @@
     }
   }
 
-  /* the custom range slider: a track with a fill band between two button thumbs */
+  /* range slider: track, fill band, two button thumbs */
   .lti-slider {
     position: relative;
     height: 1.2em;
@@ -280,16 +266,15 @@
     font: inherit;
     cursor: pointer;
   }
-  /* push the row count away from the arrows, and the page size to the far end */
+  /* row count away from arrows; page size pushed to far end */
   .lti-pos {
     margin: 0 auto 0 0.3em;
   }
 }
 
-/* Busy state during a view recompute that freezes the page (see
- * lt-interactive.js): wait cursor over the whole table and a dimmed body. */
+/* Busy state during a page-freezing recompute (see lt-interactive.js). */
 .lti-busy {
-  /* !important beats the controls' own pointer/resize cursors */
+  /* beat controls' own cursors */
   &, & * {
     cursor: wait !important;
   }

@@ -1,3 +1,15 @@
+# CHANGES IN lt VERSION 0.6
+
+- `lt_export(width = )` also accepts a CSS width string, e.g., `"min-content"` for the narrowest width that shows every column.
+
+- `lt_interactive(hide = list(label = ))` shows the column-visibility menu as a labeled chip in the control bar instead of the eye icon.
+
+- The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, CSV download), and the column menu button's tooltip reads "Show/Hide columns".
+
+- Added `lt_input()` and `lt_update()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
+
+- In `litedown::fuse()` documents, tables built from the same data frame now write the data to the output only once and refer to it from the other tables, which makes the output file smaller. This also works across child documents. Set the `lt.share_size` global option (in bytes) to share only data frames above that size.
+
 # CHANGES IN lt VERSION 0.5
 
 - Added `lt_interactive()` to make a table interactive in the browser: click-to-sort headers, a search box, per-column filters (plain, or typed dropdown/range/checklist widgets), pagination, column resizing, a column-visibility menu, expandable row detail, and a CSV download of the current view. Everything runs client-side via an extension loaded only for opted-in tables, and sorting and filtering stay within each row group or subtree.

@@ -10,10 +10,9 @@ assert("separator row groups render correctly", {
 })
 
 assert("rowspan row groups render label + filler cells", {
-  # A group of n > 1 rows puts its label in a non-spanning cell (so it aligns
-  # with the row's body cells) plus an empty filler spanning the rest. Group
-  # "A" spans 3 rows: label on row 1, filler with rowspan="2" after. The
-  # single-row group "B" is just a plain label cell (no filler, no rowspan).
+  # Group of n > 1 rows: non-spanning label cell (aligns with body cells) plus
+  # empty filler spanning the rest. "A" spans 3 rows: label on row 1, filler
+  # rowspan="2" after. Single-row "B": plain label, no filler.
   html = build(list(
     data = list(g = c("A", "A", "A", "B"), v = 1:4),
     row_group = list("g")
@@ -26,7 +25,7 @@ assert("rowspan row groups render label + filler cells", {
 })
 
 assert("two-row group filler omits the rowspan attribute", {
-  # A 2-row group leaves n-1 = 1 filler row, which needs no rowspan attribute.
+  # 2-row group: 1 filler row, no rowspan attribute needed
   html = build(list(
     data = list(g = c("A", "A"), v = 1:2),
     row_group = list("g")
@@ -36,9 +35,8 @@ assert("two-row group filler omits the rowspan attribute", {
 })
 
 assert("column widths align past rowspan group columns", {
-  # A width set on a body column must apply to that column, not shift onto the
-  # leading rowspan group column. The colgroup gets an empty <col> per group
-  # column, so the width lands on the correct <col>.
+  # Body-column width must not shift onto the leading rowspan group column:
+  # colgroup gets an empty <col> per group column.
   html = build(list(
     data = list(g = c("A", "A"), v = 1:2),
     row_group = list("g"),
@@ -48,9 +46,8 @@ assert("column widths align past rowspan group columns", {
 })
 
 assert("full-width control rows span the rowspan group columns too", {
-  # a rowspan group adds a leading column that is not in `_cols`; the table-wide
-  # control rows (head bar, pager, no-match row, detail) must span it as well, or
-  # they fall short of the table's full width
+  # rowspan group adds a leading column not in `_cols`; table-wide control rows
+  # (head bar, pager, no-match row, detail) must span it too
   d = data.frame(g = c("A", "A", "B"), x = c(1, 2, 3), y = c(4, 5, 6))
   x = lt(d) |> lt_group(~ g) |>
     lt_interactive(pager = 2, search = TRUE, download = TRUE)
@@ -66,8 +63,8 @@ assert("full-width control rows span the rowspan group columns too", {
 })
 
 assert("an under-header filter lines up past the rowspan group columns", {
-  # the filter row leads with the group columns' (empty) cells, so each column's
-  # funnel sits under its own header rather than shifting left by the group count
+  # filter row leads with empty group-column cells so funnels stay under their
+  # own headers
   d = data.frame(g = c("A", "A", "B"), x = c(1, 2, 3), y = c(4, 5, 6))
   x = lt(d) |> lt_group(~ g) |> lt_interactive(filter = list(y = "range"))
   # 3 = 1 group cell + x + y; the funnel's cell is the last one (column y)

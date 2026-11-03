@@ -52,6 +52,22 @@
 #' `lt.missing` global option, e.g. `options(lt.missing = "n/a")`; set it to
 #' the empty string (`options(lt.missing = "")`) to leave `NA` cells blank.
 #' Use [lt_sub()] with `missing =` to override the text for specific columns.
+#' @section Repeated data in `litedown::fuse()` documents:
+#' A document often shows several tables built from the same data, e.g., one
+#' data frame with different columns, groups, or formatting in each table.
+#' To keep the output file small, `lt()` writes the data into the document only
+#' once; the other tables just point to that copy instead of repeating the
+#' data. This happens automatically when the document is rendered by
+#' [litedown::fuse()], including documents that include child documents.
+#'
+#' Sharing saves space except for tiny data: a data frame with roughly 15 cells
+#' or fewer (e.g., 5 rows by 3 columns) is about as small as the pointer to it,
+#' so sharing it gains nothing and may add a few bytes. For anything larger, the
+#' saving grows with the size of the data and the number of tables using it.
+#' To share only data frames above a certain size, set the `lt.share_size`
+#' global option (in bytes, as reported by [utils::object.size()]), e.g.,
+#' `options(lt.share_size = 1e4)`; smaller data is then written into each
+#' table. Use `options(lt.share_size = Inf)` to turn sharing off.
 #' @return A table object that can be piped into `lt_*()` functions.
 #' @export
 #' @examples
@@ -84,14 +100,14 @@ add_op = function(x, type, ...) {
 
 camel2dash = function(x) gsub('([A-Z])', '-\\L\\1', x, perl = TRUE)
 
-# Canonicalize a `...`-style name = value mapping into a named list. Three forms
-# produce the same result:
+# Canonicalize a `...`-style name = value mapping into a named list. Three
+# forms give the same result:
 #   f(a = 1, b = 2)               # named arguments
 #   f(c(a = 1, b = 2))            # a single named vector or list
 #   f(list(c("a", "b"), c(1, 2))) # a single list(names, values) of two parallel
 #                                 #   vectors
-# Any other `...` is returned unchanged, so a caller's own unnamed-argument
-# handling still sees it.
+# Any other `...` is returned unchanged for the caller's own unnamed-argument
+# handling.
 name_value_args = function(...) {
   args = list(...)
   if (length(args) != 1 || !is.null(names(args))) return(args)
@@ -102,20 +118,20 @@ name_value_args = function(...) {
   args
 }
 
-# Set names, and optionally coerce x to list (as.list() would drop class of x's
-# values, e.g. I(), so lapply() instead)
+# Set names, optionally coercing x to list (as.list() would drop the class of
+# x's values, e.g. I(), so lapply() instead)
 set_names = function(x, nm, to_list = FALSE) {
   if (to_list) x = lapply(seq_along(x), function(i) x[i])
   names(x) = nm
   x
 }
 
-# Resolve a column selection to column names. `cols` may be:
-# - a one-sided formula; if its right-hand side references the pronoun `.`
-#   (the character vector of column names), it is evaluated as a predicate and
-#   a logical result selects the matching names (a character result is used
-#   as-is), e.g. `~ endsWith(., '_time')` or `~ grep('_x$', ., value = TRUE)`;
-#   otherwise the bare variable names on the RHS are taken, e.g. `~ a + b`;
+# Resolve a column selection to names. `cols` may be:
+# - a one-sided formula; if its RHS references the pronoun `.` (the column
+#   names), it is evaluated as a predicate: logical selects matching names,
+#   character is used as-is, e.g. `~ endsWith(., '_time')` or
+#   `~ grep('_x$', ., value = TRUE)`; otherwise the bare RHS variable names are
+#   taken, e.g. `~ a + b`;
 # - a character vector of column names;
 # - integer positions (resolved against `names(data)` when `data` is supplied).
 f_cols = function(cols, data = NULL) {

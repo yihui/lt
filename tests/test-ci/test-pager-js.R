@@ -1,4 +1,4 @@
-# Interactive pager (browser): page slicing, defaults, Inf page size, and the
+# Interactive pager (browser): page slicing, defaults, Inf page size,
 # page-size selector.
 
 assert("the pager shows one page of rows at a time", {
@@ -11,31 +11,31 @@ assert("the pager shows one page of rows at a time", {
   (lti_rows(x, paste(click(2), click(1), sep = ';')) %==% c("Rash", "Nausea"))  # prev
   (lti_rows(x, click(3)) %==% c("Headache", "Itch"))                    # last
   (lti_rows(x, paste(click(3), click(0), sep = ';')) %==% c("Rash", "Nausea"))  # first
-  # the readout counts the rows, and the arrows are dead at the ends
+  # readout counts rows; arrows dead at the ends
   pos = 'document.querySelector(".lti-pos").textContent'
   (lti_eval(x, pos) %==% '1–2 / 4')
   (lti_eval(x, pos, click(2)) %==% '3–4 / 4')
   dis = 'document.querySelectorAll(".lti-pager button")'
   (lti_eval(x, sprintf('[...%s].map(b => +b.disabled).join("")', dis)) %==% '1100')
   (lti_eval(x, sprintf('[...%s].map(b => +b.disabled).join("")', dis), click(2)) %==% '0011')
-  # a single page size offers no selector
+  # single page size offers no selector
   (lti_eval(x, 'document.querySelectorAll(".lti-pager select").length') %==% '0')
 })
 
 assert("core caps the initial render to the first page when the plugin is loaded", {
-  # with the plugin and a pager, buildHtml emits only the first page: 2 columns
+  # with plugin and pager, buildHtml emits only first page: 2 columns
   # x 2 rows (page size 2) = 4 body cells
   cells = 'LT.buildHtml({...t._ltSpec}).match(/<td/g).length'
   (lti_eval(itbl(pager = 2), cells) %==% '4')
-  # with no pager, every row renders (4 rows x 2 columns = 8 cells)
+  # no pager: every row renders (4 rows x 2 columns = 8 cells)
   (lti_eval(itbl(pager = FALSE), cells) %==% '8')
 })
 
 assert("paging is on by default; the size selector drops when no size splits", {
-  # default sizes, 4 rows: pager shows but no size splits, so no selector
+  # default sizes, 4 rows: pager shows, no size splits, so no selector
   (lti_eval(itbl(), 'document.querySelector(".lti-pos").textContent') %==% '1–4 / 4')
   (lti_eval(itbl(), 'document.querySelectorAll(".lti-pager select").length') %==% '0')
-  # a size below the row count brings the selector back
+  # size below row count brings selector back
   (lti_eval(itbl(pager = c(2, 10)),
             'document.querySelectorAll(".lti-pager select").length') %==% '1')
   (lti_eval(itbl(pager = FALSE),
@@ -44,7 +44,7 @@ assert("paging is on by default; the size selector drops when no size splits", {
 
 assert("a page size of Inf puts every row on one page", {
   x = itbl(pager = c(2, Inf))
-  # the selector offers it as a symbol, since there is no count to show
+  # selector offers it as symbol, no count to show
   (lti_eval(x, '[...document.querySelectorAll(".lti-pager option")].map(o => o.textContent).join(",")')
    %==% '2,∞')
   pick = 'var s = document.querySelector(".lti-pager select");
@@ -64,12 +64,12 @@ assert("the page size selector re-pages, and searching returns to page 1", {
      s.value = "%s"; s.dispatchEvent(new Event("change"))', v
   )
   (lti_rows(x, size(4)) %==% sym)
-  # on page 2, then a search whose matches fit on page 1
+  # on page 2, then search whose matches fit on page 1
   find = 'var i = t.querySelector(".lti-search");
           i.value = "a"; i.dispatchEvent(new Event("change"))'
   (lti_rows(x, paste('document.querySelectorAll(".lti-pager button")[2].click()', find,
                      sep = ';')) %==% c("Rash", "Nausea"))
-  # a search dropped rows, so the full count trails in parens
+  # search dropped rows, so full count trails in parens
   (lti_eval(x, 'document.querySelector(".lti-pos").textContent', find) %==% '1–2 / 3 (4)')
   none = 'var i = t.querySelector(".lti-search");
           i.value = "zzz"; i.dispatchEvent(new Event("change"))'
