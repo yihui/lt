@@ -38,7 +38,7 @@ gets a widget that fits its data: sliders for numbers and checklists for
 categories.
 
 ```{r}
-lt(iris) |> lt_interactive(filter = 'auto', pager = c(5, 10, Inf))
+lt(penguins) |> lt_interactive(filter = 'auto', pager = c(10, 20, Inf))
 ```
 
 Rows can also expand to reveal more fields, and columns can be toggled.
