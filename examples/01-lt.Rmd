@@ -874,6 +874,16 @@ column's data. The control renders as a funnel under the header, paired
 with an expression box that stays in sync. One *unnamed* entry is the
 default for every other column.
 
+`filter = "auto"` chooses the control for each column from its data: a
+range slider for numbers (a plain box when every value is the same), a
+checklist for text with at most 10 distinct values, and a plain box for
+anything else. It can also be the unnamed default in a list, so
+`list("auto", cyl = "select")` overrides just `cyl`.
+
+```{r}
+lt(iris) |> lt_interactive(filter = "auto", search = FALSE, pager = 5)
+```
+
 A `"select"` keeps the one value chosen; a `"checklist"` keeps every value
 whose box is checked (all checked is the no-filter state), so the reader
 can keep several at once.

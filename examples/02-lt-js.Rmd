@@ -945,7 +945,10 @@ optional:
   explicitly with `choices` / `min`+`max`; `selected` seeds the dropdown's
   value or the checklist's checked set). A `"select"` keeps the one chosen
   value, a `"checklist"` keeps every checked value (all checked = no
-  filter). So `{ default: true }` boxes every column, `{ cols: { mpg: true
+  filter). `{ type: "auto" }` picks the control from the column's data: a
+  slider for numbers (a plain box if constant), a checklist for strings with
+  at most 10 distinct values, a plain box otherwise. So `{ default: true }`
+  boxes every column, `{ cols: { mpg: true
   } }` boxes one, and `{ cols: { cyl: { type: "select" } } }` gives `cyl` a
   dropdown;
 - `pager`: the page sizes to offer, as an array whose first element is
@@ -1002,6 +1005,16 @@ LT.build({
       gear: { type: "select" }
     } }
   }
+});
+```
+
+With `{ type: "auto" }` as the default, each column gets the control that suits
+its data: a slider for the numeric columns and a checklist for `Species`.
+
+```{js}
+LT.build({
+  data: iris,
+  interactive: { search: false, pager: 5, filter: { default: { type: "auto" } } }
 });
 ```
 
