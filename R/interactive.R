@@ -48,7 +48,10 @@
 #'   is the default applied to every other visible column, so
 #'   `list(TRUE, cyl = "select")` boxes every column but gives `cyl` a dropdown.
 #'   A column with nothing to filter (every value blank) gets no box, even under
-#'   that default.
+#'   that default. `"auto"` (alone, or as a list entry, e.g. `list("auto",
+#'   cyl = "select")`) picks each column's filter from its data: a range slider
+#'   for numbers (a plain box if every value is the same), a checklist for text
+#'   with at most 10 distinct values, and a plain box otherwise.
 #'   A typed filter renders as a funnel + popover (holding the widget *and* an
 #'   expression box, kept in sync) under its column header, or — when the column
 #'   is hidden from the table (e.g. with [lt_hide()]) — as a chip in the control
@@ -110,6 +113,8 @@
 #' lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 #' # 5 rows at a time, or all of them, with a filter box on one column
 #' lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
+#' # a widget per column chosen from its data (sliders, checklists, boxes)
+#' lt(iris) |> lt_interactive(filter = 'auto')
 #' # resizable columns
 #' lt(head(mtcars)) |> lt_interactive(resize = TRUE)
 #' # a column-visibility menu (all columns shown, or with some hidden to start)
@@ -184,10 +189,12 @@ download_opt = function(download) {
 # Shape `filter` for the client as { default?, cols? }. `TRUE` -> a box on
 # every column (`default`); a character vector -> boxes on just those columns;
 # a named list -> each named column's own spec in `cols`, one unnamed entry (if
-# any) kept as `default` for other visible columns. The client resolves a typed
+# any) kept as `default` for other visible columns; `"auto"` is that default
+# alone, resolved per column on the client. The client resolves a typed
 # spec's choices / range from column data, so nothing here reads `x$data`.
 normalize_filter = function(filter) {
   if (isTRUE(filter)) return(list(default = TRUE))
+  if (identical(filter, 'auto')) filter = list(filter)  # a default for all columns
   if (is.character(filter))
     return(list(cols = set_names(rep(list(TRUE), length(filter)), filter)))
   if (is.list(filter)) {

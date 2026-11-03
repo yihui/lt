@@ -274,3 +274,19 @@ assert('a popover flips to the funnel right against the scroll box, not the view
           t.querySelector(".lti-funnel").click()'
   (lti_eval(x, 't.querySelector(".lti-pop-panel").style.right === ""', wide) %==% 'true')
 })
+
+assert('filter = "auto" picks a widget per column from its data', {
+  d = data.frame(
+    id = sprintf('r%02d', 1:12), n = 1:12, k = 5, g = rep(c('a', 'b'), 6)
+  )
+  x = lt(d) |> lt_interactive(filter = 'auto', pager = FALSE)
+  # id: many distinct strings -> box; n: slider; k: constant -> box;
+  # g: two values -> checklist
+  kinds = 'Array.from(t.querySelectorAll(".lti-filters td")).map(c =>
+    c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-funnel") ?
+    "checklist" : "box").join()'
+  (lti_eval(x, kinds) %==% 'box,range,box,checklist')
+  # an explicit entry overrides the auto default for that column
+  x = lt(d) |> lt_interactive(filter = list('auto', n = TRUE), pager = FALSE)
+  (lti_eval(x, kinds) %==% 'box,box,box,checklist')
+})

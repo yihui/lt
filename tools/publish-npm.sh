@@ -84,7 +84,7 @@ echo "Publishing @xiee/utils v$new"
 # 3c. Bump package.json, commit, tag, push (branch + the single new tag only).
 perl -i -pe "s/\"version\": \"[^\"]+\"/\"version\": \"$new\"/ if \$. < 10 && /\"version\"/" package.json
 
-git add -A
+git add js css package.json
 git commit -m "Bump to $new (lt assets)"
 git tag "v$new"
 git push

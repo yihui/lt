@@ -67,6 +67,12 @@ assert("the filter and pagination options reach the client spec", {
   (has_match(json, !'filter|pager'))
 })
 
+assert("filter = 'auto' is a default spec, not a column name", {
+  json = format(lt(d) |> lt_interactive(filter = 'auto'), assets = FALSE)
+  (has_match(json, '"default": \\{\\s*"type": "auto"'))
+  (has_match(json, !'"cols"'))
+})
+
 assert("a typed filter spec reaches the client with its options", {
   # checklist spec keeps type and label, reshapes `choices` to {value,label}
   # objects, keeps scalar `selected` as JSON array (so client seeds it)

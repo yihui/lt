@@ -47,7 +47,9 @@ entry in the list
 is the default applied to every other visible column, so
 \code{list(TRUE, cyl = "select")} boxes every column but gives \code{cyl} a dropdown.
 A column with nothing to filter (every value blank) gets no box, even under
-that default.
+that default. \code{"auto"} (alone, or as a list entry, e.g. \code{list("auto", cyl = "select")}) picks each column's filter from its data: a range slider
+for numbers (a plain box if every value is the same), a checklist for text
+with at most 10 distinct values, and a plain box otherwise.
 A typed filter renders as a funnel + popover (holding the widget \emph{and} an
 expression box, kept in sync) under its column header, or — when the column
 is hidden from the table (e.g. with \code{\link[=lt_hide]{lt_hide()}}) — as a chip in the control
@@ -133,6 +135,8 @@ lt(head(mtcars)) |> lt_interactive()
 lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 # 5 rows at a time, or all of them, with a filter box on one column
 lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
+# a widget per column chosen from its data (sliders, checklists, boxes)
+lt(iris) |> lt_interactive(filter = 'auto')
 # resizable columns
 lt(head(mtcars)) |> lt_interactive(resize = TRUE)
 # a column-visibility menu (all columns shown, or with some hidden to start)
