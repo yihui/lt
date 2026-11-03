@@ -348,7 +348,7 @@
     // head-bar chip; the rest go under their headers.
     const flt = opts.filter,
           barCols = flt?.cols ?
-            Object.keys(flt.cols).filter(c => flt.cols[c] !== true && !cols.includes(c)) : [];
+            Object.keys(flt.cols).filter(c => flt.cols[c] !== true && flt.cols[c].type !== "auto" && !cols.includes(c)) : [];
     // Table-wide controls share one head row: search (absorbs free space), chips,
     // then icons (column menu, download)
     const headBar = (opts.search !== false || opts.hide || barCols.length || opts.download) ?
@@ -559,7 +559,7 @@
     cols.forEach((c, ci) => {
       const al = ["al-r", "al-c"].find(k => hCells[ci]?.classList.contains(k)),
             cell = elem(doc, "td", al ? { className: al } : {}, row),
-            spec = c in explicit ? explicit[c] : def;
+            spec = autoSpec(c in explicit ? explicit[c] : def, data[c]);
       if (!spec || !filterable(data, c)) return;   // no filter on this column
       if (spec === true) {                         // a plain search box
         const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
@@ -569,6 +569,16 @@
     });
     hrow.after(row);
   }
+
+  // `"auto"` filter: pick the widget from the column's data. Numbers get a range
+  // slider (a plain box if constant), strings with few distinct values a
+  // checklist, anything else a plain box.
+  const autoSpec = (spec, col = []) => {
+    if (spec?.type !== "auto") return spec;
+    const vals = col.filter(v => v != null), n = new Set(vals).size;
+    return vals.every(v => typeof v === "number") ? (n > 1 ? { type: "range" } : true)
+      : vals.every(v => typeof v === "string") && n <= 10 ? { type: "checklist" } : true;
+  };
 
   // Filterable only with a non-blank value; plot-only `into` columns have no data.
   const filterable = (data, col) => {
