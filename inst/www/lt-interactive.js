@@ -71,8 +71,9 @@
       try { fn = new Function("x", `return (${v});`); } catch (e) {}
       if (fn) {
         const neg = /^\s*!|!=/.test(v), test = raw => {
-          if (raw == null) return neg;
           try {
+            // missing value is `undefined`: `x == null` matches it, `x > 5` doesn't
+            if (raw == null) return neg || !!fn(undefined);
             const num = Number(raw);
             return !!fn(String(raw)) || (raw !== "" && isFinite(num) && !!fn(num));
           } catch (e) { return false; }
@@ -873,10 +874,12 @@
 
   // Filter term <-> widget value, per type. `null` parse = a hand-typed term the
   // widget can't show: widget goes neutral, box stays authoritative.
-  const selExpr = v => v === "" ? "" : `x == ${JSON.stringify(String(v))}`,
+  // value of the missing-value ("NA") choice; not a string any data holds
+  const NA = "\0NA",
+        selExpr = v => v === "" ? "" : v === NA ? "x == null" : `x == ${JSON.stringify(String(v))}`,
         selParse = s => {
-          const m = /^\s*x\s*==\s*(['"])([\s\S]*)\1\s*$/.exec(s || "");
-          return m ? m[2] : null;
+          const m = /^\s*x\s*==\s*(?:(['"])([\s\S]*)\1|null)\s*$/.exec(s || "");
+          return m ? (m[1] ? m[2] : NA) : null;
         },
         rngExpr = (lo, hi, min, max) =>
           lo <= min && hi >= max ? "" : `x >= ${lo} && x <= ${hi}`,
@@ -885,13 +888,16 @@
           return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
         },
         // keeps rows whose value is checked; all checked -> "" (no filter), none ->
-        // "[].includes(x)" (no rows)
-        setExpr = (sel, all) =>
-          sel.length === all.length ? "" : `${JSON.stringify(sel.map(String))}.includes(x)`,
+        // "[].includes(x)" (no rows). NA is `null` in the list, matched via `x ?? null`.
+        setExpr = (sel, all) => {
+          if (sel.length === all.length) return "";
+          const vals = sel.map(v => v === NA ? null : String(v));
+          return `${JSON.stringify(vals)}.includes(x${vals.includes(null) ? " ?? null" : ""})`;
+        },
         setParse = s => {
-          const m = /^\s*(\[[\s\S]*\])\.includes\(\s*x\s*\)\s*$/.exec(s || "");
+          const m = /^\s*(\[[\s\S]*\])\.includes\(\s*x\s*(?:\?\?\s*null\s*)?\)\s*$/.exec(s || "");
           if (!m) return null;
-          try { return JSON.parse(m[1]); } catch (e) { return null; }
+          try { return JSON.parse(m[1]).map(v => v === null ? NA : v); } catch (e) { return null; }
         };
 
   // "Nice" slider step: 1/2/5 x 10^k nearest ~1% of span (~50-100 increments),
@@ -916,6 +922,8 @@
           ? a - b : String(a).localeCompare(String(b)));
         choices = vals.map(v => ({ value: String(v), label: String(v) }));
       }
+      // missing values get their own choice, so they can be selected too
+      if (column.some(v => v == null)) choices = [...choices, { value: NA, label: "NA" }];
       // select gets a leading blank "no filter" choice; checklist starts all
       // checked (also "no filter"), so needs none
       if (spec.type === "select" && !choices.some(o => o.value === ""))

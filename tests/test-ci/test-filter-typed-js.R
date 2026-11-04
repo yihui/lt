@@ -300,3 +300,22 @@ assert('a column set to FALSE has no filter, even under an "auto" default', {
     "checklist" : c.querySelector("input") ? "box" : "none").join()')
    %==% 'none,range,checklist')
 })
+
+assert('a "select" and a "checklist" can keep the missing (NA) rows', {
+  d = data.frame(name = c('p', 'q', 'r'), grp = c('a', NA, 'b'))
+  x = lt(d) |> lt_interactive(filter = list(grp = 'select'), pager = FALSE)
+  # the missing value is its own "NA" choice, after the distinct values
+  (lti_eval(x, 'Array.from(t.querySelectorAll(".lti-filters select option")).map(o => o.textContent).join(",")')
+   %==% ',a,b,NA')
+  pick = 'var s = t.querySelector(".lti-filters select"); s.value = s.options[3].value; s.onchange()'
+  (lti_rows(x, pick) %==% 'q')
+  (lti_eval(x, 't.querySelector(".lti-filters .lti-pop .lti-search").value', pick) %==% 'x == null')
+
+  x = lt(d) |> lt_interactive(filter = list(grp = 'checklist'), pager = FALSE)
+  # every box starts checked, NA included, so every row shows
+  (length(lti_rows(x)) %==% 3L)
+  # check only NA: keeps the missing row alone
+  only_na = 'var cs = [...t.querySelectorAll(".lti-filters .lti-check input")];
+    cs.forEach(i => i.checked = i.parentNode.textContent === "NA"); cs[0].onchange()'
+  (lti_rows(x, only_na) %==% 'q')
+})

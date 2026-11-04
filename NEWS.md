@@ -2,6 +2,8 @@
 
 - `lt_interactive()` now defaults to `filter = "auto"`, `resize = TRUE`, and page sizes `c(10, 25, 50, Inf)` (the last size shows every row on one page, previously 100). Use `filter = FALSE` or `resize = FALSE` to turn those off.
 
+- A `"select"` or `"checklist"` filter now offers the missing (`NA`) value as its own choice, so rows with missing values can be kept.
+
 - `lt_interactive(filter = "auto")` picks each column's filter from its data: a range slider for numbers, a checklist for text with few distinct values, and a plain box otherwise.
 
 - In `lt_interactive(filter = list(...))`, a column can be set to `FALSE` to leave it without a filter, e.g., `list("auto", id = FALSE)`.
