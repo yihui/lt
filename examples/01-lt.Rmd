@@ -884,6 +884,13 @@ anything else. It can also be the unnamed default in a list, so
 lt(iris) |> lt_interactive(filter = "auto", search = FALSE, pager = 5)
 ```
 
+A column set to `FALSE` gets no filter at all, even under a default such as
+`"auto"` or `TRUE`. Here `Species` is left out of the filters:
+
+```{r}
+lt(iris) |> lt_interactive(filter = list("auto", Species = FALSE), search = FALSE, pager = 5)
+```
+
 A `"select"` keeps the one value chosen; a `"checklist"` keeps every value
 whose box is checked (all checked is the no-filter state), so the reader
 can keep several at once.
