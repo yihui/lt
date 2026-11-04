@@ -290,3 +290,13 @@ assert('filter = "auto" picks a widget per column from its data', {
   x = lt(d) |> lt_interactive(filter = list('auto', n = TRUE), pager = FALSE)
   (lti_eval(x, kinds) %==% 'box,box,box,checklist')
 })
+
+assert('a column set to FALSE has no filter, even under an "auto" default', {
+  d = data.frame(id = sprintf('r%02d', 1:12), n = 1:12, g = rep(c('a', 'b'), 6))
+  x = lt(d) |> lt_interactive(filter = list('auto', id = FALSE), pager = FALSE)
+  # only n (slider) and g (checklist) get a control; id gets an empty cell
+  (lti_eval(x, 'Array.from(t.querySelectorAll(".lti-filters td")).map(c =>
+    c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-funnel") ?
+    "checklist" : c.querySelector("input") ? "box" : "none").join()')
+   %==% 'none,range,checklist')
+})
