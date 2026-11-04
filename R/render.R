@@ -114,6 +114,7 @@ lt_spec = function(x) {
   # lt_dependency()); prep as the render/queue paths expect.
   x$css = x$rules = NULL
   x = with_missing(with_col_order(x))
+  x$data = utc_times(x$data)
   x[lengths(x) > 0L]
 }
 
@@ -187,6 +188,16 @@ with_col_order = function(x) {
 with_missing = function(x) {
   if (is.null(x$missing) && !is.null(m <- getOption('lt.missing'))) x$missing = m
   x
+}
+
+# Ship date-times as UTC instants (new Date("...Z")), so the browser shows them
+# in its own time zone; tojson() would drop the zone and read them as local.
+utc_times = function(d) {
+  for (i in seq_along(d)) if (inherits(d[[i]], 'POSIXt')) d[[i]] = lapply(
+    format(d[[i]], '%Y-%m-%dT%H:%M:%SZ', tz = 'UTC'),
+    function(s) if (!is.na(s)) js(sprintf('new Date("%s")', s))
+  )
+  d
 }
 
 html_doc = function(body) c(
@@ -410,6 +421,7 @@ lt_static_node = function(x, css = TRUE) {
   spec = x; spec$css = spec$rules = NULL
   if (!length(spec$ops)) spec$ops = NULL
   spec = with_missing(with_col_order(spec))
+  spec$data = utc_times(spec$data)
   json = xfun::tojson(spec)
   out = system2('node', shQuote(c(runner, js)), input = json, stdout = TRUE)
   if (!is.null(attr(out, 'status'))) stop('Node.js failed to render the lt table.')

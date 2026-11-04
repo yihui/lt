@@ -42,7 +42,9 @@ options. Common fields include \code{year} (\code{"numeric"}, \code{"2-digit"}),
 \description{
 Format date or datetime columns using JavaScript's native Date methods.
 The underlying data should be Date or POSIXt in R (serialized as
-\verb{new Date(...)} for the browser).
+\verb{new Date(...)} for the browser). Without this, such columns are shown as
+\code{YYYY-MM-DD} (dates) or \verb{YYYY-MM-DD HH:MM:SS} (date-times) when
+\code{auto_format = TRUE} in \code{\link[=lt]{lt()}}.
 }
 \note{
 The formatted date may differ from the input date depending on the

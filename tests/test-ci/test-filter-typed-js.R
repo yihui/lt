@@ -39,7 +39,7 @@ assert('a header funnel inherits its column alignment', {
   x = lt(tdf()) |> lt_interactive(
     filter = list(n = 'range', grp = 'select'), pager = FALSE)
   # cells: name (no filter, left), n (range, right), grp (select, left)
-  (lti_eval(x, '[...t.querySelectorAll(".lti-filters td")].map(d => d.className).join("|")')
+  (lti_eval(x, '[...t.querySelectorAll(".lti-filters th")].map(d => d.className).join("|")')
    %==% '|al-r|')
 })
 
@@ -96,10 +96,10 @@ assert('a chip opens its popover on a click anywhere, aligned to the chip left e
 assert('an unnamed default entry boxes the other columns alongside a typed column', {
   # grp gets a dropdown funnel; every other visible column (name, n) a plain box
   x = lt(tdf()) |> lt_interactive(filter = list(TRUE, grp = 'select'), pager = FALSE)
-  (lti_eval(x, 't.querySelectorAll(".lti-filters > td > .lti-search").length') %==% '2')
+  (lti_eval(x, 't.querySelectorAll(".lti-filters > th > .lti-search").length') %==% '2')
   (lti_eval(x, 't.querySelectorAll(".lti-filters select").length') %==% '1')
   # the box filters its own column (the dropdown adds no default filter of its own)
-  box = 'var i = t.querySelector(".lti-filters > td > .lti-search");
+  box = 'var i = t.querySelector(".lti-filters > th > .lti-search");
          i.value = "Rash"; i.dispatchEvent(new Event("change"))'
   (lti_rows(x, box) %==% c('Rash'))
 })
@@ -216,12 +216,12 @@ assert('a column that starts hidden under the show/hide menu keeps its header fu
   x = lt(tdf()) |> lt_interactive(
     filter = list(grp = 'select'), hide = 'grp', search = FALSE, pager = FALSE)
   (lti_eval(x, 't.querySelectorAll(".lti-chip").length') %==% '0')
-  (lti_eval(x, 't.querySelector(".lti-filters .lti-funnel").closest("td").hidden') %==% 'true')
+  (lti_eval(x, 't.querySelector(".lti-filters .lti-funnel").closest("th").hidden') %==% 'true')
   # reveal grp from the eye menu: the header funnel's cell shows
   show = 't.querySelector(".lti-cols button").click();
     [...t.querySelectorAll(".lti-menu label")].find(l => l.textContent.trim() === "grp")
       .querySelector("input").click()'
-  (lti_eval(x, 't.querySelector(".lti-filters .lti-funnel").closest("td").hidden', show)
+  (lti_eval(x, 't.querySelector(".lti-filters .lti-funnel").closest("th").hidden', show)
    %==% 'false')
 })
 
@@ -282,7 +282,7 @@ assert('filter = "auto" picks a widget per column from its data', {
   x = lt(d) |> lt_interactive(filter = 'auto', pager = FALSE)
   # id: many distinct strings -> box; n: slider; k: constant -> box;
   # g: two values -> checklist
-  kinds = 'Array.from(t.querySelectorAll(".lti-filters td")).map(c =>
+  kinds = 'Array.from(t.querySelectorAll(".lti-filters th")).map(c =>
     c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-funnel") ?
     "checklist" : "box").join()'
   (lti_eval(x, kinds) %==% 'box,range,box,checklist')
@@ -295,7 +295,7 @@ assert('a column set to FALSE has no filter, even under an "auto" default', {
   d = data.frame(id = sprintf('r%02d', 1:12), n = 1:12, g = rep(c('a', 'b'), 6))
   x = lt(d) |> lt_interactive(filter = list('auto', id = FALSE), pager = FALSE)
   # only n (slider) and g (checklist) get a control; id gets an empty cell
-  (lti_eval(x, 'Array.from(t.querySelectorAll(".lti-filters td")).map(c =>
+  (lti_eval(x, 'Array.from(t.querySelectorAll(".lti-filters th")).map(c =>
     c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-funnel") ?
     "checklist" : c.querySelector("input") ? "box" : "none").join()')
    %==% 'none,range,checklist')

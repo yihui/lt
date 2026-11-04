@@ -19,12 +19,17 @@
 #' @param data A data frame (or anything coercible to one).
 #' @param ... Arguments passed to methods.
 #' @param auto_format Whether to automatically format numeric columns (rounding,
-#'   thousand separators, percentage detection). Set to `FALSE` to disable
+#'   thousand separators, percentage detection) and date/time columns (as
+#'   `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS`). Set to `FALSE` to disable
 #'   for the whole table; use [lt_format()] on specific columns to disable
 #'   selectively.
 #' @param auto_label Whether to automatically clean column names for display
 #'   by replacing separators (`.` and `_`) with spaces. Set to `FALSE` to
 #'   show raw column names.
+#' @param show_types Whether to tag each column with its type (e.g., `<dbl>`,
+#'   `<chr>`, `<fct>`, `<date>`) in a row under the column labels, like the
+#'   types printed under a tibble's column names. In an interactive table (see
+#'   [lt_interactive()]), the tags share that row with the filter controls.
 #' @section HTML in cells:
 #' By default all cell values and text (titles, labels, footnotes, ...) are
 #' HTML-escaped, so special characters like `<`, `>`, and `&` render as
@@ -76,7 +81,9 @@ lt = function(data, ...) UseMethod('lt')
 
 #' @rdname lt
 #' @export
-lt.default = function(data, auto_format = TRUE, auto_label = TRUE, ...) {
+lt.default = function(
+  data, auto_format = TRUE, auto_label = TRUE, show_types = FALSE, ...
+) {
   grp = if (inherits(data, 'grouped_df'))
     setdiff(names(attr(data, 'groups')), '.rows')
   data = as.data.frame(
@@ -85,8 +92,18 @@ lt.default = function(data, auto_format = TRUE, auto_label = TRUE, ...) {
   x = structure(list(data = data, ops = list()), class = 'lt_tbl')
   if (!auto_format) x$auto_format = FALSE
   if (!auto_label) x$auto_label = FALSE
+  if (show_types) x$types = lapply(data, type_tag)
   if (length(grp)) x$row_group = I(grp)
   x
+}
+
+# A column's type as a short tag, in the style of tibble's printing
+type_tag = function(x) {
+  tag = if (is.factor(x)) 'fct' else if (inherits(x, 'Date')) 'date' else
+    if (inherits(x, 'POSIXt')) 'time' else if (is.integer(x)) 'int' else
+    if (is.double(x)) 'dbl' else if (is.character(x)) 'chr' else
+    if (is.logical(x)) 'lgl' else if (is.list(x)) 'list' else abbreviate(class(x)[1])
+  paste0('<', tag, '>')
 }
 
 drop_null = function(x) x[!vapply(x, is.null, logical(1))]

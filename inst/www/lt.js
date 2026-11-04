@@ -105,11 +105,27 @@
     return s;
   }
 
-  // --- Auto-format numeric columns ---
+  // Default text formatter for a column of Dates, or null if it isn't one: ISO
+  // date if every value is UTC midnight (an R `Date`), else local-time
+  // "YYYY-MM-DD HH:MM:SS" (the Swedish locale's format). Sorts as text, so it
+  // also serves filter expressions (`x >= "2024-01-05"`).
+  const dateFmt = col => {
+    const vs = col?.filter(v => v != null && !isNaN(v));
+    if (!vs?.length || !vs.every(v => v instanceof Date)) return null;
+    const day = vs.every(v => v % 864e5 === 0);
+    return d => isNaN(d) ? "" : day ? d.toISOString().slice(0, 10) : d.toLocaleString("sv");
+  };
+
+  // --- Auto-format date and numeric columns ---
   function autoFmt(spec, display, nRow) {
     if (spec.auto_format === false) return;
     const data = spec.data || {}, ops = spec.ops || [],
           colNames = colOrder(spec);
+
+    for (const c of colNames) {
+      const f = dateFmt(data[c]);
+      if (f) data[c].forEach((v, i) => { if (v != null) display[c][i] = f(v); });
+    }
 
     const fmtCols = new Set();
     for (const op of ops) {
@@ -578,7 +594,12 @@
       out.push(`<th scope="col" class="lt-row-group">${txt(rs.label)}</th>`);
     cols.forEach((c, i) =>
       out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", c)}</th>`));
-    out.push(`</tr></thead>`);
+    out.push(`</tr>`);
+    // column types (`show_types`) under the labels
+    if (spec.types) out.push(`<tr class="lt-types">`, `<th></th>`.repeat(nGrp),
+      ...cols.map((c, i) => `<th${attr("class", colCls[i])}><span class="lt-type">${esc(spec.types[c])}</span></th>`),
+      `</tr>`);
+    out.push(`</thead>`);
 
     // Body footnote markers
     const bodyMarks = {};
@@ -817,6 +838,6 @@
   root.LT = {
     build: spec => mount(document.currentScript, spec),
     render, refresh, buildHtml, plugins, onMount, cells: cellRenderers, q, d: store,
-    $, $$, on, off, numCol,
+    $, $$, on, off, numCol, dateFmt,
   };
 })(window);

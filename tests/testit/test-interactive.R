@@ -175,3 +175,10 @@ assert("record_print emits the linked extension for an interactive table", {
   html = paste(unlist(record_print.lt_tbl(lt(d))), collapse = '\n')
   (has_match(html, !'lt-interactive'))
 })
+
+assert('show_types tags columns by type only when asked', {
+  d2 = data.frame(a = 1L, b = 1.5, c = 'x', f = factor('u'), t = as.Date('2024-01-15'))
+  (unlist(lt(d2, show_types = TRUE)$types) %==%
+     c(a = '<int>', b = '<dbl>', c = '<chr>', f = '<fct>', t = '<date>'))
+  (is.null(lt(d2)$types))
+})
