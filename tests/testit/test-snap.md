@@ -173,7 +173,8 @@ xfun::tojson(spec(x))
         }
       }
     },
-    "pager": [10, 25, 50, 100]
+    "pager": [10, 25, 50, 0],
+    "resize": true
   }
 }
 ```
