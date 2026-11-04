@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.146/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.9</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.10</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -1696,9 +1696,9 @@ extension, loaded only for tables that call this function.
   x,
   sort = TRUE,
   search = TRUE,
-  filter = FALSE,
-  pager = c(10, 25, 50, 100),
-  resize = FALSE,
+  filter = "auto",
+  pager = c(10, 25, 50, Inf),
+  resize = TRUE,
   hide = NULL,
   detail = NULL,
   download = FALSE
@@ -1837,10 +1837,11 @@ match.
 lt(head(mtcars)) |&gt; lt_interactive(sort = FALSE, pager = FALSE)
 # 5 rows at a time, or all of them, with a filter box on one column
 lt(mtcars) |&gt; lt_interactive(filter = 'cyl', pager = c(5, Inf))
-# a widget per column chosen from its data (sliders, checklists, boxes)
-lt(iris) |&gt; lt_interactive(filter = 'auto')
-# resizable columns
-lt(head(mtcars)) |&gt; lt_interactive(resize = TRUE)
+# filters are on by default, a widget per column chosen from its data
+# (sliders, checklists, boxes); filter = FALSE turns them off
+lt(iris) |&gt; lt_interactive(filter = FALSE)
+# fixed (non-resizable) columns
+lt(head(mtcars)) |&gt; lt_interactive(resize = FALSE)
 # a column-visibility menu (all columns shown, or with some hidden to start)
 lt(head(mtcars)) |&gt; lt_interactive(hide = TRUE)
 lt(head(mtcars)) |&gt; lt_interactive(hide = ~ hp + drat)
@@ -2056,7 +2057,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//Rtmp5JQANt/filefef4bcc9601.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpFmbnDA/filedd93dad5a9b.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table class=&quot;desc-table&quot;&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -2170,7 +2171,7 @@ if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//Rtmp5JQANt/filefef9310834.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpFmbnDA/filedd954397678.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -2204,7 +2205,7 @@ str(spec, max.level = 1)
 </code></pre>
 <pre><code>#&gt; List of 2
 #&gt;  $ data       :'data.frame':	6 obs. of  11 variables:
-#&gt;  $ interactive:List of 3
+#&gt;  $ interactive:List of 5
 </code></pre>
 <pre><code class="language-r">xfun::tojson(spec)  # ship this, then LT.render(container, spec) in the browser
 </code></pre>
@@ -2225,7 +2226,13 @@ str(spec, max.level = 1)
   &quot;interactive&quot;: {
     &quot;sort&quot;: true,
     &quot;search&quot;: true,
-    &quot;pager&quot;: [10, 25, 50, 100]
+    &quot;filter&quot;: {
+      &quot;default&quot;: {
+        &quot;type&quot;: &quot;auto&quot;
+      }
+    },
+    &quot;pager&quot;: [10, 25, 50, 0],
+    &quot;resize&quot;: true
   }
 }
 </code></pre>
@@ -2295,7 +2302,7 @@ binding (only needed by <code><a href="#sec:man-lt-output">lt_input()</a></code>
 </code></pre>
 <pre><code>#&gt; List of 10
 #&gt;  $ name      : chr &quot;lt-interactive&quot;
-#&gt;  $ version   : chr &quot;0.5.9&quot;
+#&gt;  $ version   : chr &quot;0.5.10&quot;
 #&gt;  $ src       :List of 1
 #&gt;   ..$ file: chr &quot;/Users/runner/work/_temp/Library/lt/www&quot;
 #&gt;  $ meta      : NULL

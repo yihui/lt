@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.146/css/site.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.9</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.10</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -39,6 +39,9 @@
 </nav>
 <h2 id="sec:lt-0-6" class="unnumbered">lt 0.6</h2>
 <ul>
+<li>
+<p><code>lt_interactive()</code> now defaults to <code>filter = &quot;auto&quot;</code>, <code>resize = TRUE</code>, and page sizes <code>c(10, 25, 50, Inf)</code> (the last size shows every row on one page, previously 100). Use <code>filter = FALSE</code> or <code>resize = FALSE</code> to turn those off.</p>
+</li>
 <li>
 <p><code>lt_interactive(filter = &quot;auto&quot;)</code> picks each column’s filter from its data: a range slider for numbers, a checklist for text with few distinct values, and a plain box otherwise.</p>
 </li>

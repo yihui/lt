@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.146/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.9</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.10</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -2073,11 +2073,12 @@ toggle raw values for all tables on the page.</p>
 <p><code>lt_interactive()</code> turns a table into an interactive one: click a column
 header to sort by it (ascending, descending, then unsorted), type in the
 search box above the table to keep only the rows that match, and walk
-through the rows a page at a time with the pager below the table. Paging
-is on by default; the page sizes to offer are given as a vector, the
-first of which is used initially.</p>
+through the rows a page at a time with the pager below the table. Paging,
+per-column filters (see below), and resizable columns are on by default;
+the page sizes to offer are given as a vector, the first of which is used
+initially, and <code>Inf</code> offers every row on one page.</p>
 <pre><code class="language-r">d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;, &quot;gear&quot;)]
-lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf))
+lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf), filter = FALSE)
 </code></pre>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.146/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["3d00d273"]=
@@ -2094,7 +2095,8 @@ lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf))
   "interactive": {
     "sort": true,
     "search": true,
-    "pager": [5, 10, 0]
+    "pager": [5, 10, 0],
+    "resize": true
   },
   "data_key": "3d00d273"
 }
@@ -2104,14 +2106,15 @@ lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf))
 columns sort at once (an ordinal in each header marks its place). An
 initial sort can be requested with <code>sort</code> as a one-sided formula (below);
 a <code>-</code> prefix (a negated formula term) sorts a column descending.</p>
-<pre><code class="language-r">lt(d) |&gt; lt_interactive(sort = ~ cyl + -mpg, pager = 10, search = FALSE)
+<pre><code class="language-r">lt(d) |&gt; lt_interactive(sort = ~ cyl + -mpg, pager = 10, search = FALSE, filter = FALSE)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "interactive": {
     "sort": ["cyl", "-mpg"],
     "search": false,
-    "pager": [10]
+    "pager": [10],
+    "resize": true
   },
   "data_key": "3d00d273"
 }
@@ -2123,10 +2126,12 @@ and a leading <code>!</code> negates it (e.g. <code>!merc</code> keeps the rows 
 mention Mercedes). A term that mentions <code>x</code> is instead evaluated as a
 JavaScript expression against each raw cell value, so <code>x &gt; 20</code> keeps the
 rows with a value above 20 in any column.</p>
-<p><code>filter = TRUE</code> adds a box under each column header, matching the same
-way but against that column alone; a row is kept when it passes every
-filter and the search. Pass a character vector to filter on some columns
-only.</p>
+<p>By default, each column gets a filter under its header (chosen from its
+data, see <code>&quot;auto&quot;</code> below). <code>filter = TRUE</code> instead adds a plain box under
+each column header, matching the same way as the search but against that
+column alone; a row is kept when it passes every filter and the search.
+Pass a character vector to filter on some columns only, or <code>FALSE</code> to
+turn the filters off.</p>
 <pre><code class="language-r">lt(d) |&gt; lt_interactive(filter = TRUE, search = FALSE, pager = 5)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -2137,7 +2142,8 @@ only.</p>
     "filter": {
       "default": true
     },
-    "pager": [5]
+    "pager": [5],
+    "resize": true
   },
   "data_key": "3d00d273"
 }
@@ -2175,7 +2181,8 @@ anything else. It can also be the unnamed default in a list, so
         "type": "auto"
       }
     },
-    "pager": [5]
+    "pager": [5],
+    "resize": true
   },
   "data_key": "999d7a90"
 }
@@ -2197,7 +2204,8 @@ anything else. It can also be the unnamed default in a list, so
         "Species": false
       }
     },
-    "pager": [5]
+    "pager": [5],
+    "resize": true
   },
   "data_key": "999d7a90"
 }
@@ -2251,7 +2259,8 @@ control. Here <code>mpg</code> is hidden yet still filterable through its chip.<
         }
       }
     },
-    "pager": [5]
+    "pager": [5],
+    "resize": true
   },
   "data_key": "3d00d273"
 }
@@ -2266,7 +2275,7 @@ fields into the detail. Here <code>hp</code> and <code>wt</code> are hidden abov
 the detail.</p>
 <pre><code class="language-r">lt(d) |&gt;
   lt_hide(~ hp + wt) |&gt;
-  lt_interactive(pager = 5, detail = ~ hp + wt)
+  lt_interactive(pager = 5, filter = FALSE, detail = ~ hp + wt)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -2280,6 +2289,7 @@ the detail.</p>
     "sort": true,
     "search": true,
     "pager": [5],
+    "resize": true,
     "detail": ["hp", "wt"]
   },
   "data_key": "3d00d273"
@@ -2293,7 +2303,7 @@ interactive, as below where it is made sortable.</p>
 <pre><code class="language-r">lt(d) |&gt;
   lt_hide(~ hp + wt) |&gt;
   lt_interactive(
-    pager = 5,
+    pager = 5, filter = FALSE,
     detail = js('(row, i, d) =&gt; ({
       data: { field: [&quot;row&quot;, &quot;hp&quot;, &quot;wt&quot;], value: [i, d.hp, d.wt] },
       interactive: { sort: [&quot;value&quot;], search: false }
@@ -2312,6 +2322,7 @@ interactive, as below where it is made sortable.</p>
     "sort": true,
     "search": true,
     "pager": [5],
+    "resize": true,
     "detail": (row, i, d) => ({
       data: { field: ["row", "hp", "wt"], value: [i, d.hp, d.wt] },
       interactive: { sort: ["value"], search: false }
@@ -2321,11 +2332,11 @@ interactive, as below where it is made sortable.</p>
 }
 })</script>
 <h3 id="sec:resizable-columns"><span class="section-number">11.4</span> Resizable columns</h3>
-<p>With <code>resize = TRUE</code>, each column can be resized by dragging the right
-edge of its header; double-clicking that edge fits the column to its
+<p>Each column can be resized by dragging the right edge of its header
+(<code>resize = FALSE</code> turns this off); double-clicking that edge fits the column to its
 content. Widening a column widens the table, leaving the other columns
 as they are. Initial widths come from <code>lt_width()</code> as usual.</p>
-<pre><code class="language-r">lt(head(d)) |&gt; lt_interactive(resize = TRUE, pager = FALSE, search = FALSE) |&gt;
+<pre><code class="language-r">lt(head(d)) |&gt; lt_interactive(pager = FALSE, search = FALSE, filter = FALSE) |&gt;
   lt_width(mpg = &quot;8em&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["fad86efa"]=
@@ -2362,7 +2373,7 @@ re-checking brings it back. Use <code>hide = TRUE</code> to start with all colum
 shown, or name columns (a character vector or a one-sided formula) to
 start with those hidden (they are still listed, so the reader can bring
 them back). The checklist shows each column’s displayed label.</p>
-<pre><code class="language-r">lt(d) |&gt; lt_interactive(hide = ~ hp + wt, pager = 5)
+<pre><code class="language-r">lt(d) |&gt; lt_interactive(hide = ~ hp + wt, pager = 5, filter = FALSE)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -2370,6 +2381,7 @@ them back). The checklist shows each column’s displayed label.</p>
     "sort": true,
     "search": true,
     "pager": [5],
+    "resize": true,
     "hide": {
       "hidden": ["hp", "wt"]
     }
@@ -2395,6 +2407,7 @@ file holds exactly what the table shows.</p>
       "default": true
     },
     "pager": [5],
+    "resize": true,
     "download": "cars.csv"
   },
   "data_key": "3d00d273"
@@ -2428,7 +2441,13 @@ lt(d2) |&gt; lt_group(~ Region, sep = TRUE) |&gt; lt_interactive(pager = 5)
   "interactive": {
     "sort": true,
     "search": true,
-    "pager": [5]
+    "filter": {
+      "default": {
+        "type": "auto"
+      }
+    },
+    "pager": [5],
+    "resize": true
   },
   "data_key": "4db12ebf"
 }
@@ -2446,7 +2465,13 @@ to match.</p>
   "interactive": {
     "sort": true,
     "search": true,
-    "pager": [5]
+    "filter": {
+      "default": {
+        "type": "auto"
+      }
+    },
+    "pager": [5],
+    "resize": true
   },
   "data_key": "4db12ebf"
 }
@@ -2477,7 +2502,13 @@ lt(d3) |&gt; lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |&gt; lt_interactive(page
   "interactive": {
     "sort": true,
     "search": true,
-    "pager": [5]
+    "filter": {
+      "default": {
+        "type": "auto"
+      }
+    },
+    "pager": [5],
+    "resize": true
   },
   "data_key": "b81b23e5"
 }
