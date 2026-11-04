@@ -5,9 +5,10 @@ assert("sort and search can be disabled individually", {
   # `n` of controls: sortable headers, search boxes
   probe = '[t.querySelectorAll(".lti-sortable").length,
             t.querySelectorAll(".lti-search").length].join(",")'
-  (lti_eval(itbl(), probe) %==% '2,1')
-  (lti_eval(itbl(sort = FALSE), probe) %==% '0,1')
-  (lti_eval(itbl(search = FALSE), probe) %==% '2,0')
+  # filters off: their boxes are also `.lti-search`
+  (lti_eval(itbl(filter = FALSE), probe) %==% '2,1')
+  (lti_eval(itbl(filter = FALSE, sort = FALSE), probe) %==% '0,1')
+  (lti_eval(itbl(filter = FALSE, search = FALSE), probe) %==% '2,0')
 })
 
 assert("the controls are rows of the table, so they match its width", {

@@ -74,7 +74,8 @@ assert("a preset column width (lt_width) does not block shrinking by drag", {
   (shrunk(TRUE) %==% '24')
 })
 
-assert("resizing is off by default", {
-  (lti_eval(itbl(), 't.querySelectorAll(".lti-resizer").length') %==% '0')
-  (lti_eval(itbl(), 't.className') %==% 'lt-table')
+assert("resizing is on by default and can be turned off", {
+  (lti_eval(itbl(), 't.querySelectorAll(".lti-resizer").length') %==% '2')
+  (lti_eval(itbl(resize = FALSE), 't.querySelectorAll(".lti-resizer").length') %==% '0')
+  (lti_eval(itbl(resize = FALSE), 't.className') %==% 'lt-table')
 })
