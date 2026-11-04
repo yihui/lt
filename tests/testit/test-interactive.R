@@ -58,13 +58,14 @@ assert("the filter and pagination options reach the client spec", {
   (has_match(format(lt(d) |> lt_interactive(pager = c(5, Inf)), assets = FALSE), I('"pager": [5, 0]')))
   # filtering every column needs no column list: just default box
   (has_match(format(lt(d) |> lt_interactive(filter = TRUE), assets = FALSE), '"filter": \\{\\s*"default": true\\s*\\}'))
-  # paging is on by default; filtering is not
+  # paging, auto filters and resizing are on by default; Inf is the last size
   json = format(lt(d) |> lt_interactive(), assets = FALSE)
-  (has_match(json, I('"pager": [10, 25, 50, 100]')))
-  (has_match(json, !'filter'))
-  # both can be turned off
-  json = format(lt(d) |> lt_interactive(pager = FALSE), assets = FALSE)
-  (has_match(json, !'filter|pager'))
+  (has_match(json, I('"pager": [10, 25, 50, 0]')))
+  (has_match(json, '"default": \\{\\s*"type": "auto"'))
+  (has_match(json, I('"resize": true')))
+  # all can be turned off
+  json = format(lt(d) |> lt_interactive(pager = FALSE, filter = FALSE, resize = FALSE), assets = FALSE)
+  (has_match(json, !'filter|pager|resize'))
 })
 
 assert("filter = 'auto' is a default spec, not a column name", {

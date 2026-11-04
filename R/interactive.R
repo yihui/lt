@@ -114,10 +114,11 @@
 #' lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 #' # 5 rows at a time, or all of them, with a filter box on one column
 #' lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
-#' # a widget per column chosen from its data (sliders, checklists, boxes)
-#' lt(iris) |> lt_interactive(filter = 'auto')
-#' # resizable columns
-#' lt(head(mtcars)) |> lt_interactive(resize = TRUE)
+#' # filters are on by default, a widget per column chosen from its data
+#' # (sliders, checklists, boxes); filter = FALSE turns them off
+#' lt(iris) |> lt_interactive(filter = FALSE)
+#' # fixed (non-resizable) columns
+#' lt(head(mtcars)) |> lt_interactive(resize = FALSE)
 #' # a column-visibility menu (all columns shown, or with some hidden to start)
 #' lt(head(mtcars)) |> lt_interactive(hide = TRUE)
 #' lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)
@@ -143,8 +144,8 @@
 #' # export the raw (unformatted) values instead of the displayed text
 #' lt(head(mtcars)) |> lt_interactive(download = list(file = 'cars.csv', mode = 'raw'))
 lt_interactive = function(
-  x, sort = TRUE, search = TRUE, filter = FALSE, pager = c(10, 25, 50, 100),
-  resize = FALSE, hide = NULL, detail = NULL, download = FALSE
+  x, sort = TRUE, search = TRUE, filter = 'auto', pager = c(10, 25, 50, Inf),
+  resize = TRUE, hide = NULL, detail = NULL, download = FALSE
 ) {
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
