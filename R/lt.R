@@ -92,6 +92,8 @@ lt.default = function(
   x = structure(list(data = data, ops = list()), class = 'lt_tbl')
   if (!auto_format) x$auto_format = FALSE
   if (!auto_label) x$auto_label = FALSE
+  # Dates ship as plain strings, so the browser must be told which columns they are
+  if (length(dc <- names(data)[vapply(data, inherits, NA, 'Date')])) x$dates = I(dc)
   if (show_types) x$types = lapply(data, type_tag)
   if (length(grp)) x$row_group = I(grp)
   x

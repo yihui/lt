@@ -31,11 +31,9 @@
     &:not(:first-child) { border-left: var(--bg); }
     &:not(:last-child) { border-right: var(--bg); }
   }
-  thead tr:has(+ .lt-types) th { border-bottom: none; }
   .lt-type {
     font-size: 0.8em;
     opacity: 0.6;
-    margin-right: 0.3em;
   }
   .lt-indent { padding-left: 1em; }
   .lt-spanner-row {

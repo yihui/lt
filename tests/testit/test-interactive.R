@@ -182,3 +182,9 @@ assert('show_types tags columns by type only when asked', {
      c(a = '<int>', b = '<dbl>', c = '<chr>', f = '<fct>', t = '<date>'))
   (is.null(lt(d2)$types))
 })
+
+assert('lt() records Date columns, which ship as plain strings', {
+  d = data.frame(a = 1, d = Sys.Date(), t = Sys.time())
+  (lt(d)$dates %==% I('d'))
+  (is.null(lt(d['t'])$dates))
+})

@@ -105,15 +105,15 @@
     return s;
   }
 
-  // Default text formatter for a column of Dates, or null if it isn't one: ISO
-  // date if every value is UTC midnight (an R `Date`), else local-time
-  // "YYYY-MM-DD HH:MM:SS" (the Swedish locale's format). Sorts as text, so it
-  // also serves filter expressions (`x >= "2024-01-05"`).
+  // Default text formatter for a column of date-times (JS `Date`s, i.e. instants),
+  // or null if it isn't one: local time as "YYYY-MM-DD HH:MM:SS" (the Swedish
+  // locale's format). Sorts as text, so it also serves filter expressions
+  // (`x >= "2024-01-05"`). R dates (`spec.dates`) arrive as "YYYY-MM-DD" strings,
+  // which need no formatting.
   const dateFmt = col => {
     const vs = col?.filter(v => v != null && !isNaN(v));
-    if (!vs?.length || !vs.every(v => v instanceof Date)) return null;
-    const day = vs.every(v => v % 864e5 === 0);
-    return d => isNaN(d) ? "" : day ? d.toISOString().slice(0, 10) : d.toLocaleString("sv");
+    return vs?.length && vs.every(v => v instanceof Date) ?
+      d => isNaN(d) ? "" : d.toLocaleString("sv") : null;
   };
 
   // --- Auto-format date and numeric columns ---
@@ -211,7 +211,9 @@
         case "fmt_date":
           eachCell(cols, (c, i, raw) => {
             if (raw == null) return;
-            const d = raw instanceof Date ? raw : new Date(raw);
+            // a "YYYY-MM-DD" date is a calendar day: parse as local, not UTC
+            const d = raw instanceof Date ? raw :
+              new Date(/^\d{4}-\d\d-\d\d$/.test(raw) ? raw + "T00:00" : raw);
             if (isNaN(d)) return;
             display[c][i] = op.method ? d[op.method]() :
               op.options ? d.toLocaleDateString(op.locale, op.options) :
@@ -593,13 +595,9 @@
     for (const rs of rowSpans)
       out.push(`<th scope="col" class="lt-row-group">${txt(rs.label)}</th>`);
     cols.forEach((c, i) =>
-      out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", c)}</th>`));
-    out.push(`</tr>`);
-    // column types (`show_types`) under the labels
-    if (spec.types) out.push(`<tr class="lt-types">`, `<th></th>`.repeat(nGrp),
-      ...cols.map((c, i) => `<th${attr("class", colCls[i])}><span class="lt-type">${esc(spec.types[c])}</span></th>`),
-      `</tr>`);
-    out.push(`</thead>`);
+      out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", c)}${
+        spec.types ? `<br><span class="lt-type">${esc(spec.types[c])}</span>` : ""}</th>`));
+    out.push(`</tr></thead>`);
 
     // Body footnote markers
     const bodyMarks = {};

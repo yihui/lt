@@ -30,17 +30,18 @@
 
   // --- Small DOM helpers ---
   const { $, $$, on, off, numCol, dateFmt } = LT;
-  // Columns as sort/filter see them: `Date` columns become their ISO text (as
-  // displayed, so `x >= "2024-01-05"` works and text order is time order; the
-  // array is flagged `date`); the raw `spec.data` is untouched. Cached per data
-  // object.
+  // Columns as sort/filter see them: date-time columns become their displayed
+  // text, as do R dates (already "YYYY-MM-DD"), so `x >= "2024-01-05"` works and
+  // text order is time order. Such arrays are flagged `date`; the raw
+  // `spec.data` is untouched. Cached per data object.
   const textual = spec => {
     const d = spec.data || {};
     if (spec._txt?.d !== d) {
       const t = { ...d };
       for (const c in d) {
         const f = dateFmt(d[c]);
-        if (f) t[c] = Object.assign(d[c].map(v => v == null ? v : f(v)), { date: true });
+        if (f || spec.dates?.includes(c))
+          t[c] = Object.assign(d[c].map(v => v == null || !f ? v : f(v)), { date: true });
       }
       spec._txt = { d, t };
     }
@@ -51,6 +52,12 @@
   // run's later rows. Class-based, not positional, so index code stays correct.
   const dataCells = tr =>
     [...tr.children].filter(c => !c.classList.contains("lt-row-group"));
+  // A header cell's label nodes: those before the <br> that starts the type tag
+  // and filter line (if any)
+  const labelNodes = th => {
+    const n = [...th.childNodes], i = n.findIndex(e => e.nodeName === "BR");
+    return i < 0 ? n : n.slice(0, i);
+  };
   // Create <tag> with `props`: dashed key = attribute, else DOM property.
   // Appends to `parent` if given; returns the element.
   function elem(doc, tag, props = {}, parent) {
@@ -295,7 +302,7 @@
     // for substring matching. Scraping the DOM (fallback) misses off-page rows.
     const disp = spec._display || captureDisplay(el, cols, order),
           // bottom header row: cells line up with `cols`
-          hrow = [...$$(el, "thead tr:not(.lt-types)")].pop(),
+          hrow = [...$$(el, "thead tr")].pop(),
           // array `sort` = initial sort (see parseKey); `true` just enables it
           state = {
             filters: {}, predicates: {}, page: 0, pageSize: 0,
@@ -373,13 +380,13 @@
         fullRow(el.tHead || el.createTHead(), "lti-head", nAll, 0)) : null;
     // Data-column header labels, read before sort/resize decorate cells, so the
     // column menu shows displayed labels, not raw names
-    const labels = dataCells(hrow).map(th => th.textContent);
-    // Sort before the filter row exists (sees header row only); `allCols` binds
-    // group headers too
+    const labels = dataCells(hrow).map(th => labelNodes(th).map(n => n.textContent).join(""));
+    // Sort before filters join the header cells; `allCols` binds group headers
+    // too
     if (opts.sort !== false) addSort(hrow, allCols, state, requestRefresh);
-    // Under-header filter row: needed if a default applies or a named column is visible
+    // Header filters: needed if a default applies or a named column is visible
     if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => flt.cols[c] && cols.includes(c)))))
-      addFilter(hrow, cols, flt, textual(spec), state, requestRefresh, nGroup);
+      addFilter(hrow, cols, flt, textual(spec), state, requestRefresh);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     // DOM order = visual order. Chips group is always created with a bar so callers
@@ -554,39 +561,34 @@
       if (col == null) return;
       th.classList.add("lti-sortable");
       // label only, so the resize grip (outside it) doesn't sort
-      const lab = elem(doc, "span", { className: "lti-label" }, th);
-      while (th.firstChild !== lab) lab.append(th.firstChild);
-      marks[col] = { th, ind: elem(doc, "span", { className: "lti-sort" }, lab) };
-      lab.onclick = e => { cycle(state, col, e.shiftKey); paint(); refresh(); };
+      const nodes = labelNodes(th), lab = elem(doc, "span", { className: "lti-label" }),
+            ind = elem(doc, "span", { className: "lti-sort" });
+      th.prepend(lab, ind);
+      lab.append(...nodes);
+      marks[col] = { th, ind };
+      lab.onclick = ind.onclick = e => { cycle(state, col, e.shiftKey); paint(); refresh(); };
     });
     paint();  // reflect initial sort
   }
 
-  // Per-column filter row below headers, in <thead> so the <tbody> swap keeps it
-  // and typed input. `flt` = normalized { default?, cols? }: named spec else
-  // default. `true` = plain box; typed = funnel + popover (see typedFilter).
-  function addFilter(hrow, cols, flt, data, state, refresh, nGroup = 0) {
-    // the type-tag row (`show_types`), if any, doubles as the filter row
-    const doc = hrow.ownerDocument, tags = hrow.nextElementSibling?.matches(".lt-types"),
-          row = tags ? hrow.nextElementSibling : elem(doc, "tr", {}),
+  // Per-column filters, in the header cells (on a line of their own, after the
+  // label and type tag) so the <tbody> swap keeps them and typed input. `flt` =
+  // normalized { default?, cols? }: named spec else default. `true` = plain box;
+  // typed = funnel + popover (see typedFilter).
+  function addFilter(hrow, cols, flt, data, state, refresh) {
+    const doc = hrow.ownerDocument, hCells = dataCells(hrow),
           def = flt.default, explicit = flt.cols || {};
-    row.classList.add("lti-filters");
-    // group columns get no filter but need cells so boxes line up under headers
-    if (!tags) for (let i = 0; i < nGroup; i++) elem(doc, "th", {}, row);
-    // copy header alignment onto filter cells so funnels sit under header text
-    const hCells = dataCells(hrow);
     cols.forEach((c, ci) => {
-      const al = ["al-r", "al-c"].find(k => hCells[ci]?.classList.contains(k)),
-            cell = tags ? row.children[nGroup + ci] : elem(doc, "th", al ? { className: al } : {}, row),
+      const cell = hCells[ci],
             spec = autoSpec(c in explicit ? explicit[c] : def, data[c]);
       if (!spec || !filterable(data, c)) return;   // no filter on this column
+      elem(doc, "br", {}, cell);
       if (spec === true) {                         // a plain search box
         const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
         onType(input, v => { v ? (state.filters[c] = v) : delete state.filters[c]; refresh(); });
-      } else                                       // a typed funnel under the header
+      } else                                       // a typed funnel under the label
         cell.append(typedFilter(doc, c, spec, data, state, refresh, null));
     });
-    if (!tags) hrow.after(row);
   }
 
   // `"auto"` filter: pick the widget from the column's data. Numbers get a range

@@ -21,7 +21,7 @@ Depends: R (>= 4.1.0)
 Encoding: UTF-8
 Imports:
     grDevices,
-    xfun (>= 0.62)
+    xfun (>= 0.62.11)
 Suggests:
     chromote,
     htmltools,

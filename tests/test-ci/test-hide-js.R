@@ -58,21 +58,18 @@ assert("hide accepts a formula, and the menu lists displayed labels", {
   (lti_eval(y, labels) %==% 'name|Count')
 })
 
-assert("hiding a column also hides its filter-row and plot-axis-footer cells", {
-  # a hidden column must vanish from EVERY per-column row (filter boxes, plot
-  # axis footer too), or the axis shifts off its column
+assert("hiding a column also hides its plot-axis-footer cell", {
+  # a hidden column must vanish from EVERY per-column row (the plot axis
+  # footer too), or the axis shifts off its column
   x = lt(data.frame(name = sym, a = c(1, 2, 3, 4), b = c(2, 3, 4, 5))) |>
     lt_dotplot(~ a + b, axis = TRUE) |>
     lt_interactive(hide = TRUE, filter = TRUE, pager = FALSE)
-  # the first column ("name") owns a cell in the filter row and the plot-axis
-  # footer row; both start shown
-  filt = 't.querySelector("tr.lti-filters").children[0].hidden'
+  # the first column ("name") owns a cell in the plot-axis footer row; it
+  # starts shown
   foot = 't.querySelector("tr.lt-plot-foot").children[0].hidden'
-  (lti_eval(x, filt) %==% 'false')
   (lti_eval(x, foot) %==% 'false')
-  # toggling it off hides those cells as well as the header/body
+  # toggling it off hides that cell as well as the header/body
   off0 = box_click(0)
-  (lti_eval(x, filt, off0) %==% 'true')
   (lti_eval(x, foot, off0) %==% 'true')
   (lti_eval(x, cell_hidden(0), off0) %==% 'true')
   # and it stays hidden across a re-render (sorting another column)

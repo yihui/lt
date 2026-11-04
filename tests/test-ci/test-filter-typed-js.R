@@ -7,22 +7,22 @@ tdf = function() data.frame(name = sym, n = c(5, 12, 3, 8), grp = c('a', 'b', 'a
 assert('a "select" on a visible column is a header funnel that defaults to no filter', {
   x = lt(tdf()) |> lt_interactive(filter = list(grp = 'select'), pager = FALSE)
   # a visible column's control sits under its header (the filter row), not in a chip
-  (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-funnel").length') %==% '1')
+  (lti_eval(x, 't.querySelectorAll("thead th .lti-funnel").length') %==% '1')
   (lti_eval(x, 't.querySelectorAll(".lti-chip").length') %==% '0')
   # no preselected value: bare "select" shows every row (a seeded first choice
   # would silently hide rows)
   (length(lti_rows(x)) %==% 4L)
   # the dropdown offers a leading blank "no filter" choice before the distinct values
-  (lti_eval(x, 'Array.from(t.querySelectorAll(".lti-filters select option")).map(o => o.value).join(",")')
+  (lti_eval(x, 'Array.from(t.querySelectorAll("thead th select option")).map(o => o.value).join(",")')
    %==% ',a,b')
   # picking a value from the dropdown filters to it
-  pick = 'var s = t.querySelector(".lti-filters select"); s.value = "b"; s.onchange()'
+  pick = 'var s = t.querySelector("thead th select"); s.value = "b"; s.onchange()'
   (lti_rows(x, pick) %==% c('Nausea', 'Itch'))
   # the expression box mirrors the pick
-  (lti_eval(x, 't.querySelector(".lti-filters .lti-pop input").value === String.raw`x == "b"`', pick)
+  (lti_eval(x, 't.querySelector("thead th .lti-pop input").value === String.raw`x == "b"`', pick)
    %==% 'true')
   # choosing the blank clears the filter: every row again
-  clear = 'var s = t.querySelector(".lti-filters select"); s.value = "b"; s.onchange();
+  clear = 'var s = t.querySelector("thead th select"); s.value = "b"; s.onchange();
            s.value = ""; s.onchange()'
   (length(lti_rows(x, clear)) %==% 4L)
 })
@@ -34,13 +34,11 @@ assert('a "select" with a `selected` value seeds that filter on load', {
 })
 
 assert('a header funnel inherits its column alignment', {
-  # numeric column is right-aligned; its filter cell needs al-r too so the
-  # funnel sits under the header text
+  # numeric column is right-aligned, and so is the funnel in its header cell
   x = lt(tdf()) |> lt_interactive(
     filter = list(n = 'range', grp = 'select'), pager = FALSE)
-  # cells: name (no filter, left), n (range, right), grp (select, left)
-  (lti_eval(x, '[...t.querySelectorAll(".lti-filters th")].map(d => d.className).join("|")')
-   %==% '|al-r|')
+  (lti_eval(x, 't.querySelector("thead th .lti-funnel").closest("th").classList.contains("al-r")')
+   %==% 'true')
 })
 
 assert('el._lt.view() reports the rows a typed filter keeps', {
@@ -96,10 +94,10 @@ assert('a chip opens its popover on a click anywhere, aligned to the chip left e
 assert('an unnamed default entry boxes the other columns alongside a typed column', {
   # grp gets a dropdown funnel; every other visible column (name, n) a plain box
   x = lt(tdf()) |> lt_interactive(filter = list(TRUE, grp = 'select'), pager = FALSE)
-  (lti_eval(x, 't.querySelectorAll(".lti-filters > th > .lti-search").length') %==% '2')
-  (lti_eval(x, 't.querySelectorAll(".lti-filters select").length') %==% '1')
+  (lti_eval(x, 't.querySelectorAll("thead th > .lti-search").length') %==% '2')
+  (lti_eval(x, 't.querySelectorAll("thead th select").length') %==% '1')
   # the box filters its own column (the dropdown adds no default filter of its own)
-  box = 'var i = t.querySelector(".lti-filters > th > .lti-search");
+  box = 'var i = t.querySelector("thead th > .lti-search");
          i.value = "Rash"; i.dispatchEvent(new Event("change"))'
   (lti_rows(x, box) %==% c('Rash'))
 })
@@ -112,7 +110,7 @@ assert('a "range" filter renders a two-thumb slider whose box filters numericall
   # no initial filter (full range): every row shows
   (length(lti_rows(x)) %==% 4L)
   # typing an expression in the box filters to n within [4, 9]
-  box = 'var b = t.querySelector(".lti-filters .lti-pop input"); b.value = "x >= 4 && x <= 9"; b.onchange()'
+  box = 'var b = t.querySelector("thead th .lti-pop input"); b.value = "x >= 4 && x <= 9"; b.onchange()'
   (lti_rows(x, box) %==% c('Rash', 'Itch'))
   # the box drives the thumbs: the low thumb moves off the left end
   (lti_eval(x, 'parseFloat(t.querySelectorAll(".lti-thumb")[0].style.left) > 0', box)
@@ -123,7 +121,7 @@ assert('a bare thumb click (pointer down + up, no move) does not re-filter', {
   # thumb click without drag must not commit a filter or rebuild <tbody>; a
   # stamp on the current <tbody> surviving proves no re-render
   x = lt(tdf()) |> lt_interactive(filter = list(n = 'range'), pager = FALSE)
-  js = 't.querySelector(".lti-filters .lti-funnel").click();
+  js = 't.querySelector("thead th .lti-funnel").click();
     var th = t.querySelectorAll(".lti-thumb")[0], cx = th.getBoundingClientRect().left;
     var ev = (n, c) => new PointerEvent(n, {bubbles: true, cancelable: true, clientX: c});
     t.tBodies[0].dataset.probe = "1";
@@ -136,7 +134,7 @@ assert('dragging a thumb to a new value commits the narrowed range on release', 
   # the positive path: an actual drag (down, move, up) must re-filter. Pulling the
   # low thumb to the track center raises the lower bound, dropping the small values.
   x = lt(tdf()) |> lt_interactive(filter = list(n = 'range'), pager = FALSE)
-  js = 't.querySelector(".lti-filters .lti-funnel").click();
+  js = 't.querySelector("thead th .lti-funnel").click();
     var th = t.querySelectorAll(".lti-thumb")[0], r = th.closest(".lti-slider").getBoundingClientRect();
     var ev = (n, c) => new PointerEvent(n, {bubbles: true, cancelable: true, clientX: c});
     th.dispatchEvent(ev("pointerdown", r.left));
@@ -162,16 +160,16 @@ assert('a chip value summary updates only once its popover closes, not while edi
 assert('a "checklist" keeps the checked values (every box checked = no filter)', {
   x = lt(tdf()) |> lt_interactive(filter = list(grp = 'checklist'), pager = FALSE)
   # a visible column's checklist sits under its header, one checkbox per value
-  (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-funnel").length') %==% '1')
-  (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-check input").length') %==% '2')
+  (lti_eval(x, 't.querySelectorAll("thead th .lti-funnel").length') %==% '1')
+  (lti_eval(x, 't.querySelectorAll("thead th .lti-check input").length') %==% '2')
   # every box checked on load = no filter, so every row shows
   (length(lti_rows(x)) %==% 4L)
   # unchecking "b" keeps only grp == "a" rows
-  uncheck = 'var b = [...t.querySelectorAll(".lti-filters .lti-check input")]
+  uncheck = 'var b = [...t.querySelectorAll("thead th .lti-check input")]
                .find(i => i.value === "b"); b.checked = false; b.onchange()'
   (lti_rows(x, uncheck) %==% c('Rash', 'Headache'))
   # the expression box mirrors the set
-  (lti_eval(x, 't.querySelector(".lti-filters .lti-pop .lti-search").value', uncheck)
+  (lti_eval(x, 't.querySelector("thead th .lti-pop .lti-search").value', uncheck)
    %==% '["a"].includes(x)')
 })
 
@@ -216,12 +214,12 @@ assert('a column that starts hidden under the show/hide menu keeps its header fu
   x = lt(tdf()) |> lt_interactive(
     filter = list(grp = 'select'), hide = 'grp', search = FALSE, pager = FALSE)
   (lti_eval(x, 't.querySelectorAll(".lti-chip").length') %==% '0')
-  (lti_eval(x, 't.querySelector(".lti-filters .lti-funnel").closest("th").hidden') %==% 'true')
+  (lti_eval(x, 't.querySelector("thead th .lti-funnel").closest("th").hidden') %==% 'true')
   # reveal grp from the eye menu: the header funnel's cell shows
   show = 't.querySelector(".lti-cols button").click();
     [...t.querySelectorAll(".lti-menu label")].find(l => l.textContent.trim() === "grp")
       .querySelector("input").click()'
-  (lti_eval(x, 't.querySelector(".lti-filters .lti-funnel").closest("th").hidden', show)
+  (lti_eval(x, 't.querySelector("thead th .lti-funnel").closest("th").hidden', show)
    %==% 'false')
 })
 
@@ -229,10 +227,10 @@ assert('box = FALSE drops the expression box, leaving only the widget', {
   x = lt(tdf()) |> lt_interactive(
     filter = list(grp = list(type = 'select', box = FALSE)), pager = FALSE)
   # the popover holds the dropdown but no free-text expression box
-  (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-pop select").length') %==% '1')
-  (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-pop .lti-search").length') %==% '0')
+  (lti_eval(x, 't.querySelectorAll("thead th .lti-pop select").length') %==% '1')
+  (lti_eval(x, 't.querySelectorAll("thead th .lti-pop .lti-search").length') %==% '0')
   # the dropdown still filters
-  pick = 'var s = t.querySelector(".lti-filters select"); s.value = "b"; s.onchange()'
+  pick = 'var s = t.querySelector("thead th select"); s.value = "b"; s.onchange()'
   (lti_rows(x, pick) %==% c('Nausea', 'Itch'))
 })
 
@@ -242,11 +240,11 @@ assert('the widget hides when a hand-typed expression outruns it', {
   # the attribute alone doesn't remove it from layout
   disp = 'getComputedStyle(t.querySelector(".lti-widget")).display'
   # a representable range keeps the slider shown
-  rng = 'var b = t.querySelector(".lti-filters .lti-pop input"); b.value = "x >= 4 && x <= 9"; b.onchange()'
+  rng = 'var b = t.querySelector("thead th .lti-pop input"); b.value = "x >= 4 && x <= 9"; b.onchange()'
   (lti_eval(x, disp, rng) %==% 'contents')
   # expression the slider can't represent hides it, so it never disagrees with
   # the box
-  custom = 'var b = t.querySelector(".lti-filters .lti-pop input"); b.value = "x == 5 || x == 12"; b.onchange()'
+  custom = 'var b = t.querySelector("thead th .lti-pop input"); b.value = "x == 5 || x == 12"; b.onchange()'
   (lti_eval(x, disp, custom) %==% 'none')
   (lti_rows(x, custom) %==% c('Rash', 'Nausea'))
   # clearing the box brings the slider back
@@ -259,7 +257,7 @@ assert('a column with nothing to filter gets no box, even under a blanket defaul
   # TRUE skips it
   d = data.frame(name = sym, blank = rep('', 4))
   x = lt(d) |> lt_interactive(filter = TRUE, search = FALSE, pager = FALSE)
-  (lti_eval(x, 't.querySelectorAll(".lti-filters .lti-search").length') %==% '1')
+  (lti_eval(x, 't.querySelectorAll("thead th .lti-search").length') %==% '1')
 })
 
 assert('a popover flips to the funnel right against the scroll box, not the viewport', {
@@ -282,7 +280,7 @@ assert('filter = "auto" picks a widget per column from its data', {
   x = lt(d) |> lt_interactive(filter = 'auto', pager = FALSE)
   # id: many distinct strings -> box; n: slider; k: constant -> box;
   # g: two values -> checklist
-  kinds = 'Array.from(t.querySelectorAll(".lti-filters th")).map(c =>
+  kinds = 'Array.from(t.querySelectorAll("thead th")).map(c =>
     c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-funnel") ?
     "checklist" : "box").join()'
   (lti_eval(x, kinds) %==% 'box,range,box,checklist')
@@ -295,7 +293,7 @@ assert('a column set to FALSE has no filter, even under an "auto" default', {
   d = data.frame(id = sprintf('r%02d', 1:12), n = 1:12, g = rep(c('a', 'b'), 6))
   x = lt(d) |> lt_interactive(filter = list('auto', id = FALSE), pager = FALSE)
   # only n (slider) and g (checklist) get a control; id gets an empty cell
-  (lti_eval(x, 'Array.from(t.querySelectorAll(".lti-filters th")).map(c =>
+  (lti_eval(x, 'Array.from(t.querySelectorAll("thead th")).map(c =>
     c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-funnel") ?
     "checklist" : c.querySelector("input") ? "box" : "none").join()')
    %==% 'none,range,checklist')
@@ -305,17 +303,17 @@ assert('a "select" and a "checklist" can keep the missing (NA) rows', {
   d = data.frame(name = c('p', 'q', 'r'), grp = c('a', NA, 'b'))
   x = lt(d) |> lt_interactive(filter = list(grp = 'select'), pager = FALSE)
   # the missing value is its own "NA" choice, after the distinct values
-  (lti_eval(x, 'Array.from(t.querySelectorAll(".lti-filters select option")).map(o => o.textContent).join(",")')
+  (lti_eval(x, 'Array.from(t.querySelectorAll("thead th select option")).map(o => o.textContent).join(",")')
    %==% ',a,b,NA')
-  pick = 'var s = t.querySelector(".lti-filters select"); s.value = s.options[3].value; s.onchange()'
+  pick = 'var s = t.querySelector("thead th select"); s.value = s.options[3].value; s.onchange()'
   (lti_rows(x, pick) %==% 'q')
-  (lti_eval(x, 't.querySelector(".lti-filters .lti-pop .lti-search").value', pick) %==% 'x == null')
+  (lti_eval(x, 't.querySelector("thead th .lti-pop .lti-search").value', pick) %==% 'x == null')
 
   x = lt(d) |> lt_interactive(filter = list(grp = 'checklist'), pager = FALSE)
   # every box starts checked, NA included, so every row shows
   (length(lti_rows(x)) %==% 3L)
   # check only NA: keeps the missing row alone
-  only_na = 'var cs = [...t.querySelectorAll(".lti-filters .lti-check input")];
+  only_na = 'var cs = [...t.querySelectorAll("thead th .lti-check input")];
     cs.forEach(i => i.checked = i.parentNode.textContent === "NA"); cs[0].onchange()'
   (lti_rows(x, only_na) %==% 'q')
 })
