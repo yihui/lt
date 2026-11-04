@@ -1,8 +1,8 @@
 # CHANGES IN lt VERSION 0.6
 
-- In `lt_interactive(filter = list(...))`, a column can be set to `FALSE` to leave it without a filter, e.g., `list("auto", id = FALSE)`.
-
 - `lt_interactive(filter = "auto")` picks each column's filter from its data: a range slider for numbers, a checklist for text with few distinct values, and a plain box otherwise.
+
+- In `lt_interactive(filter = list(...))`, a column can be set to `FALSE` to leave it without a filter, e.g., `list("auto", id = FALSE)`.
 
 - `lt_export(width = )` also accepts a CSS width string, e.g., `"min-content"` for the narrowest width that shows every column.
 
