@@ -46,7 +46,8 @@
 #'   "Cylinders")` or `list(type = "range", min = 0, max = 100)`. One *unnamed*
 #'   entry in the list
 #'   is the default applied to every other visible column, so
-#'   `list(TRUE, cyl = "select")` boxes every column but gives `cyl` a dropdown.
+#'   `list(TRUE, cyl = "select")` boxes every column but gives `cyl` a dropdown, and
+#'   `FALSE` leaves a column without a filter, e.g. `list("auto", id = FALSE)`.
 #'   A column with nothing to filter (every value blank) gets no box, even under
 #'   that default. `"auto"` (alone, or as a list entry, e.g. `list("auto",
 #'   cyl = "select")`) picks each column's filter from its data: a range slider
@@ -211,12 +212,12 @@ normalize_filter = function(filter) {
   TRUE
 }
 
-# One column's filter spec: `TRUE` (plain box) passes through; a `"select"` /
+# One column's filter spec: `TRUE` (plain box) / `FALSE` (none) pass through; a `"select"` /
 # `"range"` / `"checklist"` string becomes `list(type = ...)`; a list is a
 # hand-set spec, `choices` reshaped to {value, label} objects, `value` (range)
 # / `selected` (checklist) default kept as a JSON array.
 normalize_spec = function(spec) {
-  if (isTRUE(spec)) return(TRUE)
+  if (is.logical(spec) && length(spec) == 1 && !is.na(spec)) return(spec)
   if (is.character(spec) && length(spec) == 1) return(list(type = spec))
   if (is.list(spec)) {
     if (!is.null(spec$choices)) spec$choices = choice_objs(spec$choices)

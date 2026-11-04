@@ -73,6 +73,12 @@ assert("filter = 'auto' is a default spec, not a column name", {
   (has_match(json, !'"cols"'))
 })
 
+assert("a column set to FALSE gets no filter spec", {
+  json = format(lt(d) |> lt_interactive(filter = list(TRUE, y = FALSE)), assets = FALSE)
+  (has_match(json, '"y": false'))
+  (has_match(json, '"default": true'))
+})
+
 assert("a typed filter spec reaches the client with its options", {
   # checklist spec keeps type and label, reshapes `choices` to {value,label}
   # objects, keeps scalar `selected` as JSON array (so client seeds it)

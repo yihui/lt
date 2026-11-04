@@ -45,7 +45,8 @@ taken from the column's data). For a custom label or hand-set options, pass
 a list instead of the string, e.g. \code{list(type = "select", label = "Cylinders")} or \code{list(type = "range", min = 0, max = 100)}. One \emph{unnamed}
 entry in the list
 is the default applied to every other visible column, so
-\code{list(TRUE, cyl = "select")} boxes every column but gives \code{cyl} a dropdown.
+\code{list(TRUE, cyl = "select")} boxes every column but gives \code{cyl} a dropdown, and
+\code{FALSE} leaves a column without a filter, e.g. \code{list("auto", id = FALSE)}.
 A column with nothing to filter (every value blank) gets no box, even under
 that default. \code{"auto"} (alone, or as a list entry, e.g. \code{list("auto", cyl = "select")}) picks each column's filter from its data: a range slider
 for numbers (a plain box if every value is the same), a checklist for text

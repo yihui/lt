@@ -343,12 +343,12 @@
     };
 
     // `filter` is normalized (R side) to { default?, cols? }: `default` covers
-    // unnamed visible columns; `cols` maps column -> spec (`true` = plain box, else
-    // typed). A typed filter on a hidden column has no header, so it becomes a
+    // unnamed visible columns; `cols` maps column -> spec (`true` = plain box, `false` =
+    // none, else typed). A typed filter on a hidden column has no header, so it becomes a
     // head-bar chip; the rest go under their headers.
     const flt = opts.filter,
           barCols = flt?.cols ?
-            Object.keys(flt.cols).filter(c => flt.cols[c] !== true && flt.cols[c].type !== "auto" && !cols.includes(c)) : [];
+            Object.keys(flt.cols).filter(c => flt.cols[c]?.type && flt.cols[c].type !== "auto" && !cols.includes(c)) : [];
     // Table-wide controls share one head row: search (absorbs free space), chips,
     // then icons (column menu, download)
     const headBar = (opts.search !== false || opts.hide || barCols.length || opts.download) ?
@@ -361,7 +361,7 @@
     // group headers too
     if (opts.sort !== false) addSort(hrow, allCols, state, requestRefresh);
     // Under-header filter row: needed if a default applies or a named column is visible
-    if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => cols.includes(c)))))
+    if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => flt.cols[c] && cols.includes(c)))))
       addFilter(hrow, cols, flt, spec.data, state, requestRefresh, nGroup);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
