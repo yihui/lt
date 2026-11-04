@@ -27,9 +27,9 @@
 #'   by replacing separators (`.` and `_`) with spaces. Set to `FALSE` to
 #'   show raw column names.
 #' @param show_types Whether to tag each column with its type (e.g., `<dbl>`,
-#'   `<chr>`, `<fct>`, `<date>`) in a row under the column labels, like the
-#'   types printed under a tibble's column names. In an interactive table (see
-#'   [lt_interactive()]), the tags share that row with the filter controls.
+#'   `<chr>`, `<fct>`, `<date>`) under the column labels, like the types
+#'   printed under a tibble's column names. In an interactive table (see
+#'   [lt_interactive()]), the filter controls follow the tags.
 #' @section HTML in cells:
 #' By default all cell values and text (titles, labels, footnotes, ...) are
 #' HTML-escaped, so special characters like `<`, `>`, and `&` render as

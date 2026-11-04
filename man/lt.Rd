@@ -25,9 +25,9 @@ by replacing separators (\code{.} and \verb{_}) with spaces. Set to \code{FALSE}
 show raw column names.}
 
 \item{show_types}{Whether to tag each column with its type (e.g., \verb{<dbl>},
-\verb{<chr>}, \verb{<fct>}, \verb{<date>}) in a row under the column labels, like the
-types printed under a tibble's column names. In an interactive table (see
-\code{\link[=lt_interactive]{lt_interactive()}}), the tags share that row with the filter controls.}
+\verb{<chr>}, \verb{<fct>}, \verb{<date>}) under the column labels, like the types
+printed under a tibble's column names. In an interactive table (see
+\code{\link[=lt_interactive]{lt_interactive()}}), the filter controls follow the tags.}
 }
 \value{
 A table object that can be piped into \verb{lt_*()} functions.
