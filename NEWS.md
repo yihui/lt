@@ -12,7 +12,7 @@
 
 - `lt()` gains `show_types`: when `TRUE`, each column is tagged with its type (`<dbl>`, `<chr>`, `<fct>`, `<date>`, ...) under the column labels (followed by the filters of an interactive table).
 
-- Added `lt_viewer()`, a data viewer for exploring a data frame: an interactive table with each column's type and profile, filters, and a column-visibility menu, i.e., `lt_interactive(lt(data, show_types = TRUE), profile = TRUE, hide = NA)`.
+- Added `lt_viewer()`, a data viewer for exploring a data frame: an interactive table with a caption (the data name and size), each column's type and profile, filters, and a column-visibility menu, i.e., `lt_interactive(lt(data, show_types = TRUE), profile = TRUE, hide = NA)`.
 
 - With `auto_format = TRUE`, `lt()` shows date columns as `YYYY-MM-DD` and date-time columns as `YYYY-MM-DD HH:MM:SS` in the local time zone by default; use `lt_date()` to format them differently. In `lt_interactive()`, these columns sort chronologically and `filter = "auto"` gives them a range slider.
 
