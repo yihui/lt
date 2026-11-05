@@ -24,11 +24,12 @@
 #' @param sort Whether clicking a column header sorts the table by that column
 #'   (cycling ascending, descending, then unsorted); shift-clicking adds a
 #'   column as a further tie-breaker, so several columns can sort at once.
-#'   Sorting uses the raw values, so numeric columns sort numerically. Can also
-#'   request an initial sort by one or more columns, given either as a character
-#'   vector of column names or as a one-sided formula (e.g. `~ x + -y`); a name
-#'   prefixed with `-` (or a negated formula term) sorts that column descending,
-#'   e.g. `c('g', '-x')` or `~ g + -x`.
+#'   Sorting uses the raw values, so numeric columns sort numerically and dates
+#'   and date-times chronologically. Can also request an initial sort by one or
+#'   more columns, given either as a character vector of column names or as a
+#'   one-sided formula (e.g. `~ x + -y`); a name prefixed with `-` (or a negated
+#'   formula term) sorts that column descending, e.g. `c('g', '-x')` or
+#'   `~ g + -x`.
 #' @param search Whether to show a table-wide search box. A row is kept when
 #'   any cell matches the term. Besides plain substring matching, a term that
 #'   references the cell variable `x` (e.g. `x > 5` or `x != "A"`) is evaluated
@@ -46,9 +47,15 @@
 #'   "Cylinders")` or `list(type = "range", min = 0, max = 100)`. One *unnamed*
 #'   entry in the list
 #'   is the default applied to every other visible column, so
-#'   `list(TRUE, cyl = "select")` boxes every column but gives `cyl` a dropdown.
+#'   `list(TRUE, cyl = "select")` boxes every column but gives `cyl` a dropdown, and
+#'   `FALSE` leaves a column without a filter, e.g. `list("auto", id = FALSE)`.
 #'   A column with nothing to filter (every value blank) gets no box, even under
-#'   that default.
+#'   that default. `"auto"` (alone, or as a list entry, e.g. `list("auto",
+#'   cyl = "select")`) picks each column's filter from its data: a range slider
+#'   for numbers and for dates and date-times (a plain box if every value is the
+#'   same; a date filter expression compares text, e.g. `x >= "2024-01-05"`), a
+#'   checklist for text with at most 10 distinct values, and a plain box
+#'   otherwise.
 #'   A typed filter renders as a funnel + popover (holding the widget *and* an
 #'   expression box, kept in sync) under its column header, or — when the column
 #'   is hidden from the table (e.g. with [lt_hide()]) — as a chip in the control
@@ -92,6 +99,17 @@
 #'   formatted text, each keyed by column name — and returns a table spec, which
 #'   may carry its own `interactive` field to make the detail table interactive.
 #'   `NULL` (the default) adds no row detail.
+#' @param profile Whether to show a profile of each column: a mini bar chart of
+#'   its values (a histogram of up to 10 bins for numbers, dates, and
+#'   date-times; one bar per category for text, left blank if over half of
+#'   the values are distinct). Hovering over it shows summary statistics (min,
+#'   max, and mean, or the number of distinct values and the most frequent ones)
+#'   and the amount of missing values. When the filters keep only some rows, the bars
+#'   highlight their share. `TRUE` or `"header"` puts the chart in the column
+#'   header; `"filter"` puts it at the top of the column's filter popover
+#'   instead, which saves header space (only columns with a popover filter,
+#'   e.g., the range slider or checklist of `filter = "auto"`, get a profile
+#'   then).
 #' @param download Whether to add a button that downloads the table as a CSV
 #'   file. The file holds the current view (every row the filters and search
 #'   keep, in sort order, across all pages) of the table's columns. `TRUE` adds
@@ -110,8 +128,11 @@
 #' lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 #' # 5 rows at a time, or all of them, with a filter box on one column
 #' lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
-#' # resizable columns
-#' lt(head(mtcars)) |> lt_interactive(resize = TRUE)
+#' # filters are on by default, a widget per column chosen from its data
+#' # (sliders, checklists, boxes); filter = FALSE turns them off
+#' lt(iris) |> lt_interactive(filter = FALSE)
+#' # fixed (non-resizable) columns
+#' lt(head(mtcars)) |> lt_interactive(resize = FALSE)
 #' # a column-visibility menu (all columns shown, or with some hidden to start)
 #' lt(head(mtcars)) |> lt_interactive(hide = TRUE)
 #' lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)
@@ -131,14 +152,17 @@
 #'   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
 #'     value: [i, d.mpg] } })')
 #' )
+#' # a distribution plot in each column header, or in the filter popover
+#' lt(iris) |> lt_interactive(profile = TRUE)
+#' lt(iris) |> lt_interactive(profile = 'filter')
 #' # a button to download the current view as a CSV file
 #' lt(head(mtcars)) |> lt_interactive(download = TRUE)
 #' lt(head(mtcars)) |> lt_interactive(download = 'cars.csv')
 #' # export the raw (unformatted) values instead of the displayed text
 #' lt(head(mtcars)) |> lt_interactive(download = list(file = 'cars.csv', mode = 'raw'))
 lt_interactive = function(
-  x, sort = TRUE, search = TRUE, filter = FALSE, pager = c(10, 25, 50, 100),
-  resize = FALSE, hide = NULL, detail = NULL, download = FALSE
+  x, sort = TRUE, search = TRUE, filter = 'auto', pager = c(10, 25, 50, Inf),
+  resize = TRUE, hide = NULL, detail = NULL, profile = FALSE, download = FALSE
 ) {
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
@@ -150,6 +174,8 @@ lt_interactive = function(
     opts$pager = I(as.integer(sizes))
   }
   if (isTRUE(resize)) opts$resize = TRUE
+  if (!isFALSE(profile))
+    opts$profile = if (isTRUE(profile)) 'header' else match.arg(profile, c('header', 'filter'))
   if (!is.null(hide) && !isFALSE(hide)) {
     label = NULL
     if (is.list(hide)) {
@@ -184,10 +210,12 @@ download_opt = function(download) {
 # Shape `filter` for the client as { default?, cols? }. `TRUE` -> a box on
 # every column (`default`); a character vector -> boxes on just those columns;
 # a named list -> each named column's own spec in `cols`, one unnamed entry (if
-# any) kept as `default` for other visible columns. The client resolves a typed
+# any) kept as `default` for other visible columns; `"auto"` is that default
+# alone, resolved per column on the client. The client resolves a typed
 # spec's choices / range from column data, so nothing here reads `x$data`.
 normalize_filter = function(filter) {
   if (isTRUE(filter)) return(list(default = TRUE))
+  if (identical(filter, 'auto')) filter = list(filter)  # a default for all columns
   if (is.character(filter))
     return(list(cols = set_names(rep(list(TRUE), length(filter)), filter)))
   if (is.list(filter)) {
@@ -204,12 +232,12 @@ normalize_filter = function(filter) {
   TRUE
 }
 
-# One column's filter spec: `TRUE` (plain box) passes through; a `"select"` /
+# One column's filter spec: `TRUE` (plain box) / `FALSE` (none) pass through; a `"select"` /
 # `"range"` / `"checklist"` string becomes `list(type = ...)`; a list is a
 # hand-set spec, `choices` reshaped to {value, label} objects, `value` (range)
 # / `selected` (checklist) default kept as a JSON array.
 normalize_spec = function(spec) {
-  if (isTRUE(spec)) return(TRUE)
+  if (is.logical(spec) && length(spec) == 1 && !is.na(spec)) return(spec)
   if (is.character(spec) && length(spec) == 1) return(list(type = spec))
   if (is.list(spec)) {
     if (!is.null(spec$choices)) spec$choices = choice_objs(spec$choices)

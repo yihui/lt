@@ -32,6 +32,16 @@
     font-size: 0.8em;
   }
 
+  /* column profile: mini histogram in the header */
+  .lti-prof svg {
+    width: 100%;
+    height: 1.5em;
+    min-width: 4em;
+    fill: currentColor;
+    rect { opacity: 0.25; }
+    rect.s { opacity: 0.7; }
+  }
+
   .lti-empty td {
     text-align: center;
   }
@@ -75,10 +85,15 @@
   /* frozen widths are authoritative: a drag moves one edge only */
   &.lti-fixed {
     table-layout: fixed;
-    /* clip a shrunk column so the grip can shrink it freely; detail row and
-     * popover-bearing filter/bar cells (<td>) must overflow */
-    thead th, tbody tr:not(.lti-detail) td {
+    /* clip a shrunk column's cells and labels so the grip can shrink it freely;
+     * header cells (holding filter popovers) and the detail row must overflow */
+    tbody tr:not(.lti-detail) td, thead .lti-label {
       overflow: hidden;
+    }
+    thead .lti-label {
+      display: inline-block;
+      max-width: 100%;
+      vertical-align: bottom;
     }
   }
 
@@ -183,10 +198,11 @@
       padding: 0;
       width: 1.1em;
       height: 1.1em;
-      opacity: 0.55;
-      background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="gray"><path d="M1 2h14l-5.5 6.5V14l-3 1V8.5z"/></svg>');
+      background: currentColor;
+      opacity: 0.4;
+      mask: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M1 2h14l-5.5 6.5V14l-3 1V8.5z"/></svg>');
     }
-    /* active when the column has a live term */
+    /* active when the column has a live term: darker funnel */
     &.lti-on .lti-funnel {
       opacity: 1;
     }

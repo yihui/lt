@@ -43,8 +43,9 @@ jobs:
 
       - uses: yihui/actions/setup-r-dependencies@HEAD
 
-      # check against minified assets, as shipped to CRAN
-      - if: matrix.config.os == 'ubuntu-latest' && matrix.config.r == 'release'
+      # check against minified assets, as shipped to CRAN; main only, since PRs
+      # change assets whose pinned version isn't published yet
+      - if: github.event_name == 'push' && matrix.config.os == 'ubuntu-latest' && matrix.config.r == 'release'
         run: ./tools/build-before.sh
 
       - uses: yihui/actions/check-r-package@HEAD

@@ -2,7 +2,7 @@
 #
 # Publish lt's JS/CSS assets to npm via the lite.js (@xiee/utils) repo.
 #
-# Steps (mirrors the "Publish lt to npm" section of CLAUDE.md):
+# Steps (mirrors the "Publish lt to npm" section of AGENTS.md):
 #   1. Ensure ../lite.js exists (clone it if missing); pull --rebase first, so
 #      the sync happens on a clean tree before any asset is copied in.
 #   2. Copy lt's assets from inst/www into lite.js.
@@ -84,7 +84,7 @@ echo "Publishing @xiee/utils v$new"
 # 3c. Bump package.json, commit, tag, push (branch + the single new tag only).
 perl -i -pe "s/\"version\": \"[^\"]+\"/\"version\": \"$new\"/ if \$. < 10 && /\"version\"/" package.json
 
-git add -A
+git add js css package.json
 git commit -m "Bump to $new (lt assets)"
 git tag "v$new"
 git push

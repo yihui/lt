@@ -830,13 +830,14 @@ toggle raw values for all tables on the page.
 `lt_interactive()` turns a table into an interactive one: click a column
 header to sort by it (ascending, descending, then unsorted), type in the
 search box above the table to keep only the rows that match, and walk
-through the rows a page at a time with the pager below the table. Paging
-is on by default; the page sizes to offer are given as a vector, the
-first of which is used initially.
+through the rows a page at a time with the pager below the table. Paging,
+per-column filters (see below), and resizable columns are on by default;
+the page sizes to offer are given as a vector, the first of which is used
+initially, and `Inf` offers every row on one page.
 
 ```{r}
 d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
-lt(d) |> lt_interactive(pager = c(5, 10, Inf))
+lt(d) |> lt_interactive(pager = c(5, 10, Inf), filter = FALSE)
 ```
 
 Shift-click a second header to sort by it as a tie-breaker, so several
@@ -845,7 +846,7 @@ initial sort can be requested with `sort` as a one-sided formula (below);
 a `-` prefix (a negated formula term) sorts a column descending.
 
 ```{r}
-lt(d) |> lt_interactive(sort = ~ cyl + -mpg, pager = 10, search = FALSE)
+lt(d) |> lt_interactive(sort = ~ cyl + -mpg, pager = 10, search = FALSE, filter = FALSE)
 ```
 
 The extra controls (and the JavaScript that drives them) are only loaded
@@ -857,10 +858,12 @@ mention Mercedes). A term that mentions `x` is instead evaluated as a
 JavaScript expression against each raw cell value, so `x > 20` keeps the
 rows with a value above 20 in any column.
 
-`filter = TRUE` adds a box under each column header, matching the same
-way but against that column alone; a row is kept when it passes every
-filter and the search. Pass a character vector to filter on some columns
-only.
+By default, each column gets a filter under its header (chosen from its
+data, see `"auto"` below). `filter = TRUE` instead adds a plain box under
+each column header, matching the same way as the search but against that
+column alone; a row is kept when it passes every filter and the search.
+Pass a character vector to filter on some columns only, or `FALSE` to
+turn the filters off.
 
 ```{r}
 lt(d) |> lt_interactive(filter = TRUE, search = FALSE, pager = 5)
@@ -873,6 +876,23 @@ dropdown's and checklist's choices and the slider's ends are read from the
 column's data. The control renders as a funnel under the header, paired
 with an expression box that stays in sync. One *unnamed* entry is the
 default for every other column.
+
+`filter = "auto"` chooses the control for each column from its data: a
+range slider for numbers (a plain box when every value is the same), a
+checklist for text with at most 10 distinct values, and a plain box for
+anything else. It can also be the unnamed default in a list, so
+`list("auto", cyl = "select")` overrides just `cyl`.
+
+```{r}
+lt(iris) |> lt_interactive(filter = "auto", search = FALSE, pager = 5)
+```
+
+A column set to `FALSE` gets no filter at all, even under a default such as
+`"auto"` or `TRUE`. Here `Species` is left out of the filters:
+
+```{r}
+lt(iris) |> lt_interactive(filter = list("auto", Species = FALSE), search = FALSE, pager = 5)
+```
 
 A `"select"` keeps the one value chosen; a `"checklist"` keeps every value
 whose box is checked (all checked is the no-filter state), so the reader
@@ -913,7 +933,7 @@ the detail.
 ```{r}
 lt(d) |>
   lt_hide(~ hp + wt) |>
-  lt_interactive(pager = 5, detail = ~ hp + wt)
+  lt_interactive(pager = 5, filter = FALSE, detail = ~ hp + wt)
 ```
 
 For full control, pass a JavaScript callback yourself, wrapped in `js()`.
@@ -926,7 +946,7 @@ interactive, as below where it is made sortable.
 lt(d) |>
   lt_hide(~ hp + wt) |>
   lt_interactive(
-    pager = 5,
+    pager = 5, filter = FALSE,
     detail = js('(row, i, d) => ({
       data: { field: ["row", "hp", "wt"], value: [i, d.hp, d.wt] },
       interactive: { sort: ["value"], search: false }
@@ -936,13 +956,13 @@ lt(d) |>
 
 ### Resizable columns
 
-With `resize = TRUE`, each column can be resized by dragging the right
-edge of its header; double-clicking that edge fits the column to its
+Each column can be resized by dragging the right edge of its header
+(`resize = FALSE` turns this off); double-clicking that edge fits the column to its
 content. Widening a column widens the table, leaving the other columns
 as they are. Initial widths come from `lt_width()` as usual.
 
 ```{r}
-lt(head(d)) |> lt_interactive(resize = TRUE, pager = FALSE, search = FALSE) |>
+lt(head(d)) |> lt_interactive(pager = FALSE, search = FALSE, filter = FALSE) |>
   lt_width(mpg = "8em")
 ```
 
@@ -956,7 +976,25 @@ start with those hidden (they are still listed, so the reader can bring
 them back). The checklist shows each column's displayed label.
 
 ```{r}
-lt(d) |> lt_interactive(hide = ~ hp + wt, pager = 5)
+lt(d) |> lt_interactive(hide = ~ hp + wt, pager = 5, filter = FALSE)
+```
+
+### Column profiles
+
+`profile` draws a mini chart of each column: a histogram for numbers and
+dates, a bar per category for text (left blank if the values are mostly
+distinct). Hover over it for summary statistics (min, max, mean, or the
+distinct values and the most frequent ones) and the amount of missing values.
+The bars also highlight the rows that the filters keep, so try filtering a
+column. `profile = TRUE` puts the charts in the header; `profile = "filter"`
+puts each in its column's filter popover instead, which saves header space.
+
+```{r}
+lt(iris) |> lt_interactive(profile = TRUE, pager = 5)
+```
+
+```{r}
+lt(iris) |> lt_interactive(profile = "filter", pager = 5)
 ```
 
 ### Downloading a CSV

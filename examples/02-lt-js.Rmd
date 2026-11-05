@@ -945,9 +945,14 @@ optional:
   explicitly with `choices` / `min`+`max`; `selected` seeds the dropdown's
   value or the checklist's checked set). A `"select"` keeps the one chosen
   value, a `"checklist"` keeps every checked value (all checked = no
-  filter). So `{ default: true }` boxes every column, `{ cols: { mpg: true
+  filter). `{ type: "auto" }` picks the control from the column's data: a
+  slider for numbers (a plain box if constant), a checklist for strings with
+  at most 10 distinct values, a plain box otherwise. So `{ default: true }`
+  boxes every column, `{ cols: { mpg: true
   } }` boxes one, and `{ cols: { cyl: { type: "select" } } }` gives `cyl` a
-  dropdown;
+  dropdown. `false` in `cols` (or as `default`) leaves a column without a
+  filter, even under a default, e.g. `{ default: { type: "auto" }, cols: {
+  id: false } }`;
 - `pager`: the page sizes to offer, as an array whose first element is
   the initial size; `0` means every row on one page. Omit the field for
   the default sizes, or set it to `false` to show all rows with no
@@ -968,6 +973,11 @@ optional:
   keyed by column name and covering every column. The returned spec is an
   ordinary table spec, so give it its own `interactive` field to make the
   detail table sortable/filterable/paged too;
+- `profile`: a mini chart of each column, a histogram for numbers and dates
+  or a bar per category for text, with summary statistics as a tooltip; the
+  bars highlight the rows the filters keep. `"header"` puts it in the column
+  header, `"filter"` in the column's filter popover (only columns that have
+  a popover filter);
 - `download`: a button in the control bar that downloads the current view
   (every row the filters and search keep, in sort order, across all pages) as
   a CSV file, using the displayed cell text. `true` uses a default file name;
@@ -1005,6 +1015,29 @@ LT.build({
 });
 ```
 
+With `{ type: "auto" }` as the default, each column gets the control that suits
+its data: a slider for the numeric columns and a checklist for `Species`.
+
+```{js}
+LT.build({
+  data: iris,
+  interactive: { search: false, pager: 5, filter: { default: { type: "auto" } } }
+});
+```
+
+A column mapped to `false` gets no filter, even under the `"auto"` default.
+Here `Species` is left out:
+
+```{js}
+LT.build({
+  data: iris,
+  interactive: {
+    search: false, pager: 5,
+    filter: { default: { type: "auto" }, cols: { Species: false } }
+  }
+});
+```
+
 A `"range"` slider has two thumbs, for the low and high ends. Drag a thumb to
 move it: the readout tracks it live, but the filter is applied only on release,
 so the table does not reflow (and shift the thumb) out from under the cursor
@@ -1019,6 +1052,16 @@ Open the eye menu to toggle columns; `hp` and `wt` start hidden here:
 LT.build({
   data: mtcars,
   interactive: { hide: { hidden: ["hp", "wt"] }, pager: 5 }
+});
+```
+
+Profiles chart each column in its header (or, with `profile: "filter"`, in the
+filter popover); filter a column to see its bars highlight the kept rows:
+
+```{js}
+LT.build({
+  data: mtcars,
+  interactive: { profile: "header", pager: 5 }
 });
 ```
 

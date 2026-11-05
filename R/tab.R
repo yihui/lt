@@ -271,7 +271,9 @@ lt_format = function(
 #'
 #' Format date or datetime columns using JavaScript's native Date methods.
 #' The underlying data should be Date or POSIXt in R (serialized as
-#' `new Date(...)` for the browser).
+#' `new Date(...)` for the browser). Without this, such columns are shown as
+#' `YYYY-MM-DD` (dates) or `YYYY-MM-DD HH:MM:SS` (date-times) when
+#' `auto_format = TRUE` in [lt()].
 #'
 #' @inheritParams lt_align
 #' @param method A JS Date method name to call (e.g., `"toLocaleDateString"`,

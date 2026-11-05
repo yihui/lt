@@ -8,11 +8,12 @@ lt_interactive(
   x,
   sort = TRUE,
   search = TRUE,
-  filter = FALSE,
-  pager = c(10, 25, 50, 100),
-  resize = FALSE,
+  filter = "auto",
+  pager = c(10, 25, 50, Inf),
+  resize = TRUE,
   hide = NULL,
   detail = NULL,
+  profile = FALSE,
   download = FALSE
 )
 }
@@ -22,11 +23,12 @@ lt_interactive(
 \item{sort}{Whether clicking a column header sorts the table by that column
 (cycling ascending, descending, then unsorted); shift-clicking adds a
 column as a further tie-breaker, so several columns can sort at once.
-Sorting uses the raw values, so numeric columns sort numerically. Can also
-request an initial sort by one or more columns, given either as a character
-vector of column names or as a one-sided formula (e.g. \code{~ x + -y}); a name
-prefixed with \code{-} (or a negated formula term) sorts that column descending,
-e.g. \code{c('g', '-x')} or \code{~ g + -x}.}
+Sorting uses the raw values, so numeric columns sort numerically and dates
+and date-times chronologically. Can also request an initial sort by one or
+more columns, given either as a character vector of column names or as a
+one-sided formula (e.g. \code{~ x + -y}); a name prefixed with \code{-} (or a negated
+formula term) sorts that column descending, e.g. \code{c('g', '-x')} or
+\code{~ g + -x}.}
 
 \item{search}{Whether to show a table-wide search box. A row is kept when
 any cell matches the term. Besides plain substring matching, a term that
@@ -45,9 +47,14 @@ taken from the column's data). For a custom label or hand-set options, pass
 a list instead of the string, e.g. \code{list(type = "select", label = "Cylinders")} or \code{list(type = "range", min = 0, max = 100)}. One \emph{unnamed}
 entry in the list
 is the default applied to every other visible column, so
-\code{list(TRUE, cyl = "select")} boxes every column but gives \code{cyl} a dropdown.
+\code{list(TRUE, cyl = "select")} boxes every column but gives \code{cyl} a dropdown, and
+\code{FALSE} leaves a column without a filter, e.g. \code{list("auto", id = FALSE)}.
 A column with nothing to filter (every value blank) gets no box, even under
-that default.
+that default. \code{"auto"} (alone, or as a list entry, e.g. \code{list("auto", cyl = "select")}) picks each column's filter from its data: a range slider
+for numbers and for dates and date-times (a plain box if every value is the
+same; a date filter expression compares text, e.g. \code{x >= "2024-01-05"}), a
+checklist for text with at most 10 distinct values, and a plain box
+otherwise.
 A typed filter renders as a funnel + popover (holding the widget \emph{and} an
 expression box, kept in sync) under its column header, or — when the column
 is hidden from the table (e.g. with \code{\link[=lt_hide]{lt_hide()}}) — as a chip in the control
@@ -95,6 +102,18 @@ formatted text, each keyed by column name — and returns a table spec, which
 may carry its own \code{interactive} field to make the detail table interactive.
 \code{NULL} (the default) adds no row detail.}
 
+\item{profile}{Whether to show a profile of each column: a mini bar chart of
+its values (a histogram of up to 10 bins for numbers, dates, and
+date-times; one bar per category for text, left blank if over half of
+the values are distinct). Hovering over it shows summary statistics (min,
+max, and mean, or the number of distinct values and the most frequent ones)
+and the amount of missing values. When the filters keep only some rows, the bars
+highlight their share. \code{TRUE} or \code{"header"} puts the chart in the column
+header; \code{"filter"} puts it at the top of the column's filter popover
+instead, which saves header space (only columns with a popover filter,
+e.g., the range slider or checklist of \code{filter = "auto"}, get a profile
+then).}
+
 \item{download}{Whether to add a button that downloads the table as a CSV
 file. The file holds the current view (every row the filters and search
 keep, in sort order, across all pages) of the table's columns. \code{TRUE} adds
@@ -133,8 +152,11 @@ lt(head(mtcars)) |> lt_interactive()
 lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
 # 5 rows at a time, or all of them, with a filter box on one column
 lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
-# resizable columns
-lt(head(mtcars)) |> lt_interactive(resize = TRUE)
+# filters are on by default, a widget per column chosen from its data
+# (sliders, checklists, boxes); filter = FALSE turns them off
+lt(iris) |> lt_interactive(filter = FALSE)
+# fixed (non-resizable) columns
+lt(head(mtcars)) |> lt_interactive(resize = FALSE)
 # a column-visibility menu (all columns shown, or with some hidden to start)
 lt(head(mtcars)) |> lt_interactive(hide = TRUE)
 lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)
@@ -154,6 +176,9 @@ lt(head(mtcars)) |> lt_interactive(
   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
     value: [i, d.mpg] } })')
 )
+# a distribution plot in each column header, or in the filter popover
+lt(iris) |> lt_interactive(profile = TRUE)
+lt(iris) |> lt_interactive(profile = 'filter')
 # a button to download the current view as a CSV file
 lt(head(mtcars)) |> lt_interactive(download = TRUE)
 lt(head(mtcars)) |> lt_interactive(download = 'cars.csv')

@@ -1,6 +1,24 @@
 # CHANGES IN lt VERSION 0.6
 
-- Added `view_lt()` to open a data frame or existing lt table in the default browser, with column filters enabled by default and other `lt_interactive()` options. The local HTTP preview can also be opened by editors and AI tools: `open = FALSE` prints its URL, and non-interactive sessions keep serving until interrupted. `serve = FALSE` opens the saved HTML file directly.
+- Added `lt_viewer()`, a data viewer: a shorthand for `lt_interactive(lt(data, show_types = TRUE), profile = TRUE)` that shows each column's type and a profile of its values in an interactive table.
+
+- `lt_interactive(profile = TRUE)` shows a profile of each column: a mini bar chart of its values (a histogram for numbers and dates; one bar per category for text where at most half of the values are distinct, left blank otherwise) that highlights the rows kept by the filters, with summary statistics and the amount of missing values as a tooltip. Use `profile = "filter"` to put it in the column's filter popover instead of the header.
+
+- Tables in a scrolling `lt_wrap()` box keep the whole header (spanners, labels, and interactive controls) in view while scrolling.
+
+- Printing an `lt_tbl` in the viewer or browser fits the table to the window: a table too tall to fit scrolls inside its container (with the header kept in view) instead of adding a page scrollbar.
+
+- `lt_interactive()` now defaults to `filter = "auto"`, `resize = TRUE`, and page sizes `c(10, 25, 50, Inf)` (the last size shows every row on one page, previously 100). Use `filter = FALSE` or `resize = FALSE` to turn those off.
+
+- A `"select"` or `"checklist"` filter now offers the missing (`NA`) value as its own choice, so rows with missing values can be kept.
+
+- `lt()` gains `show_types`: when `TRUE`, each column is tagged with its type (`<dbl>`, `<chr>`, `<fct>`, `<date>`, ...) under the column labels (followed by the filters of an interactive table).
+
+- With `auto_format = TRUE`, `lt()` shows date columns as `YYYY-MM-DD` and date-time columns as `YYYY-MM-DD HH:MM:SS` in the local time zone by default; use `lt_date()` to format them differently. In `lt_interactive()`, these columns sort chronologically and `filter = "auto"` gives them a range slider.
+
+- `lt_interactive(filter = "auto")` picks each column's filter from its data: a range slider for numbers, a checklist for text with few distinct values, and a plain box otherwise.
+
+- In `lt_interactive(filter = list(...))`, a column can be set to `FALSE` to leave it without a filter, e.g., `list("auto", id = FALSE)`.
 
 - `lt_export(width = )` also accepts a CSS width string, e.g., `"min-content"` for the narrowest width that shows every column.
 

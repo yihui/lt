@@ -248,9 +248,16 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
 #' @examples
 #' print(lt(head(mtcars)))
 print.lt_tbl = function(x, ...) {
-  xfun::html_view(format(x, fragment = FALSE, ...), name = 'lt')
+  xfun::html_view(view_html(x, ...), name = 'lt')
   invisible(x)
 }
+
+# standalone page that fits the viewport: a tall table scrolls inside .lt-wrap
+# (2em = body padding) instead of giving the page a scrollbar
+view_html = function(x, ...) sub(
+  '</head>', '<style>body{margin:0}.lt-wrap{max-height:calc(100vh - 2em)}</style></head>',
+  format(x, fragment = FALSE, ...), fixed = TRUE
+)
 
 # knit_print: dedup CSS+JS runtime per document via opts_knit (auto-resets
 # between knits). knitr is already loaded when this fires.

@@ -58,13 +58,26 @@ assert("the filter and pagination options reach the client spec", {
   (has_match(format(lt(d) |> lt_interactive(pager = c(5, Inf)), assets = FALSE), I('"pager": [5, 0]')))
   # filtering every column needs no column list: just default box
   (has_match(format(lt(d) |> lt_interactive(filter = TRUE), assets = FALSE), '"filter": \\{\\s*"default": true\\s*\\}'))
-  # paging is on by default; filtering is not
+  # paging, auto filters and resizing are on by default; Inf is the last size
   json = format(lt(d) |> lt_interactive(), assets = FALSE)
-  (has_match(json, I('"pager": [10, 25, 50, 100]')))
-  (has_match(json, !'filter'))
-  # both can be turned off
-  json = format(lt(d) |> lt_interactive(pager = FALSE), assets = FALSE)
-  (has_match(json, !'filter|pager'))
+  (has_match(json, I('"pager": [10, 25, 50, 0]')))
+  (has_match(json, '"default": \\{\\s*"type": "auto"'))
+  (has_match(json, I('"resize": true')))
+  # all can be turned off
+  json = format(lt(d) |> lt_interactive(pager = FALSE, filter = FALSE, resize = FALSE), assets = FALSE)
+  (has_match(json, !'filter|pager|resize'))
+})
+
+assert("filter = 'auto' is a default spec, not a column name", {
+  json = format(lt(d) |> lt_interactive(filter = 'auto'), assets = FALSE)
+  (has_match(json, '"default": \\{\\s*"type": "auto"'))
+  (has_match(json, !'"cols"'))
+})
+
+assert("a column set to FALSE gets no filter spec", {
+  json = format(lt(d) |> lt_interactive(filter = list(TRUE, y = FALSE)), assets = FALSE)
+  (has_match(json, '"y": false'))
+  (has_match(json, '"default": true'))
 })
 
 assert("a typed filter spec reaches the client with its options", {
@@ -161,4 +174,17 @@ assert("record_print emits the linked extension for an interactive table", {
   (has_match(html, 'lt-interactive[^"]*[.]js'))
   html = paste(unlist(record_print.lt_tbl(lt(d))), collapse = '\n')
   (has_match(html, !'lt-interactive'))
+})
+
+assert('show_types tags columns by type only when asked', {
+  d2 = data.frame(a = 1L, b = 1.5, c = 'x', f = factor('u'), t = as.Date('2024-01-15'))
+  (unlist(lt(d2, show_types = TRUE)$types) %==%
+     c(a = '<int>', b = '<dbl>', c = '<chr>', f = '<fct>', t = '<date>'))
+  (is.null(lt(d2)$types))
+})
+
+assert('lt() records Date columns, which ship as plain strings', {
+  d = data.frame(a = 1, d = Sys.Date(), t = Sys.time())
+  (lt(d)$dates %==% I('d'))
+  (is.null(lt(d['t'])$dates))
 })

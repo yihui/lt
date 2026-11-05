@@ -105,11 +105,27 @@
     return s;
   }
 
-  // --- Auto-format numeric columns ---
+  // Default text formatter for a column of date-times (JS `Date`s, i.e. instants),
+  // or null if it isn't one: local time as "YYYY-MM-DD HH:MM:SS" (the Swedish
+  // locale's format). Sorts as text, so it also serves filter expressions
+  // (`x >= "2024-01-05"`). R dates (`spec.dates`) arrive as "YYYY-MM-DD" strings,
+  // which need no formatting.
+  const dateFmt = col => {
+    const vs = col?.filter(v => v != null && !isNaN(v));
+    return vs?.length && vs.every(v => v instanceof Date) ?
+      d => isNaN(d) ? "" : d.toLocaleString("sv") : null;
+  };
+
+  // --- Auto-format date and numeric columns ---
   function autoFmt(spec, display, nRow) {
     if (spec.auto_format === false) return;
     const data = spec.data || {}, ops = spec.ops || [],
           colNames = colOrder(spec);
+
+    for (const c of colNames) {
+      const f = dateFmt(data[c]);
+      if (f) data[c].forEach((v, i) => { if (v != null) display[c][i] = f(v); });
+    }
 
     const fmtCols = new Set();
     for (const op of ops) {
@@ -195,7 +211,9 @@
         case "fmt_date":
           eachCell(cols, (c, i, raw) => {
             if (raw == null) return;
-            const d = raw instanceof Date ? raw : new Date(raw);
+            // a "YYYY-MM-DD" date is a calendar day: parse as local, not UTC
+            const d = raw instanceof Date ? raw :
+              new Date(/^\d{4}-\d\d-\d\d$/.test(raw) ? raw + "T00:00" : raw);
             if (isNaN(d)) return;
             display[c][i] = op.method ? d[op.method]() :
               op.options ? d.toLocaleDateString(op.locale, op.options) :
@@ -577,7 +595,8 @@
     for (const rs of rowSpans)
       out.push(`<th scope="col" class="lt-row-group">${txt(rs.label)}</th>`);
     cols.forEach((c, i) =>
-      out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", c)}</th>`));
+      out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", c)}${
+        spec.types ? `<br><span class="lt-type">${esc(spec.types[c])}</span>` : ""}</th>`));
     out.push(`</tr></thead>`);
 
     // Body footnote markers
@@ -817,6 +836,6 @@
   root.LT = {
     build: spec => mount(document.currentScript, spec),
     render, refresh, buildHtml, plugins, onMount, cells: cellRenderers, q, d: store,
-    $, $$, on, off, numCol,
+    $, $$, on, off, numCol, dateFmt,
   };
 })(window);

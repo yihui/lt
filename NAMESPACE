@@ -33,10 +33,10 @@ export(lt_spec)
 export(lt_style)
 export(lt_sub)
 export(lt_update)
+export(lt_viewer)
 export(lt_width)
 export(lt_wrap)
 export(render_lt)
-export(view_lt)
 importFrom(xfun,
   js,
   record_print
