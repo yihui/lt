@@ -1,7 +1,5 @@
 # CHANGES IN lt VERSION 0.6
 
-- Added `lt_viewer()`, a data viewer: a shorthand for `lt_interactive(lt(data, show_types = TRUE), profile = TRUE)` that shows each column's type and a profile of its values in an interactive table.
-
 - `lt_interactive(profile = TRUE)` shows a profile of each column: a mini bar chart of its values (a histogram for numbers and dates; one bar per category for text where at most half of the values are distinct, left blank otherwise) that highlights the rows kept by the filters, with summary statistics and the amount of missing values as a tooltip. Use `profile = "filter"` to put it in the column's filter popover instead of the header.
 
 - Tables in a scrolling `lt_wrap()` box keep the whole header (spanners, labels, and interactive controls) in view while scrolling.
@@ -14,6 +12,8 @@
 
 - `lt()` gains `show_types`: when `TRUE`, each column is tagged with its type (`<dbl>`, `<chr>`, `<fct>`, `<date>`, ...) under the column labels (followed by the filters of an interactive table).
 
+- Added `lt_viewer()`, a data viewer for exploring a data frame: an interactive table with each column's type and profile, filters, and a column-visibility menu, i.e., `lt_interactive(lt(data, show_types = TRUE), profile = TRUE, hide = NA)`.
+
 - With `auto_format = TRUE`, `lt()` shows date columns as `YYYY-MM-DD` and date-time columns as `YYYY-MM-DD HH:MM:SS` in the local time zone by default; use `lt_date()` to format them differently. In `lt_interactive()`, these columns sort chronologically and `filter = "auto"` gives them a range slider.
 
 - `lt_interactive(filter = "auto")` picks each column's filter from its data: a range slider for numbers, a checklist for text with few distinct values, and a plain box otherwise.
@@ -23,6 +23,8 @@
 - `lt_export(width = )` also accepts a CSS width string, e.g., `"min-content"` for the narrowest width that shows every column.
 
 - `lt_interactive(hide = list(label = ))` shows the column-visibility menu as a labeled chip in the control bar instead of the eye icon.
+
+- `lt_interactive(hide = NA)` now adds the column-visibility menu with all columns shown (previously `hide = TRUE`, which is no longer accepted).
 
 - The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, CSV download), and the column menu button's tooltip reads "Show/Hide columns".
 

@@ -4,7 +4,7 @@
 \alias{lt_viewer}
 \title{View a data frame as an interactive table}
 \usage{
-lt_viewer(data, profile = TRUE, ...)
+lt_viewer(data, profile = TRUE, hide = NA, ...)
 }
 \arguments{
 \item{data}{A data frame.}

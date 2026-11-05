@@ -13,5 +13,6 @@
 #' @export
 #' @examples
 #' lt_viewer(iris)
-lt_viewer = function(data, profile = TRUE, ...)
-  lt_interactive(lt(data, show_types = TRUE), profile = profile, ...)
+lt_viewer = function(data, profile = TRUE, hide = NA, ...) lt_interactive(
+  lt(data, show_types = TRUE), profile = profile, hide = hide, ...
+)
