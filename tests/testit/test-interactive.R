@@ -22,8 +22,10 @@ assert("the linked form loads the extension after the core runtime", {
   (has_match(html, '<link rel="stylesheet" href="[^"]*lt-interactive[^"]*">'))
   # plugin registers on LT global, so core must execute first
   src = regmatches(html, gregexpr('<script src="[^"]+"', html))[[1]]
-  (length(src) %==% 2L)
-  (grepl('lt-interactive', src) %==% c(FALSE, TRUE))
+  # the query parser comes before the extension that uses it
+  (length(src) %==% 3L)
+  (grepl('lt-query', src) %==% c(FALSE, TRUE, FALSE))
+  (grepl('lt-interactive', src) %==% c(FALSE, FALSE, TRUE))
 })
 
 assert("the extension follows the asset kind it belongs to", {
