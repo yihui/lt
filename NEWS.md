@@ -24,7 +24,7 @@
 
 - `lt_interactive(hide = list(label = ))` shows the column-visibility menu as a labeled chip in the control bar instead of the eye icon.
 
-- `lt_interactive(hide = NA)` now adds the column-visibility menu with all columns shown.
+- `lt_interactive(hide = NA)` now adds the column-visibility menu with all columns shown (`hide = TRUE` still works for now but will be dropped in the future).
 
 - The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, CSV download), and the column menu button's tooltip reads "Show/Hide columns".
 
