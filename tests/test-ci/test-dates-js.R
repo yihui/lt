@@ -15,7 +15,8 @@ assert('dates and date-times get a default format that lt_date() overrides', {
   (lti_col(x, 1) %==% c('2024-03-05', '2023-12-25', '2024-01-10'))
   # date-times show in the local time zone (the instant is shipped as UTC)
   (lti_col(x, 2) %==% format(dfl()$data$at, '%Y-%m-%d %H:%M:%S', tz = ''))
-  (lti_col(dfl(auto_format = FALSE) |> lt_interactive(pager = FALSE), 1) != '2024-03-05')
+  # without auto_format, a date-time shows as the browser's own string
+  (lti_col(dfl(auto_format = FALSE) |> lt_interactive(pager = FALSE), 2) != format(dfl()$data$at, '%Y-%m-%d %H:%M:%S', tz = ''))
   # a calendar day shows as itself in any time zone
   (lti_col(dfl() |> lt_date(~ when, locale = 'en-US', options = list(month = 'short', day = 'numeric', year = 'numeric'))
      |> lt_interactive(pager = FALSE), 1) %==% c('Mar 5, 2024', 'Dec 25, 2023', 'Jan 10, 2024'))
@@ -53,7 +54,7 @@ assert('show_types puts type tags under the labels, beside any filter control', 
   (lti_eval(x, '[...t.querySelectorAll("thead th")][1].className') %==% 'lti-sortable')
   (lti_eval(x, '[...t.querySelectorAll("thead th")][1].querySelector(".lti-label + .lti-sort + br + .lt-type + br + .lti-pop") != null') %==% 'true')
   # labels stay clean for the column menu and CSV
-  (lti_eval(dfl(show_types = TRUE) |> lt_interactive(hide = TRUE), 'document.querySelector(".lti-cols").textContent') != '')
+  (lti_eval(dfl(show_types = TRUE) |> lt_interactive(hide = NA), 'document.querySelector(".lti-cols").textContent') != '')
   # without the flag, no tags
   (lti_eval(dfl() |> lt_interactive(), 't.querySelectorAll(".lt-type").length') %==% '0')
 })
