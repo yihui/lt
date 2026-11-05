@@ -42,7 +42,7 @@ lt_dependency = function(
     ),
     script = c(
       if (plot) 'lt-plot.js', 'lt.js',
-      if (interactive) 'lt-interactive.js', if (shiny) 'lt-binding.js',
+      if (interactive) c('lt-query.js', 'lt-interactive.js'), if (shiny) 'lt-binding.js',
       if (input) 'lt-input.js'
     )
   )

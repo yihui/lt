@@ -935,7 +935,8 @@ optional:
   tie-breaker. An array requests an initial sort, each element a column
   name string, `"-name"` for descending (or a `{ col, dir }` object);
 - `search`: a search box above the table, matching any cell (`false` to
-  turn off);
+  turn off). It reads plain language, such as `mpg over 25, cyl is 4` or
+  `cyl is 4 or cyl is 6`, and its dropdown offers random example queries;
 - `filter`: per-column filters, as `{ default?, cols? }`. `default` is a
   spec applied to every visible column left unnamed; `cols` maps a column
   to its own spec. A spec is `true` for a plain box (matching that column
@@ -986,7 +987,15 @@ optional:
 A term is matched case-insensitively against the displayed text, with a
 leading `!` to negate it; a term that mentions `x` (e.g., `x > 20`) is
 evaluated as a JavaScript expression against the raw cell values
-instead.
+instead. Plain-language conditions name a column (its name or label,
+which may contain spaces), then an operator: `over`/`above`/`more than`
+(`>`), `under`/`below`/`less than` (`<`), `at least` (`>=`), `at most`
+(`<=`), `between 5 and 10`, `is`/`equals`, `is not`, or `contains`. Join
+conditions with `and`, `,`, or `;`, and use `or` for alternatives (`and`
+binds tighter). Text that is not a condition is searched as typed, and a
+quoted phrase stays whole. The box shows how it read the query, and its
+placeholder and dropdown offer random example queries built from the
+table's own values.
 
 ```{js}
 LT.build({

@@ -14,4 +14,6 @@ assert("a column filter box filters on its own column", {
   # so they survive a re-render of <tbody>
   (lti_eval(itbl(filter = FALSE), 't.querySelectorAll("thead th input, thead th .lti-funnel").length') %==% '0')
   (lti_eval(x, 't.querySelectorAll("thead th input").length', set(0, 'a')) %==% '2')
+  # plain language works in a column box too, without naming the column
+  (lti_rows(x, set(1, 'under 6')) %==% c("Rash", "Headache"))
 })

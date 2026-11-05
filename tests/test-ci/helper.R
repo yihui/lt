@@ -13,7 +13,7 @@ count_str = function(x, p) {
 }
 
 # Exercise the interactive plugin's view pipeline (filters, search, sort, and
-# paging) in Node.js. The runner loads core lt.js and lt-interactive.js into one
+# paging) in Node.js. The runner loads core lt.js, lt-query.js and lt-interactive.js into one
 # context, then calls LT.plugins.interactive.computeView on a spec/display/state
 # supplied as JSON, and prints the resulting 1-based row indices
 # (spec._viewRows) as a CSV list. When the state asks for paging, the page
@@ -28,7 +28,8 @@ const run = (p, from, to) => {
   vm.runInContext(s, ctx);
 };
 run(process.argv[2], "(window)", "(globalThis)");   // lt.js attaches ctx.LT
-run(process.argv[3]);                                 // lt-interactive.js
+run(process.argv[3]);                                 // lt-query.js
+run(process.argv[4]);                                 // lt-interactive.js
 const inp = JSON.parse(fs.readFileSync(0, "utf8"));
 const spec = inp.spec, data = spec.data || {};
 for (const k of Object.keys(data)) if (!Array.isArray(data[k])) data[k] = [data[k]];
@@ -51,7 +52,7 @@ run_out = function(data, state = list(), disp = NULL, spec = list()) {
   ))
   out = system2(
     'node',
-    shQuote(c(runner, asset_path('lt.js'), asset_path('lt-interactive.js'))),
+    shQuote(c(runner, asset_path('lt.js'), asset_path('lt-query.js'), asset_path('lt-interactive.js'))),
     input = input, stdout = TRUE
   )
   strsplit(paste(out, collapse = ''), '|', fixed = TRUE)[[1]]

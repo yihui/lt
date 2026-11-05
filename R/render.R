@@ -232,7 +232,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
     rules_block(x$rules),
     spec_block(x),
     js_block(if ('js' %in% assets)
-      c(if (plot) 'lt-plot.js', 'lt.js', if (int) 'lt-interactive.js'),
+      c(if (plot) 'lt-plot.js', 'lt.js', if (int) c('lt-query.js', 'lt-interactive.js')),
       inline_assets)
   )
   if (!fragment) body = html_doc(body)
@@ -301,7 +301,7 @@ knit_print.lt_tbl = function(x, ...) {
   # after core; graphics module (renderer must exist before core builds)
   # entirely before the table.
   if (int_first && !first)
-    html = wrap_assets(html, css_block('lt-interactive.css'), js_block('lt-interactive.js'))
+    html = wrap_assets(html, css_block('lt-interactive.css'), js_block(c('lt-query.js', 'lt-interactive.js')))
   if (plot_first && !first)
     html = wrap_assets(html, c(css_block('lt-plot.css'), js_block('lt-plot.js')))
   structure(xfun::raw_string(html), class = c('knit_asis', 'html'))
@@ -324,7 +324,7 @@ record_print.lt_tbl = function(x, ...) {
       inline = FALSE),
     user_css_block(x$css, local = TRUE),
     rules_block(x$rules), spec_block(x, share = TRUE),
-    js_block(c(if (plot) 'lt-plot.js', 'lt.js', if (int) 'lt-interactive.js'),
+    js_block(c(if (plot) 'lt-plot.js', 'lt.js', if (int) c('lt-query.js', 'lt-interactive.js')),
       inline = FALSE), ''
   ), 'asis')
 }

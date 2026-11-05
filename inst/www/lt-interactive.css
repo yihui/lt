@@ -23,6 +23,13 @@
     }
   }
 
+  /* how a query was read: shown only when conditions were recognized */
+  .lti-nl {
+    font-size: .85em;
+    color: #555;
+    &:empty { display: none; }
+  }
+
   /* click target is the label, not the cell (keeps resize grip separate) */
   .lti-sortable .lti-label {
     cursor: pointer;

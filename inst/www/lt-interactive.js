@@ -14,7 +14,8 @@
   // Bail if core is absent/old or plugin already loaded.
   if (!LT?.onMount || LT.plugins.interactive) return;
 
-  const MIN_COL = 24;  // px: min dragged column width
+  const Q = LT.plugins.query,  // plain-language queries (lt-query.js)
+        MIN_COL = 24;  // px: min dragged column width
   let coll;  // lazy locale-aware comparator
   // Numeric if first non-null value is a number (same rule as core lt.js).
   // Subscript digits (₁ ₂ …) for sort-order ordinals.
@@ -125,10 +126,24 @@
 
     // Per-row keep test, ANDed; cheap single-cell filters first.
     const tests = [];
+    // A query tree (see lt-query.js) -> row test. Leaves run `matcher` on the
+    // leaf's column, or on every column (any cell may match) if it has none.
+    const compile = n => {
+      if (n.op) {
+        const fs = n.items.map(compile);
+        return n.op === "and" ? r => fs.every(f => f(r)) : r => fs.some(f => f(r));
+      }
+      const pred = matcher(n.term);
+      return !pred ? () => true : n.col != null ? r => pred([cell(n.col, r)]) :
+        r => pred(cols.map(c => cell(c, r)));
+    };
+    // `filters`: a term (widgets) or a tree (column boxes) per column; `where`:
+    // the search box's tree
     for (const c in state.filters || {}) {
-      const pred = matcher(state.filters[c]);
-      if (pred) tests.push(r => pred([cell(c, r)]));
+      const f = state.filters[c];
+      tests.push(compile(typeof f === "string" ? { col: c, term: f } : f));
     }
+    if (state.where) tests.push(compile(state.where));
     const sPred = matcher(state.term);
     if (sPred) tests.push(r => sPred(cols.map(c => cell(c, r))));
     // External predicates (el._lt.filter) run last, on the row's raw values by
@@ -383,7 +398,11 @@
         fullRow(el.tHead || el.createTHead(), "lti-head", nAll, 0)) : null;
     // Data-column header labels, read before sort/resize decorate cells, so the
     // column menu shows displayed labels, not raw names
-    const labels = dataCells(hrow).map(th => labelNodes(th).map(n => n.textContent).join(""));
+    const labels = dataCells(hrow).map(th => labelNodes(th).map(n => n.textContent).join("")),
+          // plain-language queries name a column by its label (may hold spaces) or
+          // its name
+          labelOf = c => labels[cols.indexOf(c)] || c,
+          names = Object.fromEntries(cols.flatMap(c => c == null ? [] : [[c, c], [labelOf(c), c]]));
     // Sort before filters join the header cells; `allCols` binds group headers
     // too
     if (opts.sort !== false) addSort(hrow, allCols, state, requestRefresh);
@@ -396,7 +415,7 @@
     // DOM order = visual order. Chips group is always created with a bar so callers
     // can add chips via el._lt.chips (empty collapses, CSS :empty); the column menu
     // stays in the icons group, even as a labeled chip, so filter chips stay together.
-    if (opts.search !== false) addSearch(headBar, el, state, requestRefresh);
+    if (opts.search !== false) addSearch(headBar, el, state, requestRefresh, names, labelOf, () => queryExamples(textual(spec), cols, labelOf));
     const chips = headBar ?
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
     if (barCols.length) addControlFilters(chips, barCols, flt.cols, textual(spec), state, requestRefresh, opts.profile === "filter");
@@ -485,14 +504,75 @@
   // recompute is far heavier than a slider nudge.
   function onType(input, apply) {
     const go = debounce(() => apply(input.value), 1000);
-    input.oninput = go;
+    // picking a datalist example (not typing) applies at once
+    input.oninput = e => e.inputType && e.inputType !== "insertReplacementText" ? go() : go.now();
     input.onchange = go.now;
   }
 
-  // Table-wide search box in the shared head cell.
-  function addSearch(cell, el, state, refresh) {
-    const input = cell.appendChild(searchInput(el.ownerDocument, "Search"));
-    onType(input, v => { state.term = v; refresh(); });
+  // Random example queries, built from real columns and values so each one works
+  // as written. `prefix` is the column name for the table-wide box, "" for a
+  // column's own box.
+  const qv = v => /[\s,;:"]/.test(v) ? `"${v}"` : String(v),
+        rnd = a => a[Math.floor(Math.random() * a.length)],
+        hasData = v => v?.some(x => x != null && x !== ""),
+        sample = gen => {
+          const out = new Set();
+          for (let i = 0; i < 30 && out.size < 6; i++) out.add(gen(i));
+          return [...out];
+        },
+        colExample = (v, prefix) => {
+          if (numCol(v)) {
+            const s = v.filter(x => x != null).sort((x, y) => x - y),
+                  at = f => +s[Math.floor((s.length - 1) * f)].toPrecision(3);
+            return rnd([`${prefix}over ${at(.5)}`, `${prefix}under ${at(.5)}`, `${prefix}at least ${at(.75)}`, `${prefix}between ${at(.25)} and ${at(.75)}`]);
+          }
+          const u = [...new Set(v.filter(Boolean))], a = qv(rnd(u)), b = qv(rnd(u));
+          return rnd([`${prefix}is ${a}`, `${prefix}is not ${a}`, `${prefix}contains ${a}`, `${prefix}is ${a} or ${prefix}is ${b}`]);
+        },
+        // table-wide: alternate numeric, text, and both; the first two are one of each
+        queryExamples = (vals, cols, labelOf) => {
+          const filled = cols.filter(c => hasData(vals[c])),
+                ncs = filled.filter(c => numCol(vals[c])), tcs = filled.filter(c => !numCol(vals[c])),
+                one = cs => { const c = rnd(cs); return colExample(vals[c], `${qv(labelOf(c))} `); },
+                gens = [ncs.length && (() => one(ncs)), tcs.length && (() => one(tcs)),
+                        ncs.length && tcs.length && (() => `${one(ncs)}${rnd([", ", " and "])}${one(tcs)}`)].filter(Boolean);
+          return gens.length ? sample(i => gens[i % gens.length]()) : [];
+        },
+        columnExamples = v => hasData(v) ? sample(() => colExample(v, "")) : [];
+
+  // Show `gen()` examples as a <datalist> on `input`, redrawn on each focus. The
+  // list goes after `after` (the box's note) so it stays out of a bar's children.
+  // The id is made at run time, so it never lands in static output.
+  let tipId = 0;
+  function addTips(input, gen, after = input) {
+    const doc = input.ownerDocument, list = elem(doc, "datalist", { id: `lti-tips-${++tipId}` });
+    input.setAttribute("list", list.id);
+    after.after(list);
+    const refill = () => {
+      const ex = gen();
+      list.replaceChildren(...ex.map(value => elem(doc, "option", { value })));
+      return ex;
+    };
+    // the placeholder shows one sample; the title says the list is not exhaustive
+    const [first] = refill();
+    if (first) Object.assign(input, { placeholder: `e.g. ${first}`, title: "Examples, not the only options; any query works" });
+    input.addEventListener("focus", refill);
+  }
+
+  // Table-wide search box in the shared head cell. The text stays as typed; a
+  // line under the bar shows how it was read; random example queries drop down
+  // from the box.
+  function addSearch(cell, el, state, refresh, names, labelOf, examples) {
+    const doc = el.ownerDocument, input = cell.appendChild(searchInput(doc, "Search")),
+          note = elem(doc, "div", { className: "lti-nl" });
+    cell.after(note);
+    addTips(input, examples, note);
+    onType(input, v => {
+      const t = Q.parse(v, names);
+      state.where = t;
+      note.textContent = Q.parsed(t) ? Q.text(t, labelOf) : "";
+      refresh();
+    });
   }
 
   // CSV-escape: quote (doubling quotes) only if comma, quote, or newline.
@@ -588,8 +668,16 @@
       if (!spec || !filterable(data, c)) return;   // no filter on this column
       elem(doc, "br", {}, cell);
       if (spec === true) {                         // a plain search box
-        const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
-        onType(input, v => { v ? (state.filters[c] = v) : delete state.filters[c]; refresh(); });
+        const input = cell.appendChild(searchInput(doc, `Filter ${c}`)),
+              note = elem(doc, "div", { className: "lti-nl" });
+        input.after(note);
+        addTips(input, () => columnExamples(data[c]), note);
+        onType(input, v => {
+          const t = Q.parse(v, {}, c);
+          t ? (state.filters[c] = t) : delete state.filters[c];
+          note.textContent = Q.parsed(t) ? Q.text(t, () => null) : "";
+          refresh();
+        });
       } else                                       // a typed funnel under the label
         cell.append(typedFilter(doc, c, spec, data, state, refresh, null, prof));
     });
@@ -1291,9 +1379,17 @@
           type: "search", className: "lti-search",
           "aria-label": `${cfg.label || col} filter expression`
         }, panel);
-        const boxEd = { reflect: v => { if (doc.activeElement !== box) box.value = v; } };
+        const boxEd = { reflect: v => { if (doc.activeElement !== box) box.value = v; } },
+              note = elem(doc, "div", { className: "lti-nl" }, panel);
         editors.push(boxEd);
-        onType(box, v => setTerm(v.trim(), boxEd));
+        addTips(box, () => columnExamples(data[col]));
+        // Plain-language conditions become one expression (`(x > 5) && (x < 9)`);
+        // anything else stays as typed
+        onType(box, v => {
+          const t = Q.parse(v, {}, col), e = Q.expr(t);
+          note.textContent = e && Q.parsed(t) ? Q.text(t, () => null) : "";
+          setTerm(e ?? v.trim(), boxEd);
+        });
       }
       const wEd = kind.build(doc, cfg, setTerm);  // widget as syncing editor
       editors.push(wEd);
