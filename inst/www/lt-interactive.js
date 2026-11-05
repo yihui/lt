@@ -649,13 +649,14 @@
   }
 
   // `"auto"` filter: pick the widget from the column's data. Numbers get a range
-  // slider (a plain box if constant), so do dates; strings with few distinct
-  // values a checklist, anything else a plain box.
+  // slider (text if constant), so do dates; strings with few distinct values a
+  // checklist; anything else a text funnel (no widget, just the search box).
   const autoSpec = (spec, col = []) => {
     if (spec?.type !== "auto") return spec;
     const vals = col.filter(v => v != null), n = new Set(vals).size;
-    return vals.every(v => typeof v === "number") || col.date ? (n > 1 ? { type: "range" } : true)
-      : vals.every(v => typeof v === "string") && n <= 10 ? { type: "checklist" } : true;
+    const kind = vals.every(v => typeof v === "number") || col.date ? n > 1 && { type: "range" }
+      : vals.every(v => typeof v === "string") && n <= 10 && { type: "checklist" };
+    return kind || { type: "text" };
   };
 
   // Filterable only with a non-blank value; plot-only `into` columns have no data.
@@ -1228,6 +1229,14 @@
               ed = { el: [w.el, out], reflect: t => { const p = rngParse(t, cfg.labels) || [cfg.min, cfg.max]; w.set(p); show(p); } };
         return ed;
       }
+    },
+    // no widget: the funnel's popover holds only the expression box (the term is
+    // the search text itself)
+    text: {
+      describe: t => t,
+      init: () => "",
+      parse: t => t,
+      build: () => ({ el: [], reflect: () => {} })
     },
     checklist: {
       // chip summary: chosen labels (few) else a count; empty if all checked

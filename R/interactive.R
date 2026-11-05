@@ -52,10 +52,10 @@
 #'   A column with nothing to filter (every value blank) gets no box, even under
 #'   that default. `"auto"` (alone, or as a list entry, e.g. `list("auto",
 #'   cyl = "select")`) picks each column's filter from its data: a range slider
-#'   for numbers and for dates and date-times (a plain box if every value is the
-#'   same; a date filter expression compares text, e.g. `x >= "2024-01-05"`), a
-#'   checklist for text with at most 10 distinct values, and a plain box
-#'   otherwise.
+#'   for numbers and for dates and date-times (a search-only funnel if every value
+#'   is the same; a date filter expression compares text, e.g. `x >= "2024-01-05"`),
+#'   a checklist for text with at most 10 distinct values, and a search-only
+#'   funnel otherwise.
 #'   A typed filter renders as a funnel + popover (holding the widget *and* an
 #'   expression box, kept in sync) under its column header, or — when the column
 #'   is hidden from the table (e.g. with [lt_hide()]) — as a chip in the control

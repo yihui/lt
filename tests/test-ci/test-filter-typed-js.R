@@ -278,15 +278,15 @@ assert('filter = "auto" picks a widget per column from its data', {
     id = sprintf('r%02d', 1:12), n = 1:12, k = 5, g = rep(c('a', 'b'), 6)
   )
   x = lt(d) |> lt_interactive(filter = 'auto', pager = FALSE)
-  # id: many distinct strings -> box; n: slider; k: constant -> box;
+  # id: many distinct strings -> text funnel; n: slider; k: constant -> text funnel;
   # g: two values -> checklist
   kinds = 'Array.from(t.querySelectorAll("thead th")).map(c =>
-    c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-funnel") ?
-    "checklist" : "box").join()'
-  (lti_eval(x, kinds) %==% 'box,range,box,checklist')
+    c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-check") ?
+    "checklist" : c.querySelector(".lti-funnel") ? "text" : "box").join()'
+  (lti_eval(x, kinds) %==% 'text,range,text,checklist')
   # an explicit entry overrides the auto default for that column
   x = lt(d) |> lt_interactive(filter = list('auto', n = TRUE), pager = FALSE)
-  (lti_eval(x, kinds) %==% 'box,box,box,checklist')
+  (lti_eval(x, kinds) %==% 'text,box,text,checklist')
 })
 
 assert('a column set to FALSE has no filter, even under an "auto" default', {
@@ -294,8 +294,8 @@ assert('a column set to FALSE has no filter, even under an "auto" default', {
   x = lt(d) |> lt_interactive(filter = list('auto', id = FALSE), pager = FALSE)
   # only n (slider) and g (checklist) get a control; id gets an empty cell
   (lti_eval(x, 'Array.from(t.querySelectorAll("thead th")).map(c =>
-    c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-funnel") ?
-    "checklist" : c.querySelector("input") ? "box" : "none").join()')
+    c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-check") ?
+    "checklist" : c.querySelector(".lti-funnel") ? "text" : "none").join()')
    %==% 'none,range,checklist')
 })
 

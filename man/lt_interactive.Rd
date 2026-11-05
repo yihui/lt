@@ -51,10 +51,10 @@ is the default applied to every other visible column, so
 \code{FALSE} leaves a column without a filter, e.g. \code{list("auto", id = FALSE)}.
 A column with nothing to filter (every value blank) gets no box, even under
 that default. \code{"auto"} (alone, or as a list entry, e.g. \code{list("auto", cyl = "select")}) picks each column's filter from its data: a range slider
-for numbers and for dates and date-times (a plain box if every value is the
-same; a date filter expression compares text, e.g. \code{x >= "2024-01-05"}), a
-checklist for text with at most 10 distinct values, and a plain box
-otherwise.
+for numbers and for dates and date-times (a search-only funnel if every value
+is the same; a date filter expression compares text, e.g. \code{x >= "2024-01-05"}),
+a checklist for text with at most 10 distinct values, and a search-only
+funnel otherwise.
 A typed filter renders as a funnel + popover (holding the widget \emph{and} an
 expression box, kept in sync) under its column header, or — when the column
 is hidden from the table (e.g. with \code{\link[=lt_hide]{lt_hide()}}) — as a chip in the control
