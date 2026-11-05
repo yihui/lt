@@ -63,6 +63,12 @@ assert('or alternates; and binds tighter than or', {
   (read_query('red blue')$text %==% '"red" and "blue"')
 })
 
+assert('an x inside quotes or in a condition does not make the query an expression', {
+  (read_query('price over 5, color is x')$text %==% 'price: x > 5 and color: x == "x"')
+  (read_query('name contains "box x"')$text %==% 'name: "box x"')
+  (read_query('name contains "box x"')$expr %==% '')
+})
+
 assert('a column name alone is free text; text with nothing read is plain', {
   (read_query('color')$parsed %==% FALSE)
   (read_query('x > 5')$expr %==% 'x > 5')

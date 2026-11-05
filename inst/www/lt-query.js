@@ -47,7 +47,11 @@
   // comma inside a number stays) | any other character
   const LEX = /"([^"]*)"|(>=|<=|!=|==|[<>=:])|(;|,(?=\s|$))|((?:!(?!=))?(?:,(?=\S)|[^\s"<>=!:;,])+)|(\S)/g;
 
-  const isExpr = v => /(^|[^\w$])x([^\w$]|$)/.test(v);
+  // Uses `x` and is valid JS, so `"box x"` or `size is x` is not mistaken for one
+  const isExpr = v => {
+    if (!/(^|[^\w$])x([^\w$]|$)/.test(v)) return false;
+    try { new Function("x", `return (${v});`); return true; } catch (e) { return false; }
+  };
   // number text without thousands separators (`1,000` -> `1000`)
   const num = v => v.replace(/(?<=\d),(?=\d{3}\b)/g, "");
   const isNum = v => v.trim() !== "" && isFinite(num(v));
