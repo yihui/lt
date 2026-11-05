@@ -9,18 +9,18 @@ lt_viewer(data, profile = TRUE, hide = NA, ...)
 \arguments{
 \item{data}{A data frame.}
 
-\item{profile, ...}{Arguments passed to \code{\link[=lt_interactive]{lt_interactive()}}; \code{profile}
-defaults to \code{TRUE} here.}
+\item{profile, hide, ...}{Arguments passed to \code{\link[=lt_interactive]{lt_interactive()}}; \code{profile}
+defaults to \code{TRUE} and \code{hide} to \code{NA} (a column-visibility menu) here.}
 }
 \value{
 An \code{lt_tbl} object.
 }
 \description{
 A data viewer: a shorthand for
-\code{lt_interactive(lt(data, show_types = TRUE), profile = TRUE)}. Each column
-shows its type and a profile of its values, and the table can be sorted,
-searched, filtered, paged, and resized. Printing the result at the console
-opens it in the viewer or browser.
+\code{lt_interactive(lt(data, show_types = TRUE), profile = TRUE, hide = NA)}.
+Each column shows its type and a profile of its values, and the table can be
+sorted, searched, filtered, paged, resized, and have columns hidden from a
+menu. Printing the result at the console opens it in the viewer or browser.
 }
 \examples{
 lt_viewer(iris)
