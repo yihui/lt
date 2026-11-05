@@ -188,3 +188,8 @@ assert('lt() records Date columns, which ship as plain strings', {
   (lt(d)$dates %==% I('d'))
   (is.null(lt(d['t'])$dates))
 })
+
+assert('hide = NA adds the column menu with all columns shown; TRUE is an alias', {
+  (lt(head(iris)) |> lt_interactive(hide = NA) |> getElement('interactive') |> getElement('hide') %==% TRUE)
+  (lt(head(iris)) |> lt_interactive(hide = TRUE) |> getElement('interactive') |> getElement('hide') %==% TRUE)
+})

@@ -182,7 +182,7 @@ lt_interactive = function(
       label = hide$label
       hide = hide$columns %||% NA
     }
-    all_shown = identical(hide, NA)
+    all_shown = isTRUE(hide) || identical(hide, NA)  # TRUE: undocumented alias
     opts$hide = if (all_shown && is.null(label)) TRUE else drop_null(list(
       label = label,
       hidden = if (!all_shown) I(as.character(f_cols(hide, x$data)))
