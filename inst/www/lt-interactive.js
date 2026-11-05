@@ -305,7 +305,7 @@
           hrow = [...$$(el, "thead tr")].pop(),
           // array `sort` = initial sort (see parseKey); `true` just enables it
           state = {
-            filters: {}, predicates: {}, page: 0, pageSize: 0,
+            filters: {}, predicates: {}, paints: [], page: 0, pageSize: 0,
             sort: Array.isArray(opts.sort) ? opts.sort.map(parseKey) : []
           };
     let view,          // filtered + sorted indices, cached across page turns
@@ -317,7 +317,10 @@
 
     // `stale`: view changed (term/sort), not just page; recompute, go to page 1.
     const refresh = (stale = true) => {
-      if (stale) { view = computeView(spec, disp, state); state.page = 0; }
+      if (stale) {
+        view = state.view = computeView(spec, disp, state); state.page = 0;
+        state.paints.forEach(f => f(view));
+      }
       const rows = pageSlice(view, state),
             // _viewRows = page rows with group headers; postSwap gets the same
             // list, one entry per <tbody> row
@@ -384,9 +387,10 @@
     // Sort before filters join the header cells; `allCols` binds group headers
     // too
     if (opts.sort !== false) addSort(hrow, allCols, state, requestRefresh);
+    if (opts.profile === "header") addProfile(hrow, cols, textual(spec), state);
     // Header filters: needed if a default applies or a named column is visible
     if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => flt.cols[c] && cols.includes(c)))))
-      addFilter(hrow, cols, flt, textual(spec), state, requestRefresh);
+      addFilter(hrow, cols, flt, textual(spec), state, requestRefresh, opts.profile === "filter");
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     // DOM order = visual order. Chips group is always created with a bar so callers
@@ -395,7 +399,7 @@
     if (opts.search !== false) addSearch(headBar, el, state, requestRefresh);
     const chips = headBar ?
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
-    if (barCols.length) addControlFilters(chips, barCols, flt.cols, textual(spec), state, requestRefresh);
+    if (barCols.length) addControlFilters(chips, barCols, flt.cols, textual(spec), state, requestRefresh, opts.profile === "filter");
     const icons = (opts.hide || opts.download) ?
       elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
     if (opts.hide)
@@ -575,7 +579,7 @@
   // label and type tag) so the <tbody> swap keeps them and typed input. `flt` =
   // normalized { default?, cols? }: named spec else default. `true` = plain box;
   // typed = funnel + popover (see typedFilter).
-  function addFilter(hrow, cols, flt, data, state, refresh) {
+  function addFilter(hrow, cols, flt, data, state, refresh, prof) {
     const doc = hrow.ownerDocument, hCells = dataCells(hrow),
           def = flt.default, explicit = flt.cols || {};
     cols.forEach((c, ci) => {
@@ -587,7 +591,58 @@
         const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
         onType(input, v => { v ? (state.filters[c] = v) : delete state.filters[c]; refresh(); });
       } else                                       // a typed funnel under the label
-        cell.append(typedFilter(doc, c, spec, data, state, refresh, null));
+        cell.append(typedFilter(doc, c, spec, data, state, refresh, null, prof));
+    });
+  }
+
+  // Column profile: a mini bar chart with the summary stats as its tooltip. A
+  // histogram of up to K equal-width bins for numbers/dates, one bar per category
+  // (most frequent first) for text; empty svg (keeps the header aligned) for text
+  // where over half the values are distinct (not categorical). Bars
+  // count all rows lightly, and the rows in the current view darkly (`state.paints`
+  // repaint it when the view changes).
+  function profile(doc, col, state) {
+    const K = 10, vals = col.filter(v => v != null), sig = (x, d) => +x.toPrecision(d),
+          p = elem(doc, "span", { className: "lti-prof" });
+    const num = v => col.date ? Date.parse(v.replace(" ", "T")) : v,
+          nums = vals.map(num), isNum = nums.every(Number.isFinite), m = new Map();
+    for (const v of vals) m.set(v, (m.get(v) || 0) + 1);
+    const nNA = col.length - vals.length, tip = [];
+    let n = K, bin = () => -1;  // n bars; bin: value -> bar index (-1 for none)
+    const slots = list => { n = list.length; const s = new Map(list.map((e, i) => [e[0], i])); bin = v => s.get(v) ?? -1; };
+    // no bars (empty svg as placeholder) for an all-NA or too-distinct text column
+    if (!vals.length || (!isNum && m.size > vals.length / 2)) n = 0;
+    else if (isNum) {
+      const lo = nums.reduce((a, b) => Math.min(a, b)), hi = nums.reduce((a, b) => Math.max(a, b)),
+            at = x => col.date ? vals[nums.indexOf(x)] : sig(x, 6);
+      tip.push(`min ${at(lo)}`, `max ${at(hi)}`);
+      col.date || tip.push(`mean ${sig(nums.reduce((a, b) => a + b) / nums.length, 4)}`);
+      nNA && tip.push(`${Math.round(100 * nNA / col.length)}% NA`);
+      n = Math.min(K, m.size);  // never more bins than distinct values
+      bin = v => Math.min(n - 1, Math.floor((num(v) - lo) / (hi - lo || 1) * n));
+    } else {
+      const all = [...m].sort((a, b) => b[1] - a[1]), top = all.slice(0, 5);
+      slots(all);
+      tip.push(`${m.size + (nNA > 0)} distinct`, (m.size > 5 ? "top " : "") + top.map(([v, k]) => `${v} (${k})`).join(", "));
+      nNA && tip.push(`${nNA} NA`);
+    }
+    const bars = col.map(v => v == null ? -1 : bin(v)),
+          count = rows => { const c = Array(n).fill(0); for (const r of rows) bars[r - 1] >= 0 && c[bars[r - 1]]++; return c; },
+          full = count(col.map((_, i) => i + 1)), max = Math.max(...full),
+          rects = (c, cls) => c.map((k, i) =>
+            `<rect${cls} x="${i}" y="${1 - k / max}" width=".9" height="${k / max}"/>`).join(""),
+          paint = rows => p.innerHTML = `<svg viewBox="0 0 ${n || 1} 1" preserveAspectRatio="none">${rects(full, "")}${rows.length < col.length ? rects(count(rows), ' class="s"') : ""}</svg>`;
+    p.title = tip.filter(Boolean).join("; ");
+    state.paints.push(paint);
+    paint(state.view || col.map((_, i) => i + 1));
+    return p;
+  }
+
+  // Profile in the header cell, after the type tag (`profile: "header"`)
+  function addProfile(hrow, cols, data, state) {
+    const hCells = dataCells(hrow);
+    cols.forEach((c, ci) => {
+      hCells[ci].append(elem(hrow.ownerDocument, "br"), profile(hrow.ownerDocument, data[c], state));
     });
   }
 
@@ -1195,7 +1250,7 @@
   // Build a typed column filter element. Funnel + popover is shared: head-bar chip
   // (label + summary around the funnel) if `chipLabel` is a string, else a bare
   // funnel under the header (null).
-  function typedFilter(doc, col, spec, data, state, refresh, chipLabel) {
+  function typedFilter(doc, col, spec, data, state, refresh, chipLabel, prof) {
     const cfg = resolveSpec(spec, data[col] || []),
           kind = KINDS[cfg.type],
           editors = [];       // expression box + widget, kept in sync
@@ -1217,6 +1272,8 @@
     // target; visible: bare funnel under its header. Chip built first to host it.
     const chip = chipLabel && makeChip(doc, chipLabel);
     const wrap = popover(doc, `Filter ${cfg.label || col}`, panel => {
+      const p = prof && profile(doc, data[col] || [], state);
+      p && panel.append(p);
       // `box = FALSE` drops the expression box, limiting to the widget's choices
       if (cfg.box !== false) {
         const box = elem(doc, "input", {
@@ -1250,11 +1307,11 @@
   }
 
   // Head-bar chip per hidden typed column (see typedFilter).
-  function addControlFilters(cell, barCols, cfg, data, state, refresh) {
+  function addControlFilters(cell, barCols, cfg, data, state, refresh, prof) {
     const doc = cell.ownerDocument;
     for (const col of barCols)
       cell.append(
-        typedFilter(doc, col, cfg[col], data, state, refresh, cfg[col].label || col));
+        typedFilter(doc, col, cfg[col], data, state, refresh, cfg[col].label || col, prof));
   }
 
   // Pager as the last <tfoot> row (after footnotes), plus a page-size <select> if

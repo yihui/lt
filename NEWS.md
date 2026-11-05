@@ -1,5 +1,7 @@
 # CHANGES IN lt VERSION 0.6
 
+- `lt_interactive(profile = TRUE)` shows a profile of each column: a mini bar chart of its values (a histogram for numbers and dates; one bar per category for text where at most half of the values are distinct, left blank otherwise) that highlights the rows kept by the filters, with summary statistics and the amount of missing values as a tooltip. Use `profile = "filter"` to put it in the column's filter popover instead of the header.
+
 - Tables in a scrolling `lt_wrap()` box keep the whole header (spanners, labels, and interactive controls) in view while scrolling.
 
 - Printing an `lt_tbl` in the viewer or browser fits the table to the window: a table too tall to fit scrolls inside its container (with the header kept in view) instead of adding a page scrollbar.

@@ -99,6 +99,17 @@
 #'   formatted text, each keyed by column name — and returns a table spec, which
 #'   may carry its own `interactive` field to make the detail table interactive.
 #'   `NULL` (the default) adds no row detail.
+#' @param profile Whether to show a profile of each column: a mini bar chart of
+#'   its values (a histogram of up to 10 bins for numbers, dates, and
+#'   date-times; one bar per category for text, left blank if over half of
+#'   the values are distinct). Hovering over it shows summary statistics (min,
+#'   max, and mean, or the number of distinct values and the most frequent ones)
+#'   and the amount of missing values. When the filters keep only some rows, the bars
+#'   highlight their share. `TRUE` or `"header"` puts the chart in the column
+#'   header; `"filter"` puts it at the top of the column's filter popover
+#'   instead, which saves header space (only columns with a popover filter,
+#'   e.g., the range slider or checklist of `filter = "auto"`, get a profile
+#'   then).
 #' @param download Whether to add a button that downloads the table as a CSV
 #'   file. The file holds the current view (every row the filters and search
 #'   keep, in sort order, across all pages) of the table's columns. `TRUE` adds
@@ -141,6 +152,9 @@
 #'   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
 #'     value: [i, d.mpg] } })')
 #' )
+#' # a distribution plot in each column header, or in the filter popover
+#' lt(iris) |> lt_interactive(profile = TRUE)
+#' lt(iris) |> lt_interactive(profile = 'filter')
 #' # a button to download the current view as a CSV file
 #' lt(head(mtcars)) |> lt_interactive(download = TRUE)
 #' lt(head(mtcars)) |> lt_interactive(download = 'cars.csv')
@@ -148,7 +162,7 @@
 #' lt(head(mtcars)) |> lt_interactive(download = list(file = 'cars.csv', mode = 'raw'))
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = 'auto', pager = c(10, 25, 50, Inf),
-  resize = TRUE, hide = NULL, detail = NULL, download = FALSE
+  resize = TRUE, hide = NULL, detail = NULL, profile = FALSE, download = FALSE
 ) {
   # `sort` and `search` are always emitted (the object must be non-empty to
   # survive serialization); the rest only when asked for
@@ -160,6 +174,8 @@ lt_interactive = function(
     opts$pager = I(as.integer(sizes))
   }
   if (isTRUE(resize)) opts$resize = TRUE
+  if (!isFALSE(profile))
+    opts$profile = if (isTRUE(profile)) 'header' else match.arg(profile, c('header', 'filter'))
   if (!is.null(hide) && !isFALSE(hide)) {
     label = NULL
     if (is.list(hide)) {

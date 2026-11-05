@@ -13,6 +13,7 @@ lt_interactive(
   resize = TRUE,
   hide = NULL,
   detail = NULL,
+  profile = FALSE,
   download = FALSE
 )
 }
@@ -101,6 +102,18 @@ formatted text, each keyed by column name — and returns a table spec, which
 may carry its own \code{interactive} field to make the detail table interactive.
 \code{NULL} (the default) adds no row detail.}
 
+\item{profile}{Whether to show a profile of each column: a mini bar chart of
+its values (a histogram of up to 10 bins for numbers, dates, and
+date-times; one bar per category for text, left blank if over half of
+the values are distinct). Hovering over it shows summary statistics (min,
+max, and mean, or the number of distinct values and the most frequent ones)
+and the amount of missing values. When the filters keep only some rows, the bars
+highlight their share. \code{TRUE} or \code{"header"} puts the chart in the column
+header; \code{"filter"} puts it at the top of the column's filter popover
+instead, which saves header space (only columns with a popover filter,
+e.g., the range slider or checklist of \code{filter = "auto"}, get a profile
+then).}
+
 \item{download}{Whether to add a button that downloads the table as a CSV
 file. The file holds the current view (every row the filters and search
 keep, in sort order, across all pages) of the table's columns. \code{TRUE} adds
@@ -163,6 +176,9 @@ lt(head(mtcars)) |> lt_interactive(
   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
     value: [i, d.mpg] } })')
 )
+# a distribution plot in each column header, or in the filter popover
+lt(iris) |> lt_interactive(profile = TRUE)
+lt(iris) |> lt_interactive(profile = 'filter')
 # a button to download the current view as a CSV file
 lt(head(mtcars)) |> lt_interactive(download = TRUE)
 lt(head(mtcars)) |> lt_interactive(download = 'cars.csv')
