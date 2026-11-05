@@ -10,7 +10,7 @@ assert('profile draws a histogram for numbers and top-value bars for text', {
     lt_interactive(profile = TRUE, filter = FALSE)
   p = prof(x, 0)
   (p %==% c('min 1; max 6; mean 2.571; 13% NA', '4'))
-  (prof(x, 1) %==% c('3 distinct; a (5), b (2), c (1)', '3'))
+  (prof(x, 1) %==% c('a (5), b (2), c (1)', '3'))
 })
 
 assert('profile is off by default, and covers dates', {
@@ -47,5 +47,5 @@ assert('profile bars highlight the rows kept by the filters', {
 
 assert('categorical profile counts NA as a value', {
   x = lt(data.frame(s = c('a', 'a', 'b', NA, 'a'))) |> lt_interactive(profile = TRUE, filter = FALSE)
-  (prof(x, 0)[1] %==% '3 distinct; a (3), b (1); 1 NA')
+  (prof(x, 0)[1] %==% 'a (3), b (1); 1 NA')
 })

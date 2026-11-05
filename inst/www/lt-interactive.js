@@ -621,9 +621,11 @@
       n = Math.min(K, m.size);  // never more bins than distinct values
       bin = v => Math.min(n - 1, Math.floor((num(v) - lo) / (hi - lo || 1) * n));
     } else {
-      const all = [...m].sort((a, b) => b[1] - a[1]), top = all.slice(0, 5);
+      const all = [...m].sort((a, b) => b[1] - a[1]), cut = m.size > 5;
       slots(all);
-      tip.push(`${m.size + (nNA > 0)} distinct`, (m.size > 5 ? "top " : "") + top.map(([v, k]) => `${v} (${k})`).join(", "));
+      // count distinct only when truncated; readers can count the listed values
+      cut && tip.push(`${m.size + (nNA > 0)} distinct`);
+      tip.push((cut ? "top " : "") + all.slice(0, 5).map(([v, k]) => `${v} (${k})`).join(", "));
       nNA && tip.push(`${nNA} NA`);
     }
     const bars = col.map(v => v == null ? -1 : bin(v)),
