@@ -9,9 +9,7 @@ assert('lt_viewer() tags column types and profiles each column', {
   (lt_viewer(head(iris), profile = 'filter')$interactive$profile %==% 'filter')
 })
 
-assert('lt_viewer() captions the table with the data expression and its size', {
-  x = lt_viewer(head(iris))
-  (x$header$title %==% 'head(iris)')
-  (x$header$subtitle %==% '6 rows, 5 columns')
-  (is.null(lt_viewer(iris, title = NULL)$header$title))
+assert('lt_viewer() titles the table with the data expression', {
+  (lt_viewer(head(iris))$header %==% list(title = 'head(iris)'))
+  (is.null(lt_spec(lt_viewer(iris) |> lt_header(NULL))$header))
 })

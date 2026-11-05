@@ -4,21 +4,10 @@
 \alias{lt_viewer}
 \title{View a data frame as an interactive table}
 \usage{
-lt_viewer(
-  data,
-  title = deparse1(substitute(data)),
-  subtitle = sprintf("\%d rows, \%d columns", nrow(data), ncol(data)),
-  profile = TRUE,
-  hide = NA,
-  ...
-)
+lt_viewer(data, profile = TRUE, hide = NA, ...)
 }
 \arguments{
 \item{data}{A data frame.}
-
-\item{title, subtitle}{The caption, passed to \code{\link[=lt_header]{lt_header()}}. By default, the
-title is the expression given as \code{data} and the subtitle is the number of
-rows and columns. Use \code{NULL} to omit either.}
 
 \item{profile, hide, ...}{Arguments passed to \code{\link[=lt_interactive]{lt_interactive()}}; \code{profile}
 defaults to \code{TRUE} and \code{hide} to \code{NA} (a column-visibility menu) here.}
@@ -29,10 +18,13 @@ An \code{lt_tbl} object.
 \description{
 A data viewer: a shorthand for
 \code{lt_interactive(lt(data, show_types = TRUE), profile = TRUE, hide = NA)}
-with a caption made by \code{\link[=lt_header]{lt_header()}}. Each column shows its type and a profile of its values, and the table can be
-sorted, searched, filtered, paged, resized, and have columns hidden from a
-menu. Printing the result at the console opens it in the viewer or browser.
+with the data expression as the title, made by \code{\link[=lt_header]{lt_header()}}. Each column
+shows its type and a profile of its values, and the table can be sorted,
+searched, filtered, paged, resized, and have columns hidden from a menu.
+Printing the result at the console opens it in the viewer or browser. Use
+\verb{|> lt_header(NULL)} to remove the title.
 }
 \examples{
 lt_viewer(iris)
+lt_viewer(iris) |> lt_header(NULL)
 }
