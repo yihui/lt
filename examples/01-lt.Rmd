@@ -853,17 +853,34 @@ The extra controls (and the JavaScript that drives them) are only loaded
 for tables that call `lt_interactive()`, so other tables cost nothing.
 
 A search term is matched case-insensitively against the displayed text,
-and a leading `!` negates it (e.g. `!merc` keeps the rows that do *not*
-mention Mercedes). A term that mentions `x` is instead evaluated as a
+and `does not contain merc` keeps the rows that do *not* mention
+Mercedes. A term that mentions `x` is instead evaluated as a
 JavaScript expression against each raw cell value, so `x > 20` keeps the
 rows with a value above 20 in any column.
+
+The box also reads plain language. A condition names a column (by its name
+or its label, which may contain spaces), then an operator and a value, e.g.
+`mpg over 25`. The operators are `over`, `above`, or `more than` (`>`);
+`under`, `below`, or `less than` (`<`); `at least` (`>=`); `at most` (`<=`);
+`between 5 and 10`; `is` or `equals`; `is not`; `contains` (or a bare
+`column value`, such as `cyl 6`); and `does not contain` (also `excludes`;
+the column name is optional, so alone it checks every column). Text compares ignore case. Conditions
+combine with `and`, `,`, or `;` (all must hold), and `or` gives alternatives,
+with `and` binding tighter, so `cyl is 4 or cyl is 6, mpg over 20` means
+`cyl is 4` or (`cyl is 6` and `mpg over 20`). Other words are searched as
+typed, and a quoted phrase stays whole. A line under the box shows how the
+query was read, and the placeholder and dropdown offer random example queries
+built from the table's own values. Click the box to see them, then pick one to
+run it.
 
 By default, each column gets a filter under its header (chosen from its
 data, see `"auto"` below). `filter = TRUE` instead adds a plain box under
 each column header, matching the same way as the search but against that
 column alone; a row is kept when it passes every filter and the search.
 Pass a character vector to filter on some columns only, or `FALSE` to
-turn the filters off.
+turn the filters off. A column's box takes the same plain-language syntax as
+the search without the column name, so `over 20` or `is red or is blue` works
+there, and it offers its own random examples.
 
 ```{r}
 lt(d) |> lt_interactive(filter = TRUE, search = FALSE, pager = 5)
