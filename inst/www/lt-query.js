@@ -17,11 +17,13 @@
  * label, which may contain spaces, to its column) then an operator and a value:
  *   over above more than greater than > | at least >= | under below less than
  *   fewer than < | at most up to <= | is equals = | is not not other than !=
- *   | between 5 and 10 | contains has : | `col value` alone means contains
+ *   | between 5 and 10 | contains has : | does not contain doesn't contain excludes
+ *   | `col value` alone means contains
  * Conditions combine with `and`, `,` or `;` (all must hold); `or` alternates.
  * Other words are free text, each must be found; "quote" a phrase. With `col0`,
- * the condition needs no column name and free text belongs to that column. Text
- * using `x` (an expression) is kept whole.
+ * the condition needs no column name and free text belongs to that column.
+ * `does not contain` needs none either: alone, no cell may contain the text.
+ * Text using `x` (an expression) is kept whole.
  */
 (root => {
   "use strict";
@@ -29,6 +31,7 @@
   // Operator phrases per canonical operator.
   const OPS = {
     ":": ["contains", "has", ":"],
+    "!:": ["does not contain", "doesn't contain", "excludes"],
     ">": ["greater than", "more than", "bigger than", "larger than", "above", "over", ">"],
     ">=": ["at least", "greater than or equal to", ">="],
     "<": ["less than", "smaller than", "fewer than", "below", "under", "<"],
@@ -88,6 +91,7 @@
         const b = lower(toks[i + 1]) === "and" ? val(i + 2) : null;
         if (b != null && isNum(a) && isNum(b)) return [`x >= ${num(a)} && x <= ${num(b)}`, i + 3];
       } else if (o.op === ":") return [a, i + 1];
+      else if (o.op === "!:") return [`!String(x).toLowerCase().includes(${JSON.stringify(a.toLowerCase())})`, i + 1, `x does not contain ${JSON.stringify(a)}`];
       else if (o.op === "==" || o.op === "!=") {
         if (isNum(a)) return [`x ${o.op} ${num(a)}`, i + 1];
         // text compares ignoring case; the summary shows the plain `x == "A"`
@@ -107,7 +111,7 @@
       }
       let col, hit, n = named(i);
       if (n && (hit = cond(n[1]) || (bare(n[1]) && [val(n[1]), n[1] + 1]))) col = n[0];
-      else if (col0 != null && (hit = cond(i))) col = col0;
+      else if ((col0 != null || opAt(i)?.op === "!:") && (hit = cond(i))) col = col0;
       if (hit) {
         add({ col, term: hit[0], show: hit[2] });
         i = hit[1];

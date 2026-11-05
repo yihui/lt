@@ -853,8 +853,8 @@ The extra controls (and the JavaScript that drives them) are only loaded
 for tables that call `lt_interactive()`, so other tables cost nothing.
 
 A search term is matched case-insensitively against the displayed text,
-and a leading `!` negates it (e.g. `!merc` keeps the rows that do *not*
-mention Mercedes). A term that mentions `x` is instead evaluated as a
+and `does not contain merc` keeps the rows that do *not* mention
+Mercedes. A term that mentions `x` is instead evaluated as a
 JavaScript expression against each raw cell value, so `x > 20` keeps the
 rows with a value above 20 in any column.
 
@@ -862,8 +862,9 @@ The box also reads plain language. A condition names a column (by its name
 or its label, which may contain spaces), then an operator and a value, e.g.
 `mpg over 25`. The operators are `over`, `above`, or `more than` (`>`);
 `under`, `below`, or `less than` (`<`); `at least` (`>=`); `at most` (`<=`);
-`between 5 and 10`; `is` or `equals`; `is not`; and `contains` (or a bare
-`column value`, such as `cyl 6`). Text compares ignore case. Conditions
+`between 5 and 10`; `is` or `equals`; `is not`; `contains` (or a bare
+`column value`, such as `cyl 6`); and `does not contain` (also `excludes`;
+the column name is optional, so alone it checks every column). Text compares ignore case. Conditions
 combine with `and`, `,`, or `;` (all must hold), and `or` gives alternatives,
 with `and` binding tighter, so `cyl is 4 or cyl is 6, mpg over 20` means
 `cyl is 4` or (`cyl is 6` and `mpg over 20`). Other words are searched as

@@ -527,7 +527,7 @@
             return rnd([`${prefix}over ${at(.5)}`, `${prefix}under ${at(.5)}`, `${prefix}at least ${at(.75)}`, `${prefix}between ${at(.25)} and ${at(.75)}`]);
           }
           const u = [...new Set(v.filter(Boolean))], a = qv(rnd(u)), b = qv(rnd(u));
-          return rnd([`${prefix}is ${a}`, `${prefix}is not ${a}`, `${prefix}contains ${a}`, `${prefix}is ${a} or ${prefix}is ${b}`]);
+          return rnd([`${prefix}is ${a}`, `${prefix}is not ${a}`, `${prefix}contains ${a}`, `${prefix}does not contain ${a}`, `${prefix}is ${a} or ${prefix}is ${b}`]);
         },
         // table-wide: alternate numeric, text, and both; the first two are one of each
         queryExamples = (vals, cols, labelOf) => {

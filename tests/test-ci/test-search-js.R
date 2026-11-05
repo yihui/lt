@@ -10,6 +10,8 @@ assert("the search box filters the rendered rows", {
   )
   (lti_rows(x, find('rash')) %==% 'Rash')
   (lti_rows(x, find('!rash')) %==% c("Nausea", "Headache", "Itch"))
+  (lti_rows(x, find('does not contain rash')) %==% c("Nausea", "Headache", "Itch"))
+  (lti_rows(x, find('name excludes ra')) %==% c("Nausea", "Headache", "Itch"))
   (lti_rows(x, find('x > 5')) %==% c("Nausea", "Itch"))
   # no matches: single placeholder row spanning table
   (lti_eval(x, 't.querySelectorAll("tbody .lti-empty td").length', find('zzz')) %==% '1')

@@ -34,6 +34,10 @@ assert('operators and their phrasings map to expressions', {
   (read_query('price at most 9')$expr %==% 'x <= 9')
   (read_query('price is 200')$expr %==% 'x == 200')
   (read_query("color is not red")$expr %==% 'String(x).toLowerCase() != "red"')
+  (read_query("color does not contain red")$expr %==% '!String(x).toLowerCase().includes("red")')
+  (read_query("color doesn't contain red")$text %==% 'color: x does not contain "red"')
+  # without a column, no cell may contain the text
+  (read_query("excludes red")$expr %==% '!String(x).toLowerCase().includes("red")')
   (read_query('price between 100 and 160')$expr %==% 'x >= 100 && x <= 160')
   (read_query('price:5')$text %==% 'price: "5"')
   (read_query('price over 1,000')$expr %==% 'x > 1000')

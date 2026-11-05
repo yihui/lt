@@ -1,6 +1,6 @@
 # CHANGES IN lt VERSION 0.6
 
-- Search and filter boxes in `lt_interactive()` read plain language: `price over 100, color is red or blue`, `between 5 and 10`, `is not`, and `col value` for contains. Column labels may contain spaces; `,` and `;` separate conditions and `or` alternates them. A line under the box shows how the query was read, and boxes drop down random example queries built from the data (a column box gets ones for its own values). Text that isn't recognized is searched as typed. The parser is a standalone file, `lt-query.js`, usable outside lt.
+- Search and filter boxes in `lt_interactive()` read plain language: `price over 100, color is red or blue`, `between 5 and 10`, `is not`, `does not contain`, and `col value` for contains. Column labels may contain spaces; `,` and `;` separate conditions and `or` alternates them. A line under the box shows how the query was read, and boxes drop down random example queries built from the data (a column box gets ones for its own values). Text that isn't recognized is searched as typed. The parser is a standalone file, `lt-query.js`, usable outside lt.
 
 - `lt_interactive(profile = TRUE)` shows a profile of each column: a mini bar chart of its values (a histogram for numbers and dates; one bar per category for text where at most half of the values are distinct, left blank otherwise) that highlights the rows kept by the filters, with summary statistics and the amount of missing values as a tooltip. Use `profile = "filter"` to put it in the column's filter popover instead of the header.
 
