@@ -81,7 +81,7 @@ widths can be set with \code{\link[=lt_width]{lt_width()}}.}
 
 \item{hide}{Column-visibility control: an eye button in the
 control bar opens a checklist of every column, where unchecking a column
-hides it (header and cells) and re-checking restores it. \code{TRUE} adds the
+hides it (header and cells) and re-checking restores it. \code{NA} adds the
 menu with all columns shown; column names (a character vector or a one-sided
 formula, e.g. \code{~ x + y}) adds it with those columns hidden to begin with
 (every column is still listed, so any can be toggled). To label the button
@@ -158,7 +158,7 @@ lt(iris) |> lt_interactive(filter = FALSE)
 # fixed (non-resizable) columns
 lt(head(mtcars)) |> lt_interactive(resize = FALSE)
 # a column-visibility menu (all columns shown, or with some hidden to start)
-lt(head(mtcars)) |> lt_interactive(hide = TRUE)
+lt(head(mtcars)) |> lt_interactive(hide = NA)
 lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)
 # a labeled button instead of the eye icon
 lt(head(mtcars)) |> lt_interactive(hide = list(label = 'Show/Hide columns'))

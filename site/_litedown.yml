@@ -14,7 +14,7 @@ site:
       contents: [lt_errorbar, lt_sparkline, lt_dotplot]
     Interactivity:
       desc: Sort, search, filter, page, resize, and drill down in the browser.
-      contents: [lt_interactive]
+      contents: [lt_interactive, lt_viewer]
     Output and export:
       desc: Print, serialize, and export tables as HTML, images, or PDF.
       contents: [print.lt_tbl, format.lt_tbl, lt_spec, lt_export]

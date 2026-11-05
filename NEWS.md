@@ -12,6 +12,8 @@
 
 - `lt()` gains `show_types`: when `TRUE`, each column is tagged with its type (`<dbl>`, `<chr>`, `<fct>`, `<date>`, ...) under the column labels (followed by the filters of an interactive table).
 
+- Added `lt_viewer()`, a data viewer for exploring a data frame: an interactive table with the data expression as the title, each column's type and profile, filters, and a column-visibility menu (thanks, @keaven, #56).
+
 - With `auto_format = TRUE`, `lt()` shows date columns as `YYYY-MM-DD` and date-time columns as `YYYY-MM-DD HH:MM:SS` in the local time zone by default; use `lt_date()` to format them differently. In `lt_interactive()`, these columns sort chronologically and `filter = "auto"` gives them a range slider.
 
 - `lt_interactive(filter = "auto")` picks each column's filter from its data: a range slider for numbers, a checklist for text with few distinct values, and a plain box otherwise.
@@ -21,6 +23,8 @@
 - `lt_export(width = )` also accepts a CSS width string, e.g., `"min-content"` for the narrowest width that shows every column.
 
 - `lt_interactive(hide = list(label = ))` shows the column-visibility menu as a labeled chip in the control bar instead of the eye icon.
+
+- `lt_interactive(hide = NA)` now adds the column-visibility menu with all columns shown (`hide = TRUE` still works for now but will be dropped in the future).
 
 - The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, CSV download), and the column menu button's tooltip reads "Show/Hide columns".
 

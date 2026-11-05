@@ -8,7 +8,7 @@ cell_hidden = function(ti) sprintf(
 box_click = function(ti) sprintf('t.querySelectorAll(".lti-menu input")[%d].click()', ti)
 
 assert("the column menu lists every column and hides the unchecked ones", {
-  x = itbl(hide = TRUE)
+  x = itbl(hide = NA)
   # an icon button opens a checklist with one box per column, all checked
   (lti_eval(x, 't.querySelector(".lti-cols button") ? 1 : 0') %==% '1')
   (lti_eval(x, 't.querySelectorAll(".lti-menu input").length') %==% '2')
@@ -40,7 +40,7 @@ assert("hide = column names starts those columns hidden; the menu still lists al
 
 assert("with resize on, hiding a column also drops its <col> (fixed layout)", {
   # hiding body cells alone leaves a gap in a fixed layout; hide the <col> too
-  x = itbl(hide = TRUE, resize = TRUE)
+  x = itbl(hide = NA, resize = TRUE)
   off1 = box_click(1)
   (lti_eval(x, 't.querySelectorAll("col")[1].hidden', off1) %==% 'true')
   (lti_eval(x, th_hidden(1), off1) %==% 'true')
@@ -53,7 +53,7 @@ assert("hide accepts a formula, and the menu lists displayed labels", {
   (lti_eval(x, th_hidden(1)) %==% 'true')
   # the checklist shows each column by its displayed label, not its raw name
   y = lt(data.frame(name = sym, n = c(5, 12, 3, 8))) |>
-    lt_label(n = "Count") |> lt_interactive(hide = TRUE)
+    lt_label(n = "Count") |> lt_interactive(hide = NA)
   labels = '[...t.querySelectorAll(".lti-menu label")].map(l => l.textContent).join("|")'
   (lti_eval(y, labels) %==% 'name|Count')
 })
@@ -63,7 +63,7 @@ assert("hiding a column also hides its plot-axis-footer cell", {
   # footer too), or the axis shifts off its column
   x = lt(data.frame(name = sym, a = c(1, 2, 3, 4), b = c(2, 3, 4, 5))) |>
     lt_dotplot(~ a + b, axis = TRUE) |>
-    lt_interactive(hide = TRUE, filter = TRUE, pager = FALSE)
+    lt_interactive(hide = NA, filter = TRUE, pager = FALSE)
   # the first column ("name") owns a cell in the plot-axis footer row; it
   # starts shown
   foot = 't.querySelector("tr.lt-plot-foot").children[0].hidden'
@@ -101,7 +101,7 @@ assert("the menu groups columns under their spanners, indenting the children", {
   # spanner columns are listed under an indented group header, so repeated
   # labels (auto-span makes both Sepal.Length and Petal.Length "Length") stay
   # unambiguous
-  x = lt(iris) |> lt_spanner() |> lt_interactive(hide = TRUE)
+  x = lt(iris) |> lt_spanner() |> lt_interactive(hide = NA)
   rows = paste0(
     '[...t.querySelector(".lti-menu").children].map(e => ',
     'e.className + ":" + e.textContent.trim()).join("|")')
@@ -117,7 +117,7 @@ assert("the menu groups columns under their spanners, indenting the children", {
 assert("hiding a column leaves an open detail row's full-width cell alone", {
   # hide loop keys cells by column index; a detail row's single spanning cell
   # must be skipped, not taken for column 0's
-  x = itbl(hide = TRUE, detail = ~ n, pager = FALSE)
+  x = itbl(hide = NA, detail = ~ n, pager = FALSE)
   expand = 't.querySelector(".lti-expand").click()'
   off0 = paste(expand, box_click(0), sep = ';')
   (lti_eval(x, 't.querySelector("tr.lti-detail td").hidden', off0) %==% 'false')
@@ -140,7 +140,7 @@ assert("hide = list(label=) shows a labeled chip in the bar instead of the eye",
 })
 
 assert("the control bar orders search, chips, then icons", {
-  x = itbl(hide = TRUE, download = TRUE, search = TRUE)
+  x = itbl(hide = NA, download = TRUE, search = TRUE)
   (lti_eval(x, '[...t.querySelector(".lti-bar").children].map(e => e.className.split(" ")[0]).join()')
    %==% 'lti-search,lti-chips,lti-icons')
 })

@@ -46,7 +46,7 @@ Rows can also expand to reveal more fields, and columns can be toggled.
 ```{r}
 lt(head(mtcars, 10)) |>
   lt_hide(~ gear + carb) |>
-  lt_interactive(detail = ~ gear + carb, hide = TRUE, sort = ~ cyl + -mpg)
+  lt_interactive(detail = ~ gear + carb, hide = NA, sort = ~ cyl + -mpg)
 ```
 
 ## Plots in cells

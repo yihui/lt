@@ -80,7 +80,7 @@
 #'   widths can be set with [lt_width()].
 #' @param hide Column-visibility control: an eye button in the
 #'   control bar opens a checklist of every column, where unchecking a column
-#'   hides it (header and cells) and re-checking restores it. `TRUE` adds the
+#'   hides it (header and cells) and re-checking restores it. `NA` adds the
 #'   menu with all columns shown; column names (a character vector or a one-sided
 #'   formula, e.g. `~ x + y`) adds it with those columns hidden to begin with
 #'   (every column is still listed, so any can be toggled). To label the button
@@ -134,7 +134,7 @@
 #' # fixed (non-resizable) columns
 #' lt(head(mtcars)) |> lt_interactive(resize = FALSE)
 #' # a column-visibility menu (all columns shown, or with some hidden to start)
-#' lt(head(mtcars)) |> lt_interactive(hide = TRUE)
+#' lt(head(mtcars)) |> lt_interactive(hide = NA)
 #' lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)
 #' # a labeled button instead of the eye icon
 #' lt(head(mtcars)) |> lt_interactive(hide = list(label = 'Show/Hide columns'))
@@ -180,11 +180,12 @@ lt_interactive = function(
     label = NULL
     if (is.list(hide)) {
       label = hide$label
-      hide = hide$columns %||% TRUE
+      hide = hide$columns %||% NA
     }
-    opts$hide = if (isTRUE(hide) && is.null(label)) TRUE else drop_null(list(
+    all_shown = isTRUE(hide) || identical(hide, NA)  # TRUE: undocumented alias
+    opts$hide = if (all_shown && is.null(label)) TRUE else drop_null(list(
       label = label,
-      hidden = if (!isTRUE(hide)) I(as.character(f_cols(hide, x$data)))
+      hidden = if (!all_shown) I(as.character(f_cols(hide, x$data)))
     ))
   }
   if (!is.null(detail)) opts$detail = if (inherits(detail, 'JS_LITERAL'))
