@@ -2,6 +2,8 @@
  * `lt-*`. Declare only properties that change a default. */
 
 .lt-table {
+  /* accent for active filter and profile highlight */
+  --lti-accent: #ffc800;
   /* full-width rows: align with table edges, not cell text */
   :is(.lti-head, .lti-pager-row) td {
     padding-left: 0;
@@ -39,7 +41,7 @@
     min-width: 4em;
     fill: currentColor;
     rect { opacity: 0.25; }
-    rect.s { opacity: 0.7; }
+    rect.s { fill: var(--lti-accent); opacity: 1; }
   }
 
   .lti-empty td {
@@ -202,8 +204,9 @@
       opacity: 0.4;
       mask: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M1 2h14l-5.5 6.5V14l-3 1V8.5z"/></svg>');
     }
-    /* active when the column has a live term: darker funnel */
+    /* active when the column has a live term: accent funnel */
     &.lti-on .lti-funnel {
+      background: var(--lti-accent);
       opacity: 1;
     }
     .lti-pop-panel {
