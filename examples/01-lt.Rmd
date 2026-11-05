@@ -979,6 +979,24 @@ them back). The checklist shows each column's displayed label.
 lt(d) |> lt_interactive(hide = ~ hp + wt, pager = 5, filter = FALSE)
 ```
 
+### Column profiles
+
+`profile` draws a mini chart of each column: a histogram for numbers and
+dates, a bar per category for text (left blank if the values are mostly
+distinct). Hover over it for summary statistics (min, max, mean, or the
+distinct values and the most frequent ones) and the amount of missing values.
+The bars also highlight the rows that the filters keep, so try filtering a
+column. `profile = TRUE` puts the charts in the header; `profile = "filter"`
+puts each in its column's filter popover instead, which saves header space.
+
+```{r}
+lt(iris) |> lt_interactive(profile = TRUE, pager = 5)
+```
+
+```{r}
+lt(iris) |> lt_interactive(profile = "filter", pager = 5)
+```
+
 ### Downloading a CSV
 
 `download` adds a button to the control bar that downloads the table's
