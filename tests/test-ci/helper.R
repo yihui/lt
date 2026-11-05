@@ -142,14 +142,14 @@ lti_eval_dump = function(f) {
 # Render `x`, run `js` after load (table element bound to `t`), then read `expr`
 # back from <body>, where the browser stamps it. Assets are inlined, so lt.js
 # and lt-interactive.js finish before the load event.
-lti_eval = function(x, expr, js = '') {
+lti_eval = function(x, expr, js = '', html = format(x, fragment = FALSE)) {
   code = sprintf(
     'var t = document.querySelector(".lt-table");%s;document.body.dataset.out = (%s);document.body.dataset.ready = "1"',
     js, expr
   )
   html = sub('</head>', sprintf(
     '<script>addEventListener("load", function() {%s})</script></head>', code
-  ), format(x, fragment = FALSE), fixed = TRUE)
+  ), html, fixed = TRUE)
   f = tempfile(fileext = '.html')
   on.exit(unlink(f), add = TRUE)
   xfun::write_utf8(html, f)

@@ -25,3 +25,14 @@ assert("a cell's own background wins over the sticky one", {
   (lti_eval(x, 'getComputedStyle(t.querySelector("tbody td")).backgroundColor') %==%
     'rgb(255, 0, 0)')
 })
+
+assert("a printed standalone table scrolls inside .lt-wrap, not the page", {
+  x = lt(as.data.frame(matrix(1:600, 150, 4)))
+  # the page fits the viewport while the wrap holds the overflow
+  (lti_eval(x, 'document.documentElement.scrollHeight <= innerHeight', html = view_html(x))
+   %==% 'true')
+  (lti_eval(x, 't.closest(".lt-wrap").scrollHeight > t.closest(".lt-wrap").clientHeight',
+            html = view_html(x)) %==% 'true')
+  # the default document (no print styling) overflows the page
+  (lti_eval(x, 'document.documentElement.scrollHeight > innerHeight') %==% 'true')
+})

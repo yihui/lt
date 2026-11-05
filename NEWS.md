@@ -2,6 +2,8 @@
 
 - Tables in a scrolling `lt_wrap()` box keep the whole header (spanners, labels, and interactive controls) in view while scrolling.
 
+- Printing an `lt_tbl` in the viewer or browser fits the table to the window: a table too tall to fit scrolls inside its container (with the header kept in view) instead of adding a page scrollbar.
+
 - `lt_interactive()` now defaults to `filter = "auto"`, `resize = TRUE`, and page sizes `c(10, 25, 50, Inf)` (the last size shows every row on one page, previously 100). Use `filter = FALSE` or `resize = FALSE` to turn those off.
 
 - A `"select"` or `"checklist"` filter now offers the missing (`NA`) value as its own choice, so rows with missing values can be kept.
