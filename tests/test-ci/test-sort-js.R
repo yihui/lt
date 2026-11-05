@@ -109,7 +109,7 @@ assert("column spanners stay interactive: they are header rows, not body rows", 
   x = lt(d) |> lt_spanner() |> lt_interactive()
   spans = 'sel => [...t.querySelectorAll(sel)].map(e => e.textContent).join(",")'
   # sorting bound to column labels, not spanner labels above
-  (lti_eval(x, sprintf('(%s)("thead .lti-sortable")', spans)) %==% 'x,y,b')
+  (lti_eval(x, sprintf('(%s)("thead .lti-sortable .lti-label")', spans)) %==% 'x,y,b')
   click = 'document.querySelector("thead tr:nth-child(3) th .lti-label").click()'
   (lti_rows(x, click) %==% c('1', '2', '3'))
   # spanner row survives <tbody> re-render

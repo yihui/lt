@@ -36,11 +36,11 @@ assert("dragging a column edge resizes that column, and the table with it", {
 assert("a column shrinks to the minimum width, and a double-click fits it again", {
   x = itbl(resize = TRUE)
   # dragging far left shrinks column to MIN_COL (24px); content clipped
-  # (cell is overflow:hidden once fixed), not spilling into next column or
+  # (label is overflow:hidden once fixed), not spilling into next column or
   # under grip
   (lti_eval(x, 'Math.round(w(0))', paste(MEASURE, drag(0, -1000))) %==% '24')
-  (lti_eval(x, 'getComputedStyle(th(0)).overflow', paste(MEASURE, drag(0, -1000)))
-    %==% 'hidden')
+  (lti_eval(x, 'getComputedStyle(th(0).querySelector(".lti-label")).overflow',
+            paste(MEASURE, drag(0, -1000))) %==% 'hidden')
   # double-click on grip restores column's content width
   fit = paste(MEASURE, drag(0, -1000),
               't.querySelector(".lti-resizer").dispatchEvent(

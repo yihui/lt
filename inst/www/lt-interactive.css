@@ -75,10 +75,15 @@
   /* frozen widths are authoritative: a drag moves one edge only */
   &.lti-fixed {
     table-layout: fixed;
-    /* clip a shrunk column so the grip can shrink it freely; detail row and
-     * popover-bearing filter/bar cells (<td>) must overflow */
-    thead th, tbody tr:not(.lti-detail) td {
+    /* clip a shrunk column's cells and labels so the grip can shrink it freely;
+     * header cells (holding filter popovers) and the detail row must overflow */
+    tbody tr:not(.lti-detail) td, thead .lti-label {
       overflow: hidden;
+    }
+    thead .lti-label {
+      display: inline-block;
+      max-width: 100%;
+      vertical-align: bottom;
     }
   }
 

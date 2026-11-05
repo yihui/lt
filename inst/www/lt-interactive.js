@@ -29,12 +29,35 @@
   };
 
   // --- Small DOM helpers ---
-  const { $, $$, on, off, numCol } = LT;
+  const { $, $$, on, off, numCol, dateFmt } = LT;
+  // Columns as sort/filter see them: date-time columns become their displayed
+  // text, as do R dates (already "YYYY-MM-DD"), so `x >= "2024-01-05"` works and
+  // text order is time order. Such arrays are flagged `date`; the raw
+  // `spec.data` is untouched. Cached per data object.
+  const textual = spec => {
+    const d = spec.data || {};
+    if (spec._txt?.d !== d) {
+      const t = { ...d };
+      for (const c in d) {
+        const f = dateFmt(d[c]);
+        if (f || spec.dates?.includes(c))
+          t[c] = Object.assign(d[c].map(v => v == null || !f ? v : f(v)), { date: true });
+      }
+      spec._txt = { d, t };
+    }
+    return spec._txt.t;
+  };
   // A row's data cells in column order: children minus leading rowspan group
   // cells (`lt-row-group`), which aren't in `spec._cols` and are missing on a
   // run's later rows. Class-based, not positional, so index code stays correct.
   const dataCells = tr =>
     [...tr.children].filter(c => !c.classList.contains("lt-row-group"));
+  // A header cell's label nodes: those before the <br> that starts the type tag
+  // and filter line (if any)
+  const labelNodes = th => {
+    const n = [...th.childNodes], i = n.findIndex(e => e.nodeName === "BR");
+    return i < 0 ? n : n.slice(0, i);
+  };
   // Create <tag> with `props`: dashed key = attribute, else DOM property.
   // Appends to `parent` if given; returns the element.
   function elem(doc, tag, props = {}, parent) {
@@ -71,8 +94,9 @@
       try { fn = new Function("x", `return (${v});`); } catch (e) {}
       if (fn) {
         const neg = /^\s*!|!=/.test(v), test = raw => {
-          if (raw == null) return neg;
           try {
+            // missing value is `undefined`: `x == null` matches it, `x > 5` doesn't
+            if (raw == null) return neg || !!fn(undefined);
             const num = Number(raw);
             return !!fn(String(raw)) || (raw !== "" && isFinite(num) && !!fn(num));
           } catch (e) { return false; }
@@ -93,10 +117,10 @@
   // matches). `state`: `filters[col]` terms, `term` search, `predicates` by id
   // (see el._lt.filter), `sort` = ordered `{col, dir}` keys.
   function computeView(spec, disp, state) {
-    const cols = spec._cols || [], data = spec.data || {},
+    const cols = spec._cols || [], data = spec.data || {}, vals = textual(spec),
           nRow = (data[cols[0]] || []).length,
           cell = (c, r) => ({
-            raw: data[c]?.[r - 1] ?? null, disp: disp[c]?.[r - 1] ?? ""
+            raw: vals[c]?.[r - 1] ?? null, disp: disp[c]?.[r - 1] ?? ""
           });
 
     // Per-row keep test, ANDed; cheap single-cell filters first.
@@ -122,7 +146,7 @@
     // direction. Null if nothing to sort.
     const makeCmp = sortKeys => {
       const keys = sortKeys.map(k => {
-        const col = data[k.col];
+        const col = vals[k.col];
         return col && { col, num: numCol(col), dir: k.dir === "desc" ? -1 : 1 };
       }).filter(Boolean);
       return keys.length ? (a, b) => {
@@ -182,7 +206,7 @@
       const leafCmp = makeCmp(leaf);
       const partition = (rows, depth) => {
         if (depth === gcols.length) return reduce(rows, leafCmp);
-        const col = data[gcols[depth]], blocks = new Map();
+        const col = vals[gcols[depth]], blocks = new Map();
         for (const r of rows) {
           const v = col[r - 1], key = v == null ? "\0" : String(v);
           (blocks.get(key) || blocks.set(key, { v, rows: [] }).get(key)).rows.push(r);
@@ -356,13 +380,13 @@
         fullRow(el.tHead || el.createTHead(), "lti-head", nAll, 0)) : null;
     // Data-column header labels, read before sort/resize decorate cells, so the
     // column menu shows displayed labels, not raw names
-    const labels = dataCells(hrow).map(th => th.textContent);
-    // Sort before the filter row exists (sees header row only); `allCols` binds
-    // group headers too
+    const labels = dataCells(hrow).map(th => labelNodes(th).map(n => n.textContent).join(""));
+    // Sort before filters join the header cells; `allCols` binds group headers
+    // too
     if (opts.sort !== false) addSort(hrow, allCols, state, requestRefresh);
-    // Under-header filter row: needed if a default applies or a named column is visible
+    // Header filters: needed if a default applies or a named column is visible
     if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => flt.cols[c] && cols.includes(c)))))
-      addFilter(hrow, cols, flt, spec.data, state, requestRefresh, nGroup);
+      addFilter(hrow, cols, flt, textual(spec), state, requestRefresh);
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     // DOM order = visual order. Chips group is always created with a bar so callers
@@ -371,7 +395,7 @@
     if (opts.search !== false) addSearch(headBar, el, state, requestRefresh);
     const chips = headBar ?
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
-    if (barCols.length) addControlFilters(chips, barCols, flt.cols, spec.data, state, requestRefresh);
+    if (barCols.length) addControlFilters(chips, barCols, flt.cols, textual(spec), state, requestRefresh);
     const icons = (opts.hide || opts.download) ?
       elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
     if (opts.hide)
@@ -489,7 +513,7 @@
             "aria-label": "Download table as CSV"
           }, cell);
     btn.onclick = () => {
-      const src = (raw ? spec.data : spec._display) || {},
+      const src = (raw ? textual(spec) : spec._display) || {},
             lines = [keep.map(i => csvField(labels[i] ?? cols[i])).join(",")];
       for (const r of el._lt.view())
         lines.push(keep.map(i => csvField((src[cols[i]] || [])[r - 1])).join(","));
@@ -537,46 +561,43 @@
       if (col == null) return;
       th.classList.add("lti-sortable");
       // label only, so the resize grip (outside it) doesn't sort
-      const lab = elem(doc, "span", { className: "lti-label" }, th);
-      while (th.firstChild !== lab) lab.append(th.firstChild);
-      marks[col] = { th, ind: elem(doc, "span", { className: "lti-sort" }, lab) };
-      lab.onclick = e => { cycle(state, col, e.shiftKey); paint(); refresh(); };
+      const nodes = labelNodes(th), lab = elem(doc, "span", { className: "lti-label" }),
+            ind = elem(doc, "span", { className: "lti-sort" });
+      th.prepend(lab, ind);
+      lab.append(...nodes);
+      marks[col] = { th, ind };
+      lab.onclick = ind.onclick = e => { cycle(state, col, e.shiftKey); paint(); refresh(); };
     });
     paint();  // reflect initial sort
   }
 
-  // Per-column filter row below headers, in <thead> so the <tbody> swap keeps it
-  // and typed input. `flt` = normalized { default?, cols? }: named spec else
-  // default. `true` = plain box; typed = funnel + popover (see typedFilter).
-  function addFilter(hrow, cols, flt, data, state, refresh, nGroup = 0) {
-    const doc = hrow.ownerDocument,
-          row = elem(doc, "tr", { className: "lti-filters" }),
+  // Per-column filters, in the header cells (on a line of their own, after the
+  // label and type tag) so the <tbody> swap keeps them and typed input. `flt` =
+  // normalized { default?, cols? }: named spec else default. `true` = plain box;
+  // typed = funnel + popover (see typedFilter).
+  function addFilter(hrow, cols, flt, data, state, refresh) {
+    const doc = hrow.ownerDocument, hCells = dataCells(hrow),
           def = flt.default, explicit = flt.cols || {};
-    // group columns get no filter but need cells so boxes line up under headers
-    for (let i = 0; i < nGroup; i++) elem(doc, "td", {}, row);
-    // copy header alignment onto filter cells so funnels sit under header text
-    const hCells = dataCells(hrow);
     cols.forEach((c, ci) => {
-      const al = ["al-r", "al-c"].find(k => hCells[ci]?.classList.contains(k)),
-            cell = elem(doc, "td", al ? { className: al } : {}, row),
+      const cell = hCells[ci],
             spec = autoSpec(c in explicit ? explicit[c] : def, data[c]);
       if (!spec || !filterable(data, c)) return;   // no filter on this column
+      elem(doc, "br", {}, cell);
       if (spec === true) {                         // a plain search box
         const input = cell.appendChild(searchInput(doc, `Filter ${c}`));
         onType(input, v => { v ? (state.filters[c] = v) : delete state.filters[c]; refresh(); });
-      } else                                       // a typed funnel under the header
+      } else                                       // a typed funnel under the label
         cell.append(typedFilter(doc, c, spec, data, state, refresh, null));
     });
-    hrow.after(row);
   }
 
   // `"auto"` filter: pick the widget from the column's data. Numbers get a range
-  // slider (a plain box if constant), strings with few distinct values a
-  // checklist, anything else a plain box.
+  // slider (a plain box if constant), so do dates; strings with few distinct
+  // values a checklist, anything else a plain box.
   const autoSpec = (spec, col = []) => {
     if (spec?.type !== "auto") return spec;
     const vals = col.filter(v => v != null), n = new Set(vals).size;
-    return vals.every(v => typeof v === "number") ? (n > 1 ? { type: "range" } : true)
+    return vals.every(v => typeof v === "number") || col.date ? (n > 1 ? { type: "range" } : true)
       : vals.every(v => typeof v === "string") && n <= 10 ? { type: "checklist" } : true;
   };
 
@@ -873,25 +894,38 @@
 
   // Filter term <-> widget value, per type. `null` parse = a hand-typed term the
   // widget can't show: widget goes neutral, box stays authoritative.
-  const selExpr = v => v === "" ? "" : `x == ${JSON.stringify(String(v))}`,
+  // value of the missing-value ("NA") choice; not a string any data holds
+  const NA = "\0NA",
+        selExpr = v => v === "" ? "" : v === NA ? "x == null" : `x == ${JSON.stringify(String(v))}`,
         selParse = s => {
-          const m = /^\s*x\s*==\s*(['"])([\s\S]*)\1\s*$/.exec(s || "");
-          return m ? m[2] : null;
+          const m = /^\s*x\s*==\s*(?:(['"])([\s\S]*)\1|null)\s*$/.exec(s || "");
+          return m ? (m[1] ? m[2] : NA) : null;
         },
-        rngExpr = (lo, hi, min, max) =>
-          lo <= min && hi >= max ? "" : `x >= ${lo} && x <= ${hi}`,
-        rngParse = s => {
-          const m = /^\s*x\s*>=\s*(-?[\d.]+)\s*&&\s*x\s*<=\s*(-?[\d.]+)\s*$/.exec(s || "");
-          return m ? [parseFloat(m[1]), parseFloat(m[2])] : null;
-        },
-        // keeps rows whose value is checked; all checked -> "" (no filter), none ->
-        // "[].includes(x)" (no rows)
-        setExpr = (sel, all) =>
-          sel.length === all.length ? "" : `${JSON.stringify(sel.map(String))}.includes(x)`,
-        setParse = s => {
-          const m = /^\s*(\[[\s\S]*\])\.includes\(\s*x\s*\)\s*$/.exec(s || "");
+        // range over numbers (`x >= 1 && x <= 3`) or, with `labels` (dates), over
+        // their indices written as quoted labels (`x >= "2024-01-05"`)
+        rngExpr = (lo, hi, min, max, labels) => lo <= min && hi >= max ? "" :
+          labels ? `x >= ${JSON.stringify(labels[lo])} && x <= ${JSON.stringify(labels[hi])}`
+            : `x >= ${lo} && x <= ${hi}`,
+        rngParse = (s, labels) => {
+          const m = /^\s*x\s*>=\s*("[^"]*"|-?[\d.]+)\s*&&\s*x\s*<=\s*("[^"]*"|-?[\d.]+)\s*$/.exec(s || "");
           if (!m) return null;
-          try { return JSON.parse(m[1]); } catch (e) { return null; }
+          // a quoted bound is a date label (unknown label or no labels: can't show)
+          const at = t => t[0] !== '"' ? parseFloat(t) : labels ? labels.indexOf(JSON.parse(t)) : NaN,
+                p = [at(m[1]), at(m[2])];
+          return p.some(v => !isFinite(v) || (labels && v < 0)) ? null : p;
+        },
+        rngShow = (p, cfg) => cfg.labels ? `${cfg.labels[p[0]]} – ${cfg.labels[p[1]]}` : `${p[0]} – ${p[1]}`,
+        // keeps rows whose value is checked; all checked -> "" (no filter), none ->
+        // "[].includes(x)" (no rows). NA is `null` in the list, matched via `x ?? null`.
+        setExpr = (sel, all) => {
+          if (sel.length === all.length) return "";
+          const vals = sel.map(v => v === NA ? null : String(v));
+          return `${JSON.stringify(vals)}.includes(x${vals.includes(null) ? " ?? null" : ""})`;
+        },
+        setParse = s => {
+          const m = /^\s*(\[[\s\S]*\])\.includes\(\s*x\s*(?:\?\?\s*null\s*)?\)\s*$/.exec(s || "");
+          if (!m) return null;
+          try { return JSON.parse(m[1]).map(v => v === null ? NA : v); } catch (e) { return null; }
         };
 
   // "Nice" slider step: 1/2/5 x 10^k nearest ~1% of span (~50-100 increments),
@@ -916,11 +950,18 @@
           ? a - b : String(a).localeCompare(String(b)));
         choices = vals.map(v => ({ value: String(v), label: String(v) }));
       }
+      // missing values get their own choice, so they can be selected too
+      if (column.some(v => v == null)) choices = [...choices, { value: NA, label: "NA" }];
       // select gets a leading blank "no filter" choice; checklist starts all
       // checked (also "no filter"), so needs none
       if (spec.type === "select" && !choices.some(o => o.value === ""))
         choices = [{ value: "", label: "" }, ...choices];
       return { ...spec, choices };
+    }
+    // dates: the slider steps through the distinct values present (by index)
+    if (spec.type === "range" && column.date) {
+      const labels = [...new Set(column.filter(v => v != null))].sort();
+      return { ...spec, labels, min: 0, max: labels.length - 1, step: 1 };
     }
     let { min, max, step } = spec;
     let lo = Infinity, hi = -Infinity, allInt = true;
@@ -1119,14 +1160,15 @@
       }
     },
     range: {
-      describe: t => { const p = rngParse(t); return p ? `${p[0]} – ${p[1]}` : t ? "⋯" : ""; },
-      init: cfg => cfg.value ? rngExpr(cfg.value[0], cfg.value[1], cfg.min, cfg.max) : "",
-      parse: rngParse,
+      describe: (t, cfg) => { const p = rngParse(t, cfg.labels); return p ? rngShow(p, cfg) : t ? "⋯" : ""; },
+      init: cfg => cfg.value ? rngExpr(cfg.value[0], cfg.value[1], cfg.min, cfg.max, cfg.labels) : "",
+      parse: (t, cfg) => rngParse(t, cfg.labels),
       build: (doc, cfg, setTerm) => {
         const out = elem(doc, "span", { className: "lti-slider-out" }),
-              show = p => out.textContent = `${p[0]} – ${p[1]}`,
-              w = makeSlider(doc, cfg, v => { show(v); setTerm(rngExpr(v[0], v[1], cfg.min, cfg.max), ed); }, show),
-              ed = { el: [w.el, out], reflect: t => { const p = rngParse(t) || [cfg.min, cfg.max]; w.set(p); show(p); } };
+              show = p => out.textContent = rngShow(p, cfg),
+              put = v => setTerm(rngExpr(v[0], v[1], cfg.min, cfg.max, cfg.labels), ed),
+              w = makeSlider(doc, cfg, v => { show(v); put(v); }, show),
+              ed = { el: [w.el, out], reflect: t => { const p = rngParse(t, cfg.labels) || [cfg.min, cfg.max]; w.set(p); show(p); } };
         return ed;
       }
     },
@@ -1168,7 +1210,7 @@
       refresh();
       const cur = state.filters[col] || "";
       editors.forEach(e => e !== from && e.reflect(cur));
-      if (widget) widget.hidden = !!cur && kind.parse(cur) == null;
+      if (widget) widget.hidden = !!cur && kind.parse(cur, cfg) == null;
       mark(cur);
     };
     // Hidden column: funnel in a labeled chip (makeChip), also the popover's click

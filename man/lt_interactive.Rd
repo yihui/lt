@@ -22,11 +22,12 @@ lt_interactive(
 \item{sort}{Whether clicking a column header sorts the table by that column
 (cycling ascending, descending, then unsorted); shift-clicking adds a
 column as a further tie-breaker, so several columns can sort at once.
-Sorting uses the raw values, so numeric columns sort numerically. Can also
-request an initial sort by one or more columns, given either as a character
-vector of column names or as a one-sided formula (e.g. \code{~ x + -y}); a name
-prefixed with \code{-} (or a negated formula term) sorts that column descending,
-e.g. \code{c('g', '-x')} or \code{~ g + -x}.}
+Sorting uses the raw values, so numeric columns sort numerically and dates
+and date-times chronologically. Can also request an initial sort by one or
+more columns, given either as a character vector of column names or as a
+one-sided formula (e.g. \code{~ x + -y}); a name prefixed with \code{-} (or a negated
+formula term) sorts that column descending, e.g. \code{c('g', '-x')} or
+\code{~ g + -x}.}
 
 \item{search}{Whether to show a table-wide search box. A row is kept when
 any cell matches the term. Besides plain substring matching, a term that
@@ -49,8 +50,10 @@ is the default applied to every other visible column, so
 \code{FALSE} leaves a column without a filter, e.g. \code{list("auto", id = FALSE)}.
 A column with nothing to filter (every value blank) gets no box, even under
 that default. \code{"auto"} (alone, or as a list entry, e.g. \code{list("auto", cyl = "select")}) picks each column's filter from its data: a range slider
-for numbers (a plain box if every value is the same), a checklist for text
-with at most 10 distinct values, and a plain box otherwise.
+for numbers and for dates and date-times (a plain box if every value is the
+same; a date filter expression compares text, e.g. \code{x >= "2024-01-05"}), a
+checklist for text with at most 10 distinct values, and a plain box
+otherwise.
 A typed filter renders as a funnel + popover (holding the widget \emph{and} an
 expression box, kept in sync) under its column header, or — when the column
 is hidden from the table (e.g. with \code{\link[=lt_hide]{lt_hide()}}) — as a chip in the control

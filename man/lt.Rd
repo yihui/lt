@@ -7,7 +7,7 @@
 \usage{
 lt(data, ...)
 
-\method{lt}{default}(data, auto_format = TRUE, auto_label = TRUE, ...)
+\method{lt}{default}(data, auto_format = TRUE, auto_label = TRUE, show_types = FALSE, ...)
 }
 \arguments{
 \item{data}{A data frame (or anything coercible to one).}
@@ -15,13 +15,19 @@ lt(data, ...)
 \item{...}{Arguments passed to methods.}
 
 \item{auto_format}{Whether to automatically format numeric columns (rounding,
-thousand separators, percentage detection). Set to \code{FALSE} to disable
+thousand separators, percentage detection) and date/time columns (as
+\code{YYYY-MM-DD} or \verb{YYYY-MM-DD HH:MM:SS}). Set to \code{FALSE} to disable
 for the whole table; use \code{\link[=lt_format]{lt_format()}} on specific columns to disable
 selectively.}
 
 \item{auto_label}{Whether to automatically clean column names for display
 by replacing separators (\code{.} and \verb{_}) with spaces. Set to \code{FALSE} to
 show raw column names.}
+
+\item{show_types}{Whether to tag each column with its type (e.g., \verb{<dbl>},
+\verb{<chr>}, \verb{<fct>}, \verb{<date>}) under the column labels, like the types
+printed under a tibble's column names. In an interactive table (see
+\code{\link[=lt_interactive]{lt_interactive()}}), the filter controls follow the tags.}
 }
 \value{
 A table object that can be piped into \verb{lt_*()} functions.
