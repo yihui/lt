@@ -970,7 +970,7 @@ lt(head(d)) |> lt_interactive(pager = FALSE, search = FALSE, filter = FALSE) |>
 
 `hide` adds an eye button at the start of the search row that opens a
 checklist of every column; unchecking one hides it (header and cells),
-re-checking brings it back. Use `hide = TRUE` to start with all columns
+re-checking brings it back. Use `hide = NA` to start with all columns
 shown, or name columns (a character vector or a one-sided formula) to
 start with those hidden (they are still listed, so the reader can bring
 them back). The checklist shows each column's displayed label.

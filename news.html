@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.148/css/site.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.12</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.13</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -58,6 +58,9 @@
 <p><code>lt()</code> gains <code>show_types</code>: when <code>TRUE</code>, each column is tagged with its type (<code>&lt;dbl&gt;</code>, <code>&lt;chr&gt;</code>, <code>&lt;fct&gt;</code>, <code>&lt;date&gt;</code>, …) under the column labels (followed by the filters of an interactive table).</p>
 </li>
 <li>
+<p>Added <code>lt_viewer()</code>, a data viewer for exploring a data frame: an interactive table with the data expression as the title, each column’s type and profile, filters, and a column-visibility menu (thanks, <a href="https://github.com/keaven">@keaven</a>, <a href="https://github.com/yihui/lt/issues/56">#56</a>).</p>
+</li>
+<li>
 <p>With <code>auto_format = TRUE</code>, <code>lt()</code> shows date columns as <code>YYYY-MM-DD</code> and date-time columns as <code>YYYY-MM-DD HH:MM:SS</code> in the local time zone by default; use <code>lt_date()</code> to format them differently. In <code>lt_interactive()</code>, these columns sort chronologically and <code>filter = &quot;auto&quot;</code> gives them a range slider.</p>
 </li>
 <li>
@@ -71,6 +74,9 @@
 </li>
 <li>
 <p><code>lt_interactive(hide = list(label = ))</code> shows the column-visibility menu as a labeled chip in the control bar instead of the eye icon.</p>
+</li>
+<li>
+<p><code>lt_interactive(hide = NA)</code> now adds the column-visibility menu with all columns shown (<code>hide = TRUE</code> still works for now but will be dropped in the future).</p>
 </li>
 <li>
 <p>The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, CSV download), and the column menu button’s tooltip reads “Show/Hide columns”.</p>
