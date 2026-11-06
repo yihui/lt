@@ -289,13 +289,13 @@ assert('filter = "auto" picks a widget per column from its data', {
   (lti_eval(x, kinds) %==% 'text,box,text,checklist')
 })
 
-assert('a column set to FALSE has no filter, even under an "auto" default', {
+assert('a column set to FALSE has no live filter, even under an "auto" default', {
   d = data.frame(id = sprintf('r%02d', 1:12), n = 1:12, g = rep(c('a', 'b'), 6))
   x = lt(d) |> lt_interactive(filter = list('auto', id = FALSE), pager = FALSE)
-  # only n (slider) and g (checklist) get a control; id gets an empty cell
+  # only n (slider) and g (checklist) get a control; id gets an inert funnel
   (lti_eval(x, 'Array.from(t.querySelectorAll("thead th")).map(c =>
     c.querySelector(".lti-thumb") ? "range" : c.querySelector(".lti-check") ?
-    "checklist" : c.querySelector(".lti-funnel") ? "text" : "none").join()')
+    "checklist" : c.querySelector(".lti-funnel:not(:disabled)") ? "text" : "none").join()')
    %==% 'none,range,checklist')
 })
 
@@ -316,4 +316,14 @@ assert('a "select" and a "checklist" can keep the missing (NA) rows', {
   only_na = 'var cs = [...t.querySelectorAll("thead th .lti-check input")];
     cs.forEach(i => i.checked = i.parentNode.textContent === "NA"); cs[0].onchange()'
   (lti_rows(x, only_na) %==% 'q')
+})
+
+assert('a column set to FALSE shows an inert outline funnel; a FALSE default shows none', {
+  x = lt(tdf()) |> lt_interactive(filter = list('auto', n = FALSE), pager = FALSE)
+  # n: disabled funnel; name and grp: live funnels
+  (lti_eval(x, 't.querySelectorAll("thead th .lti-funnel").length') %==% '3')
+  (lti_eval(x, 't.querySelectorAll("thead th .lti-funnel:disabled").length') %==% '1')
+  (lti_eval(x, 't.querySelectorAll("thead th .lti-off .lti-pop-panel").length') %==% '0')
+  y = lt(tdf()) |> lt_interactive(filter = list(FALSE, grp = 'select'), pager = FALSE)
+  (lti_eval(y, 't.querySelectorAll("thead th .lti-funnel").length') %==% '1')
 })

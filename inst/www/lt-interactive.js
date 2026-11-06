@@ -688,10 +688,15 @@
     const doc = hrow.ownerDocument, hCells = dataCells(hrow),
           def = flt.default, explicit = flt.cols || {};
     cols.forEach((c, ci) => {
-      const cell = hCells[ci],
-            spec = autoSpec(c in explicit ? explicit[c] : def, sum(c));
-      if (!spec || !filterable(sum(c))) return;   // no filter on this column
+      const cell = hCells[ci], own = c in explicit,
+            spec = autoSpec(own ? explicit[c] : def, sum(c));
+      // `false` only shows (inert) when set on this column, not as a default
+      if (spec == null || spec === false && !own || !filterable(sum(c))) return;
       elem(doc, "br", {}, cell);
+      if (spec === false)                          // col = FALSE: disabled funnel
+        return elem(doc, "button", {
+          type: "button", className: "lti-funnel lti-off", disabled: true
+        }, elem(doc, "span", { className: "lti-pop" }, cell));
       if (spec === true) {                         // a plain search box
         const input = cell.appendChild(searchInput(doc, `Filter ${c}`)),
               note = elem(doc, "div", { className: "lti-nl" });
