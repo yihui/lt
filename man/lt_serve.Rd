@@ -31,7 +31,9 @@ search, or page change, the browser asks the server for just the current
 page. By default the rows of \code{x} are served by a local app built on
 \code{\link[xfun:new_app]{xfun::new_app()}} (until \code{\link[xfun:stop_app]{xfun::stop_app()}}); pass \code{url} to use your own
 server instead. Row groups, indentation, and row-specific styles and
-footnotes are not supported. See the examples in the package site for
+footnotes are not supported. In a Shiny app, return the table from
+\code{\link[=render_lt]{render_lt()}} and the rows are served by the session itself (no local app is
+started). See the examples in the package site for
 details and the request/response format a custom server implements.
 }
 \examples{

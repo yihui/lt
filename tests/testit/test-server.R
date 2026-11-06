@@ -91,6 +91,15 @@ assert('lt_serve() adds the data URL to the spec and keeps an lt_tbl', {
   (nrow(x$data) %==% 0L)
 })
 
+assert('server_reply() returns JSON, or status 400 with the message on error', {
+  r = server_reply(S, req(size = 2))
+  (r[['content-type']] %==% 'application/json')
+  (parse_json(r$payload)$n %==% 4)
+  r = server_reply(S, 'not json')
+  (r[['status code']] %==% 400L)
+  (is.character(r$payload))
+})
+
 assert('case-insensitive text conditions from plain-language queries work', {
   (rows(g = 'String(x).toLowerCase() == "x"') %==% c(1, NA))
   (rows(g = '!String(x).toLowerCase().includes("y")') %==% c(1, NA, 9))

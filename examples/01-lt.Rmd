@@ -1027,16 +1027,19 @@ file holds exactly what the table shows.
 lt(d) |> lt_interactive(download = "cars.csv", filter = TRUE, pager = 5)
 ```
 
-### Large data (server mode)
+### Large data (server mode) {#sec:large-data}
 
 For data too big for the browser, `lt_serve()` keeps the rows in R. A local web
 app (built on `xfun::new_app()`) serves them, and the browser fetches just the
 current page whenever the sort, filters, search, or page change, so tables of
 millions of rows stay responsive. Print the result to view it:
 
-```{r, eval = FALSE}
-lt_serve(lt_viewer(iris))
+``` r
+lt_viewer(iris) |> lt_serve()
 ```
+
+In a Shiny app, return the table from `render_lt()` instead (see [Shiny](#sec:shiny)):
+the session serves the rows, and no local app is started.
 
 Everything above works, with these differences:
 
@@ -1054,12 +1057,12 @@ Everything above works, with these differences:
   supported, and neither are external filter predicates.
 - The CSV download fetches every row of the view.
 
-The app lives in the R session, so the table works as long as the session does.
-It is meant for viewing a table from an R session (the terminal, RStudio, a
-remote session reached through a proxy, or a notebook), not for publishing: a
-static document (R Markdown, Quarto, litedown) keeps no app behind it, and the
-built-in app is not supported in Shiny apps deployed to a server or in
-webR/shinylive, which cannot host the app. There, use `lt_interactive()` (rows
+The local app lives in the R session, so the table works as long as the session
+does. It is meant for viewing a table from an R session (the terminal, RStudio,
+a remote session reached through a proxy, or a notebook), not for publishing: a
+static document (R Markdown, Quarto, litedown) keeps no app behind it, and
+webR/shinylive cannot host it. In a Shiny app, the session serves the rows, so
+the table works wherever the app runs. Elsewhere, use `lt_interactive()` (rows
 in the page), or give `lt_serve()` a `url` that the reader's browser can reach.
 To serve rows from elsewhere (a database, Parquet files), pass `url` to
 `lt_serve()`; the table then only needs to name the columns (a zero-row data
@@ -1108,12 +1111,12 @@ lt(d3) |> lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |> lt_interactive(pager = 5)
 
 Column spanners, styles, and footnotes are no obstacle to interactivity.
 
-## Shiny
+## Shiny {#sec:shiny}
 
 `lt_output()` and `render_lt()` show a table as a Shiny output: the server sends
 the table spec and the browser builds the `<table>`.
 
-```{r, eval = FALSE}
+``` r
 library(shiny)
 ui = fluidPage(lt_output("tbl"))
 server = function(input, output) {
@@ -1124,12 +1127,20 @@ server = function(input, output) {
 shinyApp(ui, server)
 ```
 
+For a large table, pass the table to `lt_serve()` inside `render_lt()`: the
+session serves the rows (see [Large data](#sec:large-data)), so the app
+needs no extra server.
+
+``` r
+output$big = lt_interactive(my_data) |> lt_serve() |> render_lt()
+```
+
 `lt_input()` goes the other way: a table whose cells can be edited in the
 browser. The server reads the edited table as a data frame (numeric columns stay
 numeric), and `lt_update()` replaces it, e.g., to add a row or reset the edits.
 Use `columns` to make only some columns editable.
 
-```{r, eval = FALSE}
+``` r
 library(shiny)
 d = data.frame(Time = c(12, 24), Rate = c(0.8, 0.6), Note = c("a", "b"))
 ui = fluidPage(

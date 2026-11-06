@@ -42,7 +42,7 @@ lt_dependency = function(
     ),
     script = c(
       if (plot) 'lt-plot.js', 'lt.js',
-      if (interactive) c('lt-query.js', 'lt-interactive.js'), if (shiny) 'lt-binding.js',
+      if (interactive) c('lt-query.js', 'lt-server.js', 'lt-interactive.js'), if (shiny) 'lt-binding.js',
       if (input) 'lt-input.js'
     )
   )
@@ -116,6 +116,12 @@ render_lt = function(expr, env = parent.frame(), quoted = FALSE) {
       if (is_url(p) || !xfun::is_abs_path(p)) list(href = p)
       else list(content = xfun::file_string(p))
     })
+    # server-mode rows are served by the session, at a URL unique to it
+    if (!is.null(S <- attr(result, 'server'))) result$interactive$data_url =
+      shinysession$registerDataObj(paste0('lt-', name), S, function(S, req) {
+        r = server_reply(S, rawToChar(req$rook.input$read()))
+        shiny::httpResponse(r$`status code` %||% 200L, r$`content-type`, r$payload)
+      })
     list(spec = with_col_order(result))
   }, lt_output)
 }

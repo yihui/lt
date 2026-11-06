@@ -224,6 +224,16 @@ server_response = function(S, body) {
   xfun::tojson(r, mode = 'json')
 }
 
+# A response for one request (JSON, or the message of an error with status 400)
+server_reply = function(S, body) tryCatch(
+  list(payload = server_response(S, body), `content-type` = 'application/json'),
+  error = function(e) list(payload = conditionMessage(e), `status code` = 400L)
+)
+
+# The current Shiny session, if any
+shiny_domain = function()
+  if ('shiny' %in% loadedNamespaces()) shiny::getDefaultReactiveDomain()
+
 # Everything the app needs, computed once
 server_state = function(x) {
   d = x$data
@@ -255,7 +265,9 @@ check_server = function(x) {
 #' page. By default the rows of `x` are served by a local app built on
 #' [xfun::new_app()] (until [xfun::stop_app()]); pass `url` to use your own
 #' server instead. Row groups, indentation, and row-specific styles and
-#' footnotes are not supported. See the examples in the package site for
+#' footnotes are not supported. In a Shiny app, return the table from
+#' [render_lt()] and the rows are served by the session itself (no local app is
+#' started). See the examples in the package site for
 #' details and the request/response format a custom server implements.
 #'
 #' @param x An `lt_tbl` object, typically made by [lt_viewer()] or
@@ -279,17 +291,17 @@ lt_serve = function(x, url = NULL, times = NULL, cols = NULL, name = 'lt-server'
   x$interactive$pager = I(sizes)
   if (is.null(url)) {
     S = server_state(x)
-    xfun::new_app(name, function(path, query, post, ...) tryCatch(
-      list(
-        payload = server_response(S, rawToChar(post)), `content-type` = 'application/json',
-        headers = 'Access-Control-Allow-Origin: *'
-      ),
-      error = function(e) list(payload = conditionMessage(e), `status code` = 400L)
-    ), open = FALSE, ...)
+    # in Shiny, render_lt() serves the rows from the session instead
+    if (is.null(shiny_domain())) xfun::new_app(
+      name, function(path, query, post, ...)
+        c(server_reply(S, rawToChar(post)), headers = 'Access-Control-Allow-Origin: *'),
+      open = FALSE, ...
+    )
     # relative to the page shown by print() (served at /custom/lt/), so it also
     # works when 127.0.0.1 isn't the browser's own machine (remote sessions)
     url = sprintf('../%s/data', name)
     times = S$times; cols = S$sketch
+    attr(x, 'server') = S
   }
   x$interactive$data_url = url
   x$interactive$data_times = if (length(times)) I(times)
