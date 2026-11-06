@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.14</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.15</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -264,7 +264,7 @@
 <li><a href="#sec:examples_24">Examples</a></li>
 </ul>
 </li>
-<li><a href="#sec:man-lt_viewer"><span class="section-number main-number">26</span> View a data frame as an interactive table</a>
+<li><a href="#sec:man-lt_serve"><span class="section-number main-number">26</span> Serve the rows of an interactive table from a data server</a>
 <ul>
 <li><a href="#sec:description_26">Description</a></li>
 <li><a href="#sec:usage_25">Usage</a></li>
@@ -273,7 +273,7 @@
 <li><a href="#sec:examples_25">Examples</a></li>
 </ul>
 </li>
-<li><a href="#sec:man-format.lt_tbl"><span class="section-number main-number">27</span> Render an <code>lt_tbl</code> to HTML</a>
+<li><a href="#sec:man-lt_viewer"><span class="section-number main-number">27</span> View a data frame as an interactive table</a>
 <ul>
 <li><a href="#sec:description_27">Description</a></li>
 <li><a href="#sec:usage_26">Usage</a></li>
@@ -282,27 +282,27 @@
 <li><a href="#sec:examples_26">Examples</a></li>
 </ul>
 </li>
-<li><a href="#sec:man-lt_export"><span class="section-number main-number">28</span> Export an lt table to a file</a>
+<li><a href="#sec:man-format.lt_tbl"><span class="section-number main-number">28</span> Render an <code>lt_tbl</code> to HTML</a>
 <ul>
 <li><a href="#sec:description_28">Description</a></li>
 <li><a href="#sec:usage_27">Usage</a></li>
 <li><a href="#sec:arguments_27">Arguments</a></li>
-<li><a href="#sec:details_6">Details</a></li>
 <li><a href="#sec:value_27">Value</a></li>
-<li><a href="#sec:global-option">Global option</a></li>
 <li><a href="#sec:examples_27">Examples</a></li>
 </ul>
 </li>
-<li><a href="#sec:man-lt_spec"><span class="section-number main-number">29</span> Extract a table's render-ready spec</a>
+<li><a href="#sec:man-lt_export"><span class="section-number main-number">29</span> Export an lt table to a file</a>
 <ul>
 <li><a href="#sec:description_29">Description</a></li>
 <li><a href="#sec:usage_28">Usage</a></li>
 <li><a href="#sec:arguments_28">Arguments</a></li>
+<li><a href="#sec:details_6">Details</a></li>
 <li><a href="#sec:value_28">Value</a></li>
+<li><a href="#sec:global-option">Global option</a></li>
 <li><a href="#sec:examples_28">Examples</a></li>
 </ul>
 </li>
-<li><a href="#sec:man-print.lt_tbl"><span class="section-number main-number">30</span> Print an <code>lt_tbl</code> (opens in the viewer or browser)</a>
+<li><a href="#sec:man-lt_spec"><span class="section-number main-number">30</span> Extract a table's render-ready spec</a>
 <ul>
 <li><a href="#sec:description_30">Description</a></li>
 <li><a href="#sec:usage_29">Usage</a></li>
@@ -311,7 +311,7 @@
 <li><a href="#sec:examples_29">Examples</a></li>
 </ul>
 </li>
-<li><a href="#sec:man-lt_dependency"><span class="section-number main-number">31</span> HTML dependency for lt tables</a>
+<li><a href="#sec:man-print.lt_tbl"><span class="section-number main-number">31</span> Print an <code>lt_tbl</code> (opens in the viewer or browser)</a>
 <ul>
 <li><a href="#sec:description_31">Description</a></li>
 <li><a href="#sec:usage_30">Usage</a></li>
@@ -320,14 +320,23 @@
 <li><a href="#sec:examples_30">Examples</a></li>
 </ul>
 </li>
-<li><a href="#sec:man-lt_output"><span class="section-number main-number">32</span> Shiny bindings for lt</a>
+<li><a href="#sec:man-lt_dependency"><span class="section-number main-number">32</span> HTML dependency for lt tables</a>
 <ul>
 <li><a href="#sec:description_32">Description</a></li>
 <li><a href="#sec:usage_31">Usage</a></li>
 <li><a href="#sec:arguments_31">Arguments</a></li>
-<li><a href="#sec:details_7">Details</a></li>
 <li><a href="#sec:value_31">Value</a></li>
 <li><a href="#sec:examples_31">Examples</a></li>
+</ul>
+</li>
+<li><a href="#sec:man-lt_output"><span class="section-number main-number">33</span> Shiny bindings for lt</a>
+<ul>
+<li><a href="#sec:description_33">Description</a></li>
+<li><a href="#sec:usage_32">Usage</a></li>
+<li><a href="#sec:arguments_32">Arguments</a></li>
+<li><a href="#sec:details_7">Details</a></li>
+<li><a href="#sec:value_32">Value</a></li>
+<li><a href="#sec:examples_32">Examples</a></li>
 </ul>
 </li>
 </ul>
@@ -387,6 +396,7 @@ h2 {
 <p>Sort, search, filter, page, resize, and drill down in the browser.</p>
 <p>
 <a href="#sec:man-lt_interactive"><code>lt_interactive()</code></a>
+<a href="#sec:man-lt_serve"><code>lt_serve()</code></a>
 <a href="#sec:man-lt_viewer"><code>lt_viewer()</code></a>
 </p>
 <h3 id="sec:output-and-export" class="unnumbered unlisted">Output and export</h3>
@@ -1908,8 +1918,52 @@ lt(head(mtcars)) |&gt; lt_interactive(download = 'cars.csv')
 # export the raw (unformatted) values instead of the displayed text
 lt(head(mtcars)) |&gt; lt_interactive(download = list(file = 'cars.csv', mode = 'raw'))
 </code></pre>
-<h2 id="sec:man-lt_viewer"><span class="section-number main-number">26</span> View a data frame as an interactive table</h2>
+<h2 id="sec:man-lt_serve"><span class="section-number main-number">26</span> Serve the rows of an interactive table from a data server</h2>
 <h3 id="sec:description_26" class="unnumbered">Description</h3>
+<p>Make an interactive table fetch its rows from a URL instead of holding them
+in the page, for data too big for the browser: whenever the sort, filters,
+search, or page change, the browser asks the server for just the current
+page. By default the rows of <code>x</code> are served by a local app built on
+<code><a href="https://rdrr.io/cran/xfun/man/new_app.html">xfun::new_app()</a></code> (until <code><a href="https://rdrr.io/cran/xfun/man/stop_app.html">xfun::stop_app()</a></code>); pass <code>url</code> to use your own
+server instead. Row groups, indentation, and row-specific styles and
+footnotes are not supported. See the examples in the package site for
+details and the request/response format a custom server implements.
+</p>
+<h3 id="sec:usage_25" class="unnumbered">Usage</h3>
+<pre><code class="language-r">lt_serve(x, url = NULL, times = NULL, cols = NULL, name = "lt-server", ...)</code></pre>
+<h3 id="sec:arguments_25" class="unnumbered">Arguments</h3>
+<table class="desc-table" role = "presentation">
+<tr><td><code>x</code></td>
+<td>
+<p>An <code>lt_tbl</code> object, typically made by <code><a href="#sec:man-lt-viewer">lt_viewer()</a></code> or
+<code><a href="#sec:man-lt-interactive">lt_interactive()</a></code>; it is made interactive with the defaults if not yet.</p>
+</td></tr>
+<tr><td><code>url</code></td>
+<td>
+<p>The URL of a data server (absolute, or relative to the page). By
+default, a local app serving the rows of <code>x</code> is started; view the table by
+printing the result.</p>
+</td></tr>
+<tr><td><code>times</code>, <code>cols</code></td>
+<td>
+<p>For a custom <code>url</code>: the date-time columns (names), and,
+optionally, a summary of each column (a named list) to draw profiles and
+filter widgets. The local app computes both from the data.</p>
+</td></tr>
+<tr><td><code>name</code>, <code>...</code></td>
+<td>
+<p>For the local app: its name and other arguments passed to
+<code><a href="https://rdrr.io/cran/xfun/man/new_app.html">xfun::new_app()</a></code>.</p>
+</td></tr>
+</table>
+<h3 id="sec:value_25" class="unnumbered">Value</h3>
+<p><code>x</code>, with the data URL added.
+</p>
+<h3 id="sec:examples_25" class="unnumbered">Examples</h3>
+<pre><code class="language-r">if (interactive()) lt_serve(lt_viewer(iris))
+</code></pre>
+<h2 id="sec:man-lt_viewer"><span class="section-number main-number">27</span> View a data frame as an interactive table</h2>
+<h3 id="sec:description_27" class="unnumbered">Description</h3>
 <p>A data viewer: a shorthand for
 <code>lt_interactive(lt(data, show_types = TRUE), profile = TRUE, hide = NA)</code>
 with the data expression as the title, made by <code><a href="#sec:man-lt-header">lt_header()</a></code>. Each column
@@ -1918,9 +1972,9 @@ searched, filtered, paged, resized, and have columns hidden from a menu.
 Printing the result at the console opens it in the viewer or browser. Use
 <code>|&gt; lt_header(NULL)</code> to remove the title.
 </p>
-<h3 id="sec:usage_25" class="unnumbered">Usage</h3>
+<h3 id="sec:usage_26" class="unnumbered">Usage</h3>
 <pre><code class="language-r">lt_viewer(data, profile = TRUE, hide = NA, ...)</code></pre>
-<h3 id="sec:arguments_25" class="unnumbered">Arguments</h3>
+<h3 id="sec:arguments_26" class="unnumbered">Arguments</h3>
 <table class="desc-table" role = "presentation">
 <tr><td><code>data</code></td>
 <td>
@@ -1932,22 +1986,22 @@ Printing the result at the console opens it in the viewer or browser. Use
 defaults to <code>TRUE</code> and <code>hide</code> to <code>NA</code> (a column-visibility menu) here.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_25" class="unnumbered">Value</h3>
+<h3 id="sec:value_26" class="unnumbered">Value</h3>
 <p>An <code>lt_tbl</code> object.
 </p>
-<h3 id="sec:examples_25" class="unnumbered">Examples</h3>
+<h3 id="sec:examples_26" class="unnumbered">Examples</h3>
 <pre><code class="language-r">lt_viewer(iris)
 lt_viewer(iris) |&gt; lt_header(NULL)
 </code></pre>
-<h2 id="sec:man-format.lt_tbl"><span class="section-number main-number">27</span> Render an <code>lt_tbl</code> to HTML</h2>
-<h3 id="sec:description_27" class="unnumbered">Description</h3>
+<h2 id="sec:man-format.lt_tbl"><span class="section-number main-number">28</span> Render an <code>lt_tbl</code> to HTML</h2>
+<h3 id="sec:description_28" class="unnumbered">Description</h3>
 <p>Emits the CSS+JS runtime and a script block carrying the table's JSON spec.
 Multiple tables on the same page only need the runtime once.
 </p>
-<h3 id="sec:usage_26" class="unnumbered">Usage</h3>
+<h3 id="sec:usage_27" class="unnumbered">Usage</h3>
 <pre><code class="language-r">## S3 method for class 'lt_tbl'
 format(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...)</code></pre>
-<h3 id="sec:arguments_26" class="unnumbered">Arguments</h3>
+<h3 id="sec:arguments_27" class="unnumbered">Arguments</h3>
 <table class="desc-table" role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -1977,10 +2031,10 @@ enabled also gets the interactivity extension: its stylesheet with
 <p>Reserved for future use.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_26" class="unnumbered">Value</h3>
+<h3 id="sec:value_27" class="unnumbered">Value</h3>
 <p>A character scalar containing HTML.
 </p>
-<h3 id="sec:examples_26" class="unnumbered">Examples</h3>
+<h3 id="sec:examples_27" class="unnumbered">Examples</h3>
 <pre><code class="language-r">tbl = lt(head(mtcars))
 html = format(tbl)
 format(tbl, fragment = FALSE, inline_assets = FALSE)
@@ -1988,7 +2042,7 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
 <pre><code>&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;lt&lt;/title&gt;
 &lt;style&gt;body{font-family:system-ui,sans-serif;padding:1em}&lt;/style&gt;&lt;/head&gt;
 &lt;body&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/css/lt.min.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/css/lt.min.css&quot;&gt;
 &lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   &quot;data&quot;: {
@@ -2006,17 +2060,17 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
   }
 }
 })&lt;/script&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;
 </code></pre>
-<h2 id="sec:man-lt_export"><span class="section-number main-number">28</span> Export an lt table to a file</h2>
-<h3 id="sec:description_28" class="unnumbered">Description</h3>
+<h2 id="sec:man-lt_export"><span class="section-number main-number">29</span> Export an lt table to a file</h2>
+<h3 id="sec:description_29" class="unnumbered">Description</h3>
 <p>Save a table to disk. The output format is chosen from the file extension
 of <code>output</code>: <code>.html</code> writes an HTML table, <code>.pdf</code> writes a vector PDF, and
 any other extension writes a PNG. PDF and PNG are produced by rendering the
 table in a headless Chromium browser (via <code><a href="https://rdrr.io/cran/xfun/man/browser_print.html">xfun::browser_print()</a></code>).
 </p>
-<h3 id="sec:usage_27" class="unnumbered">Usage</h3>
+<h3 id="sec:usage_28" class="unnumbered">Usage</h3>
 <pre><code class="language-r">lt_export(
   x,
   output = "lt.html",
@@ -2030,7 +2084,7 @@ table in a headless Chromium browser (via <code><a href="https://rdrr.io/cran/xf
   browser = NULL,
   ...
 )</code></pre>
-<h3 id="sec:arguments_27" class="unnumbered">Arguments</h3>
+<h3 id="sec:arguments_28" class="unnumbered">Arguments</h3>
 <table class="desc-table" role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -2110,7 +2164,7 @@ Node.js or <code>"browser"</code> in a headless Chromium browser; <code>"auto"</
 if available, else the browser), so the saved file needs no JavaScript to
 view. <code>method</code>, <code>css</code>, <code>fragment</code>, and <code>tidy</code> apply only to <code>.html</code> output.
 </p>
-<h3 id="sec:value_27" class="unnumbered">Value</h3>
+<h3 id="sec:value_28" class="unnumbered">Value</h3>
 <p>The <code>output</code> path, or (when <code>output</code> is <code>NA</code>) the HTML as a string.
 </p>
 <h3 id="sec:global-option" class="unnumbered">Global option</h3>
@@ -2122,14 +2176,14 @@ those arguments as <code>method</code>/<code>css</code>/<code>fragment</code>) i
 JavaScript-based spec. This is useful for output formats that support raw
 HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 </p>
-<h3 id="sec:examples_27" class="unnumbered">Examples</h3>
+<h3 id="sec:examples_28" class="unnumbered">Examples</h3>
 <pre><code class="language-r">tbl = lt(head(mtcars))
 
 # HTML with the JavaScript spec (table built by lt.js when viewed)
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpWS9N6x/file10874b1070e5.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpeFkz8I/file13795fcd57a2.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table class=&quot;desc-table&quot;&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -2243,12 +2297,12 @@ if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpWS9N6x/file1087793499a7.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpeFkz8I/file137959219afd.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
-<h2 id="sec:man-lt_spec"><span class="section-number main-number">29</span> Extract a table's render-ready spec</h2>
-<h3 id="sec:description_29" class="unnumbered">Description</h3>
+<h2 id="sec:man-lt_spec"><span class="section-number main-number">30</span> Extract a table's render-ready spec</h2>
+<h3 id="sec:description_30" class="unnumbered">Description</h3>
 <p>Return the JSON-ready spec for an <code><a href="#sec:man-lt">lt()</a></code> table: the raw data plus the
 declarative ops (and any <code><a href="#sec:man-lt-interactive">lt_interactive()</a></code> options), prepared exactly as the
 JavaScript runtime expects. This is the payload the runtime consumes, so
@@ -2258,20 +2312,20 @@ another widget can embed an lt table by shipping this spec (e.g.
 <code><a href="#sec:man-lt-css">lt_css()</a></code> and CSS rules is dropped; attach the runtime assets separately
 (see <code><a href="#sec:man-lt-dependency">lt_dependency()</a></code>).
 </p>
-<h3 id="sec:usage_28" class="unnumbered">Usage</h3>
+<h3 id="sec:usage_29" class="unnumbered">Usage</h3>
 <pre><code class="language-r">lt_spec(x)</code></pre>
-<h3 id="sec:arguments_28" class="unnumbered">Arguments</h3>
+<h3 id="sec:arguments_29" class="unnumbered">Arguments</h3>
 <table class="desc-table" role = "presentation">
 <tr><td><code>x</code></td>
 <td>
 <p>An <code>lt_tbl</code> object.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_28" class="unnumbered">Value</h3>
+<h3 id="sec:value_29" class="unnumbered">Value</h3>
 <p>A named list of spec fields (<code>data</code>, <code>ops</code>, and any others set on the
 table), ready to serialize to JSON.
 </p>
-<h3 id="sec:examples_28" class="unnumbered">Examples</h3>
+<h3 id="sec:examples_29" class="unnumbered">Examples</h3>
 <pre><code class="language-r">spec = lt_spec(lt(head(mtcars)) |&gt; lt_interactive())
 str(spec, max.level = 1)
 </code></pre>
@@ -2308,14 +2362,14 @@ str(spec, max.level = 1)
   }
 }
 </code></pre>
-<h2 id="sec:man-print.lt_tbl"><span class="section-number main-number">30</span> Print an <code>lt_tbl</code> (opens in the viewer or browser)</h2>
-<h3 id="sec:description_30" class="unnumbered">Description</h3>
+<h2 id="sec:man-print.lt_tbl"><span class="section-number main-number">31</span> Print an <code>lt_tbl</code> (opens in the viewer or browser)</h2>
+<h3 id="sec:description_31" class="unnumbered">Description</h3>
 <p>Print an <code>lt_tbl</code> (opens in the viewer or browser)
 </p>
-<h3 id="sec:usage_29" class="unnumbered">Usage</h3>
+<h3 id="sec:usage_30" class="unnumbered">Usage</h3>
 <pre><code class="language-r">## S3 method for class 'lt_tbl'
 print(x, ...)</code></pre>
-<h3 id="sec:arguments_29" class="unnumbered">Arguments</h3>
+<h3 id="sec:arguments_30" class="unnumbered">Arguments</h3>
 <table class="desc-table" role = "presentation">
 <tr><td><code>x</code></td>
 <td>
@@ -2326,22 +2380,22 @@ print(x, ...)</code></pre>
 <p>Passed to <code><a href="https://rdrr.io/r/base/format.html">format()</a></code>.</p>
 </td></tr>
 </table>
-<h3 id="sec:value_29" class="unnumbered">Value</h3>
+<h3 id="sec:value_30" class="unnumbered">Value</h3>
 <p><code>x</code>, invisibly.
 </p>
-<h3 id="sec:examples_29" class="unnumbered">Examples</h3>
+<h3 id="sec:examples_30" class="unnumbered">Examples</h3>
 <pre><code class="language-r">print(lt(head(mtcars)))
 </code></pre>
-<h2 id="sec:man-lt_dependency"><span class="section-number main-number">31</span> HTML dependency for lt tables</h2>
-<h3 id="sec:description_31" class="unnumbered">Description</h3>
+<h2 id="sec:man-lt_dependency"><span class="section-number main-number">32</span> HTML dependency for lt tables</h2>
+<h3 id="sec:description_32" class="unnumbered">Description</h3>
 <p>The <code><a href="https://rdrr.io/cran/htmltools/man/htmlDependency.html">htmltools::htmlDependency()</a></code> bundling lt's runtime assets, for embedding
 lt tables in other HTML output (e.g. another htmlwidget or a <code>reactable</code>
 cell) and rendering them client-side with <code>LT.render()</code> / <code>LT.buildHtml()</code>
 on a spec from <code><a href="#sec:man-lt-spec">lt_spec()</a></code>. Requires the <span class="pkg">htmltools</span> package.
 </p>
-<h3 id="sec:usage_30" class="unnumbered">Usage</h3>
+<h3 id="sec:usage_31" class="unnumbered">Usage</h3>
 <pre><code class="language-r">lt_dependency(interactive = FALSE, plot = FALSE, shiny = FALSE, input = FALSE)</code></pre>
-<h3 id="sec:arguments_30" class="unnumbered">Arguments</h3>
+<h3 id="sec:arguments_31" class="unnumbered">Arguments</h3>
 <table class="desc-table" role = "presentation">
 <tr><td><code>interactive</code></td>
 <td>
@@ -2365,16 +2419,16 @@ Its script loads before the core runtime so plot cells render.</p>
 binding (only needed by <code><a href="#sec:man-lt-output">lt_input()</a></code>).</p>
 </td></tr>
 </table>
-<h3 id="sec:value_30" class="unnumbered">Value</h3>
+<h3 id="sec:value_31" class="unnumbered">Value</h3>
 <p>An <code>html_dependency</code> object.
 </p>
-<h3 id="sec:examples_30" class="unnumbered">Examples</h3>
+<h3 id="sec:examples_31" class="unnumbered">Examples</h3>
 <pre><code class="language-r">if (requireNamespace('htmltools', quietly = TRUE))
   lt_dependency(interactive = TRUE)
 </code></pre>
 <pre><code>#&gt; List of 10
 #&gt;  $ name      : chr &quot;lt-interactive&quot;
-#&gt;  $ version   : chr &quot;0.5.14&quot;
+#&gt;  $ version   : chr &quot;0.5.15&quot;
 #&gt;  $ src       :List of 1
 #&gt;   ..$ file: chr &quot;/Users/runner/work/_temp/Library/lt/www&quot;
 #&gt;  $ meta      : NULL
@@ -2386,11 +2440,11 @@ binding (only needed by <code><a href="#sec:man-lt-output">lt_input()</a></code>
 #&gt;  $ all_files : logi TRUE
 #&gt;  - attr(*, &quot;class&quot;)= chr &quot;html_dependency&quot;
 </code></pre>
-<h2 id="sec:man-lt_output"><span class="section-number main-number">32</span> Shiny bindings for lt</h2>
-<h3 id="sec:description_32" class="unnumbered">Description</h3>
+<h2 id="sec:man-lt_output"><span class="section-number main-number">33</span> Shiny bindings for lt</h2>
+<h3 id="sec:description_33" class="unnumbered">Description</h3>
 <p>Use lt tables in Shiny apps, as outputs or as inputs.
 </p>
-<h3 id="sec:usage_31" class="unnumbered">Usage</h3>
+<h3 id="sec:usage_32" class="unnumbered">Usage</h3>
 <pre><code class="language-r">lt_output(outputId, ...)
 
 render_lt(expr, env = parent.frame(), quoted = FALSE)
@@ -2398,7 +2452,7 @@ render_lt(expr, env = parent.frame(), quoted = FALSE)
 lt_input(inputId, x, label = NULL, columns = NULL)
 
 lt_update(session, inputId, x, columns = NULL)</code></pre>
-<h3 id="sec:arguments_31" class="unnumbered">Arguments</h3>
+<h3 id="sec:arguments_32" class="unnumbered">Arguments</h3>
 <table class="desc-table" role = "presentation">
 <tr><td><code>outputId</code></td>
 <td>
@@ -2458,12 +2512,12 @@ numbers (an empty cell is <code>NA</code>); other columns hold text. Press <code
 commit a cell and move down a row. Editing does not work with row groups
 shown as spanning cells, nor with <code><a href="#sec:man-lt-interactive">lt_interactive()</a></code>, which reorders rows.
 </p>
-<h3 id="sec:value_31" class="unnumbered">Value</h3>
+<h3 id="sec:value_32" class="unnumbered">Value</h3>
 <p><code>lt_output()</code> and <code>lt_input()</code> return a Shiny UI element;
 <code>render_lt()</code> returns a render function; <code>lt_update()</code> is called for its
 side effect.
 </p>
-<h3 id="sec:examples_31" class="unnumbered">Examples</h3>
+<h3 id="sec:examples_32" class="unnumbered">Examples</h3>
 <pre><code class="language-r">if (interactive()) {
 library(shiny)
 ui = fluidPage(

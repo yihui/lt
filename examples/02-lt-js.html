@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.14</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.15</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -96,18 +96,19 @@
 <ul>
 <li><a href="#sec:raw-values"><span class="section-number">11.1</span> Raw values</a></li>
 <li><a href="#sec:the-interactive-field"><span class="section-number">11.2</span> The <code>interactive</code> field</a></li>
-<li><a href="#sec:rendering-on-demand"><span class="section-number">11.3</span> Rendering on demand</a></li>
-<li><a href="#sec:driving-a-table-from-outside"><span class="section-number">11.4</span> Driving a table from outside</a></li>
+<li><a href="#sec:server"><span class="section-number">11.3</span> Server mode (<code>data_url</code>)</a></li>
+<li><a href="#sec:rendering-on-demand"><span class="section-number">11.4</span> Rendering on demand</a></li>
+<li><a href="#sec:driving-a-table-from-outside"><span class="section-number">11.5</span> Driving a table from outside</a></li>
 </ul>
 </li>
 </ul>
 </nav>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/css/lt.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/css/lt-plot.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/css/lt-interactive.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/js/lt-plot.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/js/lt.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.150/js/lt-interactive.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/css/lt-interactive.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/js/lt-interactive.min.js" defer></script>
 <p>This document demonstrates the lt.js runtime directly from JavaScript.
 Each example shows a JSON spec and renders the table with <code>LT.build()</code>.</p>
 <h2 id="sec:including-lt-js"><span class="section-number main-number">1</span> Including lt.js</h2>
@@ -1467,7 +1468,43 @@ no obstacle.</p>
   row_group: ["cyl"],
   interactive: { pager: [8] }
 });</script>
-<h3 id="sec:rendering-on-demand"><span class="section-number">11.3</span> Rendering on demand</h3>
+<h3 id="sec:server"><span class="section-number">11.3</span> Server mode (<code>data_url</code>)</h3>
+<p>With <code>lt-server.js</code> loaded before <code>lt-interactive.js</code>, <code>interactive.data_url</code>
+points to a server that holds the rows; the table then asks it for just the
+current page whenever the sort, filters, search, or page change. R’s
+<code>lt_serve()</code> sets this up (see the first example), and any server that speaks
+the protocol below can feed a table, e.g., one backed by a database or Parquet
+files. <code>spec.data</code> only needs the column names (empty arrays will do), since
+the first page is fetched too. Two more optional fields: <code>data_times</code> lists
+date-time columns (sent as ISO 8601 strings), and <code>data_cols</code> holds a summary
+per column (see <code>summary</code> in <code>lt-interactive.js</code>) for profiles and filter
+widgets; without it, columns get a plain filter box.</p>
+<p>The browser sends <code>POST &lt;data_url&gt;</code> with a JSON body (<code>Content-Type: text/plain</code>, to avoid a CORS preflight), an object with:</p>
+<ul>
+<li><code>where</code>: the rows to keep, or <code>null</code> for all. A condition is a leaf
+<code>{ col, term }</code> or a group <code>{ op: &quot;and&quot; | &quot;or&quot;, items }</code>. A leaf applies its
+<code>term</code> to column <code>col</code>, or to any of the visible columns <code>cols</code> if <code>col</code> is
+<code>null</code>. A <code>term</code> that uses <code>x</code> for the cell value and is a JavaScript
+expression (<code>x &gt; 5</code>, <code>x == null</code>, <code>[&quot;a&quot;, &quot;b&quot;].includes(x)</code>) keeps the rows
+where it is true; one that starts with <code>!</code> or is <code>x != ...</code> negates (every
+column must pass, not any). Any other term is a case-insensitive substring
+of the cell text;</li>
+<li><code>sort</code>: <code>[{ col, dir: &quot;asc&quot; | &quot;desc&quot; }, ...]</code>, most significant first,
+missing values last;</li>
+<li><code>page</code> (from 0) and <code>size</code>: the page to return; <code>size</code> 0 is every row;</li>
+<li><code>cols</code>: the visible columns.</li>
+</ul>
+<p>The server replies with JSON (<code>Content-Type: application/json</code>, plus an
+<code>Access-Control-Allow-Origin</code> header if the page is on another origin):</p>
+<ul>
+<li><code>n</code>: the number of rows in the view;</li>
+<li><code>page</code>: the page returned (the requested one, clamped to the last page);</li>
+<li><code>data</code>: the page’s values by column, e.g., <code>{ &quot;a&quot;: [1, 2], &quot;b&quot;: [&quot;x&quot;, &quot;y&quot;] }</code>,
+with <code>null</code> for missing values and dates as <code>&quot;YYYY-MM-DD&quot;</code>;</li>
+<li><code>prof</code> (optional): when <code>where</code> keeps only some rows, the bar counts of
+each column’s profile over the kept rows, by column.</li>
+</ul>
+<h3 id="sec:rendering-on-demand"><span class="section-number">11.4</span> Rendering on demand</h3>
 <p><code>LT.build()</code> has to run while the page is parsing, since it renders the
 table where its <code>&lt;script&gt;</code> sits. <code>LT.render(element, spec)</code> has no such
 constraint: it renders the spec into a container element whenever it is
@@ -1493,7 +1530,7 @@ btn.onclick = () => {
 };
 document.currentScript.after(box);
 document.currentScript.after(btn);</script>
-<h3 id="sec:driving-a-table-from-outside"><span class="section-number">11.4</span> Driving a table from outside</h3>
+<h3 id="sec:driving-a-table-from-outside"><span class="section-number">11.5</span> Driving a table from outside</h3>
 <p>Every enhanced table carries a small controller at <code>el._lt</code>, so widgets
 outside the table — a dropdown, a range slider — can filter it without
 using the built-in boxes:</p>
