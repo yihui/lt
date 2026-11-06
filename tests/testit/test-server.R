@@ -63,6 +63,12 @@ assert('profile counts follow the filter; date-times travel as ISO text', {
   (r$data$t[[1]] %==% '2024-01-01T11:00:00Z')
 })
 
+assert('infinite numbers are sent as null, which is valid JSON', {
+  S2 = server_state(lt(data.frame(n = c(Inf, -Inf, NaN, 1))))
+  v = vapply(parse_json(server_response(S2, req()))$data$n, function(v) if (is.null(v)) NA_real_ else v, 0)
+  (is.na(v) %==% c(TRUE, TRUE, TRUE, FALSE))
+})
+
 assert('the column sketch carries what filter widgets need', {
   s = S$sketch
   (s$a$lo %==% 1)

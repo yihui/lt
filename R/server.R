@@ -206,13 +206,10 @@ server_response = function(S, body) {
     idx = idx[!is.na(idx)]
   } else page = 0L
   out = data[idx, , drop = FALSE]
-  for (c in names(out)) if (inherits(out[[c]], 'Date') || is.factor(out[[c]]))
-    out[[c]] = as.character(out[[c]])
-  for (c in S$times) out[[c]] = format(out[[c]], '%Y-%m-%dT%H:%M:%SZ', tz = 'UTC')
   r = list(n = total, page = page, data = lapply(as.list(out), I))
   if (total < n) r$prof = lapply(S$bar, function(b)
     I(tabulate(b[which(keep)] + 1L, attr(b, 'n'))))
-  xfun::tojson(r)
+  xfun::tojson(r, mode = 'json')
 }
 
 # Everything the app needs, computed once
