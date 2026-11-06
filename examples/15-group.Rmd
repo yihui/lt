@@ -1,0 +1,18 @@
+---
+title: Row groups
+---
+
+`lt_group()` partitions rows by the values of a column (or several). Short labels become spanning cells on the left; long ones switch to full-width separator rows, which `sep` can force either way.
+
+```{r}
+library(lt)
+d = data.frame(
+  Region = c("East", "East", "East", "West", "West", "West"),
+  State = c("NY", "NY", "MA", "WA", "WA", "OR"),
+  City = c("New York", "Buffalo", "Boston", "Seattle", "Spokane", "Portland"),
+  Population = c(8336817, 278349, 675647, 737015, 228989, 652503)
+)
+lt(d) |> lt_group(~ Region) |> lt_header("Cities by region")
+lt(d) |> lt_group(~ Region + State)
+lt(d) |> lt_group(~ Region, sep = TRUE)
+```

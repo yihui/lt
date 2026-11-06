@@ -1,0 +1,24 @@
+---
+title: Exporting a table
+---
+
+`lt_export()` saves a table as `.html`, `.pdf`, or `.png`. It needs Node.js or a headless Chromium-based browser for PDF and PNG; the chunk is skipped where neither is available.
+
+```{r}
+library(lt)
+tbl = lt(head(mtcars[, 1:5])) |> lt_header("Cars")
+can_export = lt:::can_bake()
+```
+
+```{r, eval = can_export}
+out = file.path(tempdir(), c("cars.png", "cars.pdf"))
+lt_export(tbl, out[1], width = "min-content")
+lt_export(tbl, out[2])
+file.exists(out)
+```
+
+A static `<table>`, with no JavaScript needed to view it, is one more option:
+
+```{r, eval = can_export, attr.output = ".html"}
+lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
+```

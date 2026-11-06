@@ -1,0 +1,11 @@
+---
+title: Serving big data from R
+---
+
+`lt_serve()` keeps the rows in R and lets the browser fetch one page at a time, so million-row tables stay snappy. It needs a live R session, so print it at the console rather than knitting it.
+
+```{r, eval = FALSE}
+library(lt)
+big = data.frame(id = 1:1e6, x = rnorm(1e6), g = sample(letters, 1e6, TRUE))
+lt_viewer(big) |> lt_serve()
+```

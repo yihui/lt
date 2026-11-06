@@ -1,0 +1,21 @@
+---
+title: Editable tables in Shiny
+---
+
+`lt_input()` is a table whose cells you can edit in the browser; `input$m` is the edited data frame. `lt_update()` replaces it from the server.
+
+```{r, eval = FALSE}
+library(shiny)
+library(lt)
+d = data.frame(Time = c(12, 24), Rate = c(0.8, 0.6), Note = c("a", "b"))
+ui = fluidPage(
+  lt_input("m", d, label = "Edit the cells:", columns = c("Time", "Rate")),
+  actionButton("add", "Add row"),
+  verbatimTextOutput("out")
+)
+server = function(input, output, session) {
+  output$out = renderPrint(input$m)
+  observeEvent(input$add, lt_update(session, "m", rbind(input$m, NA)))
+}
+shinyApp(ui, server)
+```

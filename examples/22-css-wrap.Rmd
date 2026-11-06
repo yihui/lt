@@ -1,0 +1,14 @@
+---
+title: Scoping CSS to one table
+---
+
+`lt_wrap()` sets attributes on the table's container. Tag it with a class and your stylesheet can target that table alone.
+
+```{r}
+library(lt)
+lt(head(mtcars[, 1:5], 4)) |> lt_wrap(class = "striped")
+```
+
+```{css}
+.striped tbody tr:nth-child(even) td { background: #f2f6ff; }
+```

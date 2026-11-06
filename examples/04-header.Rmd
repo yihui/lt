@@ -1,0 +1,11 @@
+---
+title: Title and subtitle
+---
+
+`lt_header()` puts a title, and optionally a subtitle, above the table.
+
+```{r}
+library(lt)
+lt(head(iris)) |>
+  lt_header("Iris Measurements", "First six observations")
+```

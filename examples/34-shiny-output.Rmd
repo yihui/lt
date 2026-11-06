@@ -1,0 +1,17 @@
+---
+title: Tables in Shiny
+---
+
+`lt_output()` and `render_lt()` show a table as a Shiny output. The server sends the spec and the browser builds the `<table>`.
+
+```{r, eval = FALSE}
+library(shiny)
+library(lt)
+ui = fluidPage(lt_output("tbl"))
+server = function(input, output) {
+  output$tbl = render_lt(
+    lt(mtcars) |> lt_header("Motor Trend") |> lt_interactive()
+  )
+}
+shinyApp(ui, server)
+```

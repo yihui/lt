@@ -1,0 +1,13 @@
+---
+title: Row detail
+---
+
+`detail` adds an expand caret to each row that reveals extra columns, which can be ones hidden from the main table. For full control pass a JavaScript function wrapped in `js()`.
+
+```{r}
+library(lt)
+d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
+lt(d) |>
+  lt_hide(~ hp + wt) |>
+  lt_interactive(pager = 5, filter = FALSE, detail = ~ hp + wt)
+```

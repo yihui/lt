@@ -1,0 +1,12 @@
+---
+title: Column spanners
+---
+
+A spanner is a label over a run of columns. Name it with a formula, or call `lt_spanner()` with no arguments to infer spanners from shared prefixes such as `Sepal.` and `Petal.`.
+
+```{r}
+library(lt)
+tbl = lt(head(iris))
+tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
+tbl |> lt_spanner()
+```

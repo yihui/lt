@@ -1,0 +1,37 @@
+---
+title: Driving a table from outside
+---
+
+```{r assets, echo = FALSE, results = 'asis'}
+# link the runtime (lt-plot loads before the core script)
+cat(
+  lt:::css_block(c('lt.css', 'lt-plot.css', 'lt-interactive.css'), inline = FALSE),
+  lt:::js_block(c('lt-plot.js', 'lt.js', 'lt-interactive.js'), inline = FALSE),
+  sep = '\n'
+)
+```
+
+`LT.render(element, spec)` builds a table whenever you like, and returns it. Every interactive table carries a controller at `el._lt`, so outside widgets can filter it: here a `<select>` keeps one species.
+
+```{r, echo = FALSE}
+iris5 = iris[c(1, 2, 51, 52, 101, 102), ]
+```
+
+```{js, fill = xfun::tojson}
+const iris = `{ iris5 }`;
+```
+
+```{js}
+const host = document.createElement("div");
+document.currentScript.after(host);
+addEventListener("load", () => {
+  const t = LT.render(host, { data: iris, interactive: { search: false, pager: [5] } });
+  const sel = document.createElement("select");
+  sel.innerHTML = '<option value="">All species</option>' +
+    [...new Set(t._lt.spec.data.Species)].map(s => `<option>${s}</option>`).join("");
+  sel.onchange = () => t._lt.filter(
+    "species", sel.value ? row => row.Species === sel.value : null
+  );
+  t.before(sel);
+});
+```

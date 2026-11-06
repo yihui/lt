@@ -1,0 +1,12 @@
+---
+title: Moving and hiding columns
+---
+
+`lt_move()` reorders columns (`after = NULL` moves them to the front), and `lt_hide()` drops columns from view while their data stays in the table for anything that reads whole rows, such as an interactive row detail.
+
+```{r}
+library(lt)
+tbl = lt(head(iris))
+tbl |> lt_move(~ Species, after = NULL)
+tbl |> lt_hide(~ Petal.Length + Petal.Width)
+```

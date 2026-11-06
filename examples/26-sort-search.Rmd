@@ -1,0 +1,12 @@
+---
+title: Sorting, searching, and paging
+---
+
+`lt_interactive()` makes headers click-to-sort (shift-click adds tie-breakers), adds a search box that reads plain language such as `mpg over 25, cyl is 4`, and pages the rows.
+
+```{r}
+library(lt)
+d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
+lt(d) |>
+  lt_interactive(sort = ~ cyl + -mpg, pager = c(5, 10, Inf), filter = FALSE)
+```

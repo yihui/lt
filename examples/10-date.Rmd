@@ -1,0 +1,22 @@
+---
+title: Dates and times
+---
+
+`lt_date()` formats dates and date-times in the browser with `Intl.DateTimeFormat`, so `locale` and `options` work as in JavaScript. Pass `timeZone = "UTC"` to keep a date from shifting with the reader's time zone.
+
+```{r}
+library(lt)
+d = data.frame(
+  Event = c("Launch", "Update", "Release"),
+  Date = as.Date(c("2024-01-15", "2024-06-30", "2024-12-01")),
+  Time = as.POSIXct(c("2024-01-15 09:30:00", "2024-06-30 17:45:00",
+    "2024-12-01 12:00:00"), tz = "UTC")
+)
+lt(d) |>
+  lt_date(~ Date, locale = "fr-FR", options = list(
+    weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
+  )) |>
+  lt_date(~ Time, locale = "en-US", options = list(
+    hour = "2-digit", minute = "2-digit", timeZone = "UTC"
+  ))
+```

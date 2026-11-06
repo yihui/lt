@@ -1,0 +1,38 @@
+---
+title: A table from JavaScript
+---
+
+```{r assets, echo = FALSE, results = 'asis'}
+# link the runtime (lt-plot loads before the core script)
+cat(
+  lt:::css_block(c('lt.css', 'lt-plot.css', 'lt-interactive.css'), inline = FALSE),
+  lt:::js_block(c('lt-plot.js', 'lt.js', 'lt-interactive.js'), inline = FALSE),
+  sep = '\n'
+)
+```
+
+```{js, echo = FALSE}
+// lt.js is deferred: queue LT.build() calls until it loads
+if (!window.LT) window.LT = {
+  q: [],
+  build(spec) { this.q.push({s: document.currentScript, d: spec}); }
+};
+```
+
+No R needed: load `lt.js`, then call `LT.build(spec)` where the table should appear. The spec is plain JSON: `data` by column, and `ops` that format, label, and decorate it.
+
+```{js}
+LT.build({
+  data: {
+    Item: ["Widget", "Gadget", "Doohickey"],
+    Price: [1234.5, 678.9, 42],
+    Margin: [0.1234, 0.0567, 0.2345]
+  },
+  header: { title: "Price list", subtitle: "Straight from JavaScript" },
+  ops: [
+    { type: "fmt_number", columns: ["Price"], decimals: 2, big_mark: ",", prefix: "$" },
+    { type: "fmt_number", columns: ["Margin"], decimals: 1, percent: true }
+  ],
+  interactive: { pager: false, filter: false }
+});
+```
