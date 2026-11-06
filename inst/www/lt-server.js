@@ -3,9 +3,10 @@
  * Must load before lt-interactive.js. The protocol is documented in ?lt_serve.
  *
  * Request: POST to `data_url` with a JSON body
- *   { where?: tree, sort?: [{col, dir: "asc" | "desc"}], page, size, cols }
+ *   { where?: tree, sort?: [{col, dir: "asc" | "desc"}], page, size, cols, prof? }
  * `where` is a leaf `{col, term}` (`col` null: any of `cols`, the visible
- * columns) or `{op: "and" | "or", items}`; `size` 0 is every row.
+ * columns) or `{op: "and" | "or", items}`; `size` 0 is every row; `prof` lists
+ * the columns whose profile bars are wanted (absent: none).
  * Response: JSON `{n, page, data, prof?}`: rows in the view, the (clamped)
  * page, the page's values by column, and bar counts by column for profiles.
  * Optional `interactive.data_cols` (a summary per column) feed profiles and
@@ -23,10 +24,13 @@
       // widget terms (a string per column) and boxes (trees) are ANDed
       const items = [...Object.entries(state.filters || {}).map(([col, f]) => typeof f === "string" ? { col, term: f } : f),
         state.where, state.term && { col: null, term: state.term }].filter(Boolean),
+        // bars are wanted only with profiles on, and not for a download
+        prof = all || !o.profile ? [] : Object.keys(o.data_cols || {}).filter(c => o.data_cols[c].bins?.length),
         q = {
           where: items.length ? { op: "and", items } : null,
           sort: (state.sort || []).map(k => ({ col: k.col, dir: k.dir === "desc" ? "desc" : "asc" })),
-          page: all ? 0 : state.page || 0, size: all ? 0 : state.pageSize || 0, cols: spec._cols || []
+          page: all ? 0 : state.page || 0, size: all ? 0 : state.pageSize || 0, cols: spec._cols || [],
+          prof: prof.length ? prof : undefined
         },
         id = ++seq, res = await fetch(o.data_url, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(q) });
       if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);

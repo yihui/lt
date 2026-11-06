@@ -1128,7 +1128,9 @@ text/plain`, to avoid a CORS preflight), an object with:
 - `sort`: `[{ col, dir: "asc" | "desc" }, ...]`, most significant first,
   missing values last;
 - `page` (from 0) and `size`: the page to return; `size` 0 is every row;
-- `cols`: the visible columns.
+- `cols`: the visible columns;
+- `prof` (optional): the columns whose profile bars are wanted; absent when
+  profiles are off, and for a download.
 
 The server replies with JSON (`Content-Type: application/json`, plus an
 `Access-Control-Allow-Origin` header if the page is on another origin):
@@ -1137,8 +1139,8 @@ The server replies with JSON (`Content-Type: application/json`, plus an
 - `page`: the page returned (the requested one, clamped to the last page);
 - `data`: the page's values by column, e.g., `{ "a": [1, 2], "b": ["x", "y"] }`,
   with `null` for missing values and dates as `"YYYY-MM-DD"`;
-- `prof` (optional): when `where` keeps only some rows, the bar counts of
-  each column's profile over the kept rows, by column.
+- `prof` (optional): when `where` keeps only some rows, the bar counts over
+  the kept rows of each column requested in `prof`, by column.
 
 ### Rendering on demand
 

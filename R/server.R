@@ -205,8 +205,14 @@ json_iso = local({
 server_response = function(S, body) {
   q = parse_json(body)
   data = S$data; n = nrow(data)
-  keep = if (is.null(q$where)) rep(TRUE, n) else tree_keep(q$where, S$tx, unlist(q$cols))
-  idx = server_order(which(keep), S$tx, q$sort)
+  # paging repeats the same view, so the rows of the last one are kept
+  key = list(q$where, q$sort, q$cols)
+  if (!identical(S$cache$key, key)) {
+    keep = if (is.null(q$where)) rep(TRUE, n) else tree_keep(q$where, S$tx, unlist(q$cols))
+    S$cache$idx = server_order(which(keep), S$tx, q$sort)
+    S$cache$key = key
+  }
+  idx = S$cache$idx
   total = length(idx)
   size = as.integer(q$size %||% 0L); page = as.integer(q$page %||% 0L)
   if (size > 0L) {
@@ -219,8 +225,9 @@ server_response = function(S, body) {
   if (!json_iso()) for (c in S$times)
     out[[c]] = format(out[[c]], '%Y-%m-%dT%H:%M:%SZ', tz = 'UTC')
   r = list(n = total, page = page, data = lapply(as.list(out), I))
-  if (total < n) r$prof = lapply(S$bar, function(b)
-    I(tabulate(b[which(keep)] + 1L, attr(b, 'n'))))
+  pc = intersect(unlist(q$prof), names(S$bar))  # only the bars asked for
+  if (total < n && length(pc)) r$prof = lapply(S$bar[pc], function(b)
+    I(tabulate(b[S$cache$idx] + 1L, attr(b, 'n'))))
   xfun::tojson(r, mode = 'json')
 }
 
@@ -241,7 +248,8 @@ server_state = function(x) {
   sk = Map(col_sketch, d, tx)
   bar = lapply(sk, function(s) structure(s$bar, n = s$n))
   list(
-    data = d, tx = tx, bar = Filter(function(b) attr(b, 'n') > 0, bar),
+    data = d, tx = tx, cache = new.env(),
+    bar = if (!is.null(x$interactive$profile)) Filter(function(b) attr(b, 'n') > 0, bar),
     sketch = lapply(sk, `[[`, 'sketch'),
     times = names(d)[vapply(d, inherits, NA, 'POSIXt')]
   )

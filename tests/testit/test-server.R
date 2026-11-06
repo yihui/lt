@@ -4,14 +4,14 @@ d = data.frame(
   a = c(1, 5, NA, 9), g = c('x', 'y', 'x', NA), d = as.Date('2024-01-01') + 0:3,
   t = as.POSIXct('2024-01-01 10:00:00', tz = 'UTC') + 3600 * (0:3)
 )
-S = server_state(lt(d))
+S = server_state(lt_interactive(lt(d), profile = TRUE))
 # a request: filters as leaves `col = term`, ANDed
-req = function(..., where = NULL, sort = NULL, size = 0, page = 0, cols = list()) {
+req = function(..., where = NULL, sort = NULL, size = 0, page = 0, cols = list(), prof = NULL) {
   f = list(...)
   w = c(unname(Map(function(c, t) list(col = c, term = t), names(f), f)), where)
   xfun::tojson(list(
     where = if (length(w)) list(op = 'and', items = w), sort = sort, size = size,
-    page = page, cols = cols
+    page = page, cols = cols, prof = prof
   ))
 }
 resp = function(...) parse_json(server_response(S, req(...)))
@@ -58,10 +58,28 @@ assert('paging clamps the page and reports the total', {
 })
 
 assert('profile counts follow the filter; date-times travel as ISO text', {
-  r = resp(a = 'x > 4')
+  r = resp(a = 'x > 4', prof = list('a'))
   (sum(unlist(r$prof$a)) %==% 2)
   (r$data$t[[1]] %==% '2024-01-01T11:00:00Z')
   (r$data$d[[1]] %==% '2024-01-02')
+})
+
+assert('profile counts are computed only for the columns asked for', {
+  rp = function(...) parse_json(server_response(S, req(a = 'x > 4', ...)))$prof
+  (is.null(rp()))
+  (names(rp(prof = list('a'))) %==% 'a')
+  (is.null(rp(prof = list('nope'))))
+  (is.null(parse_json(server_response(
+    server_state(lt(d)), req(a = 'x > 4', prof = list('a'))))$prof))
+})
+
+assert('paging reuses the last view, and a new filter replaces it', {
+  r1 = resp(a = 'x > 0', size = 1, page = 0)
+  (length(S$cache$idx) %==% 3L)
+  r2 = resp(a = 'x > 0', size = 1, page = 1)
+  (r1$data$a[[1]] %==% 1); (r2$data$a[[1]] %==% 5)
+  (rows(a = 'x > 4') %==% c(5, 9))
+  (length(S$cache$idx) %==% 2L)
 })
 
 assert('infinite numbers are sent as null, which is valid JSON', {
