@@ -576,9 +576,8 @@
       list.replaceChildren(...ex.map(value => elem(doc, "option", { value })));
       return ex;
     };
-    // the placeholder shows one sample; the title says the list is not exhaustive
     const [first] = refill();
-    if (first) Object.assign(input, { placeholder: `e.g. ${first}`, title: "Examples, not the only options; any query works" });
+    if (first) input.placeholder = `e.g. ${first}`;
     input.addEventListener("focus", refill);
   }
 
