@@ -4,7 +4,15 @@
 \alias{lt_serve}
 \title{Serve the rows of an interactive table from a data server}
 \usage{
-lt_serve(x, url = NULL, times = NULL, cols = NULL, name = "lt-server", ...)
+lt_serve(
+  x,
+  url = NULL,
+  times = NULL,
+  cols = NULL,
+  n = NULL,
+  name = "lt-server",
+  ...
+)
 }
 \arguments{
 \item{x}{An \code{lt_tbl} object, typically made by \code{\link[=lt_viewer]{lt_viewer()}} or
@@ -14,9 +22,11 @@ lt_serve(x, url = NULL, times = NULL, cols = NULL, name = "lt-server", ...)
 default, a local app serving the rows of \code{x} is started; view the table by
 printing the result.}
 
-\item{times, cols}{For a custom \code{url}: the date-time columns (names), and,
-optionally, a summary of each column (a named list) to draw profiles and
-filter widgets. The local app computes both from the data.}
+\item{times, cols, n}{For a custom \code{url}: the date-time columns (names),
+optionally a summary of each column (a named list) to draw profiles and
+filter widgets, and the number of rows in the whole data (shown in the
+pager next to the count of a filtered view). The local app computes all
+three from the data.}
 
 \item{name, ...}{For the local app: its name and other arguments passed to
 \code{\link[xfun:new_app]{xfun::new_app()}}.}
