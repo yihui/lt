@@ -285,9 +285,9 @@
     const opts = spec.interactive, cols = spec._cols || [],
           data = spec.data || {},
           // server mode (lt-server.js): rows live on a server (`data_url`), and
-          // `spec.data` holds just the current page
+          // `spec.data` holds just the current page, `data_n` is the row count
           srv = opts.data_url && LT.plugins.server?.(opts, spec),
-          nRow = srv ? 0 : (data[cols[0]] || []).length,
+          nRow = srv ? opts.data_n || 0 : (data[cols[0]] || []).length,
           // per-column summaries for profiles and filter widgets
           sums = {}, sum = srv ? srv.sum : c => sums[c] ||= summary(textual(spec)[c] || [], true),
           groups = spec._groups,
