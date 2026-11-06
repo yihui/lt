@@ -1,12 +1,5 @@
 # Plots in Cells {#chp:plots}
 
-::: epigraph
-> Graphical excellence is that which gives to the viewer the greatest number of
-> ideas in the shortest time with the least ink in the smallest space.
->
-> ---Edward Tufte, *The Visual Display of Quantitative Information*
-:::
-
 A table is good at exact numbers. A chart is good at patterns. Why not have both
 in the same row? A forest plot of effect sizes is a table with a tiny chart in
 one column. A before-and-after comparison is a table with a dot per visit. A

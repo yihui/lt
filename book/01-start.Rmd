@@ -1,11 +1,5 @@
 # Your First Table {#chp:start}
 
-::: epigraph
-> Above all else show the data.
->
-> ---Edward Tufte, *The Visual Display of Quantitative Information*
-:::
-
 A table is the one data visualization that everyone can read without a legend.
 This chapter shows how to make one with **lt**, and then how to give it a title,
 sensible labels, and a bit of polish.

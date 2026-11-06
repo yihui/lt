@@ -1,9 +1,9 @@
 # Styling {#chp:style}
 
 ::: epigraph
-> Design is not just what it looks like and feels like. Design is how it works.
+> It's not just what it looks like and feels like. Design is how it works.
 >
-> ---Steve Jobs
+> ---Steve Jobs, as quoted in *The New York Times Magazine* (2003)
 :::
 
 The default look of an **lt** table is deliberately plain: a rule on top, a rule

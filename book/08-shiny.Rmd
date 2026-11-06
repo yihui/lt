@@ -1,9 +1,5 @@
 # Tables in Shiny {#chp:shiny}
 
-::: epigraph
-> A table that cannot be touched is a photograph. A table in Shiny is a window.
-:::
-
 A Shiny app is a conversation: the reader changes something, R answers. lt joins
 in with three small pieces. `lt_output()` and `render_lt()` show a table.
 `lt_input()` lets the reader edit one. `lt_update()` lets the server rewrite

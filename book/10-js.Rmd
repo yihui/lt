@@ -1,9 +1,5 @@
 # Using lt from JavaScript {#chp:js}
 
-::: epigraph
-> Keep it simple: a table is data, and the rest is description.
-:::
-
 You do not need R to use lt. The whole library is a few small scripts and one
 idea: *a table is JSON*. Hand the runtime a spec, get a table back. This
 chapter is for people building pages by hand, for apps in other languages, and

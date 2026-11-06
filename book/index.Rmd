@@ -17,10 +17,10 @@ source('_ex.R')  # defines ex(), which embeds examples from ../examples
 # Preface {.unnumbered}
 
 ::: epigraph
-> Perfection is achieved, not when there is nothing more to add, but when there
-> is nothing left to take away.
+> It seems that perfection is attained, not when there is nothing more to add,
+> but when there is nothing more to take away.
 >
-> ---Often attributed to Antoine de Saint-Exupéry
+> ---Antoine de Saint-Exupéry, *Wind, Sand and Stars* (1939, trans. Lewis Galantière)
 :::
 
 Every report I have ever written ended up with a table in it. Not a glamorous
