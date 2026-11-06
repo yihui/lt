@@ -477,11 +477,14 @@
 
   // `type="search"` gives the browser's affordance and clear button, so no icon
   // or translatable placeholder; label is for screen readers.
-  function searchInput(doc, label) {
+  function searchInput(doc, label, title = "") {
     return elem(doc, "input", {
-      type: "search", className: "lti-search", "aria-label": label
+      type: "search", className: "lti-search", "aria-label": label, title
     });
   }
+
+  // Tooltip of a column's filter box: `x` in an expression is that column's value
+  const COL_TIP = "Type a condition, or an expression where x stands for each value in this column, e.g. x > 5 && x < 9";
 
   // Full-width table row for a table-wide control. Inside the table keeps it as
   // wide as the table and inside the `.lt-wrap` scroll box. Returns its cell.
@@ -533,11 +536,16 @@
   }
 
   // Random example queries, built from real columns and values so each one works
-  // as written. `prefix` is the column name for the table-wide box, "" for a
-  // column's own box.
+  // as written, in both plain-language and operator forms (`>`, `==`, `&&`). `prefix`
+  // is the column name for the table-wide box, "" for a column's own box.
   const qv = v => /[\s,;:"]/.test(v) ? `"${v}"` : String(v),
         rnd = a => a[Math.floor(Math.random() * a.length)],
         hasData = v => v?.some(x => x != null && x !== ""),
+        // quantile of numeric `v` at fraction f, rounded for display
+        quantOf = v => {
+          const s = v.filter(x => x != null).sort((x, y) => x - y);
+          return f => +s[Math.floor((s.length - 1) * f)].toPrecision(3);
+        },
         sample = gen => {
           const out = new Set();
           for (let i = 0; i < 30 && out.size < 6; i++) out.add(gen(i));
@@ -545,12 +553,11 @@
         },
         colExample = (v, prefix) => {
           if (numCol(v)) {
-            const s = v.filter(x => x != null).sort((x, y) => x - y),
-                  at = f => +s[Math.floor((s.length - 1) * f)].toPrecision(3);
-            return rnd([`${prefix}over ${at(.5)}`, `${prefix}under ${at(.5)}`, `${prefix}at least ${at(.75)}`, `${prefix}between ${at(.25)} and ${at(.75)}`]);
+            const at = quantOf(v);
+            return rnd([`${prefix}over ${at(.5)}`, `${prefix}under ${at(.5)}`, `${prefix}at least ${at(.75)}`, `${prefix}between ${at(.25)} and ${at(.75)}`, `${prefix}> ${at(.5)}`, `${prefix}<= ${at(.25)}`, `${prefix}!= ${at(.5)}`]);
           }
           const u = [...new Set(v.filter(Boolean))], a = qv(rnd(u)), b = qv(rnd(u));
-          return rnd([`${prefix}is ${a}`, `${prefix}is not ${a}`, `${prefix}contains ${a}`, `${prefix}does not contain ${a}`, `${prefix}is ${a} or ${prefix}is ${b}`]);
+          return rnd([`${prefix}is ${a}`, `${prefix}is not ${a}`, `${prefix}contains ${a}`, `${prefix}does not contain ${a}`, `${prefix}is ${a} or ${prefix}is ${b}`, `${prefix}== ${a}`, `${prefix}!= ${a}`]);
         },
         // table-wide: alternate numeric, text, and both; the first two are one of each
         queryExamples = (vals, cols, labelOf) => {
@@ -561,7 +568,17 @@
                         ncs.length && tcs.length && (() => `${one(ncs)}${rnd([", ", " and "])}${one(tcs)}`)].filter(Boolean);
           return gens.length ? sample(i => gens[i % gens.length]()) : [];
         },
-        columnExamples = v => hasData(v) ? sample(() => colExample(v, "")) : [];
+        // JS expression on `x`, which a column box keeps as written
+        exprExample = v => {
+          if (numCol(v)) {
+            const at = quantOf(v);
+            return rnd([`x > ${at(.25)} && x < ${at(.75)}`, `x < ${at(.25)} || x > ${at(.75)}`]);
+          }
+          const u = [...new Set(v.filter(Boolean))], a = JSON.stringify(rnd(u)), b = JSON.stringify(rnd(u));
+          return rnd([`x == ${a} || x == ${b}`, `x != ${a} && x != ${b}`]);
+        },
+        // every third example is an expression, the rest plain or operator conditions
+        columnExamples = v => hasData(v) ? sample(i => i % 3 === 2 ? exprExample(v) : colExample(v, "")) : [];
 
   // Show `gen()` examples as a <datalist> on `input`, redrawn on each focus. The
   // list goes after `after` (the box's note) so it stays out of a bar's children.
@@ -698,7 +715,7 @@
           type: "button", className: "lti-funnel lti-off", disabled: true
         }, elem(doc, "span", { className: "lti-pop" }, cell));
       if (spec === true) {                         // a plain search box
-        const input = cell.appendChild(searchInput(doc, `Filter ${c}`)),
+        const input = cell.appendChild(searchInput(doc, `Filter ${c}`, COL_TIP)),
               note = elem(doc, "div", { className: "lti-nl" });
         input.after(note);
         addTips(input, () => columnExamples(sum(c).vals), note);
@@ -1411,10 +1428,8 @@
       p && panel.append(p);
       // `box = FALSE` drops the expression box, limiting to the widget's choices
       if (cfg.box !== false) {
-        const box = elem(doc, "input", {
-          type: "search", className: "lti-search",
-          "aria-label": `${cfg.label || col} filter expression`
-        }, panel);
+        const box = panel.appendChild(
+          searchInput(doc, `${cfg.label || col} filter expression`, COL_TIP));
         const boxEd = { reflect: v => { if (doc.activeElement !== box) box.value = v; } },
               note = elem(doc, "div", { className: "lti-nl" }, panel);
         editors.push(boxEd);
