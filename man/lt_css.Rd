@@ -12,13 +12,13 @@ lt_css(x, ...)
 \item{...}{Unnamed arguments are stylesheet paths or URLs. A bare
 filename (no directory component) that does not exist in the working
 directory is resolved against the stylesheets shipped with lt, so
-e.g. \code{lt_css(x, "lt-gt.css")} uses the bundled gt-like theme.
+e.g. \code{lt_css(x, "lt-plot.css")} adds the stylesheet for inline plots.
 
 Named arguments define inline CSS rules scoped to \code{.lt-table}. Names
-are selectors (e.g., \code{.na}, \code{td.highlight}) and values are either a
+are selectors (e.g., \code{.high}, \code{td.highlight}) and values are either a
 CSS string or a named list of properties:
-\code{lt_css(x, .na = "background: #eee")} or
-\code{lt_css(x, .na = list(background = "#eee"))}. The selectors and rules can
+\code{lt_css(x, .high = "background: #eee")} or
+\code{lt_css(x, .high = list(background = "#eee"))}. The selectors and rules can
 also be given as a single \code{list(selectors, rules)} of two parallel vectors
 (see \code{\link[=lt_label]{lt_label()}}).}
 }
