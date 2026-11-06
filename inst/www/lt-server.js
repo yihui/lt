@@ -1,15 +1,15 @@
 /* lt-server.js — server mode for lt-interactive.js: rows stay on a server, and
- * each view (sort, filters, search, page) is fetched from a URL that returns JSON.
+ * each view (sort, filters, search, page) is fetched from `interactive.data_url`.
+ * Must load before lt-interactive.js. The protocol is documented in ?lt_serve.
  *
- * Must load before lt-interactive.js. `spec.interactive.server` = `{url, n, times,
- * cols}`: the endpoint, total rows, date-time columns (sent as ISO strings),
- * and a sketch per column (see `summary` in lt-interactive.js) for profiles and
- * filter widgets. Request: `url?f=<filters>&s=<keys>&t=<search>&c=<cols>&p=<page>&n=<size>`:
- * `f` is `column<TAB>term` lines (ANDed), `s` sort keys `a:<col>` / `d:<col>`,
- * `t` the free-text search over the visible columns `c`, newline-separated;
- * `n=0` is every row. Response: `{n, page, rows, data, prof?}`: rows in the
- * view, the (clamped) page, the page's data by column, and, when filters keep
- * only some rows, bar counts by column for profiles.
+ * Request: GET `data_url?q=<JSON>`, with JSON
+ *   { where?: tree, sort?: [{col, dir: "asc" | "desc"}], page, size, cols }
+ * `where` is a leaf `{col, term}` (`col` null: any of `cols`, the visible
+ * columns) or `{op: "and" | "or", items}`; `size` 0 is every row.
+ * Response: JSON `{n, page, data, prof?}`: rows in the view, the (clamped)
+ * page, the page's values by column, and bar counts by column for profiles.
+ * Optional `interactive.data_cols` (a summary per column) feed profiles and
+ * filter widgets; `data_times` lists date-time columns sent as ISO strings.
  */
 (root => {
   "use strict";
@@ -18,23 +18,24 @@
 
   LT.plugins.server = (o, spec) => {
     let seq = 0;
-    const enc = encodeURIComponent, sums = o.cols || {};
     // `all`: every row of the view (for download); resolves to the response
     const load = async (state, all) => {
-      const q = [["t", state.term || ""], ["p", all ? 0 : state.page || 0], ["n", all ? 0 : state.pageSize || 0]];
-      // column conditions (boxes, widgets, and those read from the search box):
-      // lines of `column<TAB>term`
-      q.push(["f", [state.filters, state.nl].flatMap(f => Object.entries(f || {}).flatMap(
-        ([c, ts]) => [].concat(ts).map(t => `${c}\t${t}`))).join("\n")]);
-      q.push(["s", (state.sort || []).map(k => `${k.dir === "desc" ? "d" : "a"}:${k.col}`).join("\n")],
-        ["c", (spec._cols || []).join("\n")]);
-      const id = ++seq, res = await fetch(`${o.url}?${q.map(([k, v]) => `${enc(k)}=${enc(v)}`).join("&")}`);
+      // widget terms (a string per column) and boxes (trees) are ANDed
+      const items = [...Object.entries(state.filters || {}).map(([col, f]) => typeof f === "string" ? { col, term: f } : f),
+        state.where, state.term && { col: null, term: state.term }].filter(Boolean),
+        q = {
+          where: items.length ? { op: "and", items } : null,
+          sort: (state.sort || []).map(k => ({ col: k.col, dir: k.dir === "desc" ? "desc" : "asc" })),
+          page: all ? 0 : state.page || 0, size: all ? 0 : state.pageSize || 0, cols: spec._cols || []
+        },
+        id = ++seq, res = await fetch(`${o.data_url}?q=${encodeURIComponent(JSON.stringify(q))}`);
       if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
       const r = await res.json();
       if (!all && id !== seq) return;  // a newer request superseded this one
-      for (const c of o.times || []) r.data[c] &&= r.data[c].map(v => v && new Date(v));
+      for (const c of o.data_times || []) r.data[c] &&= r.data[c].map(v => v && new Date(v));
       return r;
     };
-    return { load, sum: c => ({ vals: [], ...sums[c] }) };
+    // without a summary, a column gets a plain filter box and no profile
+    return { load, sum: c => ({ some: true, kind: "mix", m: 0, bins: [], vals: [], ...o.data_cols?.[c] }) };
   };
 })(typeof window !== "undefined" ? window : globalThis);

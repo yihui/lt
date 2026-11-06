@@ -284,10 +284,10 @@
   function enhance(el, spec) {
     const opts = spec.interactive, cols = spec._cols || [],
           data = spec.data || {},
-          // server mode (lt-server.js): rows live on a server, `spec.data` holds
-          // just the current page
-          srv = opts.server && LT.plugins.server?.(opts.server, spec),
-          nRow = srv ? opts.server.n : (data[cols[0]] || []).length,
+          // server mode (lt-server.js): rows live on a server (`data_url`), and
+          // `spec.data` holds just the current page
+          srv = opts.data_url && LT.plugins.server?.(opts, spec),
+          nRow = srv ? 0 : (data[cols[0]] || []).length,
           // per-column summaries for profiles and filter widgets
           sums = {}, sum = srv ? srv.sum : c => sums[c] ||= summary(textual(spec)[c] || [], true),
           groups = spec._groups,
@@ -341,7 +341,7 @@
         state.page = r.page;
         state.paints.forEach(f => f(null, state.prof = r.prof));
         el._lt.clearDetail?.();
-        show(Array.from({ length: r.rows }, (_, i) => i + 1), r.n);
+        show(Array.from({ length: Object.values(r.data)[0]?.length ?? 0 }, (_, i) => i + 1), r.n);
       }, e => { wrap?.classList.remove("lti-busy"); console.error(e); });
     };
     let view,          // filtered + sorted indices, cached across page turns

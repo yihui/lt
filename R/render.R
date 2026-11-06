@@ -146,7 +146,7 @@ data_key = function(d) {
 
 # Interactivity scripts a table needs (server mode adds its transport first)
 int_js = function(x) if (!is.null(x$interactive))
-  c('lt-query.js', if (!is.null(x$interactive$server)) 'lt-server.js', 'lt-interactive.js')
+  c('lt-query.js', if (!is.null(x$interactive$data_url)) 'lt-server.js', 'lt-interactive.js')
 
 # Per-table block: queue the spec with a reference to the current script;
 # runtime drains the queue on load. With `share`, data repeated across tables

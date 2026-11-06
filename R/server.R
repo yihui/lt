@@ -28,6 +28,12 @@ js_expr = function(term) {
       tryCatch(eval(parse(text = t)), error = function(e) t))
     return(call('%in%', quote(as.character(x)), unlist(vals)))
   }
+  # case-insensitive text tests written by plain-language queries
+  term = gsub(
+    'String\\(x\\)\\.toLowerCase\\(\\)\\.includes\\(("(?:[^"\\\\]|\\\\.)*")\\)',
+    'grepl(\\1, tolower(as.character(x)), fixed = TRUE)', term, perl = TRUE
+  )
+  term = gsub('String\\(x\\)\\.toLowerCase\\(\\)', 'tolower(as.character(x))', term)
   term = gsub('!==', '!=', gsub('===', '==', term, fixed = TRUE), fixed = TRUE)
   term = gsub('(!?)=\\s*null\\b', '\\1= NA_integer_', term)  # x == null
   e = tryCatch(parse(text = term, keep.source = FALSE), error = function(e) NULL)
@@ -35,7 +41,8 @@ js_expr = function(term) {
   e = e[[1]]
   ok = c(
     '(', '!', '==', '!=', '<', '>', '<=', '>=', '&', '|', '&&', '||', '+', '-',
-    '*', '/', '%in%', 'c', 'is.na', 'nchar', 'tolower', 'toupper', 'x',
+    '*', '/', '%in%', 'c', 'is.na', 'nchar', 'tolower', 'toupper', 'grepl',
+    'as.character', 'x',
     'NA', 'NA_integer_', 'TRUE', 'FALSE'
   )
   if (!all(all.names(e) %in% ok)) return()
@@ -74,9 +81,9 @@ term_keep = function(term, xs) {
   if (grepl('(^|[^\\w$])x([^\\w$]|$)', term, perl = TRUE) && !is.null(e <- js_expr(term))) {
     neg = grepl('^\\s*!|!=', term)
     env = new.env(parent = baseenv())
-    # JS compares text to a number numerically, so only a string literal keeps
-    # text as is
-    numify = !grepl('"', term, fixed = TRUE) && !'is.na' %in% all.names(e)
+    # JS compares text to a number numerically, so only a string literal (or a
+    # test of missing values or set membership) keeps text as is
+    numify = !grepl('"', term, fixed = TRUE) && !any(c('is.na', '%in%') %in% all.names(e))
     res = lapply(xs, function(x) {
       env$x = if (numify && !is.numeric(x)) suppressWarnings(as.numeric(as.character(x))) else x
       r = tryCatch(eval(e, env), error = function(e) rep(FALSE, n))
@@ -94,12 +101,22 @@ term_keep = function(term, xs) {
   neg != hit
 }
 
+# Rows kept by a filter tree: a leaf `{col, term}` (`col` null: any of columns
+# `cs`) or `{op: "and" | "or", items}`
+tree_keep = function(t, tx, cs) {
+  if (!is.null(t$op))
+    return(Reduce(if (t$op == 'and') `&` else `|`, lapply(t$items, tree_keep, tx, cs)))
+  xs = tx[intersect(if (is.null(t$col)) cs else t$col, names(tx))]
+  if (length(xs)) term_keep(t$term, xs) else rep(TRUE, length(tx[[1]]))
+}
+
 # Row order for sort keys `s` ("a:col" / "d:col"), nulls last
 server_order = function(idx, tx, s) {
+  s = Filter(function(k) k$col %in% names(tx), s)
   if (!length(s)) return(idx)
-  dir = substr(s, 1, 1) == 'd'
-  keys = lapply(sub('^.:', '', s), function(c) {
-    k = tx[[c]][idx]
+  dir = vapply(s, function(k) identical(k$dir, 'desc'), NA)
+  keys = lapply(s, function(k) {
+    k = tx[[k$col]][idx]
     if (is.logical(k)) as.integer(k) else k
   })
   idx[do.call(order, c(unname(keys), list(
@@ -156,23 +173,14 @@ col_sketch = function(x, tx) {
   list(sketch = s, bar = bar, n = n)
 }
 
-# The JSON for one request: `q` holds the query parameters (see lt-server.js)
+# The JSON for one request: `query$q` is JSON (see ?lt_serve for the protocol)
 server_response = function(S, query) {
-  q = as.list(query)
+  q = jsonlite::fromJSON(query[['q']] %||% '{}', simplifyVector = FALSE)
   data = S$data; n = nrow(data)
-  keep = rep(TRUE, n)
-  for (l in strsplit(q[['f']] %||% '', '\n', fixed = TRUE)[[1]]) {
-    i = regexpr('\t', l, fixed = TRUE)
-    c = substr(l, 1, i - 1)
-    if (i > 0 && c %in% names(data))
-      keep = keep & term_keep(substring(l, i + 1), list(S$tx[[c]]))
-  }
-  term = q[['t']] %||% ''
-  cs = intersect(strsplit(q[['c']] %||% '', '\n', fixed = TRUE)[[1]], names(data))
-  if (term != '' && length(cs)) keep = keep & term_keep(term, S$tx[cs])
-  idx = server_order(which(keep), S$tx, strsplit(q[['s']] %||% '', '\n', fixed = TRUE)[[1]])
+  keep = if (is.null(q$where)) rep(TRUE, n) else tree_keep(q$where, S$tx, unlist(q$cols))
+  idx = server_order(which(keep), S$tx, q$sort)
   total = length(idx)
-  size = as.integer(q[['n']] %||% 0L); page = as.integer(q[['p']] %||% 0L)
+  size = as.integer(q$size %||% 0L); page = as.integer(q$page %||% 0L)
   if (size > 0L) {
     page = max(0L, min(page, (total - 1L) %/% size))
     idx = idx[seq_len(size) + page * size]
@@ -182,7 +190,7 @@ server_response = function(S, query) {
   for (c in names(out)) if (inherits(out[[c]], 'Date') || is.factor(out[[c]]))
     out[[c]] = as.character(out[[c]])
   for (c in S$times) out[[c]] = format(out[[c]], '%Y-%m-%dT%H:%M:%SZ', tz = 'UTC')
-  r = list(n = total, page = page, rows = length(idx), data = lapply(as.list(out), I))
+  r = list(n = total, page = page, data = lapply(as.list(out), I))
   if (total < n) r$prof = lapply(S$bar, function(b)
     I(tabulate(b[which(keep)] + 1L, attr(b, 'n'))))
   xfun::tojson(r)
@@ -211,54 +219,93 @@ check_server = function(x) {
     warning('a JavaScript row detail sees only the current page in server mode')
 }
 
-#' Serve a table from R, for data too big for the browser
+#' Serve the rows of an interactive table from a data server
 #'
-#' Show an interactive table whose rows stay in the R session. A local web app
-#' (see [xfun::new_app()]) holds the data, and the browser asks it for just the
-#' rows of the current page whenever the sort, filters, search, or page change,
-#' so tables of millions of rows stay responsive. Everything [lt_interactive()]
-#' offers works, with these differences:
+#' Make an interactive table fetch its rows from a URL instead of holding them
+#' in the page, for data too big for the browser. Each time the sort, filters,
+#' search, or page change, the browser asks the server for just the rows of the
+#' current page, so tables of millions of rows stay responsive. Everything
+#' [lt_interactive()] offers works, with these differences:
 #'
-#' - Filter and search expressions (e.g., `x > 5`, `x != "A"`) are evaluated in
-#'   R instead of JavaScript, so they must be R-compatible; the common ones, and
-#'   everything the filter widgets write, work in both. Missing values never
-#'   pass an expression unless it is negated.
-#' - Substring search and filters match the underlying values, not the
-#'   formatted text.
-#' - Column profiles and filter choices come from the whole data, computed once
-#'   when the app starts. Plots in cells ([lt_sparkline()], [lt_errorbar()],
-#'   etc.) scale to the current page.
 #' - Row groups, indentation, and row-specific styles and footnotes are not
 #'   supported, and neither are external filter predicates.
+#' - Plots in cells ([lt_sparkline()], [lt_errorbar()], etc.) scale to the
+#'   current page, and a JavaScript row detail sees only the current page.
 #' - The CSV download fetches every row of the view.
 #'
-#' The app keeps serving while the R session is alive (until [xfun::stop_app()]).
+#' By default (`url = NULL`) the rows of `x` are served by a local web app built
+#' on [xfun::new_app()], which stays up while the R session is alive (until
+#' [xfun::stop_app()]). Pass `url` to use your own data server instead, e.g., one
+#' backed by a database or Parquet files; then `x` only needs to name the
+#' columns (its data can have zero rows), and the first page is fetched from
+#' the server too.
+#'
+#' @section The data server protocol:
+#'
+#' The browser sends `GET <url>?q=<JSON>` (the JSON is URL-encoded), where the
+#' JSON object has these fields:
+#'
+#' - `where`: the rows to keep, or `null` for all. A condition is a leaf
+#'   `{"col": <column or null>, "term": <string>}`, or a group
+#'   `{"op": "and" | "or", "items": [<condition>, ...]}`. A leaf applies its
+#'   `term` to the column `col`, or to any of the visible columns `cols` if
+#'   `col` is `null`. A `term` that uses `x` as the cell value and is a
+#'   JavaScript expression (e.g., `x > 5`, `x == null`,
+#'   `["a", "b"].includes(x)`) keeps the rows where it is true; a term that
+#'   starts with `!` or is `x != ...` negates (every column must pass, not any).
+#'   Any other term is a case-insensitive substring of the cell text.
+#' - `sort`: sort keys, `[{"col": <column>, "dir": "asc" | "desc"}, ...]`, most
+#'   significant first; missing values go last.
+#' - `page` (from 0) and `size`: the page to return; `size` is 0 for every row.
+#' - `cols`: the visible columns.
+#'
+#' The server replies with a JSON object (`Content-Type: application/json`,
+#' and, if the page is not served from the same origin, an
+#' `Access-Control-Allow-Origin` header):
+#'
+#' - `n`: the number of rows in the view (after `where`).
+#' - `page`: the page returned (`page` clamped to the available pages).
+#' - `data`: an object of the page's values by column, e.g.
+#'   `{"a": [1, 2], "b": ["x", "y"]}`. Missing values are `null`. Dates are
+#'   `"YYYY-MM-DD"` strings and date-times ISO 8601 strings (declare them with
+#'   `times`).
+#' - `prof` (optional): when `where` keeps only some rows, the bar counts of
+#'   each column's profile over the kept rows, by column.
 #'
 #' @param x An `lt_tbl` object, typically made by [lt_viewer()] or
 #'   [lt_interactive()]; it is made interactive with the defaults if not yet.
-#' @param name,... The app name and other arguments passed to
-#'   [xfun::new_app()], such as `open = FALSE`.
-#' @return The app URL, invisibly.
+#' @param url The URL of a data server that speaks the protocol above. By
+#'   default, a local app serving the rows of `x` is started.
+#' @param times,cols For a custom `url`: the date-time columns (names), and,
+#'   optionally, a summary of each column (a named list) to draw profiles and
+#'   filter widgets. Without `cols`, columns get a plain filter box. The local
+#'   app computes both from the data.
+#' @param name,... For the local app: its name and other arguments passed to
+#'   [xfun::new_app()].
+#' @return `x`, with the data URL added.
 #' @export
 #' @examples
 #' if (interactive()) lt_serve(lt_viewer(iris))
-lt_serve = function(x, name = 'lt-server', ...) {
+lt_serve = function(x, url = NULL, times = NULL, cols = NULL, name = 'lt-server', ...) {
   if (is.null(x$interactive)) x = lt_interactive(x)
   check_server(x)
-  S = server_state(x)
   sizes = server_sizes(x$interactive$pager)
   x$interactive$pager = I(sizes)
-  x$interactive$server = drop_null(list(
-    url = 'data', n = nrow(S$data), times = if (length(S$times)) I(S$times),
-    cols = S$sketch
-  ))
-  x$data = utils::head(S$data, sizes[1])
-  html = view_html(x)
-  xfun::new_app(name, function(path, query, ...) {
-    if (path != 'data') return(list(payload = html))
-    tryCatch(
-      list(payload = server_response(S, query), `content-type` = 'application/json'),
+  if (is.null(url)) {
+    S = server_state(x)
+    app = xfun::new_app(name, function(path, query, ...) tryCatch(
+      list(
+        payload = server_response(S, query), `content-type` = 'application/json',
+        headers = 'Access-Control-Allow-Origin: *'
+      ),
       error = function(e) list(payload = conditionMessage(e), `status code` = 400L)
-    )
-  }, ...)
+    ), open = FALSE, ...)
+    url = paste0(app, 'data')
+    times = S$times; cols = S$sketch
+  }
+  x$interactive$data_url = url
+  x$interactive$data_times = if (length(times)) I(times)
+  x$interactive$data_cols = cols
+  x$data = utils::head(x$data, 0)
+  x
 }

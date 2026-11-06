@@ -2,45 +2,87 @@
 % Please edit documentation in R/server.R
 \name{lt_serve}
 \alias{lt_serve}
-\title{Serve a table from R, for data too big for the browser}
+\title{Serve the rows of an interactive table from a data server}
 \usage{
-lt_serve(x, name = "lt-server", ...)
+lt_serve(x, url = NULL, times = NULL, cols = NULL, name = "lt-server", ...)
 }
 \arguments{
 \item{x}{An \code{lt_tbl} object, typically made by \code{\link[=lt_viewer]{lt_viewer()}} or
 \code{\link[=lt_interactive]{lt_interactive()}}; it is made interactive with the defaults if not yet.}
 
-\item{name, ...}{The app name and other arguments passed to
-\code{\link[xfun:new_app]{xfun::new_app()}}, such as \code{open = FALSE}.}
+\item{url}{The URL of a data server that speaks the protocol above. By
+default, a local app serving the rows of \code{x} is started.}
+
+\item{times, cols}{For a custom \code{url}: the date-time columns (names), and,
+optionally, a summary of each column (a named list) to draw profiles and
+filter widgets. Without \code{cols}, columns get a plain filter box. The local
+app computes both from the data.}
+
+\item{name, ...}{For the local app: its name and other arguments passed to
+\code{\link[xfun:new_app]{xfun::new_app()}}.}
 }
 \value{
-The app URL, invisibly.
+\code{x}, with the data URL added.
 }
 \description{
-Show an interactive table whose rows stay in the R session. A local web app
-(see \code{\link[xfun:new_app]{xfun::new_app()}}) holds the data, and the browser asks it for just the
-rows of the current page whenever the sort, filters, search, or page change,
-so tables of millions of rows stay responsive. Everything \code{\link[=lt_interactive]{lt_interactive()}}
-offers works, with these differences:
+Make an interactive table fetch its rows from a URL instead of holding them
+in the page, for data too big for the browser. Each time the sort, filters,
+search, or page change, the browser asks the server for just the rows of the
+current page, so tables of millions of rows stay responsive. Everything
+\code{\link[=lt_interactive]{lt_interactive()}} offers works, with these differences:
 }
 \details{
 \itemize{
-\item Filter and search expressions (e.g., \code{x > 5}, \code{x != "A"}) are evaluated in
-R instead of JavaScript, so they must be R-compatible; the common ones, and
-everything the filter widgets write, work in both. Missing values never
-pass an expression unless it is negated.
-\item Substring search and filters match the underlying values, not the
-formatted text.
-\item Column profiles and filter choices come from the whole data, computed once
-when the app starts. Plots in cells (\code{\link[=lt_sparkline]{lt_sparkline()}}, \code{\link[=lt_errorbar]{lt_errorbar()}},
-etc.) scale to the current page.
 \item Row groups, indentation, and row-specific styles and footnotes are not
 supported, and neither are external filter predicates.
+\item Plots in cells (\code{\link[=lt_sparkline]{lt_sparkline()}}, \code{\link[=lt_errorbar]{lt_errorbar()}}, etc.) scale to the
+current page, and a JavaScript row detail sees only the current page.
 \item The CSV download fetches every row of the view.
 }
 
-The app keeps serving while the R session is alive (until \code{\link[xfun:stop_app]{xfun::stop_app()}}).
+By default (\code{url = NULL}) the rows of \code{x} are served by a local web app built
+on \code{\link[xfun:new_app]{xfun::new_app()}}, which stays up while the R session is alive (until
+\code{\link[xfun:stop_app]{xfun::stop_app()}}). Pass \code{url} to use your own data server instead, e.g., one
+backed by a database or Parquet files; then \code{x} only needs to name the
+columns (its data can have zero rows), and the first page is fetched from
+the server too.
 }
+\section{The data server protocol}{
+
+
+The browser sends \verb{GET <url>?q=<JSON>} (the JSON is URL-encoded), where the
+JSON object has these fields:
+\itemize{
+\item \code{where}: the rows to keep, or \code{null} for all. A condition is a leaf
+\verb{\{"col": <column or null>, "term": <string>\}}, or a group
+\verb{\{"op": "and" | "or", "items": [<condition>, ...]\}}. A leaf applies its
+\code{term} to the column \code{col}, or to any of the visible columns \code{cols} if
+\code{col} is \code{null}. A \code{term} that uses \code{x} as the cell value and is a
+JavaScript expression (e.g., \code{x > 5}, \code{x == null},
+\verb{["a", "b"].includes(x)}) keeps the rows where it is true; a term that
+starts with \code{!} or is \code{x != ...} negates (every column must pass, not any).
+Any other term is a case-insensitive substring of the cell text.
+\item \code{sort}: sort keys, \verb{[\{"col": <column>, "dir": "asc" | "desc"\}, ...]}, most
+significant first; missing values go last.
+\item \code{page} (from 0) and \code{size}: the page to return; \code{size} is 0 for every row.
+\item \code{cols}: the visible columns.
+}
+
+The server replies with a JSON object (\code{Content-Type: application/json},
+and, if the page is not served from the same origin, an
+\code{Access-Control-Allow-Origin} header):
+\itemize{
+\item \code{n}: the number of rows in the view (after \code{where}).
+\item \code{page}: the page returned (\code{page} clamped to the available pages).
+\item \code{data}: an object of the page's values by column, e.g.
+\verb{\{"a": [1, 2], "b": ["x", "y"]\}}. Missing values are \code{null}. Dates are
+\code{"YYYY-MM-DD"} strings and date-times ISO 8601 strings (declare them with
+\code{times}).
+\item \code{prof} (optional): when \code{where} keeps only some rows, the bar counts of
+each column's profile over the kept rows, by column.
+}
+}
+
 \examples{
 if (interactive()) lt_serve(lt_viewer(iris))
 }
