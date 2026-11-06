@@ -222,65 +222,22 @@ check_server = function(x) {
 #' Serve the rows of an interactive table from a data server
 #'
 #' Make an interactive table fetch its rows from a URL instead of holding them
-#' in the page, for data too big for the browser. Each time the sort, filters,
-#' search, or page change, the browser asks the server for just the rows of the
-#' current page, so tables of millions of rows stay responsive. Everything
-#' [lt_interactive()] offers works, with these differences:
-#'
-#' - Row groups, indentation, and row-specific styles and footnotes are not
-#'   supported, and neither are external filter predicates.
-#' - Plots in cells ([lt_sparkline()], [lt_errorbar()], etc.) scale to the
-#'   current page, and a JavaScript row detail sees only the current page.
-#' - The CSV download fetches every row of the view.
-#'
-#' By default (`url = NULL`) the rows of `x` are served by a local web app built
-#' on [xfun::new_app()], which stays up while the R session is alive (until
-#' [xfun::stop_app()]). Pass `url` to use your own data server instead, e.g., one
-#' backed by a database or Parquet files; then `x` only needs to name the
-#' columns (its data can have zero rows), and the first page is fetched from
-#' the server too.
-#'
-#' @section The data server protocol:
-#'
-#' The browser sends `POST <url>` with a JSON body (`Content-Type: text/plain`,
-#' to avoid a CORS preflight), an object with these fields:
-#'
-#' - `where`: the rows to keep, or `null` for all. A condition is a leaf
-#'   `{"col": <column or null>, "term": <string>}`, or a group
-#'   `{"op": "and" | "or", "items": [<condition>, ...]}`. A leaf applies its
-#'   `term` to the column `col`, or to any of the visible columns `cols` if
-#'   `col` is `null`. A `term` that uses `x` as the cell value and is a
-#'   JavaScript expression (e.g., `x > 5`, `x == null`,
-#'   `["a", "b"].includes(x)`) keeps the rows where it is true; a term that
-#'   starts with `!` or is `x != ...` negates (every column must pass, not any).
-#'   Any other term is a case-insensitive substring of the cell text.
-#' - `sort`: sort keys, `[{"col": <column>, "dir": "asc" | "desc"}, ...]`, most
-#'   significant first; missing values go last.
-#' - `page` (from 0) and `size`: the page to return; `size` is 0 for every row.
-#' - `cols`: the visible columns.
-#'
-#' The server replies with a JSON object (`Content-Type: application/json`,
-#' and, if the page is not served from the same origin, an
-#' `Access-Control-Allow-Origin` header):
-#'
-#' - `n`: the number of rows in the view (after `where`).
-#' - `page`: the page returned (`page` clamped to the available pages).
-#' - `data`: an object of the page's values by column, e.g.
-#'   `{"a": [1, 2], "b": ["x", "y"]}`. Missing values are `null`. Dates are
-#'   `"YYYY-MM-DD"` strings and date-times ISO 8601 strings (declare them with
-#'   `times`).
-#' - `prof` (optional): when `where` keeps only some rows, the bar counts of
-#'   each column's profile over the kept rows, by column.
+#' in the page, for data too big for the browser: whenever the sort, filters,
+#' search, or page change, the browser asks the server for just the current
+#' page. By default the rows of `x` are served by a local app built on
+#' [xfun::new_app()] (until [xfun::stop_app()]); pass `url` to use your own
+#' server instead. Row groups, indentation, and row-specific styles and
+#' footnotes are not supported. See the examples in the package site for
+#' details and the request/response format a custom server implements.
 #'
 #' @param x An `lt_tbl` object, typically made by [lt_viewer()] or
 #'   [lt_interactive()]; it is made interactive with the defaults if not yet.
-#' @param url The URL of a data server that speaks the protocol above (absolute,
-#'   or relative to the page). By default, a local app serving the rows of `x`
-#'   is started, to be viewed by printing the result.
+#' @param url The URL of a data server (absolute, or relative to the page). By
+#'   default, a local app serving the rows of `x` is started; view the table by
+#'   printing the result.
 #' @param times,cols For a custom `url`: the date-time columns (names), and,
 #'   optionally, a summary of each column (a named list) to draw profiles and
-#'   filter widgets. Without `cols`, columns get a plain filter box. The local
-#'   app computes both from the data.
+#'   filter widgets. The local app computes both from the data.
 #' @param name,... For the local app: its name and other arguments passed to
 #'   [xfun::new_app()].
 #' @return `x`, with the data URL added.

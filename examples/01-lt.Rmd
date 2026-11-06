@@ -1027,6 +1027,40 @@ file holds exactly what the table shows.
 lt(d) |> lt_interactive(download = "cars.csv", filter = TRUE, pager = 5)
 ```
 
+### Large data (server mode)
+
+For data too big for the browser, `lt_serve()` keeps the rows in R. A local web
+app (built on `xfun::new_app()`) serves them, and the browser fetches just the
+current page whenever the sort, filters, search, or page change, so tables of
+millions of rows stay responsive. Print the result to view it (it needs the `jsonlite`
+package):
+
+```{r, eval = FALSE}
+lt_serve(lt_viewer(iris))
+```
+
+Everything above works, with these differences:
+
+- Filter and search expressions (e.g., `x > 5`, `x != "A"`) run in R, so they
+  must be R-compatible; the common ones, and everything the filter widgets
+  write, work in both. Missing values never pass an expression unless it is
+  negated.
+- Substring search and filters match the underlying values, not the formatted
+  text.
+- Column profiles and filter choices come from the whole data, computed once
+  when the app starts. Plots in cells (`lt_sparkline()`, `lt_errorbar()`, etc.)
+  scale to the current page, and a JavaScript row detail sees only the
+  current page.
+- Row groups, indentation, and row-specific styles and footnotes are not
+  supported, and neither are external filter predicates.
+- The CSV download fetches every row of the view.
+
+The app lives in the R session, so the table works as long as the session does.
+To serve rows from elsewhere (a database, Parquet files), pass `url` to
+`lt_serve()`; the table then only needs to name the columns (a zero-row data
+frame will do), and the first page is fetched too. The request and response
+format is described in the [JavaScript reference](02-lt-js.html#sec:server).
+
 ### Row groups and indentation
 
 Row structure is honored: sorting and filtering happen *within* each
