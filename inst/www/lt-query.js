@@ -20,8 +20,10 @@
  *   | between 5 and 10 | contains has : | does not contain doesn't contain excludes
  *   | `col value` alone means contains
  * Conditions combine with `and`, `,` or `;` (all must hold); `or` alternates.
- * Other words are free text, each must be found; "quote" a phrase. With `col0`,
- * the condition needs no column name and free text belongs to that column.
+ * The text after `contains` runs to the next `and`, `or`, `,`, `;` or operator, so
+ * a phrase needs no quotes. Other words are free text, each must be found; "quote"
+ * a phrase. With `col0`, the condition needs no column name and free text belongs to
+ * that column.
  * `does not contain` needs none either: alone, no cell may contain the text.
  * Text using `x` (an expression) is kept whole.
  */
@@ -85,6 +87,13 @@
     const val = j => toks[j]?.k === "w" || toks[j]?.k === "q" ? toks[j].t : null;
     // a bare value after a column name (`color red`): not an operator or joiner
     const bare = j => val(j) != null && !opAt(j) && !["and", "or"].includes(lower(toks[j]));
+    // text phrase at token i: words and quotes up to a joiner or operator -> [text, next token]
+    const phrase = i => {
+      if (val(i) == null) return;
+      let e = i + 1;
+      while (val(e) != null && !opAt(e) && !["and", "or"].includes(lower(toks[e]))) e++;
+      return [toks.slice(i, e).map(t => t.t).join(" "), e];
+    };
     // condition at token j -> [term, next token], or undefined
     const cond = j => {
       const o = opAt(j);
@@ -94,8 +103,11 @@
       if (o.op === "between") {
         const b = lower(toks[i + 1]) === "and" ? val(i + 2) : null;
         if (b != null && isNum(a) && isNum(b)) return [`x >= ${num(a)} && x <= ${num(b)}`, i + 3];
-      } else if (o.op === ":") return [a, i + 1];
-      else if (o.op === "!:") return [`!String(x).toLowerCase().includes(${JSON.stringify(a.toLowerCase())})`, i + 1, `x does not contain ${JSON.stringify(a)}`];
+      } else if (o.op === ":") return phrase(i);
+      else if (o.op === "!:") {
+        const [p, e] = phrase(i);
+        return [`!String(x).toLowerCase().includes(${JSON.stringify(p.toLowerCase())})`, e, `x does not contain ${JSON.stringify(p)}`];
+      }
       else if (o.op === "==" || o.op === "!=") {
         if (isNum(a)) return [`x ${o.op} ${num(a)}`, i + 1];
         // text compares ignoring case; the summary shows the plain `x == "A"`
@@ -114,7 +126,7 @@
         alts.push([]); last = null; i++; continue;
       }
       let col, hit, n = named(i);
-      if (n && (hit = cond(n[1]) || (bare(n[1]) && [val(n[1]), n[1] + 1]))) col = n[0];
+      if (n && (hit = cond(n[1]) || (bare(n[1]) && phrase(n[1])))) col = n[0];
       else if ((col0 != null || opAt(i)?.op === "!:") && (hit = cond(i))) col = col0;
       if (hit) {
         add({ col, term: hit[0], show: hit[2] });
