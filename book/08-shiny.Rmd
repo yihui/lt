@@ -1,5 +1,11 @@
 # Tables in Shiny {#chp:shiny}
 
+::: epigraph
+> Many hands make light work.
+>
+> ---Proverb
+:::
+
 A Shiny app is a conversation: the reader changes something, R answers. lt joins
 in with three small pieces. `lt_output()` and `render_lt()` show a table.
 `lt_input()` lets the reader edit one. `lt_update()` lets the server rewrite

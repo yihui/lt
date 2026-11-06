@@ -1,5 +1,11 @@
 # Exporting and Embedding {#chp:export}
 
+::: epigraph
+> Measure twice, cut once.
+>
+> ---Proverb
+:::
+
 An lt table is born in a browser, but your readers are not always there. They
 open PDFs, paste tables into slides, and read Markdown on GitHub. This chapter
 is about getting a table out, and about the plain data underneath it.
