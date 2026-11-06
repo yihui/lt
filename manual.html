@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.15</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.16</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -1926,7 +1926,9 @@ search, or page change, the browser asks the server for just the current
 page. By default the rows of <code>x</code> are served by a local app built on
 <code><a href="https://rdrr.io/cran/xfun/man/new_app.html">xfun::new_app()</a></code> (until <code><a href="https://rdrr.io/cran/xfun/man/stop_app.html">xfun::stop_app()</a></code>); pass <code>url</code> to use your own
 server instead. Row groups, indentation, and row-specific styles and
-footnotes are not supported. See the examples in the package site for
+footnotes are not supported. In a Shiny app, return the table from
+<code><a href="#sec:man-lt-output">render_lt()</a></code> and the rows are served by the session itself (no local app is
+started). See the examples in the package site for
 details and the request/response format a custom server implements.
 </p>
 <h3 id="sec:usage_25" class="unnumbered">Usage</h3>
@@ -2183,7 +2185,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpyWFR4D/file9dc7b4e6767.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmphLeav2/filea6b535dec84.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table class=&quot;desc-table&quot;&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -2297,7 +2299,7 @@ if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpyWFR4D/file9dc1abb9877.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmphLeav2/filea6b16e03e23.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
@@ -2428,11 +2430,11 @@ binding (only needed by <code><a href="#sec:man-lt-output">lt_input()</a></code>
 </code></pre>
 <pre><code>#&gt; List of 10
 #&gt;  $ name      : chr &quot;lt-interactive&quot;
-#&gt;  $ version   : chr &quot;0.5.15&quot;
+#&gt;  $ version   : chr &quot;0.5.16&quot;
 #&gt;  $ src       :List of 1
 #&gt;   ..$ file: chr &quot;/Users/runner/work/_temp/Library/lt/www&quot;
 #&gt;  $ meta      : NULL
-#&gt;  $ script    : chr [1:3] &quot;lt.js&quot; &quot;lt-query.js&quot; &quot;lt-interactive.js&quot;
+#&gt;  $ script    : chr [1:4] &quot;lt.js&quot; &quot;lt-query.js&quot; &quot;lt-server.js&quot; &quot;lt-interactive.js&quot;
 #&gt;  $ stylesheet: chr [1:2] &quot;lt.css&quot; &quot;lt-interactive.css&quot;
 #&gt;  $ head      : NULL
 #&gt;  $ attachment: NULL

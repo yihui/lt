@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.15</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.16</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -1093,16 +1093,19 @@ file holds exactly what the table shows.
 lt(d) |&gt; lt_interactive(download = &quot;cars.csv&quot;, filter = TRUE, pager = 5)
 ```
 
-### Large data (server mode)
+### Large data (server mode) {#sec:large-data}
 
 For data too big for the browser, `lt_serve()` keeps the rows in R. A local web
 app (built on `xfun::new_app()`) serves them, and the browser fetches just the
 current page whenever the sort, filters, search, or page change, so tables of
 millions of rows stay responsive. Print the result to view it:
 
-```{r, eval = FALSE}
-lt_serve(lt_viewer(iris))
+``` r
+lt_viewer(iris) |&gt; lt_serve()
 ```
+
+In a Shiny app, return the table from `render_lt()` instead (see [Shiny](#sec:shiny)):
+the session serves the rows, and no local app is started.
 
 Everything above works, with these differences:
 
@@ -1120,12 +1123,12 @@ Everything above works, with these differences:
   supported, and neither are external filter predicates.
 - The CSV download fetches every row of the view.
 
-The app lives in the R session, so the table works as long as the session does.
-It is meant for viewing a table from an R session (the terminal, RStudio, a
-remote session reached through a proxy, or a notebook), not for publishing: a
-static document (R Markdown, Quarto, litedown) keeps no app behind it, and the
-built-in app is not supported in Shiny apps deployed to a server or in
-webR/shinylive, which cannot host the app. There, use `lt_interactive()` (rows
+The local app lives in the R session, so the table works as long as the session
+does. It is meant for viewing a table from an R session (the terminal, RStudio,
+a remote session reached through a proxy, or a notebook), not for publishing: a
+static document (R Markdown, Quarto, litedown) keeps no app behind it, and
+webR/shinylive cannot host it. In a Shiny app, the session serves the rows, so
+the table works wherever the app runs. Elsewhere, use `lt_interactive()` (rows
 in the page), or give `lt_serve()` a `url` that the reader's browser can reach.
 To serve rows from elsewhere (a database, Parquet files), pass `url` to
 `lt_serve()`; the table then only needs to name the columns (a zero-row data
@@ -1174,12 +1177,12 @@ lt(d3) |&gt; lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |&gt; lt_interactive(page
 
 Column spanners, styles, and footnotes are no obstacle to interactivity.
 
-## Shiny
+## Shiny {#sec:shiny}
 
 `lt_output()` and `render_lt()` show a table as a Shiny output: the server sends
 the table spec and the browser builds the `&lt;table&gt;`.
 
-```{r, eval = FALSE}
+``` r
 library(shiny)
 ui = fluidPage(lt_output(&quot;tbl&quot;))
 server = function(input, output) {
@@ -1190,12 +1193,20 @@ server = function(input, output) {
 shinyApp(ui, server)
 ```
 
+For a large table, pass the table to `lt_serve()` inside `render_lt()`: the
+session serves the rows (see [Large data](#sec:large-data)), so the app
+needs no extra server.
+
+``` r
+output$big = lt_interactive(my_data) |&gt; lt_serve() |&gt; render_lt()
+```
+
 `lt_input()` goes the other way: a table whose cells can be edited in the
 browser. The server reads the edited table as a data frame (numeric columns stay
 numeric), and `lt_update()` replaces it, e.g., to add a row or reset the edits.
 Use `columns` to make only some columns editable.
 
-```{r, eval = FALSE}
+``` r
 library(shiny)
 d = data.frame(Time = c(12, 24), Rate = c(0.8, 0.6), Note = c(&quot;a&quot;, &quot;b&quot;))
 ui = fluidPage(
@@ -2797,8 +2808,10 @@ current page whenever the sort, filters, search, or page change. R's
 `lt_serve()` sets this up (see the first example), and any server that speaks
 the protocol below can feed a table, e.g., one backed by a database or Parquet
 files. `spec.data` only needs the column names (empty arrays will do), since
-the first page is fetched too. Two more optional fields: `data_times` lists
-date-time columns (sent as ISO 8601 strings), and `data_cols` holds a summary
+the first page is fetched too. Three more optional fields: `data_times` lists
+date-time columns (sent as ISO 8601 strings), `data_n` is the number of rows
+in the whole data (the pager shows it beside the count of a filtered view, and
+offers page sizes only if it exceeds the smallest), and `data_cols` holds a summary
 per column (see `summary` in `lt-interactive.js`) for profiles and filter
 widgets; without it, columns get a plain filter box.
 
@@ -2816,7 +2829,9 @@ text/plain`, to avoid a CORS preflight), an object with:
 - `sort`: `[{ col, dir: &quot;asc&quot; | &quot;desc&quot; }, ...]`, most significant first,
   missing values last;
 - `page` (from 0) and `size`: the page to return; `size` 0 is every row;
-- `cols`: the visible columns.
+- `cols`: the visible columns;
+- `prof` (optional): the columns whose profile bars are wanted; absent when
+  profiles are off, and for a download.
 
 The server replies with JSON (`Content-Type: application/json`, plus an
 `Access-Control-Allow-Origin` header if the page is on another origin):
@@ -2825,8 +2840,8 @@ The server replies with JSON (`Content-Type: application/json`, plus an
 - `page`: the page returned (the requested one, clamped to the last page);
 - `data`: the page's values by column, e.g., `{ &quot;a&quot;: [1, 2], &quot;b&quot;: [&quot;x&quot;, &quot;y&quot;] }`,
   with `null` for missing values and dates as `&quot;YYYY-MM-DD&quot;`;
-- `prof` (optional): when `where` keeps only some rows, the bar counts of
-  each column's profile over the kept rows, by column.
+- `prof` (optional): when `where` keeps only some rows, the bar counts over
+  the kept rows of each column requested in `prof`, by column.
 
 ### Rendering on demand
 

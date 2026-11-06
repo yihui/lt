@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/css/site.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.15</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.16</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -43,7 +43,7 @@
 <p>Search and filter boxes in <code>lt_interactive()</code> read plain language: <code>price over 100, color is red or blue</code>, <code>between 5 and 10</code>, <code>is not</code>, <code>does not contain</code>, and <code>col value</code> for contains. Column labels may contain spaces; <code>,</code> and <code>;</code> separate conditions and <code>or</code> alternates them. A line under the box shows how the query was read, and boxes drop down random example queries built from the data (a column box gets ones for its own values). Text that isn’t recognized is searched as typed. The parser is a standalone file, <code>lt-query.js</code>, usable outside lt.</p>
 </li>
 <li>
-<p>New <code>lt_serve()</code> makes an interactive table fetch its rows from a data URL, for data too big for the browser: the browser requests only the current page as JSON whenever the sort, filters, search, or page change. By default a local app (built on <code>xfun::new_app()</code>) serves the rows of the table in R; pass <code>url</code> to use your own server (e.g., backed by a database or Parquet files), whose request and response format is documented in <code>?lt_serve</code>. The client side is a separate extension, <code>lt-server.js</code>.</p>
+<p>New <code>lt_serve()</code> makes an interactive table fetch its rows from a data URL, for data too big for the browser: the browser requests only the current page as JSON whenever the sort, filters, search, or page change. By default a local app (built on <code>xfun::new_app()</code>) serves the rows of the table in R; pass <code>url</code> to use your own server (e.g., backed by a database or Parquet files), whose request and response format is documented in <code>?lt_serve</code>. In Shiny, <code>render_lt()</code> serves the rows from the session itself.</p>
 </li>
 <li>
 <p><code>lt_interactive(profile = TRUE)</code> shows a profile of each column: a mini bar chart of its values (a histogram for numbers and dates; one bar per category for text where at most half of the values are distinct, left blank otherwise) that highlights the rows kept by the filters, with summary statistics and the amount of missing values as a tooltip. Use <code>profile = &quot;filter&quot;</code> to put it in the column’s filter popover instead of the header.</p>

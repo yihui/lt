@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.151/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.15</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.16</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -103,7 +103,7 @@
 <li><a href="#sec:column-visibility"><span class="section-number">11.5</span> Column visibility</a></li>
 <li><a href="#sec:column-profiles"><span class="section-number">11.6</span> Column profiles</a></li>
 <li><a href="#sec:downloading-a-csv"><span class="section-number">11.7</span> Downloading a CSV</a></li>
-<li><a href="#sec:large-data-server-mode"><span class="section-number">11.8</span> Large data (server mode)</a></li>
+<li><a href="#sec:large-data"><span class="section-number">11.8</span> Large data (server mode)</a></li>
 <li><a href="#sec:row-groups-and-indentation"><span class="section-number">11.9</span> Row groups and indentation</a></li>
 </ul>
 </li>
@@ -2482,13 +2482,15 @@ file holds exactly what the table shows.</p>
   "data_key": "3d00d273"
 }
 })</script>
-<h3 id="sec:large-data-server-mode"><span class="section-number">11.8</span> Large data (server mode)</h3>
+<h3 id="sec:large-data"><span class="section-number">11.8</span> Large data (server mode)</h3>
 <p>For data too big for the browser, <code>lt_serve()</code> keeps the rows in R. A local web
 app (built on <code>xfun::new_app()</code>) serves them, and the browser fetches just the
 current page whenever the sort, filters, search, or page change, so tables of
 millions of rows stay responsive. Print the result to view it:</p>
-<pre><code class="language-r">lt_serve(lt_viewer(iris))
+<pre><code class="language-r">lt_viewer(iris) |&gt; lt_serve()
 </code></pre>
+<p>In a Shiny app, return the table from <code>render_lt()</code> instead (see <a href="#sec:shiny">Shiny</a>):
+the session serves the rows, and no local app is started.</p>
 <p>Everything above works, with these differences:</p>
 <ul>
 <li>Filter and search expressions (e.g., <code>x &gt; 5</code>, <code>x != &quot;A&quot;</code>) run in R, so they
@@ -2505,12 +2507,12 @@ current page.</li>
 supported, and neither are external filter predicates.</li>
 <li>The CSV download fetches every row of the view.</li>
 </ul>
-<p>The app lives in the R session, so the table works as long as the session does.
-It is meant for viewing a table from an R session (the terminal, RStudio, a
-remote session reached through a proxy, or a notebook), not for publishing: a
-static document (R Markdown, Quarto, litedown) keeps no app behind it, and the
-built-in app is not supported in Shiny apps deployed to a server or in
-webR/shinylive, which cannot host the app. There, use <code>lt_interactive()</code> (rows
+<p>The local app lives in the R session, so the table works as long as the session
+does. It is meant for viewing a table from an R session (the terminal, RStudio,
+a remote session reached through a proxy, or a notebook), not for publishing: a
+static document (R Markdown, Quarto, litedown) keeps no app behind it, and
+webR/shinylive cannot host it. In a Shiny app, the session serves the rows, so
+the table works wherever the app runs. Elsewhere, use <code>lt_interactive()</code> (rows
 in the page), or give <code>lt_serve()</code> a <code>url</code> that the reader’s browser can reach.
 To serve rows from elsewhere (a database, Parquet files), pass <code>url</code> to
 <code>lt_serve()</code>; the table then only needs to name the columns (a zero-row data
@@ -2628,6 +2630,11 @@ server = function(input, output) {
   )
 }
 shinyApp(ui, server)
+</code></pre>
+<p>For a large table, pass the table to <code>lt_serve()</code> inside <code>render_lt()</code>: the
+session serves the rows (see <a href="#sec:large-data">Large data</a>), so the app
+needs no extra server.</p>
+<pre><code class="language-r">output$big = lt_interactive(my_data) |&gt; lt_serve() |&gt; render_lt()
 </code></pre>
 <p><code>lt_input()</code> goes the other way: a table whose cells can be edited in the
 browser. The server reads the edited table as a data frame (numeric columns stay

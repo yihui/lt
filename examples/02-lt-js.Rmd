@@ -1109,8 +1109,10 @@ current page whenever the sort, filters, search, or page change. R's
 `lt_serve()` sets this up (see the first example), and any server that speaks
 the protocol below can feed a table, e.g., one backed by a database or Parquet
 files. `spec.data` only needs the column names (empty arrays will do), since
-the first page is fetched too. Two more optional fields: `data_times` lists
-date-time columns (sent as ISO 8601 strings), and `data_cols` holds a summary
+the first page is fetched too. Three more optional fields: `data_times` lists
+date-time columns (sent as ISO 8601 strings), `data_n` is the number of rows
+in the whole data (the pager shows it beside the count of a filtered view, and
+offers page sizes only if it exceeds the smallest), and `data_cols` holds a summary
 per column (see `summary` in `lt-interactive.js`) for profiles and filter
 widgets; without it, columns get a plain filter box.
 
@@ -1128,7 +1130,9 @@ text/plain`, to avoid a CORS preflight), an object with:
 - `sort`: `[{ col, dir: "asc" | "desc" }, ...]`, most significant first,
   missing values last;
 - `page` (from 0) and `size`: the page to return; `size` 0 is every row;
-- `cols`: the visible columns.
+- `cols`: the visible columns;
+- `prof` (optional): the columns whose profile bars are wanted; absent when
+  profiles are off, and for a download.
 
 The server replies with JSON (`Content-Type: application/json`, plus an
 `Access-Control-Allow-Origin` header if the page is on another origin):
@@ -1137,8 +1141,8 @@ The server replies with JSON (`Content-Type: application/json`, plus an
 - `page`: the page returned (the requested one, clamped to the last page);
 - `data`: the page's values by column, e.g., `{ "a": [1, 2], "b": ["x", "y"] }`,
   with `null` for missing values and dates as `"YYYY-MM-DD"`;
-- `prof` (optional): when `where` keeps only some rows, the bar counts of
-  each column's profile over the kept rows, by column.
+- `prof` (optional): when `where` keeps only some rows, the bar counts over
+  the kept rows of each column requested in `prof`, by column.
 
 ### Rendering on demand
 
