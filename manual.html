@@ -1932,7 +1932,15 @@ started). See the examples in the package site for
 details and the request/response format a custom server implements.
 </p>
 <h3 id="sec:usage_25" class="unnumbered">Usage</h3>
-<pre><code class="language-r">lt_serve(x, url = NULL, times = NULL, cols = NULL, name = "lt-server", ...)</code></pre>
+<pre><code class="language-r">lt_serve(
+  x,
+  url = NULL,
+  times = NULL,
+  cols = NULL,
+  n = NULL,
+  name = "lt-server",
+  ...
+)</code></pre>
 <h3 id="sec:arguments_25" class="unnumbered">Arguments</h3>
 <table class="desc-table" role = "presentation">
 <tr><td><code>x</code></td>
@@ -1946,11 +1954,13 @@ details and the request/response format a custom server implements.
 default, a local app serving the rows of <code>x</code> is started; view the table by
 printing the result.</p>
 </td></tr>
-<tr><td><code>times</code>, <code>cols</code></td>
+<tr><td><code>times</code>, <code>cols</code>, <code>n</code></td>
 <td>
-<p>For a custom <code>url</code>: the date-time columns (names), and,
-optionally, a summary of each column (a named list) to draw profiles and
-filter widgets. The local app computes both from the data.</p>
+<p>For a custom <code>url</code>: the date-time columns (names),
+optionally a summary of each column (a named list) to draw profiles and
+filter widgets, and the number of rows in the whole data (shown in the
+pager next to the count of a filtered view). The local app computes all
+three from the data.</p>
 </td></tr>
 <tr><td><code>name</code>, <code>...</code></td>
 <td>
@@ -2185,7 +2195,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp838ni8/filed5f6b4e52bf.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpqPh33e/fileb9c606b93d2.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table class=&quot;desc-table&quot;&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -2299,7 +2309,7 @@ if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp838ni8/filed5f2c9a30d8.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/n6/hn37q6pj7sj_9dmqqc2113800000gn/T//RtmpqPh33e/fileb9c367a6fe1.png&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3))
 </code></pre>
