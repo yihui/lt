@@ -173,9 +173,9 @@ col_sketch = function(x, tx) {
   list(sketch = s, bar = bar, n = n)
 }
 
-# The JSON for one request: `query$q` is JSON (see ?lt_serve for the protocol)
-server_response = function(S, query) {
-  q = jsonlite::fromJSON(query[['q']] %||% '{}', simplifyVector = FALSE)
+# The JSON for one request: `body` is the request JSON (see ?lt_serve)
+server_response = function(S, body) {
+  q = jsonlite::fromJSON(body, simplifyVector = FALSE)
   data = S$data; n = nrow(data)
   keep = if (is.null(q$where)) rep(TRUE, n) else tree_keep(q$where, S$tx, unlist(q$cols))
   idx = server_order(which(keep), S$tx, q$sort)
@@ -242,8 +242,8 @@ check_server = function(x) {
 #'
 #' @section The data server protocol:
 #'
-#' The browser sends `GET <url>?q=<JSON>` (the JSON is URL-encoded), where the
-#' JSON object has these fields:
+#' The browser sends `POST <url>` with a JSON body (`Content-Type: text/plain`,
+#' to avoid a CORS preflight), an object with these fields:
 #'
 #' - `where`: the rows to keep, or `null` for all. A condition is a leaf
 #'   `{"col": <column or null>, "term": <string>}`, or a group
@@ -274,8 +274,9 @@ check_server = function(x) {
 #'
 #' @param x An `lt_tbl` object, typically made by [lt_viewer()] or
 #'   [lt_interactive()]; it is made interactive with the defaults if not yet.
-#' @param url The URL of a data server that speaks the protocol above. By
-#'   default, a local app serving the rows of `x` is started.
+#' @param url The URL of a data server that speaks the protocol above (absolute,
+#'   or relative to the page). By default, a local app serving the rows of `x`
+#'   is started, to be viewed by printing the result.
 #' @param times,cols For a custom `url`: the date-time columns (names), and,
 #'   optionally, a summary of each column (a named list) to draw profiles and
 #'   filter widgets. Without `cols`, columns get a plain filter box. The local
@@ -293,14 +294,16 @@ lt_serve = function(x, url = NULL, times = NULL, cols = NULL, name = 'lt-server'
   x$interactive$pager = I(sizes)
   if (is.null(url)) {
     S = server_state(x)
-    app = xfun::new_app(name, function(path, query, ...) tryCatch(
+    xfun::new_app(name, function(path, query, post, ...) tryCatch(
       list(
-        payload = server_response(S, query), `content-type` = 'application/json',
+        payload = server_response(S, rawToChar(post)), `content-type` = 'application/json',
         headers = 'Access-Control-Allow-Origin: *'
       ),
       error = function(e) list(payload = conditionMessage(e), `status code` = 400L)
     ), open = FALSE, ...)
-    url = paste0(app, 'data')
+    # relative to the page shown by print() (served at /custom/lt/), so it also
+    # works when 127.0.0.1 isn't the browser's own machine (remote sessions)
+    url = sprintf('../%s/data', name)
     times = S$times; cols = S$sketch
   }
   x$interactive$data_url = url

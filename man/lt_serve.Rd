@@ -10,8 +10,9 @@ lt_serve(x, url = NULL, times = NULL, cols = NULL, name = "lt-server", ...)
 \item{x}{An \code{lt_tbl} object, typically made by \code{\link[=lt_viewer]{lt_viewer()}} or
 \code{\link[=lt_interactive]{lt_interactive()}}; it is made interactive with the defaults if not yet.}
 
-\item{url}{The URL of a data server that speaks the protocol above. By
-default, a local app serving the rows of \code{x} is started.}
+\item{url}{The URL of a data server that speaks the protocol above (absolute,
+or relative to the page). By default, a local app serving the rows of \code{x}
+is started, to be viewed by printing the result.}
 
 \item{times, cols}{For a custom \code{url}: the date-time columns (names), and,
 optionally, a summary of each column (a named list) to draw profiles and
@@ -50,8 +51,8 @@ the server too.
 \section{The data server protocol}{
 
 
-The browser sends \verb{GET <url>?q=<JSON>} (the JSON is URL-encoded), where the
-JSON object has these fields:
+The browser sends \verb{POST <url>} with a JSON body (\code{Content-Type: text/plain},
+to avoid a CORS preflight), an object with these fields:
 \itemize{
 \item \code{where}: the rows to keep, or \code{null} for all. A condition is a leaf
 \verb{\{"col": <column or null>, "term": <string>\}}, or a group

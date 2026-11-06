@@ -2,7 +2,7 @@
  * each view (sort, filters, search, page) is fetched from `interactive.data_url`.
  * Must load before lt-interactive.js. The protocol is documented in ?lt_serve.
  *
- * Request: GET `data_url?q=<JSON>`, with JSON
+ * Request: POST to `data_url` with a JSON body
  *   { where?: tree, sort?: [{col, dir: "asc" | "desc"}], page, size, cols }
  * `where` is a leaf `{col, term}` (`col` null: any of `cols`, the visible
  * columns) or `{op: "and" | "or", items}`; `size` 0 is every row.
@@ -28,7 +28,7 @@
           sort: (state.sort || []).map(k => ({ col: k.col, dir: k.dir === "desc" ? "desc" : "asc" })),
           page: all ? 0 : state.page || 0, size: all ? 0 : state.pageSize || 0, cols: spec._cols || []
         },
-        id = ++seq, res = await fetch(`${o.data_url}?q=${encodeURIComponent(JSON.stringify(q))}`);
+        id = ++seq, res = await fetch(o.data_url, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(q) });
       if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
       const r = await res.json();
       if (!all && id !== seq) return;  // a newer request superseded this one

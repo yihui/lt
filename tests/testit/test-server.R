@@ -9,10 +9,10 @@ S = server_state(lt(d))
 req = function(..., where = NULL, sort = NULL, size = 0, page = 0, cols = list()) {
   f = list(...)
   w = c(unname(Map(function(c, t) list(col = c, term = t), names(f), f)), where)
-  list(q = jsonlite::toJSON(list(
+  jsonlite::toJSON(list(
     where = if (length(w)) list(op = 'and', items = w), sort = sort, size = size,
     page = page, cols = cols
-  ), auto_unbox = TRUE, null = 'null'))
+  ), auto_unbox = TRUE, null = 'null')
 }
 resp = function(...) jsonlite::fromJSON(server_response(S, req(...)), simplifyVector = FALSE)
 rows = function(...) as.numeric(unlist(lapply(resp(...)$data$a, function(v) if (is.null(v)) NA else v)))
