@@ -9,12 +9,12 @@ S = server_state(lt(d))
 req = function(..., where = NULL, sort = NULL, size = 0, page = 0, cols = list()) {
   f = list(...)
   w = c(unname(Map(function(c, t) list(col = c, term = t), names(f), f)), where)
-  jsonlite::toJSON(list(
+  xfun::tojson(list(
     where = if (length(w)) list(op = 'and', items = w), sort = sort, size = size,
     page = page, cols = cols
-  ), auto_unbox = TRUE, null = 'null')
+  ))
 }
-resp = function(...) jsonlite::fromJSON(server_response(S, req(...)), simplifyVector = FALSE)
+resp = function(...) parse_json(server_response(S, req(...)))
 rows = function(...) as.numeric(unlist(lapply(resp(...)$data$a, function(v) if (is.null(v)) NA else v)))
 asc = list(list(col = 'a', dir = 'asc')); desc = list(list(col = 'a', dir = 'desc'))
 any_col = function(t) list(list(col = NULL, term = t))
@@ -52,14 +52,14 @@ assert('conditions combine as trees; search covers the visible columns', {
 
 assert('paging clamps the page and reports the total', {
   r = resp(size = 3, page = 9)
-  (r$n %==% 4L)
-  (r$page %==% 1L)
+  (r$n %==% 4)
+  (r$page %==% 1)
   (length(r$data$a) %==% 1L)
 })
 
 assert('profile counts follow the filter; date-times travel as ISO text', {
   r = resp(a = 'x > 4')
-  (sum(unlist(r$prof$a)) %==% 2L)
+  (sum(unlist(r$prof$a)) %==% 2)
   (r$data$t[[1]] %==% '2024-01-01T11:00:00Z')
 })
 
@@ -88,4 +88,16 @@ assert('case-insensitive text conditions from plain-language queries work', {
   (rows(g = 'String(x).toLowerCase() == "x"') %==% c(1, NA))
   (rows(g = '!String(x).toLowerCase().includes("y")') %==% c(1, NA, 9))
   (rows(g = 'String(x).toLowerCase() != "x"') %==% c(5, 9))
+})
+
+assert('parse_json() reads objects, arrays, scalars, and escapes', {
+  r = parse_json('{"a": [1, "x\\n\\"y", null, true], "b": {"c": -2.5e1, "d": null}, "e": []}')
+  (r$a[[1]] %==% 1)
+  (r$a[[2]] %==% 'x\n"y')
+  (is.null(r$a[[3]]) && length(r$a) == 4L)
+  (r$a[[4]] %==% TRUE)
+  (r$b$c %==% -25)
+  (names(r$b) %==% c('c', 'd'))
+  (r$e %==% list())
+  (parse_json('"\\u00e9"') %==% '\u00e9')
 })

@@ -173,9 +173,52 @@ col_sketch = function(x, tx) {
   list(sketch = s, bar = bar, n = n)
 }
 
+# Minimal JSON reader (objects -> named lists, arrays -> lists, null -> NULL),
+# enough for requests, so that lt_serve() needs no JSON package
+parse_json = function(x) {
+  s = strsplit(x, '')[[1]]; i = 1L; n = length(s)
+  skip = function() while (i <= n && s[i] %in% c(' ', '\n', '\t', '\r', ',', ':')) i <<- i + 1L
+  str = function() {
+    i <<- i + 1L; out = character()
+    while (s[i] != '"') {
+      if (s[i] == '\\') {
+        i <<- i + 1L
+        if (s[i] == 'u') {
+          out = c(out, intToUtf8(strtoi(paste(s[i + 1:4], collapse = ''), 16L)))
+          i <<- i + 4L
+        } else out = c(out, switch(s[i], n = '\n', t = '\t', r = '\r', b = '\b', f = '\f', s[i]))
+      } else out = c(out, s[i])
+      i <<- i + 1L
+    }
+    i <<- i + 1L
+    paste(out, collapse = '')
+  }
+  val = function() {
+    skip(); ch = s[i]
+    if (ch == '"') return(str())
+    if (ch %in% c('{', '[')) {
+      i <<- i + 1L; obj = ch == '{'; out = list()
+      repeat {
+        skip()
+        if (s[i] == if (obj) '}' else ']') break
+        k = if (obj) str()
+        v = val()
+        out[if (obj) k else length(out) + 1L] = list(v)  # list() keeps null
+      }
+      i <<- i + 1L
+      return(out)
+    }
+    j = i
+    while (i <= n && !s[i] %in% c(' ', '\n', ',', ']', '}')) i <<- i + 1L
+    switch(tok <- paste(s[j:(i - 1L)], collapse = ''), `true` = TRUE, `false` = FALSE,
+           `null` = NULL, as.numeric(tok))
+  }
+  val()
+}
+
 # The JSON for one request: `body` is the request JSON (see ?lt_serve)
 server_response = function(S, body) {
-  q = jsonlite::fromJSON(body, simplifyVector = FALSE)
+  q = parse_json(body)
   data = S$data; n = nrow(data)
   keep = if (is.null(q$where)) rep(TRUE, n) else tree_keep(q$where, S$tx, unlist(q$cols))
   idx = server_order(which(keep), S$tx, q$sort)

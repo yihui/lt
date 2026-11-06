@@ -1032,8 +1032,7 @@ lt(d) |> lt_interactive(download = "cars.csv", filter = TRUE, pager = 5)
 For data too big for the browser, `lt_serve()` keeps the rows in R. A local web
 app (built on `xfun::new_app()`) serves them, and the browser fetches just the
 current page whenever the sort, filters, search, or page change, so tables of
-millions of rows stay responsive. Print the result to view it (it needs the `jsonlite`
-package):
+millions of rows stay responsive. Print the result to view it:
 
 ```{r, eval = FALSE}
 lt_serve(lt_viewer(iris))
@@ -1056,6 +1055,12 @@ Everything above works, with these differences:
 - The CSV download fetches every row of the view.
 
 The app lives in the R session, so the table works as long as the session does.
+It is meant for viewing a table from an R session (the terminal, RStudio, a
+remote session reached through a proxy, or a notebook), not for publishing: a
+static document (R Markdown, Quarto, litedown) keeps no app behind it, and the
+built-in app is not supported in Shiny apps deployed to a server or in
+webR/shinylive, which cannot host the app. There, use `lt_interactive()` (rows
+in the page), or give `lt_serve()` a `url` that the reader's browser can reach.
 To serve rows from elsewhere (a database, Parquet files), pass `url` to
 `lt_serve()`; the table then only needs to name the columns (a zero-row data
 frame will do), and the first page is fetched too. The request and response

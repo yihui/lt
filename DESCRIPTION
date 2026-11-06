@@ -25,7 +25,6 @@ Imports:
 Suggests:
     chromote,
     htmltools,
-    jsonlite,
     knitr,
     litedown,
     magick,
