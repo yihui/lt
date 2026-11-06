@@ -107,6 +107,7 @@ assert('lt_serve() adds the data URL to the spec and keeps an lt_tbl', {
   (inherits(x, 'lt_tbl'))
   (x$interactive$data_url %==% 'http://localhost/data')
   (nrow(x$data) %==% 0L)
+  (lt_serve(lt(d), url = 'u', n = 7)$interactive$data_n %==% 7)
 })
 
 assert('server_reply() returns JSON, or status 400 with the message on error', {

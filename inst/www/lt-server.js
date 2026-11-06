@@ -10,7 +10,8 @@
  * Response: JSON `{n, page, data, prof?}`: rows in the view, the (clamped)
  * page, the page's values by column, and bar counts by column for profiles.
  * Optional `interactive.data_cols` (a summary per column) feed profiles and
- * filter widgets; `data_times` lists date-time columns sent as ISO strings.
+ * filter widgets; `data_times` lists date-time columns sent as ISO strings;
+ * `data_n` is the row count of the whole data (for the pager).
  */
 (root => {
   "use strict";

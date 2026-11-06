@@ -283,16 +283,18 @@ check_server = function(x) {
 #' @param url The URL of a data server (absolute, or relative to the page). By
 #'   default, a local app serving the rows of `x` is started; view the table by
 #'   printing the result.
-#' @param times,cols For a custom `url`: the date-time columns (names), and,
-#'   optionally, a summary of each column (a named list) to draw profiles and
-#'   filter widgets. The local app computes both from the data.
+#' @param times,cols,n For a custom `url`: the date-time columns (names),
+#'   optionally a summary of each column (a named list) to draw profiles and
+#'   filter widgets, and the number of rows in the whole data (shown in the
+#'   pager next to the count of a filtered view). The local app computes all
+#'   three from the data.
 #' @param name,... For the local app: its name and other arguments passed to
 #'   [xfun::new_app()].
 #' @return `x`, with the data URL added.
 #' @export
 #' @examples
 #' if (interactive()) lt_serve(lt_viewer(iris))
-lt_serve = function(x, url = NULL, times = NULL, cols = NULL, name = 'lt-server', ...) {
+lt_serve = function(x, url = NULL, times = NULL, cols = NULL, n = NULL, name = 'lt-server', ...) {
   if (is.null(x$interactive)) x = lt_interactive(x)
   check_server(x)
   sizes = server_sizes(x$interactive$pager)
@@ -308,12 +310,13 @@ lt_serve = function(x, url = NULL, times = NULL, cols = NULL, name = 'lt-server'
     # relative to the page shown by print() (served at /custom/lt/), so it also
     # works when 127.0.0.1 isn't the browser's own machine (remote sessions)
     url = sprintf('../%s/data', name)
-    times = S$times; cols = S$sketch
+    times = S$times; cols = S$sketch; n = nrow(x$data)
     attr(x, 'server') = S
   }
   x$interactive$data_url = url
   x$interactive$data_times = if (length(times)) I(times)
   x$interactive$data_cols = cols
+  x$interactive$data_n = n
   x$data = utils::head(x$data, 0)
   x
 }
