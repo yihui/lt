@@ -206,6 +206,13 @@ server_response = function(S, body) {
     idx = idx[!is.na(idx)]
   } else page = 0L
   out = data[idx, , drop = FALSE]
+  # explicit conversions: CI's xfun (0.62) writes date-times as plain text, not ISO
+  for (c in names(out)) {
+    v = out[[c]]
+    if (inherits(v, 'Date') || is.factor(v)) out[[c]] = as.character(v)
+    else if (is.numeric(v)) out[[c]] = replace(v, !is.finite(v), NA)
+  }
+  for (c in S$times) out[[c]] = format(out[[c]], '%Y-%m-%dT%H:%M:%SZ', tz = 'UTC')
   r = list(n = total, page = page, data = lapply(as.list(out), I))
   if (total < n) r$prof = lapply(S$bar, function(b)
     I(tabulate(b[which(keep)] + 1L, attr(b, 'n'))))
