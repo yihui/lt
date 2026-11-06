@@ -61,6 +61,7 @@ assert('profile counts follow the filter; date-times travel as ISO text', {
   r = resp(a = 'x > 4')
   (sum(unlist(r$prof$a)) %==% 2)
   (r$data$t[[1]] %==% '2024-01-01T11:00:00Z')
+  (r$data$d[[1]] %==% '2024-01-02')
 })
 
 assert('infinite numbers are sent as null, which is valid JSON', {

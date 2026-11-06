@@ -192,6 +192,15 @@ parse_json = function(x) {
   eval(parse(text = paste(tok, collapse = ''), keep.source = FALSE), baseenv())
 }
 
+# Probe whether xfun writes date-times as ISO text; a version check is unreliable
+# since dev and release builds can share a version number.
+json_iso = local({
+  iso = NULL  # probed once
+  function() iso %||% (iso <<- grepl(
+    'T00:00:00Z', xfun::tojson(as.POSIXct(0, tz = 'UTC'), mode = 'json'), fixed = TRUE
+  ))
+})
+
 # The JSON for one request: `body` is the request JSON (see ?lt_serve)
 server_response = function(S, body) {
   q = parse_json(body)
@@ -206,14 +215,9 @@ server_response = function(S, body) {
     idx = idx[!is.na(idx)]
   } else page = 0L
   out = data[idx, , drop = FALSE]
-  # TODO: remove explicit conversions after xfun 0.63
-  if (!xfun::pkg_available('xfun', '0.62.11')) {
-  for (c in names(out)) {
-    v = out[[c]]
-    if (inherits(v, 'Date')) out[[c]] = as.character(v)
-  }
-  for (c in S$times) out[[c]] = format(out[[c]], '%Y-%m-%dT%H:%M:%SZ', tz = 'UTC')
-  }
+  # TODO: remove explicit conversion once xfun (>= 0.62.12) is on CRAN
+  if (!json_iso()) for (c in S$times)
+    out[[c]] = format(out[[c]], '%Y-%m-%dT%H:%M:%SZ', tz = 'UTC')
   r = list(n = total, page = page, data = lapply(as.list(out), I))
   if (total < n) r$prof = lapply(S$bar, function(b)
     I(tabulate(b[which(keep)] + 1L, attr(b, 'n'))))

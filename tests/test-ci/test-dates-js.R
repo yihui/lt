@@ -8,8 +8,8 @@ dfl = function(...) lt(data.frame(
   at = as.POSIXct(c('2024-03-05 10:30:00', '2023-12-25 08:00:00', '2024-01-10 23:59:59'), tz = 'UTC')
 ), ...)
 
-# TODO: date serialization (plain strings; UTC instants) needs xfun >= 0.62.11
-if (xfun::pkg_available('xfun', '0.62.11')) {
+# TODO: date serialization (plain strings; UTC instants) needs a recent xfun
+if (json_iso()) {
 assert('dates and date-times get a default format that lt_date() overrides', {
   x = dfl() |> lt_interactive(pager = FALSE)
   (lti_col(x, 1) %==% c('2024-03-05', '2023-12-25', '2024-01-10'))

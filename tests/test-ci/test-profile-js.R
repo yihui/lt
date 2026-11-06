@@ -16,7 +16,7 @@ assert('profile draws a histogram for numbers and top-value bars for text', {
 assert('profile is off by default, and covers dates', {
   d = lt(data.frame(n = 1:3))
   (lti_eval(d |> lt_interactive(), 'document.querySelectorAll(".lti-prof").length') %==% '0')
-  if (xfun::pkg_available('xfun', '0.62.11')) {
+  if (json_iso()) {
     x = lt(data.frame(d = as.Date(c('2024-01-01', '2024-03-01')))) |> lt_interactive(profile = TRUE)
     (prof(x, 0)[1] %==% 'min 2024-01-01; max 2024-03-01')
   }
