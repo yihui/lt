@@ -196,8 +196,9 @@ parse_json = function(x) {
 # since dev and release builds can share a version number.
 json_iso = local({
   iso = NULL  # probed once
+  # .POSIXct(): as.POSIXct(0) needs `origin` before R 4.3
   function() iso %||% (iso <<- grepl(
-    'T00:00:00Z', xfun::tojson(as.POSIXct(0, tz = 'UTC'), mode = 'json'), fixed = TRUE
+    'T00:00:00Z', xfun::tojson(.POSIXct(0, tz = 'UTC'), mode = 'json'), fixed = TRUE
   ))
 })
 

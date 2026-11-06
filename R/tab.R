@@ -869,13 +869,13 @@ lt_dotplot = function(
 #' @param ... Unnamed arguments are stylesheet paths or URLs. A bare
 #'   filename (no directory component) that does not exist in the working
 #'   directory is resolved against the stylesheets shipped with lt, so
-#'   e.g. `lt_css(x, "lt-gt.css")` uses the bundled gt-like theme.
+#'   e.g. `lt_css(x, "lt-plot.css")` adds the stylesheet for inline plots.
 #'
 #'   Named arguments define inline CSS rules scoped to `.lt-table`. Names
-#'   are selectors (e.g., `.na`, `td.highlight`) and values are either a
+#'   are selectors (e.g., `.high`, `td.highlight`) and values are either a
 #'   CSS string or a named list of properties:
-#'   `lt_css(x, .na = "background: #eee")` or
-#'   `lt_css(x, .na = list(background = "#eee"))`. The selectors and rules can
+#'   `lt_css(x, .high = "background: #eee")` or
+#'   `lt_css(x, .high = list(background = "#eee"))`. The selectors and rules can
 #'   also be given as a single `list(selectors, rules)` of two parallel vectors
 #'   (see [lt_label()]).
 #' @return `x` with the stylesheets recorded.
