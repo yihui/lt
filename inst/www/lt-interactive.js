@@ -697,7 +697,7 @@
         const input = cell.appendChild(searchInput(doc, `Filter ${c}`)),
               note = elem(doc, "div", { className: "lti-nl" });
         input.after(note);
-        addTips(input, () => columnExamples(data[c]), note);
+        addTips(input, () => columnExamples(sum(c).vals), note);
         onType(input, v => {
           const t = Q.parse(v, {}, c);
           t ? (state.filters[c] = t) : delete state.filters[c];
@@ -1414,7 +1414,7 @@
         const boxEd = { reflect: v => { if (doc.activeElement !== box) box.value = v; } },
               note = elem(doc, "div", { className: "lti-nl" }, panel);
         editors.push(boxEd);
-        addTips(box, () => columnExamples(data[col]));
+        addTips(box, () => columnExamples(sum(col).vals));
         // Plain-language conditions become one expression (`(x > 5) && (x < 9)`);
         // anything else stays as typed
         onType(box, v => {
