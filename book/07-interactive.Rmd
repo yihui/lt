@@ -1,0 +1,487 @@
+# Interactive Tables {#chp:interactive}
+
+A static table answers the question you thought to ask. An interactive table
+lets your reader ask the ones you did not. Which cars have the most horsepower
+per cylinder? Which species sits in the middle of the sepal lengths? Click a
+header, type a phrase, drag a slider, and the answer is already on the screen.
+
+The best part is the price. Everything interactive is handled in the browser by
+an extension that loads only for tables that ask for it. Add
+`lt_interactive()` to one table on a page and that page pulls in the extension;
+leave it off and the table costs nothing extra.
+
+```{r}
+library(lt)
+lt(mtcars[, 1:4]) |> lt_interactive()
+```
+
+Click a header to sort, use the box above the table to search, and page through
+the rows with the controls below. Each feature is an option of `lt_interactive()`,
+and each option can be switched off with `FALSE`, so you only ever pay for the
+controls you keep.
+
+::: {.callout-tip data-legend="Try it"}
+Interactive tables need a browser, so the examples in this chapter are rendered
+as HTML. In the R console, printing an interactive table opens it in the viewer
+or your browser, where the controls work the same way.
+:::
+
+## Searching and sorting {#sec:search-sort}
+
+Let's start with the feature readers reach for first. This example combines
+sorting and search, with the pager limited to five rows:
+
+```{r, child = ex('sort-search')}
+```
+
+### Sorting {#sec:sort}
+
+Click a column header once to sort ascending, again for descending, and a third
+time to go back to the original order. Sorting uses the raw values, so numbers
+sort as numbers (10 comes after 9, not after 1), and dates sort in time order
+rather than alphabetically.
+
+When one sort is not enough, shift-click a second header. The table then sorts
+by the first column and breaks ties with the second, and each header shows its
+place in the order.
+
+You can also start the table already sorted. Give `sort` a character vector of
+column names, where a `-` prefix means descending, or a one-sided formula with
+the same rule (`~ cyl + -mpg`, for instance):
+
+```{r}
+lt(mtcars[, 1:4]) |> lt_interactive(sort = c("cyl", "-mpg"), search = FALSE, filter = FALSE, pager = 5)
+```
+
+::: {.callout-tip data-legend="Sorting is safe"}
+Sorting never destroys anything. The original order comes back when the third
+click cycles past descending, so a reader can always return to the data as you
+wrote it.
+:::
+
+### Search and the plain-language box {#sec:search}
+
+The search box looks for a term in every cell of every row, and keeps only the
+rows that match. Matching ignores case, so `merc` finds the Mercedes rows.
+
+Typing a term is only the beginning. The box also reads a small, forgiving
+mini-language that feels a lot like English. A condition names a column (by its
+name, or by its label if the label has spaces), says what to check, and gives a
+value:
+
+```{r}
+lt(mtcars[, 1:5]) |> lt_interactive(search = TRUE, pager = 5, filter = FALSE)
+```
+
+Here are the phrases the box understands, each with what it keeps:
+
+| You type | It keeps the rows where |
+|:---------------------------------|:------------------------------------------|
+| `mpg over 25` | `mpg` is greater than 25 (also `above`, `more than`) |
+| `hp under 100` | `hp` is less than 100 (also `below`, `less than`) |
+| `wt at least 3` | `wt` is 3 or more (`at most` is the other way round) |
+| `mpg between 15 and 20` | `mpg` is from 15 to 20, inclusive |
+| `cyl is 4` | `cyl` equals 4 (also `equals`) |
+| `cyl is not 4` | `cyl` is anything but 4 |
+| `cyl 6` | `cyl` contains `6`, in short form |
+| `cyl contains 6` | the same, spelled out |
+| `does not contain merc` | no cell mentions `merc` (also `excludes`) |
+| `cyl is 4, mpg over 25` | both conditions hold (`,`, `;`, or `and` all work) |
+| `cyl is 4 or cyl is 6` | either one holds (`or` gives alternatives) |
+| `cyl is 4 or cyl is 6, mpg over 20` | `cyl` is 4, or `cyl` is 6 *and* `mpg` is over 20 |
+| `"Hornet Sportabout"` | the quoted phrase, matched as one piece |
+
+Two rules make the mini-language predictable. First, `and` binds tighter than
+`or`, so the last example reads as "4, or (6 and over 20)": the comma and `and`
+group first, then `or` splits the alternatives. Second, any words that do not
+form a condition are searched as typed, so `hornet` still does what you would
+expect.
+
+A line under the box shows how the query was read. If it reads `cyl is 4 or
+cyl is 6` as you meant it, you are good to go; if it reads it differently, you
+have found a typo before the rows have a chance to mislead anyone.
+
+::: {.callout-tip data-legend="Stuck? Ask for examples"}
+Click the box to see a few random queries built from the table's own values, and
+pick one to run it. It is the fastest way to learn the mini-language, and it
+works on any table, including tables you did not build yourself.
+:::
+
+If the mini-language is too gentle for you, a term that mentions `x` is
+evaluated as a JavaScript expression against each raw cell value. So `x > 20`
+keeps every row where any cell is above 20, and `x == null` finds the missing
+values. This is the power-user door, and it is open even when the friendly
+phrases are not enough.
+
+::: {.callout-warning data-legend="Expressions are JavaScript here"}
+The `x` expression runs in the browser, so it speaks JavaScript, not R. Write
+`x == 4`, not `x == 4L`, and `x >= "2024-01-05"` for dates. The same
+expressions must be valid R if you serve the table from R (see
+@sec:large-data).
+:::
+
+## Paging {#sec:paging}
+
+A table with thousands of rows is a wall, and a wall is not very friendly. The
+`pager` option breaks the rows into pages. Give it the page sizes to offer as a
+vector, and the first one is used at the start:
+
+```{r}
+lt(mtcars[, 1:4]) |> lt_interactive(pager = c(3, 6, Inf), search = FALSE, filter = FALSE)
+```
+
+The selector offers 3, 6, or every row (the infinity symbol means all of them).
+A size only appears if it would actually split the table, so a short table does
+not show a useless pager. Use `pager = FALSE` to show every row with no pager
+at all.
+
+Paging works with everything else. Sorting, filtering, and searching are applied
+first, and the pager then shows the page of the rows that survived. The row
+count beside the pager tells you how many rows the current view holds.
+
+## Filters {#sec:filter}
+
+Search asks one question across the whole table. Filters ask a question about
+each column separately, and then keep the rows that pass all of them. Every
+column can carry a filter under its header, so the reader can narrow the table
+one dimension at a time:
+
+```{r, child = ex('filter')}
+```
+
+The first table above asks for `filter = list("auto", Species = FALSE)`. The
+`"auto"` picks a filter per column from the data, and the `FALSE` removes the
+filter from `Species`. The second table asks for typed controls by name, one
+kind of widget per column, and a plain box for every other column.
+
+### Plain boxes
+
+`filter = TRUE` puts a plain box under each header. It matches the same way as
+the search, but only in its own column, and it takes the same phrases without
+the column name. So under `mpg` you can type `over 25`, and under `cyl` you can
+type `is 4 or is 6`.
+
+A plain box suits a reader who knows what to type. Typed widgets suit a reader
+who would rather pick from what is there. Use a box when the reader is going to
+type, and a widget when the reader is going to pick.
+
+### Let `"auto"` choose
+
+`filter = "auto"` looks at each column and chooses:
+
+-   a **range slider** for numbers, dates, and date-times (or a plain search
+    box if every value is the same),
+-   a **checklist** for text with at most 10 distinct values,
+-   a **plain box** for everything else.
+
+It is the default for `lt_interactive()` because it usually gets the answer
+right without asking. Override a single column by naming it in a list:
+`list("auto", cyl = "select")` keeps the automatic choice for every column but
+`cyl`, which gets a dropdown.
+
+### Typed controls
+
+The typed controls are the widgets behind `"auto"`, and you can ask for any of
+them by name:
+
+-   `"select"` is a dropdown of the column's values. It keeps the one value
+    chosen.
+-   `"checklist"` is a popover of checkboxes. It keeps every value whose box is
+    ticked, so the reader can keep several at once. All ticked means no filter.
+-   `"range"` is a two-thumb slider for the low and high end. When you do not
+    supply the ends, they are read from the data and rounded outwards to values
+    that bracket it nicely.
+
+### The funnel, and the expression box
+
+A typed control appears as a little funnel under the column header. Click it to
+open a popover with the widget and an expression box side by side. The two stay
+in sync: move the slider and the expression updates, or type an expression and
+the slider follows. When you type something the widget cannot show, such as a
+value outside its choices, the widget hides itself rather than lie about what
+it is filtering.
+
+::: {.callout-tip data-legend="Widget only"}
+If you want the widget without the expression box, pass a list with
+`box = FALSE`, such as `list(type = "select", box = FALSE)`. The reader then
+picks from the widget's own choices and nothing else, which is handy for a
+strict dropdown.
+:::
+
+### Range sliders, by hand and by keyboard
+
+A range slider filters only when you let go. While you drag a thumb, the readout
+follows along, but the table waits. Otherwise the rows would reflow under your
+cursor and the thumb would jump out from under your finger.
+
+Thumbs also work from the keyboard once they have focus. Arrow keys nudge a thumb
+one step at a time, and <kbd>Home</kbd> and <kbd>End</kbd> send it to the
+minimum and maximum. Tab to a thumb, and the table is yours.
+
+### Missing values
+
+A `"select"` or `"checklist"` offers `NA` as a choice of its own. Pick it to
+keep only the rows where the value is missing, or leave it unticked to set those
+rows aside. The filter never hides a missing value by accident.
+
+### Filters on hidden columns
+
+A column you hid with `lt_hide()` has no header to hang a filter on. Instead,
+its typed filter moves into the control bar as a labeled chip, showing the
+column name and the current value. Click anywhere on the chip to open its
+control. This is a good way to offer a filter on a value you do not want to show:
+
+```{r}
+lt(mtcars[, 1:5]) |>
+  lt_hide(~ mpg) |>
+  lt_interactive(
+    filter = list(TRUE, mpg = "range", cyl = "checklist"),
+    search = FALSE, pager = 5
+  )
+```
+
+## Row detail {#sec:detail}
+
+Sometimes a row has more to say than fits in a row. The `detail` option adds an
+expand caret to each row, and clicking it reveals the rest of that row's story
+beneath it. The simplest form names the columns to show, and those can include
+columns you hid from the main table:
+
+```{r, child = ex('detail')}
+```
+
+For full control, pass a JavaScript function wrapped in `js()`. It receives the
+row's raw values, the formatted text, and the row number, and returns a table
+spec of its own. Here the detail is a small table that sorts itself:
+
+```{r}
+lt(mtcars[, 1:5]) |>
+  lt_interactive(
+    pager = 3, filter = FALSE, search = FALSE,
+    detail = js('(row, i, d) => ({
+      data: { field: ["hp", "wt"], value: [d.hp, d.wt] },
+      interactive: { sort: ["value"], search: false }
+    })')
+  )
+```
+
+The returned spec is an ordinary table spec, so it can carry its own
+`interactive` field. The detail table can be sorted, filtered, or paged, just
+like its parent.
+
+## Columns: resizing and hiding {#sec:columns}
+
+### Resizing
+
+Drag the right edge of any header to widen or narrow that column. Widening a
+column widens the table and leaves the rest alone. Double-click the edge to fit
+the column to its contents, which is the quickest way to rescue a column whose
+header is cut short. Starting widths still come from `lt_width()`.
+
+```{r}
+lt(head(mtcars[, 1:4])) |> lt_interactive(pager = FALSE, search = FALSE, filter = FALSE) |>
+  lt_width(mpg = "8em")
+```
+
+Use `resize = FALSE` to fix the widths.
+
+### The column menu {#sec:column-menu}
+
+The `hide` option adds a menu that shows or hides columns. It opens from an eye
+button at the start of the search row, and it lists every column by its label.
+Uncheck one to hide its header and its cells; check it again to bring it back.
+
+```{r, child = ex('column-menu')}
+```
+
+Name columns to start with them hidden, as the example does, or use
+`hide = NA` to start with everything visible. Passing `label` swaps the eye icon for a labeled chip in the
+control bar, which is clearer when the reader might not know what the eye means.
+
+::: {.callout-note data-legend="A note on hide = TRUE"}
+Older code passes `hide = TRUE` to mean "show the menu". It still works, but it
+will be dropped in a future release, so write `hide = NA` for the same effect.
+:::
+
+## Profiles: a picture of each column {#sec:profile}
+
+A column's header tells you its name. Its profile tells you its shape. With
+`profile = TRUE`, each column header carries a mini chart: a histogram for
+numbers and dates, and one bar per category for text. Text with mostly distinct
+values gets no chart, because a bar for each name would only be noise.
+
+Hover over a chart to see summary statistics (min, max, and mean for numbers;
+the most frequent values for text), along with the count of missing values.
+Then filter a column, and the bars light up to show what share of each bucket
+your filter kept. It is a surprisingly good way to see what a filter is doing.
+
+```{r, child = ex('profile')}
+```
+
+If the headers are already crowded, `profile = "filter"` moves each chart into
+its column's filter popover instead. The popover only exists for columns with a
+typed filter, so pair this option with `filter = "auto"`:
+
+```{r}
+lt(iris) |> lt_interactive(profile = "filter", pager = 3, search = FALSE)
+```
+
+## Downloading the view {#sec:download}
+
+The reader has sorted, filtered, and searched their way to exactly the rows they
+need. The `download` option turns that view into a CSV file with one click. The
+file holds every row the filters and search keep, in sort order, across all
+pages, not just the page on screen:
+
+```{r, child = ex('download')}
+```
+
+The file uses the displayed text by default, so `4.2` is written as the rounded
+figure the reader saw. If you need the underlying numbers at full precision, for
+re-importing into analysis code, ask for the raw values instead:
+
+```{r, eval = FALSE}
+lt(mtcars) |> lt_interactive(download = list(file = "cars.csv", mode = "raw"))
+```
+
+Row detail is never included in the download. Pass `download = TRUE` for a
+default file name, or a string to name the file yourself.
+
+## When rows have structure {#sec:structure}
+
+Tables with row groups or indentation carry a shape that sorting could easily
+break. **lt** keeps that shape. Sorting and filtering always happen *within* each
+group or subtree, never across it, so a group header never gets separated from
+its rows, and an indented child never loses its parent.
+
+With separator groups, the groups keep their order, and a group whose rows all
+filter out drops its header entirely:
+
+```{r}
+d2 = data.frame(
+  Region = rep(c("East", "West", "South"), each = 3),
+  City = c("NYC", "Boston", "Philly", "LA", "Reno", "Boise", "Austin", "Miami", "Atlanta"),
+  Sales = c(42, 17, 23, 55, 9, 14, 31, 48, 26)
+)
+lt(d2) |> lt_group(~ Region, sep = TRUE) |> lt_interactive(pager = 5)
+```
+
+With rowspan groups, clicking a group header reorders whole blocks, and with
+several group columns the view stays nested, so an inner column only reorders
+within its parent. The spanning cells are redrawn to match.
+
+Indentation sorts siblings under each parent and carries each subtree along.
+Filtering a deep child keeps its ancestors visible, so the reader can always see
+where a row belongs:
+
+```{r}
+d3 = data.frame(
+  Item = c("Fruit", "Apple", "Pear", "Berry", "Grain", "Rice", "Oat", "Wheat"),
+  Qty = c(0, 12, 7, 5, 0, 30, 8, 19)
+)
+lt(d3) |> lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |> lt_interactive(pager = 5)
+```
+
+Spanners, styles, and footnotes are no obstacle to any of this.
+
+## Long tables in a scrolling box {#sec:scroll-box}
+
+Sometimes you do not want a page scrollbar at all. Put the table in a box with a
+fixed height instead, and the table scrolls inside it. With `lt_wrap()`, you can
+set that box's style directly. The header is sticky, so the column names,
+spanners, and controls stay in view however far the reader scrolls:
+
+```{r}
+lt(mtcars[, 1:4]) |>
+  lt_interactive(pager = FALSE, filter = FALSE) |>
+  lt_wrap(style = "max-height: 14em; overflow-y: auto")
+```
+
+Printing an interactive table in the viewer or a browser already fits it to the
+window in the same way, so a tall table scrolls inside its frame rather than
+pushing the page around.
+
+## The data viewer {#sec:viewer}
+
+Most of the time, the table you want is the one that answers "what is in this
+data frame?". `lt_viewer()` is that table, ready made. It is a shorthand for
+`lt_interactive()` with a few sensible defaults: each column shows its type and
+a profile, the column menu is on, and the title is the expression you passed:
+
+```{r, child = ex('viewer')}
+```
+
+Printed at the console, a viewer opens in the RStudio or Positron pane when it is
+available, or in your browser otherwise. Remove the title with
+`lt_header(NULL)`. Every argument of `lt_interactive()` also works here, so
+`lt_viewer(iris, pager = 5)` is a viewer with five-row pages.
+
+::: {.callout-tip data-legend="Viewer vs. table"}
+Use `lt_viewer()` to explore, and `lt_interactive()` to publish. The viewer
+packs in types and profiles for the explorer's benefit. In a report, a leaner
+table that says exactly what you mean usually reads better.
+:::
+
+## Large data: serving rows from R {#sec:large-data}
+
+Everything so far keeps the rows in the browser. That is fine for thousands of
+rows, and it starts to hurt somewhere past a hundred thousand. For data of
+millions of rows, `lt_serve()` keeps the rows in R instead. The browser asks for
+only the page it is showing, and each time the reader sorts, filters, searches,
+or turns the page, R sends back just those rows.
+
+```{r, child = ex('serve')}
+```
+
+The app is local, built on `xfun::new_app()`, so it lives in your R session and
+serves the table while that session runs. In a Shiny app, you do not need it at
+all: return the table from `render_lt()`, and the session serves the rows.
+
+```{r, eval = FALSE}
+output$big = lt_interactive(my_data) |> lt_serve() |> render_lt()
+```
+
+There is a price for the extra reach, and it is worth knowing before you lean on
+it:
+
+-   **Expressions run in R.** Filter and search expressions such as `x > 5` or
+    `x != "A"` must be valid R. The phrases and the widgets' own filters work
+    in both places, and a missing value never passes an expression unless the
+    expression is negated.
+-   **Substring matching uses the underlying values.** Search and text filters
+    look at the raw values rather than the formatted text, so a number is
+    matched as its full precision, not as the rounded figure on screen.
+-   **Profiles and choices come from all the data.** They are computed once when
+    the app starts, so a dropdown lists every value, not just the current page.
+    Plots drawn in cells scale to the current page.
+-   **Some table features are missing.** Row groups, indentation, row-specific
+    styles and footnotes, and external filter predicates do not work through
+    the server. A JavaScript row detail sees only the current page.
+-   **The CSV download fetches every row of the view.** It is complete, but a
+    huge view takes a while to arrive.
+
+::: {.callout-warning data-legend="For viewing, not publishing"}
+A local app is for looking at a table from your own R session: the console, RStudio,
+a remote session, or a notebook. It is not for publishing. A static document
+(R Markdown, Quarto, litedown) has no R session behind it once it is rendered,
+and webR or shinylive cannot run the app at all. For a published page, use
+`lt_interactive()` with the rows in the page, or bring your own server.
+:::
+
+### Bringing your own server
+
+When the rows live somewhere else, such as a database or a folder of Parquet
+files, give `lt_serve()` a `url` instead. Your server answers the browser's
+requests with JSON pages, and the table only needs to name its columns. A
+zero-row data frame is enough, because the first page is fetched too:
+
+```{r, eval = FALSE}
+lt(data.frame(id = integer(), x = numeric())) |>
+  lt_interactive() |>
+  lt_serve(url = "https://example.org/rows")
+```
+
+The request and response format is the same protocol the JavaScript runtime
+speaks, and it is described in full in @sec:server, in the JavaScript chapter
+(@chp:js). Any server that follows it can power a table, whatever it is built
+on.

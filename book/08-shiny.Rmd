@@ -1,0 +1,84 @@
+# Tables in Shiny {#chp:shiny}
+
+::: epigraph
+> A table that cannot be touched is a photograph. A table in Shiny is a window.
+:::
+
+A Shiny app is a conversation: the reader changes something, R answers. lt joins
+in with three small pieces. `lt_output()` and `render_lt()` show a table.
+`lt_input()` lets the reader edit one. `lt_update()` lets the server rewrite
+what the reader sees.
+
+None of the Shiny chunks in this chapter are run when the book is built, since
+they need a live session. Copy one into `app.R` and press *Run App*.
+
+## Showing a table {#sec:shiny-output}
+
+The pair works like any other Shiny output: `lt_output("tbl")` goes in the UI,
+`render_lt()` goes in the server.
+
+```{r, child = ex('shiny-output')}
+```
+
+What travels over the wire is the table *spec* (see @sec:spec), not HTML. The
+browser builds the `<table>` itself, so a reactive table redraws quickly and
+the page stays small. Anything you can do to a table elsewhere in this book
+(formats, plots, `lt_interactive()`) works inside `render_lt()`, and reactive
+inputs invalidate it the usual way:
+
+```{r, eval = FALSE}
+output$tbl = render_lt(
+  lt(mtcars[mtcars$cyl == input$cyl, ]) |> lt_interactive()
+)
+```
+
+::: {.callout-tip data-legend="Big data"}
+Pair `render_lt()` with `lt_serve()` (see @sec:serve) and the rows stay in R.
+The browser asks the Shiny session for one page at a time.
+:::
+
+## Editable tables {#sec:shiny-input}
+
+Sometimes the reader should *answer* rather than just read: fill in a dose
+schedule, correct a guess, tick off a plan. `lt_input()` turns chosen columns
+into editable cells, and the current data frame shows up as `input$m`.
+
+```{r, child = ex('shiny-input')}
+```
+
+A few things are worth knowing:
+
+- Click a cell to edit it. `Enter` commits and moves down, and clicking away
+  commits too.
+- Numeric columns stay numeric. A cell that does not parse as a number is
+  rejected, so `input$m` never turns into a column of strings by accident.
+- If you pass a matrix, you get a matrix back.
+- Only the columns named in `columns` are editable; the others are plain text.
+- Editing cannot be combined with `lt_interactive()` or with row groups that
+  span rows.
+
+### Pushing changes from the server {#sec:update}
+
+`lt_update(session, inputId, x)` swaps in a new table. In the example above, the
+*Add row* button appends an `NA` row to `input$m` and sends it back, so the
+reader's edits stay and a blank row appears. It is the same table, redrawn from
+data you control.
+
+## Serving big data {#sec:serve}
+
+Million-row tables do not belong in a web page. `lt_serve()` keeps the rows in
+R and hands the browser one page at a time. Sorting, filtering, and searching
+happen on the server, and the table behaves as if it held everything.
+
+```{r, child = ex('serve')}
+```
+
+At the console this opens a local server. Inside Shiny, `render_lt()` serves the
+rows from the session itself, so no extra port is needed. Either way the pager
+shows the size of the whole data, not just of the page.
+
+::: {.callout-note data-legend="Under the hood"}
+The conversation between the table and its server is a small JSON protocol. It
+is documented in @sec:server, in case you would rather feed a table from a
+database or a file than from R.
+:::

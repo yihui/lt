@@ -1,0 +1,172 @@
+# Plots in Cells {#chp:plots}
+
+::: epigraph
+> Graphical excellence is that which gives to the viewer the greatest number of
+> ideas in the shortest time with the least ink in the smallest space.
+>
+> ---Edward Tufte, *The Visual Display of Quantitative Information*
+:::
+
+A table is good at exact numbers. A chart is good at patterns. Why not have both
+in the same row? A forest plot of effect sizes is a table with a tiny chart in
+one column. A before-and-after comparison is a table with a dot per visit. A
+trend is a table with a little line running across it.
+
+**lt** has three functions that draw these charts *inside cells*:
+`lt_errorbar()` for intervals, `lt_dotplot()` for a few values per row, and
+`lt_sparkline()` for a series of values per row. They are small, and they stay
+small on purpose: each chart is a handful of SVG shapes, drawn by the browser
+from the numbers in the table. No image is rendered, and no chart library is
+loaded.
+
+::: {.callout-tip data-legend="The lightweight promise"}
+Only the numbers travel to the page. The shapes are drawn in the browser when the
+table is shown. In an interactive table (@chp:interactive), that means only the
+rows on the current page are drawn, so a sparkline on a page of 10 rows costs
+10 drawings, not 10,000.
+:::
+
+## Error bars: a forest plot in a column {#sec:errorbar}
+
+Confidence intervals are the classic case. Each row needs three numbers: the
+estimate and its lower and upper bounds. Name them in a formula, estimate on the
+left, bounds on the right, and **lt** draws the point and the bar on one shared
+scale, so the rows are comparable at a glance:
+
+```{r, child = ex('errorbar')}
+```
+
+The `ref = 0` argument draws a vertical line at zero, which is where you want a
+reference line for a risk difference (or `ref = 1` for an odds ratio). The
+`axis` argument draws a proper axis in the footer, with tick marks at round
+values; pass a string to caption it, as above.
+
+Look at the `into = "Forest"` argument. By default, the plot replaces the first
+value column, which is tidy but hides the numbers. With `into`, the plot gets a
+column of its own, and the numbers stay visible as text beside it. If the column
+does not exist yet, **lt** creates it at the end, so use `lt_move()` (@sec:labels)
+if you want it somewhere else.
+
+### Several series in one cell
+
+Sometimes one row should carry several intervals. Picture a trial with two
+treatment arms, both compared with placebo: you want to see both differences for
+each adverse event, and you want to see them on one scale. Give `lt_errorbar()`
+one `estimate ~ lower + upper` formula per series. Each row then stacks one bar
+per series, and `color` and `labels` explain which is which in a footer legend:
+
+```{r}
+d_grp = data.frame(
+  Term = c("Headache", "Nausea", "Fatigue"),
+  D1 = c(2.1, -1.4, 3.3), L1 = c(-1.0, -4.2, 0.1), U1 = c(5.2, 1.4, 6.5),
+  D2 = c(-0.5, 0.8, 1.2), L2 = c(-3.6, -2.1, -1.9), U2 = c(2.6, 3.7, 4.3)
+)
+lt(d_grp) |>
+  lt_errorbar(
+    D1 ~ L1 + U1, D2 ~ L2 + U2, ref = 0, color = TRUE,
+    labels = c("Drug A", "Drug B"), axis = "Risk difference (%)"
+  )
+```
+
+`color = TRUE` takes colors from the current palette. Pass a character vector
+such as `c("#5b8ff9", "#f6903d")` if you want specific ones. The bounds are
+hidden by default because the plot already shows them. `color = FALSE`, the
+default, draws every series in a single color, and the legend is then omitted.
+
+::: {.callout-tip data-legend="Scale"}
+Every bar in a column shares one scale. The scale runs from the smallest to the
+largest finite value across all the columns the plot reads, so a single extreme
+row squeezes the rest. Set `limits = c(min, max)` to choose the scale yourself,
+for example to match another table, or to keep a confidence interval that runs
+off the chart from being clipped unnoticed. Values outside the limits are pinned
+to the edges.
+:::
+
+## Dot plots: a few values per row {#sec:dotplot}
+
+A dot plot answers a different question. Instead of an interval, each row has a
+handful of measurements, and you want to see where each one lands. Before and
+after is the everyday example: one dot for each visit, all on the same axis, so
+the movement is obvious even before you read the numbers.
+
+```{r, child = ex('dotplot')}
+```
+
+Give `lt_dotplot()` the value columns as a formula, one dot per column. The
+`color = TRUE` argument colors the dots from the palette and adds a legend, and
+`axis` (on by default) puts the shared axis in the footer. The title of the
+axis is the string you pass, here `"Score"`.
+
+Two dots that land on nearly the same value sit on top of each other, and one of
+them vanishes. That is what `stagger = TRUE` is for, as in the example above: it
+moves each column's dot onto its own track, so both stay visible. The position
+up or down is cosmetic. The value still reads from left to right, and the cell
+grows taller to make room for the tracks.
+
+::: {.callout-warning data-legend="Labels"}
+The cell shows every column at once, so its column header should name them all.
+Use `lt_label()` to write something like `"Before / After"`, as the example
+does. Otherwise a reader sees a single "Before" header over a row of dots that
+mean two things.
+:::
+
+## Sparklines: a trend in a cell {#sec:sparkline}
+
+A sparkline is a word-sized line chart. Edward Tufte popularized the idea of
+putting such graphics inside a sentence, and it works just as well inside a table row. You
+can give `lt_sparkline()` a series in two ways. The first is a **list-column**,
+where each cell holds a vector of numbers:
+
+```{r, child = ex('sparkline')}
+```
+
+Each row is scaled to its own range by default, so the shape is what you see, and
+the actual values are in the cells next to it. The `type = "bar"` argument draws
+bars instead of a line, and `color` sets the color of either.
+
+The second way is to spread the series over several ordinary columns, one per
+point, read left to right across each row. This is handier when your data are
+already wide, as in a quarterly report:
+
+```{r}
+d_q = data.frame(
+  Region = c("North", "South", "West"),
+  Q1 = c(2, 5, 4), Q2 = c(4, 3, 6), Q3 = c(6, 7, 5), Q4 = c(5, 2, 8)
+)
+lt(d_q) |>
+  lt_label(Q1 = "Quarterly sales") |>
+  lt_sparkline(~ Q1 + Q2 + Q3 + Q4, type = "bar", limits = c(0, 8), color = "#4caf50")
+```
+
+Here the four quarter columns are hidden after the first, since their values now
+live in the chart. Use `hide = FALSE` to keep them visible.
+
+### A shared scale for honest comparisons
+
+Per-row scaling makes every line fill its cell, which is pretty but can mislead.
+A row that moves from 2 to 3 looks just as dramatic as one that goes from 20 to
+30. When the rows should be compared with each other, pass `limits` to put every
+sparkline on one scale. The example above did exactly that with `limits = c(0,
+8)`, so the North and West rows can be read against each other directly.
+
+## Sizing and layout {#sec:plot-size}
+
+Each plot is a fixed pixel size by default: `width` and `height` set it, and
+`width = 160` for `lt_errorbar()` is a sensible start. If you want the plot to
+follow its column, give a relative width such as `"100%"`. The plot then grows and
+shrinks as the column is resized, which pairs nicely with the resizable columns
+of an interactive table (@chp:interactive). Use `list(min = 200, width = "100%")` to
+keep it from shrinking below 200 pixels.
+
+::: {.callout-tip data-legend="Interactive tables"}
+Plots work in interactive tables, and they are drawn only for the visible page.
+Sorting a table with a sparkline in it reorders the rows and redraws their
+charts. Filtering keeps the charts of the rows that remain.
+:::
+
+## Where the charts live {#sec:plot-module}
+
+Inline plots come from their own module, `lt-plot.js`, which is loaded only for
+tables that use one. A plain table does not pay for it. `lt_dependency(plot =
+TRUE)` (@chp:js) includes it explicitly when you embed a table elsewhere, and
+**lt** handles it for you everywhere else.

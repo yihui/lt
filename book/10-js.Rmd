@@ -1,0 +1,125 @@
+# Using lt from JavaScript {#chp:js}
+
+::: epigraph
+> Keep it simple: a table is data, and the rest is description.
+:::
+
+You do not need R to use lt. The whole library is a few small scripts and one
+idea: *a table is JSON*. Hand the runtime a spec, get a table back. This
+chapter is for people building pages by hand, for apps in other languages, and
+for the curious who want to see what R is quietly writing for them.
+
+```{r assets, echo = FALSE, results = 'asis'}
+# link the runtime (lt-plot loads before the core script)
+cat(
+  lt:::css_block(c('lt.css', 'lt-plot.css', 'lt-interactive.css'), inline = FALSE),
+  lt:::js_block(c('lt-plot.js', 'lt.js', 'lt-interactive.js'), inline = FALSE),
+  sep = '\n'
+)
+```
+
+The scripts above are what a page needs: `lt.css` and `lt.js` for the core,
+`lt-plot.js` for inline graphics (load it *before* the core), and
+`lt-interactive.js` for sorting, search, and friends. Each is optional beyond
+the core, so a page pays only for what it uses. They are published on npm as
+`@xiee/utils`, so a CDN link works too.
+
+## Building a table {#sec:js-build}
+
+Put `LT.build(spec)` in a `<script>` where the table should appear.
+
+```{r, child = ex('js-build')}
+```
+
+A spec has a few top-level keys:
+
+- `data`: an object of columns, each an array of values (`null` for missing).
+- `ops`: the list of operations, applied in order: `fmt_number`, `fmt_date`,
+  `sub`, `merge`, `label`, `align`, `width`, `move`, `hide`, `style`, `indent`,
+  and the graphics `errorbar`, `sparkline`, and `dotplot`.
+- `header`, `column_spanners`, `row_groups`, and `notes`: the table's furniture.
+- `interactive`: an object that switches on the extension (see below).
+
+The easiest way to learn the vocabulary is to let R write it. Build a table in
+R, call `lt_spec()` (see @sec:spec), and read the JSON.
+
+## Interactive options {#sec:js-interactive}
+
+The `interactive` field takes the same options as `lt_interactive()`:
+
+- `sort`: `false`, an array of columns, `"-name"` for descending, or
+  `{ col, dir }`.
+- `search`: `false` to hide the box. Plain-language queries work here too.
+- `filter`: `{ default, cols }`, where each value is `true`, `"select"`,
+  `"range"`, `"checklist"`, `"auto"`, or `false`.
+- `pager`: an array of page sizes (0 for all), or `false` for none.
+- `resize`, `hide`, `profile` (`"header"` or `"filter"`), and `download` (`true`
+  or a file name).
+- `detail`: an array of columns, or a function `(row, index, display) => spec`
+  that returns the table to show in the expanded row.
+
+## Driving a table from outside {#sec:js-control}
+
+`LT.render(element, spec)` has no need to run while the page is parsing: call it
+whenever you like, and it returns the table. Every interactive table also
+carries a controller at `el._lt`, so other widgets on the page can steer it.
+
+```{r, child = ex('js-control')}
+```
+
+The controller has a small surface:
+
+- `el._lt.filter(id, fn)` installs a row predicate under a name; `fn = null`
+  removes it. Predicates from different ids combine with AND.
+- `el._lt.refresh()` redraws after you change something.
+- `el._lt.view()` lists the 1-based original indices of the rows now visible.
+- `el._lt.spec` and `el._lt.state` expose the spec and the interaction state.
+
+This is how a dropdown, a slider, or a chart can filter a table without the
+table knowing they exist.
+
+## Server mode {#sec:server}
+
+When there are too many rows to ship, a table can ask a server for them
+instead. Load `lt-server.js` before `lt-interactive.js`, and set
+`interactive.data_url`. `lt_serve()` in R does exactly this (see @sec:serve),
+and any server that speaks the protocol below can feed a table, such as one
+backed by a database or Parquet files.
+
+`spec.data` only needs the column names (empty arrays will do), because the
+first page is fetched too. Optional fields: `data_times` lists date-time
+columns (sent as ISO 8601 strings), `data_n` is the number of rows in the whole
+data, and `data_cols` holds per-column summaries for profiles and filter
+widgets. Without `data_cols`, columns get a plain filter box.
+
+### The request
+
+The browser sends `POST <data_url>` with a JSON body, using
+`Content-Type: text/plain` to dodge a CORS preflight. The body is an object:
+
+- `where`: the rows to keep, or `null` for all. A condition is a leaf
+  `{ col, term }` or a group `{ op: "and" | "or", items }`. A `term` that uses
+  `x` for the cell value and is a JavaScript expression (`x > 5`, `x == null`,
+  `["a", "b"].includes(x)`) keeps the rows where it is true; one that starts
+  with `!` or is `x != ...` negates. Any other term is a case-insensitive
+  substring of the cell text. If `col` is `null`, the term is tried on every
+  visible column.
+- `sort`: `[{ col, dir: "asc" | "desc" }, ...]`, most significant first,
+  missing values last.
+- `page` (from 0) and `size`: the page wanted. `size` 0 means every row.
+- `cols`: the visible columns.
+- `prof` (optional): the columns whose profile bars are wanted.
+
+### The reply
+
+The server answers with JSON (`Content-Type: application/json`, plus
+`Access-Control-Allow-Origin` if the page lives on another origin):
+
+- `n`: the number of rows in the view.
+- `page`: the page returned, clamped to the last page.
+- `data`: the page's values by column, such as `{ "a": [1, 2], "b": ["x", "y"] }`,
+  with `null` for missing values and dates as `"YYYY-MM-DD"`.
+- `prof` (optional): bar counts over the kept rows, for each column in `prof`.
+
+That is the whole contract. A forty-line server in any language is enough to
+put a billion-row table in front of a reader.

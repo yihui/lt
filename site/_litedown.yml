@@ -23,11 +23,32 @@ site:
       contents: [lt_output, lt_dependency]
   examples:
     Get started:
-      desc: An overview of lt and migrating from gt.
-      contents: ["01-*", "03-*"]
+      desc: An overview of lt, migrating from gt, and the basics of labels, alignment, and column types.
+      contents: ["01-*", "03-*", "04-*", "05-*", "06-*", "07-*"]
+    Format cells:
+      desc: Automatic formatting, numbers, dates, and substitutions.
+      contents: ["08-*", "09-*", "10-*", "11-*"]
+    Shape the table:
+      desc: Merge, span, move, hide, group, and indent.
+      contents: ["12-*", "13-*", "14-*", "15-*", "16-*", "17-*"]
+    Notes and HTML:
+      desc: Footnotes, source notes, and raw HTML.
+      contents: ["18-*", "19-*", "20-*"]
+    Style:
+      desc: Cell styles, CSS, and table wrappers.
+      contents: ["21-*", "22-*"]
+    Inline graphics:
+      desc: Error bars, sparklines, and dot plots.
+      contents: ["23-*", "24-*", "25-*"]
+    Interactivity:
+      desc: Sort, search, filter, drill down, profile, download, view, and serve.
+      contents: ["26-*", "27-*", "28-*", "29-*", "30-*", "31-*", "32-*", "33-*"]
+    Shiny and export:
+      desc: Shiny outputs and inputs, and static export.
+      contents: ["34-*", "35-*", "36-*"]
     JavaScript:
       desc: Use the lt.js runtime directly.
-      contents: ["02-*"]
+      contents: ["02-*", "37-*", "38-*", "39-*"]
 
 output:
   html:

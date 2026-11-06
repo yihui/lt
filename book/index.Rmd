@@ -1,0 +1,145 @@
+---
+title: "lt: Lightweight Tables for R"
+author: "Yihui Xie"
+date: "`{r} Sys.Date()`"
+---
+
+```{r, include = FALSE}
+library(lt)
+source('_ex.R')  # defines ex(), which embeds examples from ../examples
+```
+
+```{css, echo = FALSE}
+.epigraph { margin: 0 0 2em 2em; font-style: italic; }
+.ex-link { float: right; font-size: .8em; }
+```
+
+# Preface {.unnumbered}
+
+::: epigraph
+> Perfection is achieved, not when there is nothing more to add, but when there
+> is nothing left to take away.
+>
+> ---Often attributed to Antoine de Saint-Exupéry
+:::
+
+Every report I have ever written ended up with a table in it. Not a glamorous
+one: a few rows, a few columns, a title, a footnote that says *"p-values are
+two-sided"*. And every time, getting that humble table to look right took more
+effort than the analysis it summarized.
+
+The **lt** package is my attempt to make tables boring again, in the good sense.
+You hand it a data frame, pipe it through a handful of small verbs, and get
+back a table that already looks like it belongs in a publication:
+
+```{r}
+d = data.frame(
+  Group = c("Treatment", "Treatment", "Control", "Control"),
+  Endpoint = c("Primary", "Secondary", "Primary", "Secondary"),
+  Estimate = c(0.6123, 0.7891, 0.4567, 0.5432),
+  CI_Lower = c(0.4012, 0.5678, 0.2345, 0.3210),
+  CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
+  P_Value = c(0.0012, NA, 0.1234, NA)
+)
+lt(d) |>
+  lt_group(~ Group) |>
+  lt_header("Study Results", "Primary and secondary endpoints") |>
+  lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |>
+  lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |>
+  lt_sub(~ P_Value, missing = "n/a") |>
+  lt_footnote("Two-sided p-value from log-rank test.", "column", ~ P_Value)
+```
+
+That is the whole idea. The rest of this book is about the details, and there
+are more of them than the pitch suggests: **lt** can also draw forest plots
+and sparklines inside cells, turn a table into an interactive explorer with
+filters and plain-language search, serve a million rows from R without
+breaking a sweat, and become an editable input in a Shiny app.
+
+## Why another table package?
+
+Because the table packages I admire are big. [**gt**](https://gt.rstudio.com)
+has a beautiful grammar of tables, but it brings dozens of packages along.
+[**DT**](https://github.com/rstudio/DT) makes tables interactive, but it ships
+a whole JavaScript library with it. I wanted the vocabulary of the former and
+the interactivity of the latter in something I could install in a heartbeat and
+read in an afternoon.
+
+So **lt** makes a few deliberate trade-offs:
+
+-   **HTML only.** No LaTeX, no RTF. Everything that can be done in a browser
+    is done in a browser. (You can still export to PDF and PNG; see
+    @chp:export.)
+
+-   **One dependency.** **lt** imports **xfun**, and that is all. No sass, no V8,
+    no htmltools.
+
+-   **A tiny runtime.** R does not render the `<table>`. It ships your data and
+    a short list of instructions as JSON, and a small, plain JavaScript file
+    builds the table in the browser. A page full of tables loads that file once.
+
+-   **Pay for what you use.** Inline plots and interactivity live in separate
+    extensions that a page loads only when some table asks for them. A plain
+    table never pays for sorting it doesn't have.
+
+## How it works
+
+```{mermaid}
+#| how-it-works, echo = FALSE,
+#| fig.cap = 'From a data frame to a table: R describes, the browser draws.'
+
+flowchart LR
+  A[data frame] --> B["lt() |> lt_*()"]
+  B --> C[("JSON spec: data + ops")]
+  C --> D["lt.js in the browser"]
+  D --> E[table]
+```
+
+Each `lt_*()` function records an instruction (*format this column*, *group
+those rows*, *add a footnote here*) on the table object without touching the
+data. When the table is printed, the data and instructions travel to the page as
+a compact JSON spec, and the runtime applies them. Because the spec is plain
+JSON, three nice things follow:
+
+-   The same table can be built straight from JavaScript, with no R involved
+    (@chp:js).
+-   Values you formatted remain available in their raw form: hover over a cell,
+    or press <kbd>Alt</kbd> and click the table.
+-   Other tools can embed an **lt** table, by shipping the spec and calling
+    `LT.render()` (@chp:export).
+
+## Installation
+
+Install the released version from CRAN, or the development version from
+r-universe:
+
+```r
+# CRAN version
+install.packages("lt")
+
+# development version
+install.packages("lt", repos = "https://yihui.r-universe.dev")
+```
+
+You can also play with the package in your browser, with nothing installed, at
+<https://pkg.yihui.org/lt/playground/>.
+
+## How to read this book
+
+The chapters follow the life of a table. We start with a first table
+(@chp:start), then teach it to format numbers (@chp:format), shape its rows and
+columns (@chp:structure), explain itself (@chp:notes), draw (@chp:plots), and
+dress up (@chp:style). After that comes the fun part: making it interactive
+(@chp:interactive), putting it in Shiny apps (@chp:shiny), and getting it out of
+R (@chp:export). Two chapters stand apart: one for those who want to use the
+JavaScript runtime directly (@chp:js), and one for those arriving from **gt**
+(@chp:gt).
+
+Almost every code block here is a small, self-contained example that lives in
+the [`examples/`](https://github.com/yihui/lt/tree/main/examples) folder of the
+package, one feature per file. The link under a block ("Open as a page") opens
+it on its own, so you can read the source, view the table at full width, or copy
+the file as a starting point. If you would rather learn by poking, the
+[playground](https://pkg.yihui.org/lt/playground/) is the place.
+
+Throughout, we use the native pipe `|>`.

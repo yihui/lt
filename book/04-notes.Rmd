@@ -1,0 +1,78 @@
+# Footnotes, Notes, and HTML {#chp:notes}
+
+::: epigraph
+> The devil is in the details.
+>
+> ---Proverb
+:::
+
+Every good table has fine print. A number needs a caveat, a column needs a
+definition, a source needs credit. This chapter is about the small words that
+sit around your table and make the big numbers trustworthy.
+
+## Footnotes {#sec:footnote}
+
+`lt_footnote()` hangs a numbered footnote on whatever you point at. The
+`where` argument picks the target, and `columns`, `rows`, or `match` narrow it
+down:
+
+| `where`      | Attaches to               | Narrow it with            |
+|--------------|---------------------------|---------------------------|
+| `"title"`    | the title                 | nothing                   |
+| `"subtitle"` | the subtitle              | nothing                   |
+| `"column"`   | a column label            | `columns`                 |
+| `"spanner"`  | a spanner label           | `columns` (the spanner)   |
+| `"group"`    | a row group label         | `match`                   |
+| `"body"`     | specific cells            | `columns` and `rows`      |
+
+Numbers go to footnotes in order of first appearance, so the count always runs
+1, 2, 3 and never skips. Two footnotes with identical text share one number. The
+example below uses all six targets at once, which is more footnotes than any
+sensible table needs. Think of it as a stress test.
+
+```{r, child = ex('footnote')}
+```
+
+::: callout-tip
+Footnotes on body cells are the sharpest tool in the box. Use `rows` to point at
+the exact cells that need the caveat, rather than footnoting a whole column that
+is mostly fine.
+:::
+
+## Source notes {#sec:note}
+
+A footnote explains one thing. A *note* sits in the footer and speaks for the
+whole table: where the data came from, what was excluded, who to blame.
+`lt_note()` adds an unnumbered line below any footnotes.
+
+```{r, child = ex('note')}
+```
+
+Call it more than once to add more lines. Notes keep the order you gave them.
+
+## HTML in cells and labels {#sec:html}
+
+By default, lt treats every string as plain text and escapes it. That is a
+feature: a stray `<` in your data will not break the page, and nobody can sneak
+a `<script>` into a cell. But sometimes you really do want a link, some bold
+text, or a superscript.
+
+Two tools, two jobs:
+
+- `lt_html()` marks whole *columns* as HTML. Use it when the data itself
+  contains markup, like a column of links.
+- `I()` marks a single *string* as raw HTML. Use it for titles, labels, and
+  notes. (It is the base R "as is" wrapper, so there is nothing new to learn.)
+
+```{r, child = ex('html')}
+```
+
+::: callout-warning
+Raw HTML is passed through untouched. If the text comes from users you do not
+trust, escape it first with `xfun::html_escape()`, or keep it out of
+`lt_html()` columns altogether.
+:::
+
+With footnotes for the caveats, notes for the credits, and HTML for the
+flourishes, the table now says everything it needs to. Next, let us make the
+numbers speak in pictures: @chp:plots.
