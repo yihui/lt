@@ -46,9 +46,8 @@ assert("search boxes drop down random example queries", {
   # the first two are numeric and text, in that order
   (grepl('^n ', parts[1]))
   (grepl('^name ', parts[2]))
-  # the placeholder shows a sample, and the title says the list is not exhaustive
+  # the placeholder shows a sample
   (lti_eval(x, 't.querySelector(".lti-search").placeholder.startsWith("e.g. n ")') %==% 'true')
-  (lti_eval(x, 't.querySelector(".lti-search").title.startsWith("Examples, not")') %==% 'true')
   # picking one (an input event with no typing) applies it at once, no debounce
   pick = 'var i = t.querySelector(".lti-search"); i.value = i.list.options[0].value;
           i.dispatchEvent(new Event("input"))'

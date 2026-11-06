@@ -283,7 +283,13 @@
 
   function enhance(el, spec) {
     const opts = spec.interactive, cols = spec._cols || [],
-          data = spec.data || {}, nRow = (data[cols[0]] || []).length,
+          data = spec.data || {},
+          // server mode (lt-server.js): rows live on a server (`data_url`), and
+          // `spec.data` holds just the current page
+          srv = opts.data_url && LT.plugins.server?.(opts, spec),
+          nRow = srv ? 0 : (data[cols[0]] || []).length,
+          // per-column summaries for profiles and filter widgets
+          sums = {}, sum = srv ? srv.sum : c => sums[c] ||= summary(textual(spec)[c] || [], true),
           groups = spec._groups,
           // row -> group (to re-emit headers), and body render order (groups,
           // then ungrouped rows) so out-of-order manual groups map display text
@@ -323,6 +329,21 @@
             filters: {}, predicates: {}, paints: [], page: 0, pageSize: 0,
             sort: Array.isArray(opts.sort) ? opts.sort.map(parseKey) : []
           };
+    // Server mode: fetch the page for the current state, then show it (details
+    // are keyed by page-local row, so they close)
+    const load = () => {
+      const wrap = el.closest(".lt-wrap");
+      wrap?.classList.add("lti-busy");
+      return srv.load(state).then(r => {
+        if (!r) return;
+        wrap?.classList.remove("lti-busy");
+        spec.data = r.data;
+        state.page = r.page;
+        state.paints.forEach(f => f(null, state.prof = r.prof));
+        el._lt.clearDetail?.();
+        show(Array.from({ length: Object.values(r.data)[0]?.length ?? 0 }, (_, i) => i + 1), r.n);
+      }, e => { wrap?.classList.remove("lti-busy"); console.error(e); });
+    };
     let view,          // filtered + sorted indices, cached across page turns
         sync = () => {};  // pager readout, replaced by addPaginate()
     // Hooks run on each new <tbody> to restore state a swap drops: expand carets
@@ -332,25 +353,26 @@
 
     // `stale`: view changed (term/sort), not just page; recompute, go to page 1.
     const refresh = (stale = true) => {
+      if (srv) { if (stale) state.page = 0; return load(); }
       if (stale) {
         view = state.view = computeView(spec, disp, state); state.page = 0;
-        state.paints.forEach(f => f(view));
+        state.paints.forEach(f => f(view, state.prof));
       }
-      const rows = pageSlice(view, state),
-            // _viewRows = page rows with group headers; postSwap gets the same
-            // list, one entry per <tbody> row
-            vr = withGroups(rows),
-            tmp = elem(el.ownerDocument, "template", {
-              innerHTML: LT.buildHtml({ ...spec, _viewRows: vr })
-            });
+      show(pageSlice(view, state), view.length);
+    };
+    // Render `rows` (indices into `spec.data`), `total` rows in the view
+    const show = (rows, total) => {
+      const vr = withGroups(rows),  // page rows with group headers
+            s2 = { ...spec, _viewRows: vr },
+            tmp = elem(el.ownerDocument, "template", { innerHTML: LT.buildHtml(s2) });
+      if (srv) spec._display = s2._display;
       const body = $(tmp.content, "tbody");
       if (!rows.length)  // no match: neutral symbol across all columns
         body.innerHTML = `<tr class="lti-empty"><td colspan="${nAll}">—</td></tr>`;
       else postSwap.forEach(f => f(body, vr));
       $(el, "tbody").replaceWith(body);
-      sync(view.length);
+      sync(total);
     };
-
     // refresh() rebuilds the body synchronously (freezes large tables). uiRefresh()
     // shows a busy state (see busyRender). Paging stays direct (cheap); view
     // recomputes and detail toggles go through the busy wrapper.
@@ -371,7 +393,7 @@
     // replacing it, or removing with null `fn`, then re-renders. `spec`/`state`
     // are read-only exposure. `bar` and `resetDetail` are added below.
     el._lt = {
-      spec, state,
+      spec, state, server: srv,
       // Re-render body. `stale` (default) recomputes view, page 1; `false` keeps
       // view and page (e.g. plot refit)
       refresh: (stale = true) => uiRefresh(stale),
@@ -406,10 +428,10 @@
     // Sort before filters join the header cells; `allCols` binds group headers
     // too
     if (opts.sort !== false) addSort(hrow, allCols, state, requestRefresh);
-    if (opts.profile === "header") addProfile(hrow, cols, textual(spec), state);
+    if (opts.profile === "header") addProfile(hrow, cols, sum, state);
     // Header filters: needed if a default applies or a named column is visible
     if (flt && (flt.default || (flt.cols && Object.keys(flt.cols).some(c => flt.cols[c] && cols.includes(c)))))
-      addFilter(hrow, cols, flt, textual(spec), state, requestRefresh, opts.profile === "filter");
+      addFilter(hrow, cols, flt, sum, state, requestRefresh, opts.profile === "filter");
     const layout = opts.resize ? fixedLayout(el, hrow, cols.length, nGroup) : null;
     if (opts.resize) addResize(el, layout);
     // DOM order = visual order. Chips group is always created with a bar so callers
@@ -418,7 +440,7 @@
     if (opts.search !== false) addSearch(headBar, el, state, requestRefresh, names, labelOf, () => queryExamples(textual(spec), cols, labelOf));
     const chips = headBar ?
       elem(el.ownerDocument, "div", { className: "lti-chips" }, headBar) : null;
-    if (barCols.length) addControlFilters(chips, barCols, flt.cols, textual(spec), state, requestRefresh, opts.profile === "filter");
+    if (barCols.length) addControlFilters(chips, barCols, flt.cols, sum, state, requestRefresh, opts.profile === "filter");
     const icons = (opts.hide || opts.download) ?
       elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
     if (opts.hide)
@@ -437,6 +459,7 @@
       // Bust detail cache and re-render open details (one row or all), for
       // widgets that change the detail callback's output
       el._lt.resetDetail = detail.reset;
+      el._lt.clearDetail = detail.clear;
     }
     // controls built; allow the coalesced final render
     building = false;
@@ -553,9 +576,8 @@
       list.replaceChildren(...ex.map(value => elem(doc, "option", { value })));
       return ex;
     };
-    // the placeholder shows one sample; the title says the list is not exhaustive
     const [first] = refill();
-    if (first) Object.assign(input, { placeholder: `e.g. ${first}`, title: "Examples, not the only options; any query works" });
+    if (first) input.placeholder = `e.g. ${first}`;
     input.addEventListener("focus", refill);
   }
 
@@ -596,10 +618,13 @@
             type: "button", className: "lti-download", title: "Download CSV",
             "aria-label": "Download table as CSV"
           }, cell);
-    btn.onclick = () => {
-      const src = (raw ? textual(spec) : spec._display) || {},
+    btn.onclick = async () => {
+      // server mode: fetch every row of the view first
+      const all = await el._lt.server?.load(el._lt.state, true), s = all ? { ...spec, data: all.data } : spec;
+      if (all) LT.buildHtml(s);
+      const src = (raw ? textual(s) : s._display) || {},
             lines = [keep.map(i => csvField(labels[i] ?? cols[i])).join(",")];
-      for (const r of el._lt.view())
+      for (const r of all ? Array.from({ length: all.rows }, (_, i) => i + 1) : el._lt.view())
         lines.push(keep.map(i => csvField((src[cols[i]] || [])[r - 1])).join(","));
       const url = URL.createObjectURL(
         new Blob([lines.join("\n")], { type: "text/csv" }));
@@ -659,19 +684,19 @@
   // label and type tag) so the <tbody> swap keeps them and typed input. `flt` =
   // normalized { default?, cols? }: named spec else default. `true` = plain box;
   // typed = funnel + popover (see typedFilter).
-  function addFilter(hrow, cols, flt, data, state, refresh, prof) {
+  function addFilter(hrow, cols, flt, sum, state, refresh, prof) {
     const doc = hrow.ownerDocument, hCells = dataCells(hrow),
           def = flt.default, explicit = flt.cols || {};
     cols.forEach((c, ci) => {
       const cell = hCells[ci],
-            spec = autoSpec(c in explicit ? explicit[c] : def, data[c]);
-      if (!spec || !filterable(data, c)) return;   // no filter on this column
+            spec = autoSpec(c in explicit ? explicit[c] : def, sum(c));
+      if (!spec || !filterable(sum(c))) return;   // no filter on this column
       elem(doc, "br", {}, cell);
       if (spec === true) {                         // a plain search box
         const input = cell.appendChild(searchInput(doc, `Filter ${c}`)),
               note = elem(doc, "div", { className: "lti-nl" });
         input.after(note);
-        addTips(input, () => columnExamples(data[c]), note);
+        addTips(input, () => columnExamples(sum(c).vals), note);
         onType(input, v => {
           const t = Q.parse(v, {}, c);
           t ? (state.filters[c] = t) : delete state.filters[c];
@@ -679,79 +704,103 @@
           refresh();
         });
       } else                                       // a typed funnel under the label
-        cell.append(typedFilter(doc, c, spec, data, state, refresh, null, prof));
+        cell.append(typedFilter(doc, c, spec, sum, state, refresh, null, prof));
     });
   }
 
-  // Column profile: a mini bar chart with the summary stats as its tooltip. A
-  // histogram of up to K equal-width bins for numbers/dates, one bar per category
-  // (most frequent first) for text; empty svg (keeps the header aligned) for text
-  // where over half the values are distinct (not categorical). Bars
-  // count all rows lightly, and the rows in the current view darkly (`state.paints`
-  // repaint it when the view changes).
-  function profile(doc, col, state) {
-    const K = 10, vals = col.filter(v => v != null), sig = (x, d) => +x.toPrecision(d),
-          p = elem(doc, "span", { className: "lti-prof" });
-    const num = v => col.date ? Date.parse(v.replace(" ", "T")) : v,
-          nums = vals.map(num), isNum = nums.every(Number.isFinite), m = new Map();
+  // Column summary: what profiles and filter widgets need to know about a
+  // column, so they work from a sketch of the data (a server supplies one per
+  // column instead of the values). `len` rows, `na` missing, `kind`
+  // (num/date/str/mix), `some` (a non-blank value), `m` distinct values, `lo`,
+  // `hi`, `mean`, `int` (all whole numbers; dates: `lo`/`hi` are text), `vals`
+  // (sorted distinct values). With `prof`: `bins` (bar counts; empty for no
+  // bars), `top` (up to 5 [value, count], text bars only), and, for local data,
+  // `bar` (bar of each row) with `count(rows)`. Histogram: up to K equal-width
+  // bins for numbers/dates, one bar per category (most frequent first) for text,
+  // none for text where over half the values are distinct.
+  const K = 10;
+  function summary(col, prof) {
+    const vals = col.filter(v => v != null), m = new Map(), S = {
+      len: col.length, na: col.length - vals.length, some: vals.some(v => v !== ""),
+      kind: col.date ? "date" : vals.every(v => typeof v === "number") ? "num" :
+        vals.every(v => typeof v === "string") ? "str" : "mix"
+    };
     for (const v of vals) m.set(v, (m.get(v) || 0) + 1);
-    const nNA = col.length - vals.length, tip = [];
-    let n = K, bin = () => -1;  // n bars; bin: value -> bar index (-1 for none)
-    const slots = list => { n = list.length; const s = new Map(list.map((e, i) => [e[0], i])); bin = v => s.get(v) ?? -1; };
-    // no bars (empty svg as placeholder) for an all-NA or too-distinct text column
-    if (!vals.length || (!isNum && m.size > vals.length / 2)) n = 0;
-    else if (isNum) {
-      const lo = nums.reduce((a, b) => Math.min(a, b)), hi = nums.reduce((a, b) => Math.max(a, b)),
-            at = x => col.date ? vals[nums.indexOf(x)] : sig(x, 6);
-      tip.push(`min ${at(lo)}`, `max ${at(hi)}`);
-      col.date || tip.push(`mean ${sig(nums.reduce((a, b) => a + b) / nums.length, 4)}`);
-      nNA && tip.push(`${Math.round(100 * nNA / col.length)}% NA`);
+    S.m = m.size;
+    const ns = vals.map(Number).filter(Number.isFinite), sum = ns.reduce((a, b) => a + b, 0);
+    S.int = ns.every(Number.isInteger);
+    if (ns.length) {
+      S.lo = ns.reduce((a, b) => Math.min(a, b)); S.hi = ns.reduce((a, b) => Math.max(a, b));
+      S.mean = sum / ns.length;
+    }
+    let sorted;
+    Object.defineProperty(S, "vals", { get: () => sorted ||= [...m.keys()].sort((a, b) =>
+      typeof a === "number" && typeof b === "number" ? a - b : String(a).localeCompare(String(b))) });
+    if (col.date) { S.lo = S.vals[0]; S.hi = S.vals.at(-1); delete S.mean; }
+    if (!prof) return S;
+    const num = v => col.date ? Date.parse(v.replace(" ", "T")) : v, nums = vals.map(num),
+          isNum = vals.length && nums.every(Number.isFinite);
+    let n = 0, bin = () => -1;  // n bars; bin: value -> bar index (-1 for none)
+    if (isNum) {
+      const lo = nums.reduce((a, b) => Math.min(a, b)), hi = nums.reduce((a, b) => Math.max(a, b));
       n = Math.min(K, m.size);  // never more bins than distinct values
       bin = v => Math.min(n - 1, Math.floor((num(v) - lo) / (hi - lo || 1) * n));
-    } else {
-      const all = [...m].sort((a, b) => b[1] - a[1]), cut = m.size > 5;
-      slots(all);
-      // count distinct only when truncated; readers can count the listed values
-      cut && tip.push(`${m.size + (nNA > 0)} distinct`);
-      tip.push((cut ? "top " : "") + all.slice(0, 5).map(([v, k]) => `${v} (${k})`).join(", "));
-      nNA && tip.push(`${nNA} NA`);
+    } else if (vals.length && m.size <= vals.length / 2) {
+      const all = [...m].sort((a, b) => b[1] - a[1]), slot = new Map(all.map((e, i) => [e[0], i]));
+      S.top = all.slice(0, 5); n = all.length; bin = v => slot.get(v) ?? -1;
     }
-    const bars = col.map(v => v == null ? -1 : bin(v)),
-          count = rows => { const c = Array(n).fill(0); for (const r of rows) bars[r - 1] >= 0 && c[bars[r - 1]]++; return c; },
-          full = count(col.map((_, i) => i + 1)), max = Math.max(...full),
+    S.bar = n ? col.map(v => v == null ? -1 : bin(v)) : [];
+    S.count = rows => { const c = Array(n).fill(0); for (const r of rows) S.bar[r - 1] >= 0 && c[S.bar[r - 1]]++; return c; };
+    S.bins = S.count(col.map((_, i) => i + 1));
+    return S;
+  }
+
+  // Column profile: a mini bar chart of `summary` `S`, with the stats as its
+  // tooltip. Bars count all rows lightly, and the rows in the current view
+  // darkly (`state.paints` repaint it when the view changes, given the view and
+  // per-column bar counts from a server).
+  function profile(doc, S, state, name) {
+    const sig = (x, d) => +x.toPrecision(d), full = S.bins, max = Math.max(...full),
+          p = elem(doc, "span", { className: "lti-prof" }),
+          tip = !full.length ? [] : S.top ? [
+            S.m > 5 && `${S.m + (S.na > 0)} distinct`,
+            (S.m > 5 ? "top " : "") + S.top.map(([v, k]) => `${v} (${k})`).join(", "),
+            S.na && `${S.na} NA`
+          ] : S.kind === "date" ? [`min ${S.lo}`, `max ${S.hi}`, S.na && `${Math.round(100 * S.na / S.len)}% NA`]
+            : [`min ${sig(S.lo, 6)}`, `max ${sig(S.hi, 6)}`, `mean ${sig(S.mean, 4)}`,
+              S.na && `${Math.round(100 * S.na / S.len)}% NA`],
           rects = (c, cls) => c.map((k, i) =>
             `<rect${cls} x="${i}" y="${1 - k / max}" width=".9" height="${k / max}"/>`).join(""),
-          paint = rows => p.innerHTML = `<svg viewBox="0 0 ${n || 1} 1" preserveAspectRatio="none">${rects(full, "")}${rows.length < col.length ? rects(count(rows), ' class="s"') : ""}</svg>`;
+          paint = (view, counts) => {
+            const c = counts?.[name] || (view?.length < S.len && S.count?.(view));
+            p.innerHTML = `<svg viewBox="0 0 ${full.length || 1} 1" preserveAspectRatio="none">${rects(full, "")}${c ? rects(c, ' class="s"') : ""}</svg>`;
+          };
     p.title = tip.filter(Boolean).join("; ");
     state.paints.push(paint);
-    paint(state.view || col.map((_, i) => i + 1));
+    paint(state.view, state.prof);
     return p;
   }
 
   // Profile in the header cell, after the type tag (`profile: "header"`)
-  function addProfile(hrow, cols, data, state) {
+  function addProfile(hrow, cols, sum, state) {
     const hCells = dataCells(hrow);
     cols.forEach((c, ci) => {
-      hCells[ci].append(elem(hrow.ownerDocument, "br"), profile(hrow.ownerDocument, data[c], state));
+      hCells[ci].append(elem(hrow.ownerDocument, "br"), profile(hrow.ownerDocument, sum(c), state, c));
     });
   }
 
   // `"auto"` filter: pick the widget from the column's data. Numbers get a range
   // slider (text if constant), so do dates; strings with few distinct values a
   // checklist; anything else a text funnel (no widget, just the search box).
-  const autoSpec = (spec, col = []) => {
+  const autoSpec = (spec, S) => {
     if (spec?.type !== "auto") return spec;
-    const vals = col.filter(v => v != null), n = new Set(vals).size;
-    const kind = vals.every(v => typeof v === "number") || col.date ? n > 1 && { type: "range" }
-      : vals.every(v => typeof v === "string") && n <= 10 && { type: "checklist" };
+    const kind = S.kind === "num" || S.kind === "date" ? S.m > 1 && { type: "range" }
+      : S.kind === "str" && S.m <= 10 && { type: "checklist" };
     return kind || { type: "text" };
   };
 
   // Filterable only with a non-blank value; plot-only `into` columns have no data.
-  const filterable = (data, col) => {
-    const a = data && data[col];
-    return Array.isArray(a) && a.some(v => v != null && v !== "");
-  };
+  const filterable = S => S.some;
 
   // Expandable row detail. `detailOpt` = array of column names (one-row table of
   // their displayed values) or callback `(rawRow, index, displayedRow) => spec`
@@ -856,6 +905,7 @@
     };
     // Drop cached detail (one row or all) and re-render; callback re-runs and
     // detail (with its sort/filter state) rebuilds.
+    decorate.clear = () => { state.expanded.clear(); for (const k in cache) delete cache[k]; };
     decorate.reset = r => {
       if (r == null) for (const k in cache) delete cache[k];
       else delete cache[r];
@@ -1086,18 +1136,11 @@
   // Fill a typed spec's choices (select) or min/max/step (range) from column data
   // when R omitted them, so `list(x = "select")` / `"range"` needs no bounds.
   // Returns a copy.
-  function resolveSpec(spec, column) {
+  function resolveSpec(spec, S) {
     if (spec.type === "select" || spec.type === "checklist") {
-      let choices = spec.choices;
-      if (!choices) {
-        const seen = new Set(), vals = [];
-        for (const v of column) if (v != null && !seen.has(v)) { seen.add(v); vals.push(v); }
-        vals.sort((a, b) => typeof a === "number" && typeof b === "number"
-          ? a - b : String(a).localeCompare(String(b)));
-        choices = vals.map(v => ({ value: String(v), label: String(v) }));
-      }
+      let choices = spec.choices ?? S.vals.map(v => ({ value: String(v), label: String(v) }));
       // missing values get their own choice, so they can be selected too
-      if (column.some(v => v == null)) choices = [...choices, { value: NA, label: "NA" }];
+      if (S.na) choices = [...choices, { value: NA, label: "NA" }];
       // select gets a leading blank "no filter" choice; checklist starts all
       // checked (also "no filter"), so needs none
       if (spec.type === "select" && !choices.some(o => o.value === ""))
@@ -1105,25 +1148,13 @@
       return { ...spec, choices };
     }
     // dates: the slider steps through the distinct values present (by index)
-    if (spec.type === "range" && column.date) {
-      const labels = [...new Set(column.filter(v => v != null))].sort();
+    if (spec.type === "range" && S.kind === "date") {
+      const labels = S.vals;
       return { ...spec, labels, min: 0, max: labels.length - 1, step: 1 };
     }
     let { min, max, step } = spec;
-    let lo = Infinity, hi = -Infinity, allInt = true;
-    if (min == null || max == null || step == null) {
-      for (const v of column) {
-        const n = Number(v);
-        if (isFinite(n)) {
-          if (n < lo) lo = n;
-          if (n > hi) hi = n;
-          if (!Number.isInteger(n)) allInt = false;
-        }
-      }
-      if (!isFinite(lo)) { lo = 0; hi = 1; }
-    }
-    const loB = min != null ? min : lo, hiB = max != null ? max : hi;
-    if (step == null) step = niceStep(hiB - loB, allInt);
+    const lo = S.lo ?? 0, hi = S.hi ?? 1;
+    if (step == null) step = niceStep((max ?? hi) - (min ?? lo), S.int);
     // tidy() clears float dust; derived endpoints snap outward to whole steps so
     // they bracket the data (extreme rows aren't dropped)
     const tidy = x => Math.round(x * 1e9) / 1e9;
@@ -1349,8 +1380,8 @@
   // Build a typed column filter element. Funnel + popover is shared: head-bar chip
   // (label + summary around the funnel) if `chipLabel` is a string, else a bare
   // funnel under the header (null).
-  function typedFilter(doc, col, spec, data, state, refresh, chipLabel, prof) {
-    const cfg = resolveSpec(spec, data[col] || []),
+  function typedFilter(doc, col, spec, sum, state, refresh, chipLabel, prof) {
+    const cfg = resolveSpec(spec, sum(col)),
           kind = KINDS[cfg.type],
           editors = [];       // expression box + widget, kept in sync
     let mark = () => {},       // paints active state once `root` exists
@@ -1371,7 +1402,7 @@
     // target; visible: bare funnel under its header. Chip built first to host it.
     const chip = chipLabel && makeChip(doc, chipLabel);
     const wrap = popover(doc, `Filter ${cfg.label || col}`, panel => {
-      const p = prof && profile(doc, data[col] || [], state);
+      const p = prof && profile(doc, sum(col), state, col);
       p && panel.append(p);
       // `box = FALSE` drops the expression box, limiting to the widget's choices
       if (cfg.box !== false) {
@@ -1382,7 +1413,7 @@
         const boxEd = { reflect: v => { if (doc.activeElement !== box) box.value = v; } },
               note = elem(doc, "div", { className: "lti-nl" }, panel);
         editors.push(boxEd);
-        addTips(box, () => columnExamples(data[col]));
+        addTips(box, () => columnExamples(sum(col).vals));
         // Plain-language conditions become one expression (`(x > 5) && (x < 9)`);
         // anything else stays as typed
         onType(box, v => {
@@ -1414,11 +1445,11 @@
   }
 
   // Head-bar chip per hidden typed column (see typedFilter).
-  function addControlFilters(cell, barCols, cfg, data, state, refresh, prof) {
+  function addControlFilters(cell, barCols, cfg, sum, state, refresh, prof) {
     const doc = cell.ownerDocument;
     for (const col of barCols)
       cell.append(
-        typedFilter(doc, col, cfg[col], data, state, refresh, cfg[col].label || col, prof));
+        typedFilter(doc, col, cfg[col], sum, state, refresh, cfg[col].label || col, prof));
   }
 
   // Pager as the last <tfoot> row (after footnotes), plus a page-size <select> if

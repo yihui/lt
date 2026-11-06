@@ -144,6 +144,10 @@ data_key = function(d) {
   list(key = k, seen = FALSE)
 }
 
+# Interactivity scripts a table needs (server mode adds its transport first)
+int_js = function(x) if (!is.null(x$interactive))
+  c('lt-query.js', if (!is.null(x$interactive$data_url)) 'lt-server.js', 'lt-interactive.js')
+
 # Per-table block: queue the spec with a reference to the current script;
 # runtime drains the queue on load. With `share`, data repeated across tables
 # is encoded once into LT.d and referenced by `data_key`.
@@ -232,7 +236,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
     rules_block(x$rules),
     spec_block(x),
     js_block(if ('js' %in% assets)
-      c(if (plot) 'lt-plot.js', 'lt.js', if (int) c('lt-query.js', 'lt-interactive.js')),
+      c(if (plot) 'lt-plot.js', 'lt.js', int_js(x)),
       inline_assets)
   )
   if (!fragment) body = html_doc(body)
@@ -324,7 +328,7 @@ record_print.lt_tbl = function(x, ...) {
       inline = FALSE),
     user_css_block(x$css, local = TRUE),
     rules_block(x$rules), spec_block(x, share = TRUE),
-    js_block(c(if (plot) 'lt-plot.js', 'lt.js', if (int) c('lt-query.js', 'lt-interactive.js')),
+    js_block(c(if (plot) 'lt-plot.js', 'lt.js', int_js(x)),
       inline = FALSE), ''
   ), 'asis')
 }
