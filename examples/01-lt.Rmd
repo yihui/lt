@@ -91,7 +91,7 @@ tbl_cheat = lt(d, auto_format = FALSE) |>
     "column", "Eff") |>
   # lt_note(): the footer note names itself and lt_export()
   lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG.")
-tbl_cheat |> lt_wrap(class = "fullwidth")
+tbl_cheat |> lt_wrap(class = "fullwidth pagesjs-wide")
 ```
 
 <!-- end -->
