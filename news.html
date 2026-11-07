@@ -13,10 +13,11 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/site.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.19</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.20</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
+<a href="book/">Book</a>
 <a href="playground/">Playground</a>
 <a href="https://github.com/yihui/lt/" class="right"><img src="https://cdn.jsdelivr.net/npm/@primer/octicons@19/build/svg/mark-github-24.svg" alt="GitHub" class="no-invert" /></a></p></nav>
 <header class="frontmatter">
@@ -39,6 +40,9 @@
 </nav>
 <h2 id="sec:lt-0-6" class="unnumbered">lt 0.6</h2>
 <ul>
+<li>
+<p>New book at <a href="https://pkg.yihui.org/lt/book/">https://pkg.yihui.org/lt/book/</a> covering every feature, from the first table to Shiny, export, and the JavaScript runtime. The long examples <code>01-lt</code>, <code>02-lt-js</code>, and <code>03-gt</code> are now short overviews that point to it, and 36 new one-feature examples (<code>04-*</code> to <code>39-*</code>) cover the functions one at a time.</p>
+</li>
 <li>
 <p>Search and filter boxes in <code>lt_interactive()</code> read plain language: <code>price over 100, color is red or blue</code>, <code>between 5 and 10</code>, <code>is not</code>, <code>does not contain</code>, and <code>col value</code> for contains. Column labels may contain spaces; <code>,</code> and <code>;</code> separate conditions and <code>or</code> alternates them. A line under the box shows how the query was read, and boxes drop down random example queries built from the data (a column box gets ones for its own values), written in plain language as well as with operators (<code>price &gt; 100</code>, <code>color == &quot;red&quot;</code>) and, in column boxes, expressions on <code>x</code> (<code>x &gt; 5 &amp;&amp; x &lt; 9</code>); hovering a column box explains that <code>x</code> stands for the column’s values. Text that isn’t recognized is searched as typed. The parser is a standalone file, <code>lt-query.js</code>, usable outside lt.</p>
 </li>

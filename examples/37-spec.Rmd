@@ -1,0 +1,12 @@
+---
+title: The table spec
+---
+
+An lt table is data plus a list of declarative operations. `lt_spec()` hands you that payload as a list, ready for `xfun::tojson()`, for another widget to render with `LT.render()`.
+
+```{r}
+library(lt)
+tbl = lt(head(mtcars[, 1:3])) |> lt_format(~ mpg, decimals = 0)
+str(lt_spec(tbl), max.level = 2)
+xfun::tojson(lt_spec(tbl)$ops)
+```

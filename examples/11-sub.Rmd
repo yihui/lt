@@ -1,0 +1,16 @@
+---
+title: Substituting values
+---
+
+`lt_sub()` swaps special values for friendlier text: missing values, zeros, and numbers too small to show. `Inf` and `-Inf` already print as ∞ and −∞.
+
+```{r}
+library(lt)
+d = data.frame(
+  Metric = c("HR", "p-value", "Events", "Rate", "Upper bound"),
+  Value = c(0.62, 0.0003, 0, NA, Inf)
+)
+lt(d) |>
+  lt_format(~ Value, decimals = 2) |>
+  lt_sub(~ Value, missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
+```

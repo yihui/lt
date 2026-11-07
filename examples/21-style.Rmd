@@ -1,0 +1,20 @@
+---
+title: Styling cells
+---
+
+`lt_style()` styles chosen cells with inline CSS shortcuts. With `test`, a JavaScript predicate decides which cells qualify, and a `class` plus `lt_css()` keeps the rules in one place.
+
+```{r}
+library(lt)
+d = data.frame(
+  Endpoint = c("Primary", "Secondary", "Exploratory"),
+  HR = c(0.62, 0.79, 1.05),
+  P = c(0.001, 0.042, 0.38)
+)
+lt(d) |>
+  lt_format(~ HR + P, decimals = 3) |>
+  lt_style("Endpoint", rows = 1, bold = TRUE, color = "#06c") |>
+  lt_style("HR", test = "v => v < 1", class = "good") |>
+  lt_style("P", test = "v => v < 0.05", class = "sig") |>
+  lt_css(.good = list(color = "green"), .sig = list(fontWeight = "bold"))
+```

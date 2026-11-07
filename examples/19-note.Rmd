@@ -1,0 +1,11 @@
+---
+title: Source notes
+---
+
+`lt_note()` adds an unnumbered note to the footer, below any footnotes. It is the place for sources and caveats.
+
+```{r}
+library(lt)
+lt(head(mtcars[, 1:5])) |>
+  lt_note("Data from the 1974 Motor Trend US magazine.")
+```

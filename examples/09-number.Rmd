@@ -1,0 +1,21 @@
+---
+title: Number formatting
+---
+
+`lt_format()` controls decimals (or significant digits), the thousands mark, percent, and a prefix or suffix.
+
+```{r}
+library(lt)
+d = data.frame(
+  Item = c("Widget", "Gadget", "Doohickey"),
+  Revenue = c(1234567.891, 987654.321, 246913.57),
+  Margin = c(0.1234, 0.0567, 0.2345),
+  Mass = c(0.00054858, 1.00727647, 4.00150618),
+  Weight = c(1250, 340.5, 89.12)
+)
+lt(d) |>
+  lt_format(~ Revenue, decimals = 0, big_mark = ",", prefix = "$") |>
+  lt_format(~ Margin, decimals = 1, percent = TRUE) |>
+  lt_format(~ Mass, sig_digits = 3) |>
+  lt_format(~ Weight, decimals = 1, suffix = " kg")
+```

@@ -1,0 +1,15 @@
+---
+title: Dot plots
+---
+
+`lt_dotplot()` places one dot per column on a scale shared across them, perfect for before-and-after comparisons. `color = TRUE` adds a legend; `stagger = TRUE` separates dots that land on nearly the same value.
+
+```{r}
+library(lt)
+d = data.frame(
+  Group = c("Control", "Low", "High"),
+  Before = c(3.1, 3.4, 3.0), After = c(3.2, 4.1, 5.2)
+)
+lt(d) |>
+  lt_dotplot(~ Before + After, color = TRUE, stagger = TRUE, axis = "Score")
+```

@@ -14,10 +14,11 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.19</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.20</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
+<a href="book/">Book</a>
 <a href="playground/">Playground</a>
 <a href="https://github.com/yihui/lt/" class="right"><img src="https://cdn.jsdelivr.net/npm/@primer/octicons@19/build/svg/mark-github-24.svg" alt="GitHub" class="no-invert" /></a></p></nav>
 <header class="frontmatter">
@@ -31,7 +32,14 @@
 <nav id="TOC" class="side side-left">
 <ul class="numbered">
 <li><a href="#sec:get-started"><span class="section-number main-number">1</span> Get started</a></li>
-<li><a href="#sec:javascript"><span class="section-number main-number">2</span> JavaScript</a></li>
+<li><a href="#sec:format-cells"><span class="section-number main-number">2</span> Format cells</a></li>
+<li><a href="#sec:shape-the-table"><span class="section-number main-number">3</span> Shape the table</a></li>
+<li><a href="#sec:notes-and-html"><span class="section-number main-number">4</span> Notes and HTML</a></li>
+<li><a href="#sec:style"><span class="section-number main-number">5</span> Style</a></li>
+<li><a href="#sec:inline-graphics"><span class="section-number main-number">6</span> Inline graphics</a></li>
+<li><a href="#sec:interactivity"><span class="section-number main-number">7</span> Interactivity</a></li>
+<li><a href="#sec:shiny-and-export"><span class="section-number main-number">8</span> Shiny and export</a></li>
+<li><a href="#sec:javascript"><span class="section-number main-number">9</span> JavaScript</a></li>
 </ul>
 </nav>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yihui/litedown/inst/resources/listing.css?v=1.0.9">
@@ -58,7 +66,7 @@ pre, pre:hover {
 }
 </style>
 <h2 id="sec:get-started"><span class="section-number main-number">1</span> Get started</h2>
-<p>An overview of lt and migrating from gt.</p>
+<p>An overview of lt, migrating from gt, and the basics of labels, alignment, and column types.</p>
 <div class="boxes">
 <div class="box">
 <div class="caption name">
@@ -73,13 +81,9 @@ output:
       js: [&quot;@key-buttons&quot;]
 ---
 
-```{css, echo = FALSE}
-@media only screen {
-  pre &gt; code {
-    max-height: 30em;
-  }
-}
-```
+**lt** builds lightweight tables from a data frame and a few pipeable verbs.
+This page is only a taste: a cheat sheet that is itself a table, one minimal
+example, and pointers to the [book](../book/) for the details.
 
 ## The cheat sheet (table) {#sec:cheatsheet}
 
@@ -161,1064 +165,39 @@ tbl_cheat = lt(d, auto_format = FALSE) |&gt;
     &quot;column&quot;, &quot;Eff&quot;) |&gt;
   # lt_note(): the footer note names itself and lt_export()
   lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
-tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth&quot;)
+tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
 ```
 
-## Basics
+&lt;!-- end --&gt;
 
-### A simple table
+## A minimal table
 
-Pass any data frame to `lt()`:
+Pass a data frame to `lt()`, then pipe it through the verbs you need:
 
 ```{r}
-tbl_cars = lt(head(mtcars))
-tbl_cars
+lt(head(mtcars[, 1:5])) |&gt;
+  lt_header(&quot;Cars, Briefly&quot;) |&gt;
+  lt_format(~ disp, decimals = 0) |&gt;
+  lt_note(&quot;Data from the 1974 Motor Trend US magazine.&quot;)
 ```
 
-### Column labels
-
-By default, column names are cleaned for display by replacing `.` and
-`_` with spaces. Use `auto_label = FALSE` to show raw names, or
-`lt_label()` to override specific columns:
-
-```{r}
-tbl_iris = lt(head(iris))
-tbl_iris
-lt(head(iris), auto_label = FALSE)
-tbl_iris |&gt; lt_label(Sepal.Length = &quot;Length (cm)&quot;, Sepal.Width = &quot;Width (cm)&quot;)
-```
-
-### Title and subtitle
-
-```{r}
-tbl_iris |&gt;
-  lt_header(title = &quot;Iris Measurements&quot;, subtitle = &quot;First six observations&quot;)
-```
-
-### Column alignment
-
-By default, numeric columns are right-aligned and character columns are
-left-aligned. Override with `lt_align()`:
-
-```{r}
-tbl_cars |&gt; lt_align(~ mpg + cyl, &quot;center&quot;) |&gt; lt_width(mpg = &quot;6em&quot;)
-```
-
-## Formatting
-
-### Auto-formatting
-
-By default, `lt()` automatically formats numeric columns: rounding to
-~4 significant digits (adapting decimal places to magnitude), adding a
-thin-space thousands separator, using a typographic minus (U+2212) for
-negatives, detecting percentage columns (names containing `%`, `_pct`,
-or `_percent`) and multiplying by 100 with a `%` suffix, and skipping
-year-like columns. Set `auto_format = FALSE` to display raw values:
-
-```{r}
-d = data.frame(
-  Year = c(2020, 2021, 2022),
-  Revenue = c(1234567.89, 2345678.12, -3456.789),
-  Margin_pct = c(0.1234, 0.0567, 0.2345)
-)
-lt(d)
-lt(d, auto_format = FALSE)
-```
-
-### Number formatting
-
-```{r}
-tbl_cars |&gt; lt_format(~ mpg + disp, decimals = 1)
-```
-
-#### Decimal places
-
-Control the number of decimal places with `decimals`:
-
-```{r}
-d = data.frame(
-  Metric = c(&quot;Revenue&quot;, &quot;Costs&quot;, &quot;Profit&quot;),
-  Q1 = c(1234567.891, 987654.321, 246913.570),
-  Q2 = c(1345678.912, 1012345.678, 333333.234)
-)
-lt(d) |&gt;
-  lt_format(~ Q1 + Q2, decimals = 2)
-```
-
-#### Significant digits
-
-Instead of fixing the number of decimal places, use `sig_digits` to keep a
-fixed number of significant digits. This is handy when a column spans several
-orders of magnitude, since small and large values each retain the same number
-of meaningful digits:
-
-```{r}
-d3 = data.frame(
-  Particle = c(&quot;Electron&quot;, &quot;Proton&quot;, &quot;Alpha&quot;),
-  Mass = c(0.00054858, 1.00727647, 4.00150618)
-)
-lt(d3) |&gt; lt_format(~ Mass, sig_digits = 3)
-```
-
-`sig_digits` cannot be combined with `decimals`.
-
-#### Big mark (thousands separator)
-
-```{r}
-lt(d) |&gt;
-  lt_format(~ Q1 + Q2, decimals = 0, big_mark = &quot;,&quot;)
-```
-
-#### Prefix and suffix (currency, units)
-
-Use `prefix` and `suffix` to prepend or append symbols to formatted values:
-
-```{r}
-lt(d) |&gt;
-  lt_format(~ Q1 + Q2, decimals = 2, big_mark = &quot;,&quot;, prefix = &quot;$&quot;)
-```
-
-```{r}
-d2 = data.frame(
-  Material = c(&quot;Steel&quot;, &quot;Aluminum&quot;, &quot;Copper&quot;),
-  Weight = c(1250, 340.5, 89.12)
-)
-lt(d2) |&gt; lt_format(~ Weight, decimals = 1, suffix = &quot; kg&quot;)
-```
-
-### Date formatting
-
-Format Date or POSIXt columns using JavaScript's native Date methods.
-The default uses `toLocaleDateString()`.
-
-**Note:** The formatted date may differ from the input depending on the
-viewer's timezone. `new Date(&quot;2024-01-15&quot;)` is parsed as UTC midnight,
-but `toLocaleDateString()` converts to local time — so `2024-01-15`
-displays as `2024-01-14` at GMT-6. Pass `options = list(timeZone =
-&quot;UTC&quot;)` to avoid this.
-
-```{r}
-d = data.frame(
-  Event = c(&quot;Launch&quot;, &quot;Update&quot;, &quot;Release&quot;),
-  Date = as.Date(c(&quot;2024-01-15&quot;, &quot;2024-06-30&quot;, &quot;2024-12-01&quot;))
-)
-lt(d) |&gt; lt_date(~ Date)
-```
-
-#### With locale and options
-
-Pass `locale` and `options` for `Intl.DateTimeFormat` control:
-
-```{r}
-lt(d) |&gt; lt_date(~ Date, locale = &quot;zh-CN&quot;,
-  options = list(year = &quot;numeric&quot;, month = &quot;long&quot;, day = &quot;numeric&quot;,
-    weekday = &quot;long&quot;, timeZone = &quot;UTC&quot;))
-```
-
-#### Using a specific Date method
-
-```{r}
-lt(d) |&gt; lt_date(~ Date, method = &quot;toDateString&quot;)
-```
-
-#### Datetime (POSIXt) columns
-
-For datetime values, include time components in `options`:
-
-```{r}
-d = data.frame(
-  Event = c(&quot;Start&quot;, &quot;End&quot;),
-  Time = as.POSIXct(c(&quot;2024-01-15 09:30:00&quot;, &quot;2024-01-15 17:45:00&quot;), tz = &quot;UTC&quot;)
-)
-lt(d) |&gt; lt_date(~ Time, locale = &quot;en-US&quot;, options = list(
-  year = &quot;numeric&quot;, month = &quot;short&quot;, day = &quot;numeric&quot;,
-  hour = &quot;2-digit&quot;, minute = &quot;2-digit&quot;
-))
-```
-
-### Substituting missing/small values
-
-```{r}
-d = data.frame(
-  Metric = c(&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;),
-  Value = c(0.62, 0.0003, 0, NA)
-)
-lt(d) |&gt;
-  lt_format(~ Value, decimals = 2) |&gt;
-  lt_sub(~ Value, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt; 0.001&quot;)
-```
-
-### Infinity values
-
-`Inf` and `-Inf` render as ∞ and −∞. Auto-formatting uses a typographic minus
-(U+2212) for −∞; raw (unformatted) columns use an ASCII hyphen:
-
-```{r}
-d = data.frame(
-  Metric = c(&quot;Lower bound&quot;, &quot;Upper bound&quot;, &quot;Rate&quot;, &quot;Missing&quot;),
-  Value = c(-Inf, Inf, 1.5, NA)
-)
-lt(d) |&gt; lt_format(~ Value, decimals = 2)
-```
-
-## Footnotes and notes
-
-### Footnotes
-
-A footnote can be attached to any of six locations via the `where`
-argument: the `title`, the `subtitle`, a `column` label, a `spanner`
-label, a row `group` label, or one or more `body` cells. The example
-below shows all six at once:
-
-```{r}
-d = data.frame(
-  Arm   = c(&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;),
-  Stat  = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
-  Value = c(31, 6.8, 30, 4.2),
-  SE    = c(NA, 0.42, NA, 0.38)
-)
-lt(d) |&gt;
-  lt_group(~ Arm) |&gt;
-  lt_header(title = &quot;Study Results&quot;, subtitle = &quot;Two arms&quot;) |&gt;
-  lt_spanner(`Summary` ~ Value + SE) |&gt;
-  # title and subtitle
-  lt_footnote(&quot;Source: simulated trial data.&quot;, &quot;title&quot;) |&gt;
-  lt_footnote(&quot;Intention-to-treat population.&quot;, &quot;subtitle&quot;) |&gt;
-  # a column label
-  lt_footnote(&quot;Standard error of the mean.&quot;, &quot;column&quot;, &quot;SE&quot;) |&gt;
-  # a spanner label
-  lt_footnote(&quot;Per-arm summary statistics.&quot;, &quot;spanner&quot;, &quot;Summary&quot;) |&gt;
-  # a row-group label
-  lt_footnote(&quot;Received active drug.&quot;, &quot;group&quot;, &quot;Treatment&quot;) |&gt;
-  # specific body cells (column + rows)
-  lt_footnote(&quot;SE undefined for counts.&quot;, &quot;body&quot;, &quot;SE&quot;, rows = c(1, 3))
-```
-
-### Notes
-
-Notes appear in the footer below numbered footnotes:
-
-```{r}
-tbl_cars |&gt; lt_note(&quot;Data from the 1974 Motor Trend US magazine.&quot;)
-```
-
-## Row groups
-
-### Group by column
-
-Pass a column name to `lt_group()` to partition rows by that column's
-values. The column is removed from the body and its values become group
-headers:
-
-```{r}
-d = data.frame(
-  Region = c(&quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;),
-  City = c(&quot;New York&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Portland&quot;, &quot;Denver&quot;),
-  Population = c(8336817, 675647, 737015, 652503, 715522)
-)
-lt(d) |&gt;
-  lt_group(~ Region) |&gt;
-  lt_header(title = &quot;US Cities by Region&quot;) |&gt;
-  lt_format(~ Population, big_mark = &quot;,&quot;)
-```
-
-### Auto separator rows for long labels
-
-By default (`sep = 'auto'`), `lt_group()` switches from rowspan cells to
-full-width separator rows when any group label exceeds 20 characters:
-
-```{r}
-d = data.frame(
-  Department = c(
-    &quot;Cardiovascular Research&quot;, &quot;Cardiovascular Research&quot;,
-    &quot;Biostatistics&quot;, &quot;Biostatistics&quot;
-  ),
-  Trial = c(&quot;ATLAS-2&quot;, &quot;BEACON&quot;, &quot;PRIME-1&quot;, &quot;NEXUS&quot;),
-  N = c(450, 320, 280, 510)
-)
-# &quot;Cardiovascular Research&quot; (23 chars) triggers separator mode automatically
-lt(d) |&gt; lt_group(~ Department)
-# force rowspan mode with sep = FALSE
-lt(d) |&gt; lt_group(~ Department, sep = FALSE)
-```
-
-### Group by multiple columns (rowspan)
-
-Pass multiple columns to `lt_group()` to render hierarchical rowspan
-cells on the left side of the table:
-
-```{r}
-d = data.frame(
-  Region = c(&quot;East&quot;, &quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;),
-  State = c(&quot;NY&quot;, &quot;NY&quot;, &quot;MA&quot;, &quot;WA&quot;, &quot;WA&quot;, &quot;OR&quot;),
-  City = c(&quot;New York&quot;, &quot;Buffalo&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Spokane&quot;, &quot;Portland&quot;),
-  Population = c(8336817, 278349, 675647, 737015, 228989, 652503)
-)
-lt(d) |&gt;
-  lt_group(~ Region + State) |&gt;
-  lt_header(title = &quot;Cities by Region and State&quot;) |&gt;
-  lt_format(~ Population, big_mark = &quot;,&quot;)
-```
-
-### Separator-row style
-
-Use `sep = TRUE` to render groups as full-width separator rows instead of
-rowspan cells:
-
-```{r}
-d = data.frame(
-  Region = c(&quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;),
-  City = c(&quot;New York&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Portland&quot;, &quot;Denver&quot;),
-  Population = c(8336817, 675647, 737015, 652503, 715522)
-)
-lt(d) |&gt;
-  lt_group(~ Region, sep = TRUE) |&gt;
-  lt_header(title = &quot;US Cities by Region&quot;) |&gt;
-  lt_format(~ Population, big_mark = &quot;,&quot;)
-```
-
-### Manual row groups
-
-Use named arguments in `lt_group()` for explicit control over which rows
-belong to each group:
-
-```{r}
-tbl_cars |&gt; lt_group(&quot;First three&quot; = 1:3, &quot;Last three&quot; = 4:6)
-```
-
-### Row group ordering
-
-```{r}
-d = data.frame(
-  arm = c(&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;),
-  stat = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
-  value = c(&quot;30&quot;, &quot;4.2&quot;, &quot;31&quot;, &quot;6.8&quot;)
-)
-lt(d) |&gt;
-  lt_group(~ arm, sep = TRUE) |&gt;
-  lt_group(&quot;Treatment&quot;, &quot;Placebo&quot;)
-```
-
-### Row indentation
-
-Indent the first column to show hierarchy:
-
-```{r}
-d = data.frame(
-  label = c(&quot;Any AE&quot;, &quot;SOC: Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;,
-            &quot;SOC: GI&quot;, &quot;Nausea&quot;),
-  n_pct = c(&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;)
-)
-lt(d) |&gt;
-  lt_header(&quot;Adverse Events&quot;, &quot;Safety Population&quot;) |&gt;
-  lt_indent(c(2, 5), level = 1) |&gt;
-  lt_indent(c(3, 4, 6), level = 2)
-```
-
-## Column structure
-
-### Column spanners
-
-A spanner groups contiguous columns under a shared label:
-
-```{r}
-tbl_iris |&gt;
-  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |&gt;
-  lt_spanner(Petal ~ Petal.Length + Petal.Width)
-```
-
-#### Auto-inferred spanners
-
-When column names share a common prefix separated by `.` or `_`, call
-`lt_spanner()` with no arguments to infer spanners automatically:
-
-```{r}
-tbl_iris |&gt; lt_spanner()
-```
-
-#### Spanner with formatting
-
-```{r}
-tbl_iris |&gt;
-  lt_header(title = &quot;Iris Dataset&quot;) |&gt;
-  lt_spanner(Sepal ~ Sepal.Length + Sepal.Width) |&gt;
-  lt_spanner(Petal ~ Petal.Length + Petal.Width) |&gt;
-  lt_format(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, decimals = 1)
-```
-
-### Column merging
-
-Combine columns into one using a pattern. Source columns are hidden
-automatically:
-
-```{r}
-d = data.frame(
-  stat = c(&quot;Age&quot;, &quot;Weight&quot;, &quot;Height&quot;),
-  n = c(67, 65, 64),
-  pct = c(100, 97.0, 95.5)
-)
-lt(d) |&gt;
-  lt_format(~ pct, decimals = 1) |&gt;
-  lt_merge(~ n + pct, pattern = &quot;{1} ({2}%)&quot;) |&gt;
-  lt_label(n = &quot;n (%)&quot;)
-```
-
-#### Conditional merge with `&lt;&lt; &gt;&gt;`
-
-Wrap pattern sections in `&lt;&lt;` and `&gt;&gt;` to drop them when any referenced
-column is empty/NA:
-
-```{r}
-d = data.frame(
-  endpoint = c(&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Tertiary&quot;),
-  est = c(0.61, 0.79, 0.45),
-  ci_lo = c(0.40, 0.57, NA),
-  ci_hi = c(0.82, 1.01, NA)
-)
-lt(d) |&gt;
-  lt_format(~ est + ci_lo + ci_hi, decimals = 2) |&gt;
-  lt_merge(~ est + ci_lo + ci_hi, pattern = &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot;) |&gt;
-  lt_label(est = &quot;Estimate (95% CI)&quot;)
-```
-
-### Column widths
-
-```{r}
-tbl_cars |&gt; lt_width(mpg = &quot;8em&quot;, cyl = &quot;5em&quot;, disp = &quot;8em&quot;, hp = &quot;6em&quot;)
-```
-
-### Table width
-
-Pass a single unnamed argument to `lt_width()` to set the width of the
-whole table. It can be combined with named column widths:
-
-```{r}
-tbl_iris |&gt; lt_width(&quot;80%&quot;)
-tbl_iris |&gt; lt_width(&quot;100%&quot;, Species = &quot;20em&quot;)
-```
-
-### Column reordering
-
-```{r}
-tbl_iris |&gt; lt_move(~ Petal.Length + Petal.Width, after = NULL)
-```
-
-### Hiding columns
-
-`lt_hide()` drops columns from the table without dropping their data: the
-values still travel in the spec, so they stay available to anything that
-reads the whole row (e.g. an interactive table's row detail, below).
-
-```{r}
-tbl_iris |&gt; lt_hide(~ Petal.Length + Petal.Width)
-```
-
-## Inline plots
-
-These functions draw a tiny chart into a column's cells. All are lightweight:
-only the numbers travel to the browser and the SVG is drawn there, so for an
-interactive table only the current page's rows are drawn.
-
-### Error bars
-
-`lt_errorbar()` renders a numeric column's cells as a small inline SVG — a
-point at the estimate with a horizontal bar (and end caps) from the lower to
-the upper bound — all drawn on a scale shared across the column, so rows are
-comparable at a glance (a forest plot of effect sizes with confidence
-intervals). Name the three columns with a two-sided formula
-`value ~ lower + upper` or a vector `c(value, lower, upper)`; the bound
-columns are hidden by default (`hide = FALSE` keeps them). Pass `ref` to draw
-a vertical reference line (e.g. `0` for a risk difference). Set `axis = TRUE`
-(or a string caption) to add a shared axis in the footer — a baseline with
-tick marks and labels at &quot;nice&quot; round values, matching faint gridlines inside
-each cell.
-
-```{r}
-d_eff = data.frame(
-  Term = c(&quot;Age&quot;, &quot;Dose&quot;, &quot;Baseline&quot;, &quot;Sex&quot;),
-  Est  = c(0.12, -0.34, 0.45, -0.08),
-  Lo   = c(-0.05, -0.52, 0.21, -0.29),
-  Hi   = c(0.29, -0.16, 0.69, 0.13)
-)
-lt(d_eff) |&gt;
-  lt_errorbar(Est ~ Lo + Hi, ref = 0, axis = &quot;Effect (95% CI)&quot;)
-```
-
-By default the plot is drawn into the first value column's cells. Pass `into`
-to draw it into a dedicated column instead, so every value column stays visible
-as text alongside the plot. The named column is created when it does not exist;
-use `lt_move()` to place it.
-
-```{r}
-lt(d_eff) |&gt;
-  lt_errorbar(Est ~ Lo + Hi, ref = 0, into = &quot;Forest&quot;, hide = FALSE,
-    axis = &quot;Effect (95% CI)&quot;)
-```
-
-Several series can share one cell: pass one `value ~ lower + upper` per series
-and each row stacks one point-and-bar on the same scale (e.g. a risk difference
-for each of several treatment arms). `color` and `labels` key the series in a
-footer legend, as for `lt_dotplot()`.
-
-```{r}
-d_grp = data.frame(
-  Term = c(&quot;Headache&quot;, &quot;Nausea&quot;, &quot;Fatigue&quot;),
-  D1 = c(2.1, -1.4, 3.3), L1 = c(-1.0, -4.2, 0.1), U1 = c(5.2, 1.4, 6.5),
-  D2 = c(-0.5, 0.8, 1.2), L2 = c(-3.6, -2.1, -1.9), U2 = c(2.6, 3.7, 4.3)
-)
-lt(d_grp) |&gt;
-  lt_errorbar(
-    D1 ~ L1 + U1, D2 ~ L2 + U2, ref = 0, color = TRUE,
-    labels = c(&quot;Drug A&quot;, &quot;Drug B&quot;), axis = &quot;Risk difference (%)&quot;
-  )
-```
-
-### Sparklines
-
-`lt_sparkline()` draws a per-row series as a small line or bar chart. The
-series can be a single list-column (each cell a numeric vector) or several
-numeric columns read across the row (`~ a + b + c`, all but the first hidden by
-default). Each row is scaled to its own range unless `limits` sets a shared
-scale; `type = &quot;bar&quot;` draws bars instead of a line.
-
-```{r}
-d_spark = data.frame(City = c(&quot;Oslo&quot;, &quot;Cairo&quot;, &quot;Lima&quot;))
-# a list-column: each cell is a vector of monthly values
-d_spark$Temp = list(
-  c(-3, -2, 1, 6, 12, 16), c(14, 15, 18, 23, 28, 31), c(19, 19, 18, 16, 15, 15)
-)
-d_spark$Rain = list(
-  c(49, 36, 47, 41, 53, 60), c(5, 4, 4, 1, 0, 0), c(8, 4, 2, 1, 1, 1)
-)
-lt(d_spark) |&gt;
-  lt_sparkline(~ Temp) |&gt;
-  lt_sparkline(~ Rain, type = &quot;bar&quot;, color = &quot;#4caf50&quot;)
-```
-
-### Dot plots
-
-`lt_dotplot()` draws one dot per column on a scale shared across them, so a row
-with N columns shows N dots laid out by value — handy for comparing a few
-measurements per row (e.g. before vs. after). Name the value columns with
-`~ a + b + c` (all but the first hidden by default). `color = TRUE` colors the
-dots from the palette and adds a footer legend; a vector of colors sets them
-explicitly. A shared axis is drawn in the footer by default (`axis = FALSE` to
-drop it, or a string for a caption).
-
-```{r}
-d_dot = data.frame(
-  Group = c(&quot;Control&quot;, &quot;Low&quot;, &quot;High&quot;),
-  Before = c(3.1, 3.4, 3.0), After = c(3.3, 4.1, 5.2)
-)
-lt(d_dot) |&gt;
-  lt_dotplot(~ Before + After, color = TRUE, axis = &quot;Score&quot;)
-```
-
-When two dots fall at nearly the same value they overlap; `stagger = TRUE`
-spreads near-equal dots onto separate tracks so each stays visible.
-
-```{r}
-lt(d_dot) |&gt;
-  lt_dotplot(~ Before + After, color = TRUE, stagger = TRUE, axis = &quot;Score&quot;)
-```
-
-## Styling
-
-### Cell styling
-
-Highlight specific cells with bold, color, background, or any CSS
-property (camelCase or dash-case):
-
-```{r}
-d = data.frame(
-  Endpoint = c(&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Exploratory&quot;),
-  HR = c(0.62, 0.79, 0.91),
-  P = c(0.001, 0.042, 0.38)
-)
-lt(d) |&gt;
-  lt_format(~ HR, decimals = 2) |&gt;
-  lt_format(~ P, decimals = 3) |&gt;
-  lt_style(&quot;P&quot;, rows = 1:2L, bold = TRUE, color = &quot;#06c&quot;) |&gt;
-  lt_style(&quot;HR&quot;, rows = 1L, bg = &quot;#e8f4e8&quot;, borderBottom = &quot;2px solid #4a4&quot;)
-```
-
-### Conditional styling
-
-Apply styles based on cell values using a JavaScript test function. Use
-`class` to assign CSS classes, then define the rules with `lt_css()`:
-
-```{r}
-d = data.frame(
-  Endpoint = c(&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Exploratory&quot;),
-  HR = c(0.62, 0.79, 1.05),
-  P = c(0.001, 0.042, 0.38)
-)
-lt(d) |&gt;
-  lt_format(~ HR + P, decimals = 3) |&gt;
-  lt_style(&quot;HR&quot;, test = &quot;v =&gt; v &lt; 1&quot;, class = &quot;good&quot;) |&gt;
-  lt_style(&quot;P&quot;, test = &quot;v =&gt; v &lt; 0.05&quot;, class = &quot;sig&quot;) |&gt;
-  lt_css(.good = list(color = &quot;green&quot;), .sig = list(fontWeight = &quot;bold&quot;))
-```
-
-### Highlighting NA cells
-
-```{r}
-d = data.frame(
-  arm = c(&quot;Treatment&quot;, &quot;Control&quot;, &quot;Treatment&quot;),
-  n = c(30, NA, 28),
-  response = c(0.67, NA, NA)
-)
-lt(d) |&gt;
-  lt_style(test = &quot;v =&gt; v == null&quot;, class = &quot;na&quot;) |&gt;
-  lt_css(.na = list(background = &quot;#fee&quot;))
-```
-
-### Scoping styles to one table
-
-`lt_wrap()` sets attributes on the table's container (the `.lt-wrap` div). A
-`class` is appended to the base class, which a stylesheet can target so its
-rules apply to that table alone and not to every `lt` table on the page. Here
-the container is tagged `striped`, and a rule keyed on `.striped` zebra-stripes
-only this table.
-
-```{r}
-lt(head(mtcars, 4)) |&gt; lt_wrap(class = &quot;striped&quot;)
-```
-
-```{css}
-.striped tbody tr:nth-child(even) td { background: #f2f6ff; }
-```
-
-### HTML content
-
-By default, every cell value and text label is HTML-escaped, so characters
-like `&lt;`, `&gt;`, and `&amp;` render as literal text. To emit raw HTML instead —
-links, emphasis, images, and so on — use `lt_html()` to mark whole body
-columns, and wrap any other text (titles, labels, footnotes, notes,
-spanners) in `I()`:
-
-```{r}
-d = data.frame(
-  Package = c(
-    &quot;&lt;a href='https://cran.r-project.org/package=lt'&gt;lt&lt;/a&gt;&quot;,
-    &quot;&lt;a href='https://cran.r-project.org/package=xfun'&gt;xfun&lt;/a&gt;&quot;
-  ),
-  Status = c(&quot;&lt;b style='color:#090'&gt;stable&lt;/b&gt;&quot;, &quot;&lt;i&gt;active&lt;/i&gt;&quot;)
-)
-lt(d) |&gt;
-  lt_html(~ Package + Status) |&gt;
-  lt_header(I(&quot;Packages &lt;sup&gt;&amp;#9733;&lt;/sup&gt;&quot;)) |&gt;
-  lt_label(Package = I(&quot;Name&lt;sup&gt;*&lt;/sup&gt;&quot;)) |&gt;
-  lt_note(I(&quot;See &lt;a href='https://yihui.org/'&gt;the author&lt;/a&gt;.&quot;))
-```
-
-## Complete example
-
-```{r}
-d = data.frame(
-  Group = c(&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;),
-  Endpoint = c(&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Primary&quot;, &quot;Secondary&quot;),
-  Estimate = c(0.6123, 0.7891, 0.4567, 0.5432),
-  CI_Lower = c(0.4012, 0.5678, 0.2345, 0.3210),
-  CI_Upper = c(0.8234, 1.0104, 0.6789, 0.7654),
-  P_Value = c(0.0012, 0.0456, 0.1234, 0.2345)
-)
-lt(d) |&gt;
-  lt_group(~ Group) |&gt;
-  lt_header(
-    title = &quot;Study Results&quot;,
-    subtitle = &quot;Primary and secondary endpoints&quot;
-  ) |&gt;
-  lt_spanner(`95% CI` ~ CI_Lower + CI_Upper) |&gt;
-  lt_format(~ Estimate + CI_Lower + CI_Upper, decimals = 3) |&gt;
-  lt_format(~ P_Value, decimals = 4) |&gt;
-  lt_footnote(&quot;Two-sided p-value from log-rank test.&quot;, &quot;column&quot;, &quot;P_Value&quot;)
-```
-
-## Exporting
+## Where to go next
+
+-   [Your first table](../book/#chp:start): the verbs, labels, and how tables are displayed.
+-   [Formatting](../book/#chp:format), [structure](../book/#chp:structure),
+    [notes](../book/#chp:notes), [inline plots](../book/#chp:plots), and
+    [styling](../book/#chp:style).
+-   [Interactive tables](../book/#chp:interactive): sorting, plain-language
+    search, filters, profiles, and server mode for big data.
+-   [Shiny](../book/#chp:shiny) and [exporting](../book/#chp:export).
+-   The [JavaScript runtime](02-lt-js.html) and a [migration guide for **gt**
+    users](03-gt.html).
+-   Many [small examples](../examples.html), one feature each.
 
 ```{r, include = FALSE}
-# lt_export() to PDF/PNG (and baking a static &lt;table&gt;) needs an external
-# renderer (Node.js or a headless browser), which is unavailable in some
-# environments such as webR. Gate those chunks so the document still renders
-# there.
-can_export = lt:::can_bake()
-```
-
-`lt_export()` saves a table to a file. The format is chosen from the file
-extension: `.html`, `.pdf`, or (otherwise) `.png`. PDF and PNG are rendered in
-a headless Chromium browser.
-
-```{r, eval = can_export}
-lt_export(tbl_cheat, &quot;01-lt.png&quot;, width = &quot;min-content&quot;)
-```
-
-:::: {#fig:lt-png .figure}
-![table in png](01-lt.png)
-
-::: caption
-[ ](#@fig:lt-png) A table exported to PNG.
-:::
-::::
-
-```{r, eval = can_export}
-lt_export(tbl_cheat, &quot;01-lt.pdf&quot;)
-```
-
-:::: {#fig:lt-pdf .figure}
-&lt;embed src=&quot;01-lt.pdf&quot; type=&quot;application/pdf&quot; width=&quot;100%&quot; height=&quot;400&quot;&gt;
-
-::: caption
-[ ](#@fig:lt-pdf) A table exported to PDF.
-:::
-::::
-
-For `.html` output, the table can be baked into a static `&lt;table&gt;` (built once
-by running the lt.js runtime, so the saved file needs no JavaScript to view).
-Set `tidy = TRUE` to pretty-print it with line breaks and indentation:
-
-```{r, attr.output = '.html', eval = can_export}
-tbl = lt(head(penguins))
-lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
-```
-
-## Interactivity
-
-### Raw values
-
-When cell values are formatted, the original values are available in
-tooltips (hover over a cell to see). You can also `Alt + Click` on a
-table to reveal all raw values at once, or `Alt + Double-Click` to
-toggle raw values for all tables on the page.
-
-### Sorting, searching, filtering, and paging
-
-`lt_interactive()` turns a table into an interactive one: click a column
-header to sort by it (ascending, descending, then unsorted), type in the
-search box above the table to keep only the rows that match, and walk
-through the rows a page at a time with the pager below the table. Paging,
-per-column filters (see below), and resizable columns are on by default;
-the page sizes to offer are given as a vector, the first of which is used
-initially, and `Inf` offers every row on one page.
-
-```{r}
-d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;, &quot;gear&quot;)]
-lt(d) |&gt; lt_interactive(pager = c(5, 10, Inf), filter = FALSE)
-```
-
-Shift-click a second header to sort by it as a tie-breaker, so several
-columns sort at once (an ordinal in each header marks its place). An
-initial sort can be requested with `sort` as a one-sided formula (below);
-a `-` prefix (a negated formula term) sorts a column descending.
-
-```{r}
-lt(d) |&gt; lt_interactive(sort = ~ cyl + -mpg, pager = 10, search = FALSE, filter = FALSE)
-```
-
-The extra controls (and the JavaScript that drives them) are only loaded
-for tables that call `lt_interactive()`, so other tables cost nothing.
-
-A search term is matched case-insensitively against the displayed text,
-and `does not contain merc` keeps the rows that do *not* mention
-Mercedes. A term that mentions `x` is instead evaluated as a
-JavaScript expression against each raw cell value, so `x &gt; 20` keeps the
-rows with a value above 20 in any column.
-
-The box also reads plain language. A condition names a column (by its name
-or its label, which may contain spaces), then an operator and a value, e.g.
-`mpg over 25`. The operators are `over`, `above`, or `more than` (`&gt;`);
-`under`, `below`, or `less than` (`&lt;`); `at least` (`&gt;=`); `at most` (`&lt;=`);
-`between 5 and 10`; `is` or `equals`; `is not`; `contains` (or a bare
-`column value`, such as `cyl 6`); and `does not contain` (also `excludes`;
-the column name is optional, so alone it checks every column). Text compares ignore case. Conditions
-combine with `and`, `,`, or `;` (all must hold), and `or` gives alternatives,
-with `and` binding tighter, so `cyl is 4 or cyl is 6, mpg over 20` means
-`cyl is 4` or (`cyl is 6` and `mpg over 20`). Other words are searched as
-typed, and a quoted phrase stays whole. A line under the box shows how the
-query was read, and the placeholder and dropdown offer random example queries
-built from the table's own values. Click the box to see them, then pick one to
-run it.
-
-By default, each column gets a filter under its header (chosen from its
-data, see `&quot;auto&quot;` below). `filter = TRUE` instead adds a plain box under
-each column header, matching the same way as the search but against that
-column alone; a row is kept when it passes every filter and the search.
-Pass a character vector to filter on some columns only, or `FALSE` to
-turn the filters off. A column's box takes the same plain-language syntax as
-the search without the column name, so `over 20` or `is red or is blue` works
-there, and it offers its own random examples.
-
-```{r}
-lt(d) |&gt; lt_interactive(filter = TRUE, search = FALSE, pager = 5)
-```
-
-A column can take a *typed* control instead of a plain box: pass a named
-list where each column maps to `&quot;select&quot;` (a value dropdown), `&quot;range&quot;`
-(a two-thumb slider), or `&quot;checklist&quot;` (a popover of checkboxes). The
-dropdown's and checklist's choices and the slider's ends are read from the
-column's data. The control renders as a funnel under the header, paired
-with an expression box that stays in sync. One *unnamed* entry is the
-default for every other column.
-
-`filter = &quot;auto&quot;` chooses the control for each column from its data: a
-range slider for numbers (a plain box when every value is the same), a
-checklist for text with at most 10 distinct values, and a plain box for
-anything else. It can also be the unnamed default in a list, so
-`list(&quot;auto&quot;, cyl = &quot;select&quot;)` overrides just `cyl`.
-
-```{r}
-lt(iris) |&gt; lt_interactive(filter = &quot;auto&quot;, search = FALSE, pager = 5)
-```
-
-A column set to `FALSE` gets no filter at all, even under a default such as
-`&quot;auto&quot;` or `TRUE`. Here `Species` is left out of the filters:
-
-```{r}
-lt(iris) |&gt; lt_interactive(filter = list(&quot;auto&quot;, Species = FALSE), search = FALSE, pager = 5)
-```
-
-A `&quot;select&quot;` keeps the one value chosen; a `&quot;checklist&quot;` keeps every value
-whose box is checked (all checked is the no-filter state), so the reader
-can keep several at once.
-
-A `&quot;range&quot;` slider has two thumbs, for the low and high ends. Drag a thumb
-to move it: the readout tracks it live, but the filter is applied only when
-you let go, so the table does not reflow (and shift the thumb) out from under
-the cursor mid-drag. A thumb can also be driven from the keyboard once it has
-focus — the arrow keys nudge it one step at a time, and `Home` / `End` jump it
-to the minimum / maximum. When the ends are not given, they (and the step) are
-derived from the column's data as round, data-bracketing values.
-
-A typed filter on a column hidden with `lt_hide()` has no header to sit
-under, so it moves into the control bar as a labelled chip showing the
-column's name and the current value; clicking anywhere on the chip opens its
-control. Here `mpg` is hidden yet still filterable through its chip.
-
-```{r}
-lt(d) |&gt;
-  lt_hide(~ mpg) |&gt;
-  lt_interactive(
-    filter = list(TRUE, mpg = &quot;range&quot;, cyl = &quot;checklist&quot;, wt = &quot;range&quot;, gear = &quot;select&quot;),
-    search = FALSE, pager = 5
-  )
-```
-
-### Row detail (drill-down)
-
-`detail` adds an expand caret to each row; clicking it reveals a child
-table built on the spot from that row. The simplest form names the columns
-to show, as a character vector or a one-sided formula: their displayed
-(formatted) values are laid out as a one-row table. The columns can be ones
-hidden from the main table with `lt_hide()` — a natural way to tuck extra
-fields into the detail. Here `hp` and `wt` are hidden above but surfaced in
-the detail.
-
-```{r}
-lt(d) |&gt;
-  lt_hide(~ hp + wt) |&gt;
-  lt_interactive(pager = 5, filter = FALSE, detail = ~ hp + wt)
-```
-
-For full control, pass a JavaScript callback yourself, wrapped in `js()`.
-It is called as `(row, index, display)`: `row` has the raw values,
-`display` the formatted text, each keyed by column name. Return a table
-spec; give it an `interactive` field to make the detail table itself
-interactive, as below where it is made sortable.
-
-```{r}
-lt(d) |&gt;
-  lt_hide(~ hp + wt) |&gt;
-  lt_interactive(
-    pager = 5, filter = FALSE,
-    detail = js('(row, i, d) =&gt; ({
-      data: { field: [&quot;row&quot;, &quot;hp&quot;, &quot;wt&quot;], value: [i, d.hp, d.wt] },
-      interactive: { sort: [&quot;value&quot;], search: false }
-    })')
-  )
-```
-
-### Resizable columns
-
-Each column can be resized by dragging the right edge of its header
-(`resize = FALSE` turns this off); double-clicking that edge fits the column to its
-content. Widening a column widens the table, leaving the other columns
-as they are. Initial widths come from `lt_width()` as usual.
-
-```{r}
-lt(head(d)) |&gt; lt_interactive(pager = FALSE, search = FALSE, filter = FALSE) |&gt;
-  lt_width(mpg = &quot;8em&quot;)
-```
-
-### Column visibility
-
-`hide` adds an eye button at the start of the search row that opens a
-checklist of every column; unchecking one hides it (header and cells),
-re-checking brings it back. Use `hide = NA` to start with all columns
-shown, or name columns (a character vector or a one-sided formula) to
-start with those hidden (they are still listed, so the reader can bring
-them back). The checklist shows each column's displayed label.
-
-```{r}
-lt(d) |&gt; lt_interactive(hide = ~ hp + wt, pager = 5, filter = FALSE)
-```
-
-### Column profiles
-
-`profile` draws a mini chart of each column: a histogram for numbers and
-dates, a bar per category for text (left blank if the values are mostly
-distinct). Hover over it for summary statistics (min, max, mean, or the
-distinct values and the most frequent ones) and the amount of missing values.
-The bars also highlight the rows that the filters keep, so try filtering a
-column. `profile = TRUE` puts the charts in the header; `profile = &quot;filter&quot;`
-puts each in its column's filter popover instead, which saves header space.
-
-```{r}
-lt(iris) |&gt; lt_interactive(profile = TRUE, pager = 5)
-```
-
-```{r}
-lt(iris) |&gt; lt_interactive(profile = &quot;filter&quot;, pager = 5)
-```
-
-### Downloading a CSV
-
-`download` adds a button to the control bar that downloads the table's
-current view — every row the filters and the search keep, in sort order,
-across all pages — as a CSV file, using the displayed cell text. Use
-`download = TRUE` for a default file name, or pass a string to set it (a
-`.csv` extension is added if missing). Try filtering or sorting first: the
-file holds exactly what the table shows.
-
-```{r}
-lt(d) |&gt; lt_interactive(download = &quot;cars.csv&quot;, filter = TRUE, pager = 5)
-```
-
-### Large data (server mode) {#sec:large-data}
-
-For data too big for the browser, `lt_serve()` keeps the rows in R. A local web
-app (built on `xfun::new_app()`) serves them, and the browser fetches just the
-current page whenever the sort, filters, search, or page change, so tables of
-millions of rows stay responsive. Print the result to view it:
-
-``` r
-lt_viewer(iris) |&gt; lt_serve()
-```
-
-In a Shiny app, return the table from `render_lt()` instead (see [Shiny](#sec:shiny)):
-the session serves the rows, and no local app is started.
-
-Everything above works, with these differences:
-
-- Filter and search expressions (e.g., `x &gt; 5`, `x != &quot;A&quot;`) run in R, so they
-  must be R-compatible; the common ones, and everything the filter widgets
-  write, work in both. Missing values never pass an expression unless it is
-  negated.
-- Substring search and filters match the underlying values, not the formatted
-  text.
-- Column profiles and filter choices come from the whole data, computed once
-  when the app starts. Plots in cells (`lt_sparkline()`, `lt_errorbar()`, etc.)
-  scale to the current page, and a JavaScript row detail sees only the
-  current page.
-- Row groups, indentation, and row-specific styles and footnotes are not
-  supported, and neither are external filter predicates.
-- The CSV download fetches every row of the view.
-
-The local app lives in the R session, so the table works as long as the session
-does. It is meant for viewing a table from an R session (the terminal, RStudio,
-a remote session reached through a proxy, or a notebook), not for publishing: a
-static document (R Markdown, Quarto, litedown) keeps no app behind it, and
-webR/shinylive cannot host it. In a Shiny app, the session serves the rows, so
-the table works wherever the app runs. Elsewhere, use `lt_interactive()` (rows
-in the page), or give `lt_serve()` a `url` that the reader's browser can reach.
-To serve rows from elsewhere (a database, Parquet files), pass `url` to
-`lt_serve()`; the table then only needs to name the columns (a zero-row data
-frame will do), and the first page is fetched too. The request and response
-format is described in the [JavaScript reference](02-lt-js.html#sec:server).
-
-### Row groups and indentation
-
-Row structure is honored: sorting and filtering happen *within* each
-group or subtree, never across it, so a group header never parts from
-its rows and an indented child never loses its parent. Separator row
-groups keep their order, and a group whose rows all filter out drops its
-header. Paging works too: a group split across a page boundary re-shows
-its header at the top of the next page.
-
-```{r}
-d2 = data.frame(
-  Region = rep(c(&quot;East&quot;, &quot;West&quot;, &quot;South&quot;), each = 3),
-  City = c(&quot;NYC&quot;, &quot;Boston&quot;, &quot;Philly&quot;, &quot;LA&quot;, &quot;Reno&quot;, &quot;Boise&quot;,
-           &quot;Austin&quot;, &quot;Miami&quot;, &quot;Atlanta&quot;),
-  Sales = c(42, 17, 23, 55, 9, 14, 31, 48, 26)
-)
-lt(d2) |&gt; lt_group(~ Region, sep = TRUE) |&gt; lt_interactive(pager = 5)
-```
-
-Rowspan row groups (the default `lt_group()` rendering) sort and filter
-within each run too; clicking a group header reorders whole blocks, and
-with several group columns the view stays nested (an inner column
-reorders only within its parent block). The spanning cells are redrawn
-to match.
-
-```{r}
-lt(d2) |&gt; lt_group(~ Region) |&gt; lt_interactive(pager = 5)
-```
-
-Indentation sorts siblings under each parent, carrying each subtree
-along; filtering a descendant keeps its ancestors visible for context.
-
-```{r}
-d3 = data.frame(
-  Item = c(&quot;Fruit&quot;, &quot;Apple&quot;, &quot;Pear&quot;, &quot;Berry&quot;, &quot;Grain&quot;, &quot;Rice&quot;, &quot;Oat&quot;, &quot;Wheat&quot;),
-  Qty = c(0, 12, 7, 5, 0, 30, 8, 19)
-)
-lt(d3) |&gt; lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |&gt; lt_interactive(pager = 5)
-```
-
-Column spanners, styles, and footnotes are no obstacle to interactivity.
-
-## Shiny {#sec:shiny}
-
-`lt_output()` and `render_lt()` show a table as a Shiny output: the server sends
-the table spec and the browser builds the `&lt;table&gt;`.
-
-``` r
-library(shiny)
-ui = fluidPage(lt_output(&quot;tbl&quot;))
-server = function(input, output) {
-  output$tbl = render_lt(
-    lt(mtcars) |&gt; lt_header(&quot;Motor Trend&quot;) |&gt; lt_interactive()
-  )
-}
-shinyApp(ui, server)
-```
-
-For a large table, pass the table to `lt_serve()` inside `render_lt()`: the
-session serves the rows (see [Large data](#sec:large-data)), so the app
-needs no extra server.
-
-``` r
-output$big = lt_interactive(my_data) |&gt; lt_serve() |&gt; render_lt()
-```
-
-`lt_input()` goes the other way: a table whose cells can be edited in the
-browser. The server reads the edited table as a data frame (numeric columns stay
-numeric), and `lt_update()` replaces it, e.g., to add a row or reset the edits.
-Use `columns` to make only some columns editable.
-
-``` r
-library(shiny)
-d = data.frame(Time = c(12, 24), Rate = c(0.8, 0.6), Note = c(&quot;a&quot;, &quot;b&quot;))
-ui = fluidPage(
-  lt_input(&quot;m&quot;, d, label = &quot;Edit the cells:&quot;, columns = c(&quot;Time&quot;, &quot;Rate&quot;)),
-  actionButton(&quot;add&quot;, &quot;Add row&quot;),
-  verbatimTextOutput(&quot;out&quot;)
-)
-server = function(input, output, session) {
-  output$out = renderPrint(input$m)
-  observeEvent(input$add, lt_update(session, &quot;m&quot;, rbind(input$m, NA)))
-}
-shinyApp(ui, server)
+# the PNG on the README: lt_export() needs Node.js or a headless browser,
+# which are unavailable in some environments (e.g., webR)
+if (lt:::can_bake()) lt_export(tbl_cheat, &quot;01-lt.png&quot;, width = &quot;min-content&quot;)
 ```
 </code></pre>
 </div>
@@ -1239,18 +218,12 @@ output:
 table:not([class]) { width: 100%; }
 ```
 
-This guide is for users coming from [**gt**](https://gt.rstudio.com). We deeply
-appreciate **gt**'s pioneering work: it set the standard for display tables in
-R, and **lt** owes much of its design vocabulary — headers, spanners, row
-groups, footnotes — to the ground **gt** broke. **lt** is not a criticism of
-**gt** but a different point on the trade-off curve: **lt** targets HTML output
-only, and in exchange keeps its dependencies and its runtime tiny.[^1]
-
-[^1]: HTML-first does not mean HTML-only for your final artifacts. `lt_export()`
-    renders a table to PDF or PNG (via a headless browser) as well as to static
-    HTML, so you can still drop an **lt** table into a paper or slide deck — it
-    just builds those from the HTML rather than from a separate rendering
-    backend.
+This is the short version of the guide for users coming from
+[**gt**](https://gt.rstudio.com). We deeply appreciate **gt**'s pioneering work:
+**lt** owes much of its design vocabulary — headers, spanners, row groups,
+footnotes — to the ground **gt** broke. **lt** targets HTML output only, and in
+exchange keeps its dependencies and its runtime tiny: **gt** pulls in ~54
+recursive dependencies, whereas **lt** depends only on **xfun**.
 
 ::: {.callout-tip data-legend=&quot;gt &gt; &lt; lt&quot;}
 A happy coincidence fits the spirit of this trade-off: in the comparison
@@ -1258,447 +231,812 @@ operators **gt** is *greater than* and **lt** is *less than* — **lt** does
 deliberately less.
 :::
 
-**lt** aims to be a lightweight drop-in replacement: **gt** pulls in \~54
-recursive dependencies (base64enc, cli, dplyr, htmltools, V8, ...), whereas
-**lt** depends only on **xfun**. The output is styled to look like **gt** by
-default, so in most cases you only need to translate the function calls.
-
-The mapping and notes below distill the practical experience of three real
-migrations:
-
--   [Merck/gsDesign2#629](https://github.com/Merck/gsDesign2/pull/629)
--   [keaven/gsDesign#282](https://github.com/keaven/gsDesign/pull/282)
--   [keaven/gsDesignNB#48](https://github.com/keaven/gsDesignNB/pull/48)
-
-## Function mapping
-
-Nearly every `lt_*()` function has a **gt** counterpart. The table below covers
-all of **lt**'s exported functions; the last few rows are **lt** functions with
-no direct **gt** equivalent.
-
-**Table construction**
+## The most common calls
 
 | gt | lt |
 |------------------------------------|--------------------------------------------|
 | `gt(x)` | `lt(x)` |
-| `gt(x, groupname_col = &quot;col&quot;)` (separator rows) | `lt(x) \|&gt; lt_group(~ col, sep = TRUE)` |
-| `gt(x, groupname_col = &quot;col&quot;, row_group_as_column = TRUE)` | `lt(x) \|&gt; lt_group(~ col, sep = FALSE)` (rowspan) |
-| `dplyr::group_by(x, col) \|&gt; gt()` | `dplyr::group_by(x, col) \|&gt; lt()` |
-
-**Labels, headers, spanners, notes**
-
-| gt | lt |
-|------------------------------------|--------------------------------------------|
+| `gt(x, groupname_col = &quot;col&quot;)` | `lt(x) \|&gt; lt_group(~ col, sep = TRUE)` |
 | `tab_header(title=, subtitle=)` | `lt_header(title=, subtitle=)` |
 | `tab_spanner(label=, columns=)` | `lt_spanner(label=, columns=)` |
 | `cols_label(a = &quot;A&quot;)` | `lt_label(a = &quot;A&quot;)` |
-| `tab_footnote(footnote, cells_title(&quot;title&quot;))` | `lt_footnote(text, &quot;title&quot;)` |
-| `tab_footnote(footnote, cells_title(&quot;subtitle&quot;))` | `lt_footnote(text, &quot;subtitle&quot;)` |
-| `tab_footnote(footnote, cells_column_labels(col))` | `lt_footnote(text, &quot;column&quot;, columns)` |
-| `tab_footnote(footnote, cells_column_spanners(sp))` | `lt_footnote(text, &quot;spanner&quot;, columns)` |
-| `tab_footnote(footnote, cells_row_groups(grp))` | `lt_footnote(text, &quot;group&quot;, columns, match=)` |
 | `tab_footnote(footnote, cells_body(col, rows))` | `lt_footnote(text, &quot;body&quot;, columns, rows)` |
-| `tab_footnote(footnote)` (no location) | `lt_note(text)` |
 | `tab_source_note(source_note=)` | `lt_note(text)` |
-
-**Value formatting**
-
-| gt | lt |
-|------------------------------------|--------------------------------------------|
 | `fmt_number(columns=, decimals=)` | `lt_format(columns, decimals=)` |
-| `fmt_percent(columns=)` | `lt_format(columns, percent = TRUE)` |
-| `fmt_date(columns=)` | `lt_date(columns)` |
-| `sub_missing()` / `sub_zero()` / `sub_small_vals()` | `lt_sub(missing=, zero=, small=)` |
-| `html(value)` (mark a value as raw HTML) | `I(value)` (title/labels/footnotes); `lt_html(columns)` for body cells |
+| `sub_missing()` / `sub_zero()` | `lt_sub(missing=, zero=)` |
+| `opt_interactive()` | `lt_interactive()` |
+| `gtsave(file=)` | `lt_export(file=)` |
 
-To keep raw HTML (e.g. a line break) from being escaped in a title, column
-label, or footnote, wrap it in `I()`:
+## What to watch for
 
-``` r
-lt_label(theta = I(&quot;Underlying&lt;br&gt;response rate&quot;))
-```
+-   Columns are selected by name or position (or a one-sided formula), not
+    tidy-select helpers.
+-   Interactivity is one function, `lt_interactive()`, not a separate step.
+-   Footnotes (`lt_footnote()`) and source notes (`lt_note()`) are two functions.
+-   Row groups render as rowspan cells or separator rows (`sep =`).
+-   Extend `lt()` with S3 methods rather than a new generic.
+-   Styling rarely needs CSS: try `lt_style()` first.
 
-`I()` is also the answer to **gt**'s `md()`. **gt** lets you wrap a title or
-label in `md(&quot;**bold**&quot;)` to render Markdown; **lt** has no Markdown-in-labels
-equivalent. Pass plain text (the common case — `md(&quot;**Power**&quot;)` becomes
-`&quot;Power&quot;`), or, if you truly need formatting, use `I()` with raw HTML:
-`I(&quot;&lt;b&gt;Power&lt;/b&gt;&quot;)`.
-
-Two `lt_sub()` defaults are worth knowing before you translate a `sub_*()` call:
-missing values already render as an em dash (`—`) and there is nothing special
-done to zeros or small values. So a `sub_missing(missing_text = &quot;—&quot;)` in **gt**
-is usually just noise in **lt** — drop it unless you want a *different*
-placeholder.
-
-**Layout and styling**
-
-| gt | lt |
-|------------------------------------|--------------------------------------------|
-| `cols_align(align=, columns=)` | `lt_align(columns, align=)` |
-| `cols_width(col ~ px(100))` | `lt_width(col = &quot;100px&quot;)` |
-| `cols_move(columns=, after=)` / `cols_move_to_start()` | `lt_move(columns, after=)` |
-| `cols_merge(columns=, pattern=)` | `lt_merge(columns, pattern=)` |
-| `tab_stub_indent(rows=, indent=)` | `lt_indent(rows, level=)` |
-| `tab_style(style=, locations=)` | `lt_style(columns=, rows=, ...)` |
-| `opt_css(css=)` | `lt_css(...)` |
-
-**Interactivity** (**gt** splits these across `opt_interactive()` and
-`cols_hide()`; **lt** gathers them into one `lt_interactive()`)
-
-| gt | lt |
-|------------------------------------|--------------------------------------------|
-| `opt_interactive(use_sorting=, use_search=)` | `lt_interactive(sort=, search=)` |
-| `opt_interactive(use_filters = TRUE)` | `lt_interactive(filter = TRUE)` |
-| `opt_interactive(use_pagination=, page_size_default = n)` | `lt_interactive(pager = c(n, ...))` |
-| `opt_interactive(use_resizers = TRUE)` | `lt_interactive(resize = TRUE)` |
-| `cols_hide(columns)` (always hidden) | `lt_hide(columns)` |
-| — (reader toggles columns) | `lt_interactive(hide=)` (an eye menu) |
-
-**Output and Shiny**
-
-| gt                    | lt                 |
-|-----------------------|--------------------|
-| `gtsave(file=)`       | `lt_export(file=)` |
-| `gt_output()` (Shiny) | `lt_output()`      |
-| `render_gt()` (Shiny) | `render_lt()`      |
-
-## Notable differences from gt
-
-A few places where **lt** works differently enough from **gt** to be worth
-spelling out, drawn from porting **gsDesign2**, **gsDesign**, and **gsDesignNB**.
-
-### Column selection: strings or positions, not tidy-select
-
-**gt** uses tidy-select, so unquoted column names and `tidyselect` helpers work.
-**lt** deliberately does not: it passes column names as *character strings* (or
-integer positions, or a one-sided formula). Tidy-select's ergonomic win is
-mostly at the console; the cost is a large conceptual surface (data masking,
-quosures, injection) and painful programmatic use — the moment a column name
-comes from a variable you're into `{{ }}` / `all_of()` machinery. For a package
-whose calls are often generated from code, plain strings win, so that's what
-**lt** takes.
-
-``` r
-# gt
-tab_spanner(label = &quot;Bounds&quot;, columns = c(alt, null))
-# lt
-lt_spanner(label = &quot;Bounds&quot;, columns = c(&quot;alt&quot;, &quot;null&quot;))   # quote them
-lt_spanner(label = &quot;Bounds&quot;, columns = c(4, 5))            # or use positions
-lt_spanner(Bounds ~ alt + null)                            # or a (compact) formula
-```
-
-If you dislike quoting names, the formula interface keeps them bare:
-`Bounds ~ alt + null` puts the label on the left and the columns on the right,
-same as `label = &quot;Bounds&quot;, columns = c(&quot;alt&quot;, &quot;null&quot;)`. It relies only on base
-R's formula, no NSE machinery — the names stay unevaluated symbols you can read
-off directly. Non-syntactic names work too, quoted in backticks:
-`` Bounds ~ `Alternate hypothesis` + `Null hypothesis` ``.
-
-The formula also does duty for tidy-select *predicates*. In `lt_format()`,
-`lt_align()`, etc. a **one-sided** formula whose right side is a logical
-expression selects columns for which it is `TRUE`, with `.` bound to the vector
-of column names. So **gt**'s &quot;all columns but one&quot; idiom translates cleanly:
-
-``` r
-# gt: format every numeric column
-fmt_number(columns = where(is.numeric), decimals = 4)
-# lt: select by name, not by type
-lt_format(~ . != &quot;Metric&quot;, decimals = 4)   # every column except Metric
-```
-
-Note the difference in what's being tested: `where(is.numeric)` inspects each
-column's *values* (its type), whereas the **lt** formula sees only the column
-*names* in `.`. There is no name-based way to say &quot;the numeric ones&quot;, so pick
-out the columns you don't want to format by name (often the single label column)
-and negate, or list the ones you do.
-
-### Interactivity is one function, not a separate step
-
-**gt** turns on client-side interactivity with `opt_interactive()`, and hides
-columns with the unrelated `cols_hide()`. **lt** folds all of it into
-`lt_interactive()`: sorting, searching, filtering, paging, resizing, row detail,
-and a reader-togglable column menu.
-
-### Footnotes vs. source notes are two different functions
-
-`gt::tab_footnote()` does double duty: with a location it attaches a footnote to
-cells; without one it adds a general note. **lt** splits these:
-
--   `lt_footnote(text, where, columns, rows, match)` — attached to a location,
-    gets a marker. `text` is the *first* positional argument (not the location).
-    `where` is one of `&quot;title&quot;`, `&quot;subtitle&quot;`, `&quot;column&quot;`, `&quot;spanner&quot;`,
-    `&quot;group&quot;`, `&quot;body&quot;`. For `&quot;column&quot;`/`&quot;spanner&quot;` pass the name(s) in
-    `columns`; for `&quot;body&quot;` also pass `rows`; for `&quot;group&quot;` you can use
-    `match = &quot;starts_with&quot;` to match a group label by prefix.
--   `lt_note(text)` — a plain table note at the bottom (this is also the
-    replacement for `tab_source_note()`).
-
-### Row groups: `lt_group(~ col)`, and two rendering styles
-
-**gt** groups either via `gt(groupname_col=)` or a preceding
-`dplyr::group_by()`. In **lt** grouping is a separate step, `lt_group(~ col)`,
-using a one-sided formula for the grouping column.
-
-There are two rendering styles, chosen by `sep`:
-
--   **Separator rows** — the group label sits on its own full-width row above
-    the group. This is **gt**'s default; in **lt** request it with `sep = TRUE`.
--   **Rowspan** — the group value is a merged cell down the left. This is
-    **gt**'s `row_group_as_column = TRUE`; in **lt** request it with
-    `sep = FALSE`.
-
-**lt**'s default is neither: `sep = 'auto'` picks rowspan for short labels and
-separator rows once any label exceeds \~20 characters. So a **gt** table won't
-necessarily match out of the box — set `sep` explicitly if you need a specific
-style.
-
-``` r
-# gt default (separator rows)
-x |&gt; group_by(Analysis) |&gt; gt()
-# lt equivalent
-lt(x) |&gt; lt_group(~ Analysis, sep = TRUE)
-```
-
-You can also group by more than one column, `lt_group(~ a + b)`, which nests the
-groups as rowspan cells (`a` spanning `b`). Separator rows apply to a single
-column only, so multi-column grouping always renders as rowspan. This is a real
-difference from **gt**, which has only one level of row groups: `groupname_col`
-takes a single column, and multiple grouping variables are flattened into one
-combined label (joined by `row_group.sep`, default `&quot; - &quot;`) rather than nested.
-
-**Groups from row conditions, and controlling their order.** **gt** can define
-groups on the fly from row predicates — a `tab_row_group(label=, rows=&lt;cond&gt;)`
-per group — then set their order with `row_group_order()`. **lt** has no
-predicate form: it groups only by the value of an existing column. So the port
-is to *materialize that column first*. Build a factor whose levels are the group
-order you want (e.g. with `data.table::fcase()` or nested `ifelse()`), sort the
-data by it, and group on it with `sort = FALSE` so **lt** keeps your row order
-instead of re-sorting the labels alphabetically:
-
-``` r
-# gt: groups defined by conditions, ordered explicitly
-tab_row_group(label = &quot;Power&quot;,  rows = Metric == &quot;Power&quot;) |&gt;
-tab_row_group(label = &quot;Events&quot;, rows = grepl(&quot;Events&quot;, Metric)) |&gt;
-row_group_order(groups = c(&quot;Events&quot;, &quot;Power&quot;))
-
-# lt: derive an ordered factor column, then group by it
-df$Group = factor(
-  ifelse(df$Metric == &quot;Power&quot;, &quot;Power&quot;, grepl(&quot;Events&quot;, df$Metric), &quot;Events&quot;),
-  levels = c(&quot;Events&quot;, &quot;Power&quot;)          # desired group order
-)
-df = df[order(df$Group), ]
-lt(df) |&gt; lt_group(~ Group, sep = TRUE, sort = FALSE)
-```
-
-`sort = FALSE` is the key: by default `lt_group()` sorts rows by the grouping
-value, which would discard the factor order you set. With it off, groups appear
-in first-seen row order — i.e. the factor-level order you sorted into.
-
-### Extend `lt()` with S3 methods, don't reinvent a generic
-
-`gt::gt()` is not an S3 generic — it is a plain function. A package that wants
-`gt()`-style output for its own object classes therefore has nowhere to hang a
-method. Both **gsDesign** and **gsDesign2** worked around this the same way:
-each declared its *own* `as_gt()` generic —
-
-``` r
-as_gt &lt;- function(x, ...) UseMethod(&quot;as_gt&quot;)
-as_gt.fixed_design &lt;- function(x, ...) { ... }
-as_gt.gs_design    &lt;- function(x, ...) { ... }
-```
-
-This is awkward. Every package invents a differently-named entry point
-(`as_gt()`, `as_flextable()`, `as_kable()`, ...), so users must learn a new verb
-per package; two packages can even define clashing `as_gt()` generics that mask
-each other on the search path; and none of it composes — there is no single
-function you can call on &quot;whatever table-like object I have.&quot;
-
-`lt()` *is* an S3 generic (`lt &lt;- function(data, ...) UseMethod(&quot;lt&quot;)`), so
-extending it to a custom class means re-exporting the generic and defining a
-method:
-
-``` r
-#' @importFrom lt lt
-#' @export
-lt::lt
-
-#' @export
-lt.fixed_design_summary &lt;- function(data, ...) { ... }
-```
-
-Re-exporting the generic puts `lt()` in your own namespace, so users can call it
-without attaching **lt** via `library(lt)` or writing `lt::lt()`; each method is
-then registered with a plain `#' @export`. Users then call the one verb they
-already know — `lt(x)` — on any object, yours included. No new generic, no name
-collisions, and `summary() |&gt; lt()` reads the same everywhere.
-If your package currently exports `as_gt()`, keep it as a thin deprecated
-wrapper that calls `lt::lt()` and move the real logic into `lt.*` methods (this
-is exactly what **gsDesign2** and **gsDesign** now do; sketch below).
-
-### Styling — you probably don't need CSS
-
-**lt**'s default look is close to **gt**'s out of the box, so you rarely need
-CSS just to reproduce **gt**'s base appearance. The whole stylesheet
-([`lt.min.css`](https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css)) is
-about 1.3 KB minified, and it is deliberately unopinionated: it sets borders,
-spacing, and alignment, but does *not* impose a `font-family` or a table-wide
-`font-size` (only the title and subtitle get relative sizes). It inherits the
-surrounding page's typography instead.
-
-Because it declares so little, you can override or extend it with a few plain
-CSS rules — no need to fight a heavy default. Add them with `lt_css()` /
-`lt_style()`, or just drop a `&lt;style&gt;`/chunk into your document, e.g.:
-
-``` css
-.lt-table { font-size: 0.9em; width: 100%; }
-```
-
-### Generating a static HTML table
-
-By default an **lt** table is built in the browser by [`lt.js`](02-lt-js.html)
-at view time, which is perfect for HTML pages but useless for output that must
-already contain the finished `&lt;table&gt;` (a GitHub `README.md`, an email, a cached
-page). `lt_export(x, file)` bakes the table into static HTML instead, running
-`lt.js` once at export time (it can also write images and other formats,
-depending on the file extension). Because it runs `lt.js`, baking needs a
-JavaScript engine: either Node.js or a headless browser (e.g.
-Chrome/Chromium/Edge).[^2]
-
-[^2]: This does *not* undercut **lt**'s lightweight promise. The engine is an
-    *opt-in runtime* tool, not an install dependency: installing **lt** still
-    pulls in only `xfun`. You need Node or a browser only on the occasional
-    static-export path — the common cases (HTML pages, Shiny, litedown/pkgdown)
-    render client-side in the browser the reader already has, needing nothing
-    extra. And a headless browser is present on nearly every machine, while Node
-    is a cheap, pure-tooling install. Contrast **gt**, which pulls in the V8
-    JavaScript engine unconditionally at install time (via `juicyjuice`, a plain
-    `Imports`), and for a different purpose: **gt** builds the table in R and
-    uses V8 to *inline its CSS* into per-element `style=` attributes. **lt**
-    needs no such step — it links or embeds its tiny stylesheet (or omits it
-    with `css = FALSE`) — and reaches for a JS engine only on the occasional
-    static-export path. Keeping the styles in a stylesheet is also easier to
-    customize: inline `style=` attributes carry high specificity, so a reader's
-    own stylesheet can't override them without `!important` or editing the
-    markup, whereas an ordinary rule can restyle an **lt** table freely.
-    (Inlining is genuinely useful for email, where `&lt;style&gt;` blocks are often
-    stripped — it's the right tool there, just not a good default elsewhere.)
-
-Inside R Markdown you don't need to call `lt_export()` per table: set
-`options(lt.lt_static = list(...))` and every `lt()` chunk in the document is
-baked with those arguments automatically. *This option only takes effect when
-knitting an Rmd* — anywhere else it does nothing, and you must call
-`lt_export()` explicitly.
-
-That option is how **gsDesign2** turns `README.Rmd` into a `README.md` that
-GitHub renders with real tables. The trick is a custom `knit` field in the YAML
-header: it enables static baking, then knits directly with `knitr::knit()`
-instead of going through pandoc. Pandoc would otherwise reformat the baked
-table, inserting extra blank lines inside it; GitHub then reads those blanks as
-paragraph breaks and wraps each cell's content in a `&lt;p&gt;`, adding ugly large
-margins inside every cell.
-
-``` yaml
+The [complete guide](../book/#chp:gt) in the book has the full function mapping,
+the differences in detail, and a runnable example. If you maintain a package that
+ships tables, see [Building on lt](../book/#chp:extend).
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>04. <a href="examples/04-header.html">Title and subtitle</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/04-header.Rmd">04-header.Rmd</a>)</em> <a href="examples/04-header.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Title and subtitle
 ---
-# Use knitr::knit() directly to avoid pandoc reformatting raw HTML tables.
-knit: |
-  (function(inputFile, encoding) {
-    options(lt.lt_static = list(fragment = TRUE, css = FALSE))
-    output = knitr::knit(inputFile, encoding = encoding)
-    body = xfun::yaml_body(xfun::read_utf8(output), parse = FALSE)$body
-    body = body[cumsum(nzchar(body)) &gt; 0]
-    xfun::write_utf8(body, output)
-  })
----
-```
 
-With that header, each `lt(data)` chunk in the README emits a finished `&lt;table&gt;`
-straight into `README.md`, no post-processing needed.
+`lt_header()` puts a title, and optionally a subtitle, above the table.
 
-## A runnable example
-
-A small table that exercises most of the mappings above:
-
-```{r demo}
+```{r}
 library(lt)
+lt(head(iris)) |&gt;
+  lt_header(&quot;Iris Measurements&quot;, &quot;First six observations&quot;)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>05. <a href="examples/05-label.html">Column labels</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/05-label.Rmd">05-label.Rmd</a>)</em> <a href="examples/05-label.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Column labels
+---
 
-df = data.frame(
-  grp  = c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;),
-  item = c(&quot;x&quot;, &quot;y&quot;, &quot;x&quot;, &quot;y&quot;),
-  lo   = c(0.1234, 0.3401, 0.2087, 0.4523),
-  hi   = c(0.8812, 0.6644, 0.7912, 0.5498)
+Column names are cleaned for display (`.` and `_` become spaces). Override any of them with `lt_label()`, or show the raw names with `auto_label = FALSE`.
+
+```{r}
+library(lt)
+tbl = lt(head(iris))
+tbl
+lt(head(iris), auto_label = FALSE)
+tbl |&gt; lt_label(Sepal.Length = &quot;Length (cm)&quot;, Sepal.Width = &quot;Width (cm)&quot;)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>06. <a href="examples/06-align-width.html">Alignment and widths</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/06-align-width.Rmd">06-align-width.Rmd</a>)</em> <a href="examples/06-align-width.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Alignment and widths
+---
+
+Numbers align right and text left by default. `lt_align()` changes that, and `lt_width()` sets column widths; an unnamed width sizes the whole table.
+
+```{r}
+library(lt)
+lt(head(mtcars[, 1:5])) |&gt;
+  lt_align(~ mpg + cyl, &quot;center&quot;) |&gt;
+  lt_width(&quot;80%&quot;, mpg = &quot;8em&quot;, cyl = &quot;5em&quot;)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>07. <a href="examples/07-show-types.html">Column types</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/07-show-types.Rmd">07-show-types.Rmd</a>)</em> <a href="examples/07-show-types.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Column types
+---
+
+`show_types = TRUE` tags each column with its type under the label, the way a data viewer does.
+
+```{r}
+library(lt)
+d = data.frame(
+  species = factor(c(&quot;cat&quot;, &quot;dog&quot;, &quot;owl&quot;)),
+  weight = c(4.2, 18.5, 0.9),
+  adopted = as.Date(c(&quot;2024-03-01&quot;, &quot;2024-05-17&quot;, &quot;2024-08-09&quot;)),
+  vaccinated = c(TRUE, TRUE, FALSE)
 )
-
-lt(df) |&gt;
-  lt_group(~ grp, sep = TRUE) |&gt;                       # gt: groupname_col
-  lt_label(item = &quot;Item&quot;, lo = &quot;Lower&quot;, hi = &quot;Upper&quot;) |&gt;  # gt: cols_label
-  lt_spanner(Probability ~ lo + hi) |&gt;                 # gt: tab_spanner
-  lt_format(~ lo + hi, decimals = 2) |&gt;                # gt: fmt_number
-  lt_header(title = &quot;Demo&quot;, subtitle = &quot;gt -&gt; lt&quot;) |&gt;  # gt: tab_header
-  lt_footnote(&quot;Interval bounds.&quot;, &quot;spanner&quot;, &quot;Probability&quot;) |&gt;  # tab_footnote
-  lt_note(&quot;Source: synthetic data.&quot;)                   # gt: tab_source_note
+lt(d, show_types = TRUE)
 ```
-
-## Shipping **lt** methods from your package
-
-The pattern **gsDesign2** and **gsDesign** settled on: because `lt()` is an S3
-generic, a package defines `lt.&lt;class&gt;()` methods for its summary/result
-classes, so users call `lt()` directly (and the old `as_gt()` becomes a
-deprecated wrapper). No `as_lt()` generic is needed. Sketch, adapted from
-**gsDesign2**'s `as_lt.R`:
-
-``` r
-# re-export the lt() generic so that users can call lt() without attaching
-# lt via library(lt) or qualifying it as lt::lt()
-#' @importFrom lt lt
-#' @export
-lt::lt
-
-# in R/as_lt.R; with the generic re-exported into your namespace, each method
-# can be registered with a plain #' @export
-#' @export
-lt.fixed_design_summary = function(data, title = NULL, footnote = NULL, ...) {
-  if (is.null(title))    title    = attr(data, &quot;title&quot;)
-  if (is.null(footnote)) footnote = attr(data, &quot;footnote&quot;)
-  ans = lt::lt(as.data.frame(data), ...) |&gt; lt::lt_header(title = title)
-  if (!isFALSE(footnote))
-    ans = lt::lt_footnote(ans, footnote, where = &quot;title&quot;)
-  ans
-}
-
-lt.gs_design_summary = function(data, ...) {
-  lt::lt(as.data.frame(data), ...) |&gt;
-    lt::lt_group(~ Analysis, sep = TRUE) |&gt;
-    lt::lt_spanner(
-      label = &quot;Cumulative boundary crossing probability&quot;,
-      columns = c(&quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;)
-    ) |&gt;
-    lt::lt_format(
-      c(&quot;Z&quot;, &quot;~HR at bound&quot;, &quot;Nominal p&quot;,
-        &quot;Alternate hypothesis&quot;, &quot;Null hypothesis&quot;),
-      decimals = 4
-    )
-}
-```
-
-Users then write `fixed_design_ahr(...) |&gt; summary() |&gt; lt()` in place of
-`... |&gt; summary() |&gt; as_gt()`. Re-exporting the generic is what makes the bare
-`lt()` call resolve: it lives in your package's namespace, so users need not
-attach **lt** with `library(lt)` or qualify the call as `lt::lt()`. The full
-version in **gsDesign2** drives the title, subtitle, spanner, per-location
-footnotes (`where = &quot;group&quot;` / `&quot;body&quot;` / `&quot;spanner&quot;`), bound selection, and
-column selection all from arguments.
 </code></pre>
 </div>
 </div>
-<h2 id="sec:javascript"><span class="section-number main-number">2</span> JavaScript</h2>
+<h2 id="sec:format-cells"><span class="section-number main-number">2</span> Format cells</h2>
+<p>Automatic formatting, numbers, dates, and substitutions.</p>
+<div class="boxes">
+<div class="box">
+<div class="caption name">
+<p>08. <a href="examples/08-auto-format.html">Automatic formatting</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/08-auto-format.Rmd">08-auto-format.Rmd</a>)</em> <a href="examples/08-auto-format.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Automatic formatting
+---
+
+By default `lt()` formats numbers for you: about four significant digits, thin-space thousands separators, a typographic minus, percent for columns named like `*_pct`, and a hands-off policy for years. Set `auto_format = FALSE` to see the raw values.
+
+```{r}
+library(lt)
+d = data.frame(
+  Year = c(2020, 2021, 2022),
+  Revenue = c(1234567.89, 2345678.12, -3456.789),
+  Margin_pct = c(0.1234, 0.0567, 0.2345)
+)
+lt(d)
+lt(d, auto_format = FALSE)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>09. <a href="examples/09-number.html">Number formatting</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/09-number.Rmd">09-number.Rmd</a>)</em> <a href="examples/09-number.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Number formatting
+---
+
+`lt_format()` controls decimals (or significant digits), the thousands mark, percent, and a prefix or suffix.
+
+```{r}
+library(lt)
+d = data.frame(
+  Item = c(&quot;Widget&quot;, &quot;Gadget&quot;, &quot;Doohickey&quot;),
+  Revenue = c(1234567.891, 987654.321, 246913.57),
+  Margin = c(0.1234, 0.0567, 0.2345),
+  Mass = c(0.00054858, 1.00727647, 4.00150618),
+  Weight = c(1250, 340.5, 89.12)
+)
+lt(d) |&gt;
+  lt_format(~ Revenue, decimals = 0, big_mark = &quot;,&quot;, prefix = &quot;$&quot;) |&gt;
+  lt_format(~ Margin, decimals = 1, percent = TRUE) |&gt;
+  lt_format(~ Mass, sig_digits = 3) |&gt;
+  lt_format(~ Weight, decimals = 1, suffix = &quot; kg&quot;)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>10. <a href="examples/10-date.html">Dates and times</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/10-date.Rmd">10-date.Rmd</a>)</em> <a href="examples/10-date.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Dates and times
+---
+
+`lt_date()` formats dates and date-times in the browser with `Intl.DateTimeFormat`, so `locale` and `options` work as in JavaScript. Pass `timeZone = &quot;UTC&quot;` to keep a date from shifting with the reader's time zone.
+
+```{r}
+library(lt)
+d = data.frame(
+  Event = c(&quot;Launch&quot;, &quot;Update&quot;, &quot;Release&quot;),
+  Date = as.Date(c(&quot;2024-01-15&quot;, &quot;2024-06-30&quot;, &quot;2024-12-01&quot;)),
+  Time = as.POSIXct(c(&quot;2024-01-15 09:30:00&quot;, &quot;2024-06-30 17:45:00&quot;,
+    &quot;2024-12-01 12:00:00&quot;), tz = &quot;UTC&quot;)
+)
+lt(d) |&gt;
+  lt_date(~ Date, locale = &quot;fr-FR&quot;, options = list(
+    weekday = &quot;long&quot;, day = &quot;numeric&quot;, month = &quot;long&quot;, timeZone = &quot;UTC&quot;
+  )) |&gt;
+  lt_date(~ Time, locale = &quot;en-US&quot;, options = list(
+    hour = &quot;2-digit&quot;, minute = &quot;2-digit&quot;, timeZone = &quot;UTC&quot;
+  ))
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>11. <a href="examples/11-sub.html">Substituting values</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/11-sub.Rmd">11-sub.Rmd</a>)</em> <a href="examples/11-sub.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Substituting values
+---
+
+`lt_sub()` swaps special values for friendlier text: missing values, zeros, and numbers too small to show. `Inf` and `-Inf` already print as ∞ and −∞.
+
+```{r}
+library(lt)
+d = data.frame(
+  Metric = c(&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;, &quot;Upper bound&quot;),
+  Value = c(0.62, 0.0003, 0, NA, Inf)
+)
+lt(d) |&gt;
+  lt_format(~ Value, decimals = 2) |&gt;
+  lt_sub(~ Value, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.001, small_text = &quot;&lt; 0.001&quot;)
+```
+</code></pre>
+</div>
+</div>
+<h2 id="sec:shape-the-table"><span class="section-number main-number">3</span> Shape the table</h2>
+<p>Merge, span, move, hide, group, and indent.</p>
+<div class="boxes">
+<div class="box">
+<div class="caption name">
+<p>12. <a href="examples/12-merge.html">Merging columns</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/12-merge.Rmd">12-merge.Rmd</a>)</em> <a href="examples/12-merge.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Merging columns
+---
+
+`lt_merge()` folds several columns into one with a pattern. Wrap a part in `&lt;&lt;` and `&gt;&gt;` to drop it when a referenced value is missing.
+
+```{r}
+library(lt)
+d = data.frame(
+  endpoint = c(&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Tertiary&quot;),
+  est = c(0.61, 0.79, 0.45),
+  lo = c(0.40, 0.57, NA),
+  hi = c(0.82, 1.01, NA)
+)
+lt(d) |&gt;
+  lt_format(~ est + lo + hi, decimals = 2) |&gt;
+  lt_merge(~ est + lo + hi, pattern = &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot;) |&gt;
+  lt_label(est = &quot;Estimate (95% CI)&quot;)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>13. <a href="examples/13-spanner.html">Column spanners</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/13-spanner.Rmd">13-spanner.Rmd</a>)</em> <a href="examples/13-spanner.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Column spanners
+---
+
+A spanner is a label over a run of columns. Name it with a formula, or call `lt_spanner()` with no arguments to infer spanners from shared prefixes such as `Sepal.` and `Petal.`.
+
+```{r}
+library(lt)
+tbl = lt(head(iris))
+tbl |&gt; lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
+tbl |&gt; lt_spanner()
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>14. <a href="examples/14-move-hide.html">Moving and hiding columns</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/14-move-hide.Rmd">14-move-hide.Rmd</a>)</em> <a href="examples/14-move-hide.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Moving and hiding columns
+---
+
+`lt_move()` reorders columns (`after = NULL` moves them to the front), and `lt_hide()` drops columns from view while their data stays in the table for anything that reads whole rows, such as an interactive row detail.
+
+```{r}
+library(lt)
+tbl = lt(head(iris))
+tbl |&gt; lt_move(~ Species, after = NULL)
+tbl |&gt; lt_hide(~ Petal.Length + Petal.Width)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>15. <a href="examples/15-group.html">Row groups</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/15-group.Rmd">15-group.Rmd</a>)</em> <a href="examples/15-group.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Row groups
+---
+
+`lt_group()` partitions rows by the values of a column (or several). Short labels become spanning cells on the left; long ones switch to full-width separator rows, which `sep` can force either way.
+
+```{r}
+library(lt)
+d = data.frame(
+  Region = c(&quot;East&quot;, &quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;),
+  State = c(&quot;NY&quot;, &quot;NY&quot;, &quot;MA&quot;, &quot;WA&quot;, &quot;WA&quot;, &quot;OR&quot;),
+  City = c(&quot;New York&quot;, &quot;Buffalo&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Spokane&quot;, &quot;Portland&quot;),
+  Population = c(8336817, 278349, 675647, 737015, 228989, 652503)
+)
+lt(d) |&gt; lt_group(~ Region) |&gt; lt_header(&quot;Cities by region&quot;)
+lt(d) |&gt; lt_group(~ Region + State)
+lt(d) |&gt; lt_group(~ Region, sep = TRUE)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>16. <a href="examples/16-group-manual.html">Manual groups and group order</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/16-group-manual.Rmd">16-group-manual.Rmd</a>)</em> <a href="examples/16-group-manual.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Manual groups and group order
+---
+
+Groups need not come from a column: name row ranges yourself. Pass group labels to a second `lt_group()` call to put the groups in the order you like.
+
+```{r}
+library(lt)
+tbl = lt(head(mtcars[, 1:4], 6))
+tbl |&gt; lt_group(&quot;First three&quot; = 1:3, &quot;Last three&quot; = 4:6)
+
+d = data.frame(
+  arm = c(&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;),
+  stat = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
+  value = c(30, 4.2, 31, 6.8)
+)
+lt(d) |&gt;
+  lt_group(~ arm, sep = TRUE) |&gt;
+  lt_group(&quot;Treatment&quot;, &quot;Placebo&quot;)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>17. <a href="examples/17-indent.html">Row indentation</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/17-indent.Rmd">17-indent.Rmd</a>)</em> <a href="examples/17-indent.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Row indentation
+---
+
+`lt_indent()` nests rows to show hierarchy, one level per step.
+
+```{r}
+library(lt)
+d = data.frame(
+  label = c(&quot;Any AE&quot;, &quot;Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;, &quot;GI&quot;, &quot;Nausea&quot;),
+  n_pct = c(&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;)
+)
+lt(d) |&gt;
+  lt_header(&quot;Adverse events&quot;, &quot;Safety population&quot;) |&gt;
+  lt_indent(c(2, 5), level = 1) |&gt;
+  lt_indent(c(3, 4, 6), level = 2)
+```
+</code></pre>
+</div>
+</div>
+<h2 id="sec:notes-and-html"><span class="section-number main-number">4</span> Notes and HTML</h2>
+<p>Footnotes, source notes, and raw HTML.</p>
+<div class="boxes">
+<div class="box">
+<div class="caption name">
+<p>18. <a href="examples/18-footnote.html">Footnotes</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/18-footnote.Rmd">18-footnote.Rmd</a>)</em> <a href="examples/18-footnote.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Footnotes
+---
+
+`lt_footnote()` attaches a numbered footnote to the title, subtitle, a column label, a spanner, a row group, or specific body cells.
+
+```{r}
+library(lt)
+d = data.frame(
+  Arm   = c(&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;),
+  Stat  = c(&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;),
+  Value = c(31, 6.8, 30, 4.2),
+  SE    = c(NA, 0.42, NA, 0.38)
+)
+lt(d) |&gt;
+  lt_group(~ Arm) |&gt;
+  lt_header(title = &quot;Study Results&quot;, subtitle = &quot;Two arms&quot;) |&gt;
+  lt_spanner(Summary ~ Value + SE) |&gt;
+  lt_footnote(&quot;Source: simulated trial data.&quot;, &quot;title&quot;) |&gt;
+  lt_footnote(&quot;Intention-to-treat population.&quot;, &quot;subtitle&quot;) |&gt;
+  lt_footnote(&quot;Standard error of the mean.&quot;, &quot;column&quot;, &quot;SE&quot;) |&gt;
+  lt_footnote(&quot;Per-arm summary statistics.&quot;, &quot;spanner&quot;, &quot;Summary&quot;) |&gt;
+  lt_footnote(&quot;Received active drug.&quot;, &quot;group&quot;, &quot;Treatment&quot;) |&gt;
+  lt_footnote(&quot;SE is undefined for counts.&quot;, &quot;body&quot;, &quot;SE&quot;, rows = c(1, 3))
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>19. <a href="examples/19-note.html">Source notes</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/19-note.Rmd">19-note.Rmd</a>)</em> <a href="examples/19-note.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Source notes
+---
+
+`lt_note()` adds an unnumbered note to the footer, below any footnotes. It is the place for sources and caveats.
+
+```{r}
+library(lt)
+lt(head(mtcars[, 1:5])) |&gt;
+  lt_note(&quot;Data from the 1974 Motor Trend US magazine.&quot;)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>20. <a href="examples/20-html.html">HTML in cells and labels</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/20-html.Rmd">20-html.Rmd</a>)</em> <a href="examples/20-html.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: HTML in cells and labels
+---
+
+Everything is HTML-escaped by default. Mark whole columns as HTML with `lt_html()`, and wrap any other text (titles, labels, notes) in `I()`.
+
+```{r}
+library(lt)
+d = data.frame(
+  Package = c(
+    &quot;&lt;a href='https://cran.r-project.org/package=xfun'&gt;xfun&lt;/a&gt;&quot;,
+    &quot;&lt;a href='https://cran.r-project.org/package=litedown'&gt;litedown&lt;/a&gt;&quot;
+  ),
+  Mood = c(&quot;&lt;b style='color:#090'&gt;stable&lt;/b&gt;&quot;, &quot;&lt;i&gt;always evolving&lt;/i&gt;&quot;)
+)
+lt(d) |&gt;
+  lt_html(~ Package + Mood) |&gt;
+  lt_header(I(&quot;Packages &lt;sup&gt;&amp;#9733;&lt;/sup&gt;&quot;)) |&gt;
+  lt_label(Package = I(&quot;Name&lt;sup&gt;*&lt;/sup&gt;&quot;)) |&gt;
+  lt_note(I(&quot;See &lt;a href='https://yihui.org/'&gt;the author&lt;/a&gt;.&quot;))
+```
+</code></pre>
+</div>
+</div>
+<h2 id="sec:style"><span class="section-number main-number">5</span> Style</h2>
+<p>Cell styles, CSS, and table wrappers.</p>
+<div class="boxes">
+<div class="box">
+<div class="caption name">
+<p>21. <a href="examples/21-style.html">Styling cells</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/21-style.Rmd">21-style.Rmd</a>)</em> <a href="examples/21-style.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Styling cells
+---
+
+`lt_style()` styles chosen cells with inline CSS shortcuts. With `test`, a JavaScript predicate decides which cells qualify, and a `class` plus `lt_css()` keeps the rules in one place.
+
+```{r}
+library(lt)
+d = data.frame(
+  Endpoint = c(&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Exploratory&quot;),
+  HR = c(0.62, 0.79, 1.05),
+  P = c(0.001, 0.042, 0.38)
+)
+lt(d) |&gt;
+  lt_format(~ HR + P, decimals = 3) |&gt;
+  lt_style(&quot;Endpoint&quot;, rows = 1, bold = TRUE, color = &quot;#06c&quot;) |&gt;
+  lt_style(&quot;HR&quot;, test = &quot;v =&gt; v &lt; 1&quot;, class = &quot;good&quot;) |&gt;
+  lt_style(&quot;P&quot;, test = &quot;v =&gt; v &lt; 0.05&quot;, class = &quot;sig&quot;) |&gt;
+  lt_css(.good = list(color = &quot;green&quot;), .sig = list(fontWeight = &quot;bold&quot;))
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>22. <a href="examples/22-css-wrap.html">Scoping CSS to one table</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/22-css-wrap.Rmd">22-css-wrap.Rmd</a>)</em> <a href="examples/22-css-wrap.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Scoping CSS to one table
+---
+
+`lt_wrap()` sets attributes on the table's container. Tag it with a class and your stylesheet can target that table alone.
+
+```{r}
+library(lt)
+lt(head(mtcars[, 1:5], 4)) |&gt; lt_wrap(class = &quot;striped&quot;)
+```
+
+```{css}
+.striped tbody tr:nth-child(even) td { background: #f2f6ff; }
+```
+</code></pre>
+</div>
+</div>
+<h2 id="sec:inline-graphics"><span class="section-number main-number">6</span> Inline graphics</h2>
+<p>Error bars, sparklines, and dot plots.</p>
+<div class="boxes">
+<div class="box">
+<div class="caption name">
+<p>23. <a href="examples/23-errorbar.html">Error bars</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/23-errorbar.Rmd">23-errorbar.Rmd</a>)</em> <a href="examples/23-errorbar.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Error bars
+---
+
+`lt_errorbar()` turns `estimate ~ lower + upper` into a tiny forest plot on a shared scale. `ref` draws a reference line, `axis` a shared axis, and `into` puts the plot in its own column.
+
+```{r}
+library(lt)
+d = data.frame(
+  Term = c(&quot;Age&quot;, &quot;Dose&quot;, &quot;Baseline&quot;, &quot;Sex&quot;),
+  Est  = c(0.12, -0.34, 0.45, -0.08),
+  Lo   = c(-0.05, -0.52, 0.21, -0.29),
+  Hi   = c(0.29, -0.16, 0.69, 0.13)
+)
+lt(d) |&gt;
+  lt_errorbar(Est ~ Lo + Hi, ref = 0, into = &quot;Forest&quot;, hide = FALSE,
+    axis = &quot;Effect (95% CI)&quot;)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>24. <a href="examples/24-sparkline.html">Sparklines</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/24-sparkline.Rmd">24-sparkline.Rmd</a>)</em> <a href="examples/24-sparkline.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Sparklines
+---
+
+`lt_sparkline()` draws a small line or bar chart per row from a list-column, or from several columns read across the row.
+
+```{r}
+library(lt)
+d = data.frame(City = c(&quot;Oslo&quot;, &quot;Cairo&quot;, &quot;Lima&quot;))
+d$Temp = list(c(-3, -2, 1, 6, 12, 16), c(14, 15, 18, 23, 28, 31), c(19, 19, 18, 16, 15, 15))
+d$Rain = list(c(49, 36, 47, 41, 53, 60), c(5, 4, 4, 1, 0, 0), c(8, 4, 2, 1, 1, 1))
+lt(d) |&gt;
+  lt_sparkline(~ Temp) |&gt;
+  lt_sparkline(~ Rain, type = &quot;bar&quot;, color = &quot;#4caf50&quot;)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>25. <a href="examples/25-dotplot.html">Dot plots</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/25-dotplot.Rmd">25-dotplot.Rmd</a>)</em> <a href="examples/25-dotplot.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Dot plots
+---
+
+`lt_dotplot()` places one dot per column on a scale shared across them, perfect for before-and-after comparisons. `color = TRUE` adds a legend; `stagger = TRUE` separates dots that land on nearly the same value.
+
+```{r}
+library(lt)
+d = data.frame(
+  Group = c(&quot;Control&quot;, &quot;Low&quot;, &quot;High&quot;),
+  Before = c(3.1, 3.4, 3.0), After = c(3.2, 4.1, 5.2)
+)
+lt(d) |&gt;
+  lt_dotplot(~ Before + After, color = TRUE, stagger = TRUE, axis = &quot;Score&quot;)
+```
+</code></pre>
+</div>
+</div>
+<h2 id="sec:interactivity"><span class="section-number main-number">7</span> Interactivity</h2>
+<p>Sort, search, filter, drill down, profile, download, view, and serve.</p>
+<div class="boxes">
+<div class="box">
+<div class="caption name">
+<p>26. <a href="examples/26-sort-search.html">Sorting, searching, and paging</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/26-sort-search.Rmd">26-sort-search.Rmd</a>)</em> <a href="examples/26-sort-search.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Sorting, searching, and paging
+---
+
+`lt_interactive()` makes headers click-to-sort (shift-click adds tie-breakers), adds a search box that reads plain language such as `mpg over 25, cyl is 4`, and pages the rows.
+
+```{r}
+library(lt)
+d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;, &quot;gear&quot;)]
+lt(d) |&gt;
+  lt_interactive(sort = ~ cyl + -mpg, pager = c(5, 10, Inf), filter = FALSE)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>27. <a href="examples/27-filter.html">Column filters</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/27-filter.Rmd">27-filter.Rmd</a>)</em> <a href="examples/27-filter.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Column filters
+---
+
+By default each column gets the filter that suits its data: a slider for numbers, a checklist for text with few distinct values. Ask for other widgets by name, or switch a column's filter off with `FALSE`.
+
+```{r}
+library(lt)
+lt(iris) |&gt;
+  lt_interactive(filter = list(&quot;auto&quot;, Species = FALSE), search = FALSE, pager = 5)
+
+d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;, &quot;gear&quot;)]
+lt(d) |&gt;
+  lt_interactive(
+    filter = list(TRUE, mpg = &quot;range&quot;, cyl = &quot;checklist&quot;, gear = &quot;select&quot;),
+    search = FALSE, pager = 5
+  )
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>28. <a href="examples/28-detail.html">Row detail</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/28-detail.Rmd">28-detail.Rmd</a>)</em> <a href="examples/28-detail.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Row detail
+---
+
+`detail` adds an expand caret to each row that reveals extra columns, which can be ones hidden from the main table. For full control pass a JavaScript function wrapped in `js()`.
+
+```{r}
+library(lt)
+d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;, &quot;gear&quot;)]
+lt(d) |&gt;
+  lt_hide(~ hp + wt) |&gt;
+  lt_interactive(pager = 5, filter = FALSE, detail = ~ hp + wt)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>29. <a href="examples/29-profile.html">Column profiles</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/29-profile.Rmd">29-profile.Rmd</a>)</em> <a href="examples/29-profile.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Column profiles
+---
+
+`profile = TRUE` draws a mini chart of each column's values in the header, with summary statistics on hover. The bars light up the share of rows your filters keep, so filter a column and watch.
+
+```{r}
+library(lt)
+lt(iris) |&gt; lt_interactive(profile = TRUE, pager = 5)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>30. <a href="examples/30-column-menu.html">Column visibility menu</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/30-column-menu.Rmd">30-column-menu.Rmd</a>)</em> <a href="examples/30-column-menu.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Column visibility menu
+---
+
+`hide` adds a menu to show or hide columns. Give column names to start with those hidden, or `NA` to start with everything visible; a `label` turns the eye icon into a text chip.
+
+```{r}
+library(lt)
+d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;, &quot;gear&quot;)]
+lt(d) |&gt;
+  lt_interactive(hide = list(label = &quot;Columns&quot;, columns = c(&quot;hp&quot;, &quot;wt&quot;)),
+    pager = 5, filter = FALSE)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>31. <a href="examples/31-download.html">Downloading a CSV</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/31-download.Rmd">31-download.Rmd</a>)</em> <a href="examples/31-download.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Downloading a CSV
+---
+
+`download` adds a button that saves the current view (filtered, sorted, across all pages) as a CSV file. Try filtering first.
+
+```{r}
+library(lt)
+d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;, &quot;gear&quot;)]
+lt(d) |&gt; lt_interactive(download = &quot;cars.csv&quot;, pager = 5)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>32. <a href="examples/32-viewer.html">A data viewer</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/32-viewer.Rmd">32-viewer.Rmd</a>)</em> <a href="examples/32-viewer.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: A data viewer
+---
+
+`lt_viewer()` is a ready-made explorer for a data frame: column types, profiles, filters, and a column menu, with the data expression as the title.
+
+```{r}
+library(lt)
+lt_viewer(iris)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>33. <a href="examples/33-serve.html">Serving big data from R</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/33-serve.Rmd">33-serve.Rmd</a>)</em> <a href="examples/33-serve.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Serving big data from R
+---
+
+`lt_serve()` keeps the rows in R and lets the browser fetch one page at a time, so million-row tables stay snappy. It needs a live R session, so print it at the console rather than knitting it.
+
+```{r, eval = FALSE}
+library(lt)
+big = data.frame(id = 1:1e6, x = rnorm(1e6), g = sample(letters, 1e6, TRUE))
+lt_viewer(big) |&gt; lt_serve()
+```
+</code></pre>
+</div>
+</div>
+<h2 id="sec:shiny-and-export"><span class="section-number main-number">8</span> Shiny and export</h2>
+<p>Shiny outputs and inputs, and static export.</p>
+<div class="boxes">
+<div class="box">
+<div class="caption name">
+<p>34. <a href="examples/34-shiny-output.html">Tables in Shiny</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/34-shiny-output.Rmd">34-shiny-output.Rmd</a>)</em> <a href="examples/34-shiny-output.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Tables in Shiny
+---
+
+`lt_output()` and `render_lt()` show a table as a Shiny output. The server sends the spec and the browser builds the `&lt;table&gt;`.
+
+```{r, eval = FALSE}
+library(shiny)
+library(lt)
+ui = fluidPage(lt_output(&quot;tbl&quot;))
+server = function(input, output) {
+  output$tbl = render_lt(
+    lt(mtcars) |&gt; lt_header(&quot;Motor Trend&quot;) |&gt; lt_interactive()
+  )
+}
+shinyApp(ui, server)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>35. <a href="examples/35-shiny-input.html">Editable tables in Shiny</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/35-shiny-input.Rmd">35-shiny-input.Rmd</a>)</em> <a href="examples/35-shiny-input.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Editable tables in Shiny
+---
+
+`lt_input()` is a table whose cells you can edit in the browser; `input$m` is the edited data frame. `lt_update()` replaces it from the server.
+
+```{r, eval = FALSE}
+library(shiny)
+library(lt)
+d = data.frame(Time = c(12, 24), Rate = c(0.8, 0.6), Note = c(&quot;a&quot;, &quot;b&quot;))
+ui = fluidPage(
+  lt_input(&quot;m&quot;, d, label = &quot;Edit the cells:&quot;, columns = c(&quot;Time&quot;, &quot;Rate&quot;)),
+  actionButton(&quot;add&quot;, &quot;Add row&quot;),
+  verbatimTextOutput(&quot;out&quot;)
+)
+server = function(input, output, session) {
+  output$out = renderPrint(input$m)
+  observeEvent(input$add, lt_update(session, &quot;m&quot;, rbind(input$m, NA)))
+}
+shinyApp(ui, server)
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>36. <a href="examples/36-export.html">Exporting a table</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/36-export.Rmd">36-export.Rmd</a>)</em> <a href="examples/36-export.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Exporting a table
+---
+
+`lt_export()` saves a table as `.html`, `.pdf`, or `.png`. It needs Node.js or a headless Chromium-based browser for PDF and PNG; the chunk is skipped where neither is available.
+
+```{r}
+library(lt)
+tbl = lt(head(mtcars[, 1:5])) |&gt; lt_header(&quot;Cars&quot;)
+can_export = lt:::can_bake()
+```
+
+```{r, eval = can_export}
+lt_export(tbl, &quot;cars.png&quot;, width = &quot;min-content&quot;)
+lt_export(tbl, &quot;cars.pdf&quot;)
+```
+
+:::: {#fig:export-png .figure}
+![table in png](cars.png)
+
+::: caption
+[ ](#@fig:export-png) A table exported to PNG.
+:::
+::::
+
+:::: {#fig:export-pdf .figure}
+&lt;embed src=&quot;cars.pdf&quot; type=&quot;application/pdf&quot; width=&quot;100%&quot; height=&quot;300&quot;&gt;
+
+::: caption
+[ ](#@fig:export-pdf) A table exported to PDF.
+:::
+::::
+
+A static `&lt;table&gt;`, with no JavaScript needed to view it, is one more option:
+
+```{r, eval = can_export, attr.output = &quot;.html&quot;}
+lt(head(mtcars[, 1:5], 2)) |&gt; lt_header(&quot;Cars&quot;) |&gt;
+  lt_export(NA, fragment = TRUE, css = FALSE, tidy = TRUE)
+```
+</code></pre>
+</div>
+</div>
+<h2 id="sec:javascript"><span class="section-number main-number">9</span> JavaScript</h2>
 <p>Use the lt.js runtime directly.</p>
 <div class="boxes">
 <div class="box">
 <div class="caption name">
-<p>02. <a href="examples/02-lt-js.html">lt.js — JavaScript API Reference</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/02-lt-js.Rmd">02-lt-js.Rmd</a>)</em> <a href="examples/02-lt-js.html" class="run">►</a></p>
+<p>02. <a href="examples/02-lt-js.html">lt.js — The JavaScript Runtime</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/02-lt-js.Rmd">02-lt-js.Rmd</a>)</em> <a href="examples/02-lt-js.html" class="run">►</a></p>
 </div>
 <pre><code class="language-md">---
-title: &quot;lt.js — JavaScript API Reference&quot;
+title: &quot;lt.js — The JavaScript Runtime&quot;
 output:
   html:
     meta:
@@ -1716,1187 +1054,147 @@ cat(
 )
 ```
 
-This document demonstrates the lt.js runtime directly from JavaScript.
-Each example shows a JSON spec and renders the table with `LT.build()`.
+```{js, echo = FALSE}
+// lt.js is deferred: queue LT.build() calls until it loads (other chapters
+// may have created window.LT already, so add build() to it)
+(window.LT ??= {}).build ??= function(spec) {
+  (this.q ??= []).push({s: document.currentScript, d: spec});
+};
+```
 
-## Including lt.js
-
-Add the stylesheet and script to your HTML page:
+The R package is a thin layer over a small JavaScript runtime, which you can
+use without R. Add the stylesheet and script to an HTML page:
 
 ``` html
 &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css&quot;&gt;
 &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js&quot;&gt;&lt;/script&gt;
 ```
 
-Then call `LT.build(spec)` from an inline `&lt;script&gt;` wherever you want a
-table to appear. The runtime renders the table immediately after the
-calling script element. To build a table at any other time (e.g., when
-the reader expands a row), call `LT.render(element, spec)` instead; see
-[interactivity](#sec:interactive).
+Then call `LT.build(spec)` from an inline `&lt;script&gt;` wherever a table should
+appear. The spec is plain JSON: `data` by column, plus `ops` that format, label,
+and decorate it. This one is made without any R code:
 
-Interactive tables (sorting, search, filters, paging, resizing) need one
-more stylesheet and script, loaded after the core ones:
-
-``` html
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt-interactive.min.css&quot;&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-interactive.min.js&quot;&gt;&lt;/script&gt;
+```{js}
+LT.build({
+  data: {
+    Item: [&quot;Widget&quot;, &quot;Gadget&quot;, &quot;Doohickey&quot;],
+    Price: [1234.5, 678.9, 42],
+    Margin: [0.1234, 0.0567, 0.2345]
+  },
+  header: { title: &quot;Price list&quot;, subtitle: &quot;Straight from JavaScript&quot; },
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;Price&quot;], decimals: 2, big_mark: &quot;,&quot;, prefix: &quot;$&quot; },
+    { type: &quot;fmt_number&quot;, columns: [&quot;Margin&quot;], decimals: 1, percent: true }
+  ],
+  interactive: { pager: false, filter: false }
+});
 ```
 
-Inline-graphics cells (error bars, sparklines, dot plots) live in a separate
-graphics module. Load it **before** the core script, so its cell renderers
-are registered by the time the runtime builds a table:
+For the full story (every op, the `interactive` options, `LT.render()`, the
+controller for driving a table from outside, and the protocol for serving rows
+from your own server), see the chapter on the [JavaScript
+runtime](../book/#chp:js) in the book. Two small examples to start from:
+[a table from JavaScript](38-js-build.html) and [driving a table from
+outside](39-js-control.html).
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>37. <a href="examples/37-spec.html">The table spec</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/37-spec.Rmd">37-spec.Rmd</a>)</em> <a href="examples/37-spec.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: The table spec
+---
 
-``` html
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt-plot.min.css&quot;&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-plot.min.js&quot;&gt;&lt;/script&gt;
+An lt table is data plus a list of declarative operations. `lt_spec()` hands you that payload as a list, ready for `xfun::tojson()`, for another widget to render with `LT.render()`.
+
+```{r}
+library(lt)
+tbl = lt(head(mtcars[, 1:3])) |&gt; lt_format(~ mpg, decimals = 0)
+str(lt_spec(tbl), max.level = 2)
+xfun::tojson(lt_spec(tbl)$ops)
 ```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>38. <a href="examples/38-js-build.html">A table from JavaScript</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/38-js-build.Rmd">38-js-build.Rmd</a>)</em> <a href="examples/38-js-build.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: A table from JavaScript
+---
 
-```{r, echo = FALSE}
-iris5 = iris[c(1, 2, 51, 52, 101), ]  # span all three species
-mtcars6 = head(mtcars[, 1:6], 6)
+```{r assets, echo = FALSE, results = 'asis'}
+# link the runtime (lt-plot loads before the core script)
+cat(
+  lt:::css_block(c('lt.css', 'lt-plot.css', 'lt-interactive.css'), inline = FALSE),
+  lt:::js_block(c('lt-plot.js', 'lt.js', 'lt-interactive.js'), inline = FALSE),
+  sep = '\n'
+)
 ```
 
 ```{js, echo = FALSE}
-// Shim: lt.js is deferred, so queue calls until it loads
-if (!window.LT) window.LT = {
-  q: [],
-  build(spec) { this.q.push({s: document.currentScript, d: spec}); }
+// lt.js is deferred: queue LT.build() calls until it loads (other chapters
+// may have created window.LT already, so add build() to it)
+(window.LT ??= {}).build ??= function(spec) {
+  (this.q ??= []).push({s: document.currentScript, d: spec});
 };
 ```
 
-Define sample datasets as JavaScript objects (interpolated from R via
-litedown's `fill` option):
+No R needed: load `lt.js`, then call `LT.build(spec)` where the table should appear. The spec is plain JSON: `data` by column, and `ops` that format, label, and decorate it.
+
+```{js}
+LT.build({
+  data: {
+    Item: [&quot;Widget&quot;, &quot;Gadget&quot;, &quot;Doohickey&quot;],
+    Price: [1234.5, 678.9, 42],
+    Margin: [0.1234, 0.0567, 0.2345]
+  },
+  header: { title: &quot;Price list&quot;, subtitle: &quot;Straight from JavaScript&quot; },
+  ops: [
+    { type: &quot;fmt_number&quot;, columns: [&quot;Price&quot;], decimals: 2, big_mark: &quot;,&quot;, prefix: &quot;$&quot; },
+    { type: &quot;fmt_number&quot;, columns: [&quot;Margin&quot;], decimals: 1, percent: true }
+  ],
+  interactive: { pager: false, filter: false }
+});
+```
+</code></pre>
+</div>
+<div class="box">
+<div class="caption name">
+<p>39. <a href="examples/39-js-control.html">Driving a table from outside</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/39-js-control.Rmd">39-js-control.Rmd</a>)</em> <a href="examples/39-js-control.html" class="run">►</a></p>
+</div>
+<pre><code class="language-md">---
+title: Driving a table from outside
+---
+
+```{r assets, echo = FALSE, results = 'asis'}
+# link the runtime (lt-plot loads before the core script)
+cat(
+  lt:::css_block(c('lt.css', 'lt-plot.css', 'lt-interactive.css'), inline = FALSE),
+  lt:::js_block(c('lt-plot.js', 'lt.js', 'lt-interactive.js'), inline = FALSE),
+  sep = '\n'
+)
+```
+
+`LT.render(element, spec)` builds a table whenever you like, and returns it. Every interactive table carries a controller at `el._lt`, so outside widgets can filter it: here a `&lt;select&gt;` keeps one species.
+
+```{r, echo = FALSE}
+iris5 = iris[c(1, 2, 51, 52, 101, 102), ]
+```
 
 ```{js, fill = xfun::tojson}
-const mtcars = `{ mtcars6 }`;
 const iris = `{ iris5 }`;
 ```
 
-## Basics
-
-### Basic table
-
-The simplest spec: just `data` (a column-oriented object).
-
 ```{js}
-LT.build({ data: mtcars });
-```
-
-### Title and subtitle
-
-```{js}
-LT.build({
-  data: iris,
-  header: {
-    title: &quot;Iris Measurements&quot;,
-    subtitle: &quot;First five observations&quot;
-  }
-});
-```
-
-### Column labels
-
-By default, column names are cleaned for display by replacing `.` and
-`_` with spaces. Set `auto_label: false` to show raw names, or use a
-`label` op to override specific columns:
-
-```{js}
-// auto_label on by default: &quot;Sepal.Length&quot; displays as &quot;Sepal Length&quot;
-LT.build({ data: iris });
-```
-
-```{js}
-// Disable auto-labeling
-LT.build({ data: iris, auto_label: false });
-```
-
-```{js}
-// Explicit label overrides
-LT.build({
-  data: iris,
-  ops: [
-    { type: &quot;label&quot;, labels: {
-      &quot;Sepal.Length&quot;: &quot;Length (cm)&quot;, &quot;Sepal.Width&quot;: &quot;Width (cm)&quot;,
-      &quot;Petal.Length&quot;: &quot;Length (cm)&quot;, &quot;Petal.Width&quot;: &quot;Width (cm)&quot;
-    }}
-  ]
-});
-```
-
-### Column alignment
-
-By default, numeric columns are right-aligned. Override with an `align` op:
-
-```{js}
-LT.build({
-  data: mtcars,
-  ops: [
-    { type: &quot;align&quot;, columns: [&quot;mpg&quot;, &quot;cyl&quot;], align: &quot;center&quot; }
-  ]
-});
-```
-
-## Formatting
-
-### Auto-formatting
-
-Numeric columns are automatically formatted. The following example shows
-all behaviors at once: rounding to ~4 significant digits (adapting
-decimal places to magnitude), thin-space thousands separator,
-typographic minus (U+2212) for negatives, percentage detection (column
-names matching `/%|[ _](pct|percent)$/i` are multiplied by 100 and
-suffixed with &quot;%&quot;), and year-column skipping (columns matching
-`/year/i` with 4-digit integers are left untouched).
-
-```{js}
-LT.build({
-  data: {
-    Year: [2020, 2021, 2022],
-    Revenue: [1234567.89, 2345678.12, -3456.789],
-    Margin_pct: [0.1234, 0.0567, 0.2345]
-  }
-});
-```
-
-#### Disabling auto-format
-
-Set `auto_format: false` to show raw values. Compare with the table above:
-
-```{js}
-LT.build({
-  data: {
-    Year: [2020, 2021, 2022],
-    Revenue: [1234567.89, 2345678.12, -3456.789],
-    Margin_pct: [0.1234, 0.0567, 0.2345]
-  },
-  auto_format: false
-});
-```
-
-### Number formatting (`fmt_number`)
-
-Explicit control over decimals and thousands separators:
-
-```{js}
-LT.build({
-  data: {
-    Item: [&quot;Widget&quot;, &quot;Gadget&quot;, &quot;Doohickey&quot;],
-    Revenue: [1234567.891, 987654.321, 246913.57],
-    Margin: [0.1234, 0.0567, 0.2345]
-  },
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;Revenue&quot;], decimals: 0, big_mark: &quot;,&quot; },
-    { type: &quot;fmt_number&quot;, columns: [&quot;Margin&quot;], decimals: 2, percent: true }
-  ]
-});
-```
-
-#### Significant digits
-
-Use `sig_digits` instead of `decimals` to keep a fixed number of significant
-digits, which suits columns spanning several orders of magnitude:
-
-```{js}
-LT.build({
-  data: {
-    Particle: [&quot;Electron&quot;, &quot;Proton&quot;, &quot;Alpha&quot;],
-    Mass: [0.00054858, 1.00727647, 4.00150618]
-  },
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;Mass&quot;], sig_digits: 3 }
-  ]
-});
-```
-
-#### Percent without multiplication
-
-Use `percent: &quot;%&quot;` when values are already in percent scale (no `*100`):
-
-```{js}
-LT.build({
-  data: {
-    Test: [&quot;A&quot;, &quot;B&quot;],
-    Rate: [78.5, 42.1]
-  },
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;Rate&quot;], decimals: 1, percent: &quot;%&quot; }
-  ]
-});
-```
-
-#### Prefix and suffix (currency, units)
-
-Use `prefix` and `suffix` to prepend or append symbols:
-
-```{js}
-LT.build({
-  data: {
-    Item: [&quot;Widget&quot;, &quot;Gadget&quot;, &quot;Doohickey&quot;],
-    Price: [1234.5, 678.9, 42.0],
-    Weight: [1250, 340.5, 89.12]
-  },
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;Price&quot;], decimals: 2, big_mark: &quot;,&quot;, prefix: &quot;$&quot; },
-    { type: &quot;fmt_number&quot;, columns: [&quot;Weight&quot;], decimals: 1, suffix: &quot; kg&quot; }
-  ]
-});
-```
-
-### Date formatting (`fmt_date`)
-
-Format date values using JavaScript's native Date methods. Values can be
-Date objects or ISO strings. The default calls `toLocaleDateString()`;
-pass `method` to use a different Date method, or `locale`/`options` for
-`Intl.DateTimeFormat` control.
-
-**Note:** The formatted date may differ from the input depending on the
-viewer's timezone. `new Date(&quot;2024-01-15&quot;)` is parsed as UTC midnight,
-but `toLocaleDateString()` converts to local time — so `2024-01-15`
-displays as `2024-01-14` at GMT-6. Pass `options: { timeZone: &quot;UTC&quot; }`
-to avoid this.
-
-```{js}
-LT.build({
-  data: {
-    Event: [&quot;Launch&quot;, &quot;Update&quot;, &quot;Release&quot;],
-    Date: [new Date(&quot;2024-01-15&quot;), new Date(&quot;2024-06-30&quot;), new Date(&quot;2024-12-01&quot;)]
-  },
-  ops: [
-    { type: &quot;fmt_date&quot;, columns: [&quot;Date&quot;] }
-  ]
-});
-```
-
-#### With locale and options
-
-```{js}
-LT.build({
-  data: {
-    Event: [&quot;Launch&quot;, &quot;Update&quot;],
-    Date: [new Date(&quot;2024-01-15&quot;), new Date(&quot;2024-06-30&quot;)]
-  },
-  ops: [
-    { type: &quot;fmt_date&quot;, columns: [&quot;Date&quot;], locale: &quot;zh-CN&quot;,
-      options: { year: &quot;numeric&quot;, month: &quot;long&quot;, day: &quot;numeric&quot;,
-                 weekday: &quot;long&quot;, timeZone: &quot;UTC&quot; } }
-  ]
-});
-```
-
-#### Using a specific Date method
-
-```{js}
-LT.build({
-  data: {
-    Event: [&quot;Launch&quot;, &quot;Update&quot;],
-    Date: [new Date(&quot;2024-01-15&quot;), new Date(&quot;2024-06-30&quot;)]
-  },
-  ops: [
-    { type: &quot;fmt_date&quot;, columns: [&quot;Date&quot;], method: &quot;toDateString&quot; }
-  ]
-});
-```
-
-#### Datetime values
-
-For datetime values, include time components in `options`:
-
-```{js}
-LT.build({
-  data: {
-    Event: [&quot;Start&quot;, &quot;End&quot;],
-    Time: [new Date(&quot;2024-01-15T09:30:00Z&quot;), new Date(&quot;2024-01-15T17:45:00Z&quot;)]
-  },
-  ops: [
-    { type: &quot;fmt_date&quot;, columns: [&quot;Time&quot;], locale: &quot;en-US&quot;,
-      options: { year: &quot;numeric&quot;, month: &quot;short&quot;, day: &quot;numeric&quot;,
-                 hour: &quot;2-digit&quot;, minute: &quot;2-digit&quot; } }
-  ]
-});
-```
-
-### Value substitution (`sub`)
-
-Replace missing, zero, or small values with display text:
-
-```{js}
-LT.build({
-  data: {
-    Metric: [&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;],
-    Value: [0.62, 0.0003, 0, null]
-  },
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;Value&quot;], decimals: 2 },
-    { type: &quot;sub&quot;, columns: [&quot;Value&quot;], missing: &quot;n/a&quot;, zero: &quot;—&quot;, small: 0.001, small_text: &quot;&lt; 0.001&quot; }
-  ]
-});
-```
-
-### Infinity values
-
-`Inf` and `-Inf` (JSON: use `Infinity`/`-Infinity` — but since JSON doesn't
-support `Infinity`, pass them as a JS expression):
-
-```{js}
-LT.build({
-  data: {
-    Metric: [&quot;Lower bound&quot;, &quot;Upper bound&quot;, &quot;Rate&quot;, &quot;Missing&quot;],
-    Value: [-Infinity, Infinity, 1.5, null]
-  },
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;Value&quot;], decimals: 2 }
-  ]
-});
-```
-
-## Column structure
-
-### Column merging (`merge`)
-
-Combine multiple columns into one display column. The `pattern` uses
-`{1}`, `{2}`, etc. for column positions. Wrap sections in `&lt;&lt;` `&gt;&gt;` for
-conditional NA handling.
-
-```{js}
-LT.build({
-  data: {
-    Endpoint: [&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Tertiary&quot;],
-    est: [0.61, 0.79, 0.45],
-    ci_lo: [0.40, 0.57, null],
-    ci_hi: [0.82, 1.01, null]
-  },
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;], decimals: 2 },
-    { type: &quot;merge&quot;, columns: [&quot;est&quot;, &quot;ci_lo&quot;, &quot;ci_hi&quot;], pattern: &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot; },
-    { type: &quot;label&quot;, labels: { est: &quot;Estimate (95% CI)&quot; } }
-  ]
-});
-```
-
-### Column spanners
-
-Group contiguous columns under a shared header:
-
-```{js}
-LT.build({
-  data: iris,
-  spanners: [
-    { label: &quot;Sepal&quot;, columns: [&quot;Sepal.Length&quot;, &quot;Sepal.Width&quot;] },
-    { label: &quot;Petal&quot;, columns: [&quot;Petal.Length&quot;, &quot;Petal.Width&quot;] }
-  ]
-});
-```
-
-#### Auto-inferred spanners
-
-Set `auto_span: true` to infer spanners from column names. Names are
-split on the first `.` or `_`; contiguous columns sharing a prefix are
-grouped, and labels are shortened to the suffix. Pass a custom regex
-string (e.g., `&quot;[.]&quot;`) to change the separator.
-
-```{js}
-LT.build({ data: iris, auto_span: true });
-```
-
-### Column widths
-
-```{js}
-LT.build({
-  data: mtcars,
-  ops: [
-    { type: &quot;width&quot;, widths: { mpg: &quot;10em&quot;, cyl: &quot;5em&quot;, disp: &quot;10em&quot;, hp: &quot;8em&quot; } }
-  ]
-});
-```
-
-### Table width
-
-Set `table` on a `width` op to size the whole table. It can be combined
-with column `widths`:
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: &quot;width&quot;, table: &quot;80%&quot; }
-  ]
-});
-```
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: &quot;width&quot;, table: &quot;100%&quot;, widths: { Species: &quot;20em&quot; } }
-  ]
-});
-```
-
-### Column reordering (`move`)
-
-Move columns to the start or after a specific column:
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: &quot;move&quot;, columns: [&quot;Petal.Length&quot;, &quot;Petal.Width&quot;], after: null }
-  ]
-});
-```
-
-### Hiding columns (`hide`)
-
-Drop columns from the table without dropping their data: the values still
-travel in the spec, so they stay available to anything that reads the whole
-row (e.g. an interactive table's row `detail`).
-
-```{js}
-LT.build({
-  data: iris,
-  ops: [
-    { type: &quot;hide&quot;, columns: [&quot;Petal.Length&quot;, &quot;Petal.Width&quot;] }
-  ]
-});
-```
-
-## Inline plots
-
-### Error bars (`errorbar`)
-
-Render a value column's cells as a small inline SVG — a point at the
-estimate with a bar (end caps included) from the lower to the upper bound —
-on a scale shared across the column. `columns` lists the value column(s),
-`lowers` and `uppers` the matching bound columns (one entry each per series);
-the plot replaces the first value column's cells (hide the others). `min`/`max`
-set the shared scale, `ref` draws a vertical reference line, and `width`/
-`height` size each SVG. `axis: true` adds a shared axis in the footer (tick
-marks + labels at &quot;nice&quot; round values, plus matching in-cell gridlines);
-`axis_label` captions it. The SVG is built in the browser from the numbers, so
-only the rows actually rendered (the current page, when interactive) are drawn.
-This cell type comes from the graphics module (`lt-plot.js`), loaded before the
-core script.
-
-```{js}
-LT.build({
-  data: {
-    Term: [&quot;Age&quot;, &quot;Dose&quot;, &quot;Baseline&quot;, &quot;Sex&quot;],
-    Est:  [0.12, -0.34, 0.45, -0.08],
-    Lo:   [-0.05, -0.52, 0.21, -0.29],
-    Hi:   [0.29, -0.16, 0.69, 0.13]
-  },
-  ops: [
-    { type: &quot;hide&quot;, columns: [&quot;Lo&quot;, &quot;Hi&quot;] },
-    { type: &quot;errorbar&quot;, columns: [&quot;Est&quot;], lowers: [&quot;Lo&quot;], uppers: [&quot;Hi&quot;],
-      min: -0.6, max: 0.7, ref: 0, axis: true, axis_label: &quot;Effect (95% CI)&quot; }
-  ]
-});
-```
-
-Several series stack in one cell: give `columns`/`lowers`/`uppers` one entry
-per series, and `colors`/`labels` to key them in a footer legend. Each row then
-draws one point-and-bar per series on the shared scale.
-
-```{js}
-LT.build({
-  data: {
-    Term: [&quot;Headache&quot;, &quot;Nausea&quot;, &quot;Fatigue&quot;],
-    D1: [2.1, -1.4, 3.3], L1: [-1.0, -4.2, 0.1], U1: [5.2, 1.4, 6.5],
-    D2: [-0.5, 0.8, 1.2], L2: [-3.6, -2.1, -1.9], U2: [2.6, 3.7, 4.3]
-  },
-  ops: [
-    { type: &quot;hide&quot;, columns: [&quot;L1&quot;, &quot;U1&quot;, &quot;D2&quot;, &quot;L2&quot;, &quot;U2&quot;] },
-    { type: &quot;errorbar&quot;,
-      columns: [&quot;D1&quot;, &quot;D2&quot;], lowers: [&quot;L1&quot;, &quot;L2&quot;], uppers: [&quot;U1&quot;, &quot;U2&quot;],
-      colors: [&quot;#5b8ff9&quot;, &quot;#f6903d&quot;], labels: [&quot;Drug A&quot;, &quot;Drug B&quot;],
-      min: -5, max: 7, ref: 0, axis: true, axis_label: &quot;Risk difference (%)&quot; }
-  ]
-});
-```
-
-### Sparklines (`sparkline`)
-
-Draw a per-row series as a small inline line or bar chart. `columns` is either
-a single list-column (each cell a numeric array) or several numeric columns
-read across the row (the plot replaces the first column's cells; hide the
-rest). `kind` is `&quot;line&quot;` (default) or `&quot;bar&quot;`; `min`/`max` set a shared
-vertical scale (the default scales each row to its own range); `color` styles
-the line or bars; `width`/`height` size each SVG. Like the error bar, it comes
-from the graphics module (`lt-plot.js`) and is drawn in the browser.
-
-```{js}
-LT.build({
-  data: {
-    City: [&quot;Oslo&quot;, &quot;Cairo&quot;, &quot;Lima&quot;],
-    Temp: [[-3, -2, 1, 6, 12, 16], [14, 15, 18, 23, 28, 31], [19, 19, 18, 16, 15, 15]],
-    Rain: [[49, 36, 47, 41, 53, 60], [5, 4, 4, 1, 0, 0], [8, 4, 2, 1, 1, 1]]
-  },
-  ops: [
-    { type: &quot;sparkline&quot;, columns: [&quot;Temp&quot;] },
-    { type: &quot;sparkline&quot;, columns: [&quot;Rain&quot;], kind: &quot;bar&quot;, color: &quot;#4caf50&quot; }
-  ]
-});
-```
-
-### Dot plots (`dotplot`)
-
-Draw one dot per column on a scale shared across them, so a row with N columns
-shows N dots laid out by value. `columns` lists the value columns (the plot
-replaces the first column's cells; hide the rest). `colors` is an array of one
-color per column — when present, a footer legend keys them, labeled by `labels`
-(defaults to the column names). `min`/`max` set the shared scale; `axis: true`
-adds the footer axis (and in-cell gridlines), `axis_label` captions it. Since
-the cell shows every column, label its header with all the names joined (a
-`label` op). Like the other plots, it comes from the graphics module
-(`lt-plot.js`) and is drawn in the browser.
-
-```{js}
-LT.build({
-  data: {
-    Group:  [&quot;Control&quot;, &quot;Low&quot;, &quot;High&quot;],
-    Before: [3.1, 3.4, 3.0],
-    After:  [3.3, 4.1, 5.2]
-  },
-  ops: [
-    { type: &quot;hide&quot;, columns: [&quot;After&quot;] },
-    { type: &quot;label&quot;, labels: { Before: &quot;Before / After&quot; } },
-    { type: &quot;dotplot&quot;, columns: [&quot;Before&quot;, &quot;After&quot;],
-      colors: [&quot;#999999&quot;, &quot;#1a9641&quot;], labels: [&quot;Baseline&quot;, &quot;Follow-up&quot;],
-      min: 2.5, max: 5.5, axis: true, axis_label: &quot;Score&quot; }
-  ]
-});
-```
-
-`stagger: true` spreads near-equal dots onto separate vertical tracks so
-they do not overlap (the cell grows taller to fit one track per column):
-
-```{js}
-LT.build({
-  data: {
-    Group:  [&quot;Control&quot;, &quot;Low&quot;, &quot;High&quot;],
-    Before: [3.1, 3.4, 3.0],
-    After:  [3.2, 4.1, 5.2]
-  },
-  ops: [
-    { type: &quot;hide&quot;, columns: [&quot;After&quot;] },
-    { type: &quot;label&quot;, labels: { Before: &quot;Before / After&quot; } },
-    { type: &quot;dotplot&quot;, columns: [&quot;Before&quot;, &quot;After&quot;], stagger: true,
-      colors: [&quot;#999999&quot;, &quot;#1a9641&quot;], labels: [&quot;Baseline&quot;, &quot;Follow-up&quot;],
-      min: 2.5, max: 5.5, axis: true, axis_label: &quot;Score&quot; }
-  ]
-});
-```
-
-## Row groups
-
-### Group by column
-
-Pass `row_group` as a single-element array to group by that column's
-values (rendered as rowspan cells on the left by default):
-
-```{js}
-LT.build({
-  data: {
-    Region: [&quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;],
-    City: [&quot;New York&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Portland&quot;, &quot;Denver&quot;],
-    Population: [8336817, 675647, 737015, 652503, 715522]
-  },
-  row_group: [&quot;Region&quot;]
-});
-```
-
-### Auto separator rows for long labels
-
-When `row_group` is a single-element array and the column is character
-with any value longer than 20 characters, separator rows are used
-automatically. Set `auto_sep: false` to force rowspan mode:
-
-```{js}
-LT.build({
-  data: {
-    Department: [&quot;Cardiovascular Research&quot;, &quot;Cardiovascular Research&quot;,
-                 &quot;Biostatistics&quot;, &quot;Biostatistics&quot;],
-    Trial: [&quot;ATLAS-2&quot;, &quot;BEACON&quot;, &quot;PRIME-1&quot;, &quot;NEXUS&quot;],
-    N: [450, 320, 280, 510]
-  },
-  row_group: [&quot;Department&quot;]
-});
-```
-
-```{js}
-// Force rowspan mode by disabling auto-detection
-LT.build({
-  data: {
-    Department: [&quot;Cardiovascular Research&quot;, &quot;Cardiovascular Research&quot;,
-                 &quot;Biostatistics&quot;, &quot;Biostatistics&quot;],
-    Trial: [&quot;ATLAS-2&quot;, &quot;BEACON&quot;, &quot;PRIME-1&quot;, &quot;NEXUS&quot;],
-    N: [450, 320, 280, 510]
-  },
-  row_group: [&quot;Department&quot;],
-  auto_sep: false
-});
-```
-
-### Group by multiple columns (rowspan)
-
-Pass multiple columns to render hierarchical rowspan cells:
-
-```{js}
-LT.build({
-  data: {
-    Region: [&quot;East&quot;, &quot;East&quot;, &quot;East&quot;, &quot;West&quot;, &quot;West&quot;, &quot;West&quot;],
-    State: [&quot;NY&quot;, &quot;NY&quot;, &quot;MA&quot;, &quot;WA&quot;, &quot;WA&quot;, &quot;OR&quot;],
-    City: [&quot;New York&quot;, &quot;Buffalo&quot;, &quot;Boston&quot;, &quot;Seattle&quot;, &quot;Spokane&quot;, &quot;Portland&quot;],
-    Population: [8336817, 278349, 675647, 737015, 228989, 652503]
-  },
-  row_group: [&quot;Region&quot;, &quot;State&quot;]
-});
-```
-
-### Separator-row style
-
-Pass `row_group` as a string to always use separator rows:
-
-```{js}
-LT.build({
-  data: {
-    arm: [&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;],
-    stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
-    value: [30, 4.2, 31, 6.8]
-  },
-  row_group: &quot;arm&quot;
-});
-```
-
-### Row group ordering
-
-Reorder separator-row groups with a `group_order` op:
-
-```{js}
-LT.build({
-  data: {
-    arm: [&quot;Placebo&quot;, &quot;Placebo&quot;, &quot;Treatment&quot;, &quot;Treatment&quot;],
-    stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
-    value: [&quot;30&quot;, &quot;4.2&quot;, &quot;31&quot;, &quot;6.8&quot;]
-  },
-  row_group: &quot;arm&quot;,
-  ops: [
-    { type: &quot;group_order&quot;, order: [&quot;Treatment&quot;, &quot;Placebo&quot;] }
-  ]
-});
-```
-
-### Manual row groups
-
-Define groups explicitly by row index:
-
-```{js}
-LT.build({
-  data: mtcars,
-  ops: [
-    { type: &quot;row_group&quot;, label: &quot;First three&quot;, rows: [1, 2, 3] },
-    { type: &quot;row_group&quot;, label: &quot;Last three&quot;, rows: [4, 5, 6] }
-  ]
-});
-```
-
-### Row indentation
-
-Indent specific rows to show hierarchy:
-
-```{js}
-LT.build({
-  data: {
-    label: [&quot;Any AE&quot;, &quot;SOC: Cardiac&quot;, &quot;Tachycardia&quot;, &quot;Bradycardia&quot;, &quot;SOC: GI&quot;, &quot;Nausea&quot;],
-    n_pct: [&quot;45 (67%)&quot;, &quot;30 (45%)&quot;, &quot;15 (22%)&quot;, &quot;18 (27%)&quot;, &quot;20 (30%)&quot;, &quot;12 (18%)&quot;]
-  },
-  ops: [
-    { type: &quot;indent&quot;, rows: [2, 5], level: 1 },
-    { type: &quot;indent&quot;, rows: [3, 4, 6], level: 2 }
-  ]
-});
-```
-
-## Styling
-
-### Cell styling
-
-Apply CSS to specific cells by column and/or row:
-
-```{js}
-LT.build({
-  data: {
-    Endpoint: [&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Exploratory&quot;],
-    HR: [0.62, 0.79, 0.91],
-    P: [0.001, 0.042, 0.38]
-  },
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;HR&quot;], decimals: 2 },
-    { type: &quot;fmt_number&quot;, columns: [&quot;P&quot;], decimals: 3 },
-    { type: &quot;style&quot;, columns: [&quot;P&quot;], rows: [1, 2], css: &quot;font-weight:bold;color:#06c&quot; },
-    { type: &quot;style&quot;, columns: [&quot;HR&quot;], rows: [1], css: &quot;background:#e8f4e8;border-bottom:2px solid #4a4&quot; }
-  ]
-});
-```
-
-### Conditional styling
-
-Use `test` with a JavaScript function to apply styles based on cell
-values. The function receives the raw (pre-format) value and should
-return `true` to apply. Use `class` to assign CSS classes instead of
-inline `css`:
-
-```{js}
-LT.build({
-  data: {
-    Endpoint: [&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Exploratory&quot;],
-    HR: [0.62, 0.79, 1.05],
-    P: [0.001, 0.042, 0.38]
-  },
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;HR&quot;, &quot;P&quot;], decimals: 3 },
-    { type: &quot;style&quot;, columns: [&quot;HR&quot;], test: v =&gt; v &lt; 1, class: &quot;good&quot; },
-    { type: &quot;style&quot;, columns: [&quot;P&quot;], test: v =&gt; v &lt; 0.05, css: &quot;font-weight:bold&quot; }
-  ]
-});
-```
-
-```{css}
-.lt-table .good { color: green; }
-```
-
-#### Highlighting missing values
-
-Apply a class to all null cells across the table (omit `columns` to
-target all):
-
-```{js}
-LT.build({
-  data: {
-    arm: [&quot;Treatment&quot;, &quot;Control&quot;, &quot;Treatment&quot;],
-    n: [30, null, 28],
-    response: [0.67, null, 0.71]
-  },
-  ops: [
-    { type: &quot;style&quot;, test: v =&gt; v == null, class: &quot;na&quot; }
-  ]
-});
-```
-
-```{css}
-.lt-table .na { background: #fee; }
-```
-
-### Scoping styles to one table
-
-A top-level `class` (a string or an array of names) is added to the table's
-container (the `.lt-wrap` div), which a stylesheet can target so its rules apply
-to that table alone, not every `lt` table on the page. Here the container is
-tagged `striped`, and a rule keyed on `.striped` zebra-stripes only this table.
-
-```{js}
-LT.build({ data: mtcars, class: &quot;striped&quot; });
-```
-
-```{css}
-.striped tbody tr:nth-child(even) td { background: #f2f6ff; }
-```
-
-## HTML content
-
-By default every cell value and text field is HTML-escaped, so characters
-like `&lt;`, `&gt;`, and `&amp;` render as literal text. Two mechanisms opt into raw
-HTML:
-
-- **Body cells:** set `html_cols` to `true` (all columns) or an array of
-  column names. Cells in those columns are emitted verbatim.
-- **Text fields** (title, subtitle, column labels, spanner labels, footnote
-  and note text): pass a **one-element array** instead of a string. A plain
-  string is escaped; `[&quot;&lt;b&gt;x&lt;/b&gt;&quot;]` is emitted as raw HTML. (This is what the
-  R side's `I()` wrapper serializes to.)
-
-```{js}
-LT.build({
-  data: {
-    Package: [
-      &quot;&lt;a href='https://cran.r-project.org/package=lt'&gt;lt&lt;/a&gt;&quot;,
-      &quot;&lt;a href='https://cran.r-project.org/package=xfun'&gt;xfun&lt;/a&gt;&quot;
-    ],
-    Status: [&quot;&lt;b style='color:#090'&gt;stable&lt;/b&gt;&quot;, &quot;&lt;i&gt;active&lt;/i&gt;&quot;]
-  },
-  html_cols: [&quot;Package&quot;, &quot;Status&quot;],
-  header: { title: [&quot;Packages &lt;sup&gt;&amp;#9733;&lt;/sup&gt;&quot;] },
-  ops: [
-    { type: &quot;label&quot;, labels: { Package: [&quot;Name&lt;sup&gt;*&lt;/sup&gt;&quot;] } }
-  ],
-  notes: [[&quot;See &lt;a href='https://yihui.org/'&gt;the author&lt;/a&gt;.&quot;]]
-});
-```
-
-## Footnotes and notes
-
-### Footnotes
-
-Footnotes are de-duplicated by text and numbered automatically. Each
-footnote's `location.type` selects a region: `title` (with
-`group: &quot;title&quot;` or `group: &quot;subtitle&quot;`), `column_labels`,
-`column_spanners`, `row_groups`, or `body`. The example below attaches a
-footnote to every location:
-
-```{js}
-LT.build({
-  data: {
-    Arm: [&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;],
-    Stat: [&quot;n&quot;, &quot;Mean&quot;, &quot;n&quot;, &quot;Mean&quot;],
-    Value: [31, 6.8, 30, 4.2],
-    SE: [null, 0.42, null, 0.38]
-  },
-  row_group: &quot;Arm&quot;,
-  header: { title: &quot;Study Results&quot;, subtitle: &quot;Two arms&quot; },
-  spanners: [{ label: &quot;Summary&quot;, columns: [&quot;Value&quot;, &quot;SE&quot;] }],
-  footnotes: [
-    // title and subtitle share type &quot;title&quot;, distinguished by group
-    { text: &quot;Source: simulated trial data.&quot;, location: { type: &quot;title&quot;, group: &quot;title&quot; } },
-    { text: &quot;Intention-to-treat population.&quot;, location: { type: &quot;title&quot;, group: &quot;subtitle&quot; } },
-    // a column label
-    { text: &quot;Standard error of the mean.&quot;, location: { type: &quot;column_labels&quot;, columns: [&quot;SE&quot;] } },
-    // a spanner label
-    { text: &quot;Per-arm summary statistics.&quot;, location: { type: &quot;column_spanners&quot;, spanners: [&quot;Summary&quot;] } },
-    // a row-group label
-    { text: &quot;Received active drug.&quot;, location: { type: &quot;row_groups&quot;, match: &quot;exact&quot;, values: [&quot;Treatment&quot;] } },
-    // specific body cells (columns + 1-based rows)
-    { text: &quot;SE undefined for counts.&quot;, location: { type: &quot;body&quot;, columns: [&quot;SE&quot;], rows: [1, 3] } }
-  ]
-});
-```
-
-### Source notes
-
-Notes appear below footnotes in the footer:
-
-```{js}
-LT.build({
-  data: mtcars,
-  notes: [&quot;Data from the 1974 Motor Trend US magazine.&quot;]
-});
-```
-
-## Complete example
-
-Combining multiple features in a single spec:
-
-```{js}
-LT.build({
-  data: {
-    Group: [&quot;Treatment&quot;, &quot;Treatment&quot;, &quot;Control&quot;, &quot;Control&quot;],
-    Endpoint: [&quot;Primary&quot;, &quot;Secondary&quot;, &quot;Primary&quot;, &quot;Secondary&quot;],
-    Estimate: [0.6123, 0.7891, 0.4567, 0.5432],
-    CI_Lower: [0.4012, 0.5678, 0.2345, 0.321],
-    CI_Upper: [0.8234, 1.0104, 0.6789, 0.7654],
-    P_Value: [0.0012, 0.0456, 0.1234, 0.2345]
-  },
-  row_group: &quot;Group&quot;,
-  header: {
-    title: &quot;Study Results&quot;,
-    subtitle: &quot;Primary and secondary endpoints&quot;
-  },
-  spanners: [
-    { label: &quot;95% CI&quot;, columns: [&quot;CI_Lower&quot;, &quot;CI_Upper&quot;] }
-  ],
-  ops: [
-    { type: &quot;fmt_number&quot;, columns: [&quot;Estimate&quot;, &quot;CI_Lower&quot;, &quot;CI_Upper&quot;], decimals: 3 },
-    { type: &quot;fmt_number&quot;, columns: [&quot;P_Value&quot;], decimals: 4 },
-    { type: &quot;style&quot;, columns: [&quot;P_Value&quot;], rows: [1, 3], css: &quot;font-weight:bold&quot; }
-  ],
-  footnotes: [
-    { text: &quot;Two-sided p-value from log-rank test.&quot;, location: { type: &quot;column_labels&quot;, columns: [&quot;P_Value&quot;] } }
-  ]
-});
-```
-
-## Interactivity {#sec:interactive}
-
-### Raw values
-
-When cell values are formatted, the original values are available in
-tooltips (hover over a cell to see). You can also `Alt + Click` on a
-table to reveal all raw values at once, or `Alt + Double-Click` to
-toggle raw values for all tables on the page.
-
-### The `interactive` field
-
-With `lt-interactive.js` on the page, a spec that carries an
-`interactive` object gets the requested controls. Every field is
-optional:
-
-- `sort`: click-to-sort headers, ascending then descending then
-  unsorted (`false` to turn off); shift-click adds a column as a
-  tie-breaker. An array requests an initial sort, each element a column
-  name string, `&quot;-name&quot;` for descending (or a `{ col, dir }` object);
-- `search`: a search box above the table, matching any cell (`false` to
-  turn off). It reads plain language, such as `mpg over 25, cyl is 4` or
-  `cyl is 4 or cyl is 6`, and its dropdown offers random example queries;
-- `filter`: per-column filters, as `{ default?, cols? }`. `default` is a
-  spec applied to every visible column left unnamed; `cols` maps a column
-  to its own spec. A spec is `true` for a plain box (matching that column
-  the same way as the search), or `{ type: &quot;select&quot; }` / `{ type: &quot;range&quot; }`
-  / `{ type: &quot;checklist&quot; }` for a value dropdown, a two-thumb slider, or a
-  popover of checkboxes (choices / ends read from the column data, or set
-  explicitly with `choices` / `min`+`max`; `selected` seeds the dropdown's
-  value or the checklist's checked set). A `&quot;select&quot;` keeps the one chosen
-  value, a `&quot;checklist&quot;` keeps every checked value (all checked = no
-  filter). `{ type: &quot;auto&quot; }` picks the control from the column's data: a
-  slider for numbers (a plain box if constant), a checklist for strings with
-  at most 10 distinct values, a plain box otherwise. So `{ default: true }`
-  boxes every column, `{ cols: { mpg: true
-  } }` boxes one, and `{ cols: { cyl: { type: &quot;select&quot; } } }` gives `cyl` a
-  dropdown. `false` in `cols` (or as `default`) leaves a column without a
-  filter, even under a default, e.g. `{ default: { type: &quot;auto&quot; }, cols: {
-  id: false } }`;
-- `pager`: the page sizes to offer, as an array whose first element is
-  the initial size; `0` means every row on one page. Omit the field for
-  the default sizes, or set it to `false` to show all rows with no
-  pager;
-- `resize`: drag a column's right edge to resize it (double-click that
-  edge to fit the column to its content);
-- `hide`: a column-visibility menu. An eye button at the start of the
-  search row opens a checklist of every column, listed by its displayed
-  label; unchecking one hides it (header and cells), re-checking restores
-  it. `true` starts with all columns shown, `{ hidden: [...] }` starts
-  the named columns hidden (all are still listed, so any can be toggled);
-- `detail`: row detail (drill-down). An expand caret is added to each row,
-  and a table is built below it on first expand. Give either an array of
-  column names (the detail is a one-row table of those columns' displayed
-  values, including ones hidden with a `hide` op) or a function `(row,
-  index, display) =&gt; spec` (or the name of a global one) that returns the
-  spec. `row` has the raw values and `display` the formatted text, each
-  keyed by column name and covering every column. The returned spec is an
-  ordinary table spec, so give it its own `interactive` field to make the
-  detail table sortable/filterable/paged too;
-- `profile`: a mini chart of each column, a histogram for numbers and dates
-  or a bar per category for text, with summary statistics as a tooltip; the
-  bars highlight the rows the filters keep. `&quot;header&quot;` puts it in the column
-  header, `&quot;filter&quot;` in the column's filter popover (only columns that have
-  a popover filter);
-- `download`: a button in the control bar that downloads the current view
-  (every row the filters and search keep, in sort order, across all pages) as
-  a CSV file, using the displayed cell text. `true` uses a default file name;
-  a string sets the file name.
-
-A term is matched case-insensitively against the displayed text; a term
-that mentions `x` (e.g., `x &gt; 20`) is evaluated as a JavaScript expression against the raw cell values
-instead. Plain-language conditions name a column (its name or label,
-which may contain spaces), then an operator: `over`/`above`/`more than`
-(`&gt;`), `under`/`below`/`less than` (`&lt;`), `at least` (`&gt;=`), `at most`
-(`&lt;=`), `between 5 and 10`, `is`/`equals`, `is not`, `contains`, or `does not contain` (the
-column name is optional for the last). Join
-conditions with `and`, `,`, or `;`, and use `or` for alternatives (`and`
-binds tighter). Text that is not a condition is searched as typed, and a
-quoted phrase stays whole. The box shows how it read the query, and its
-placeholder and dropdown offer random example queries built from the
-table's own values.
-
-```{js}
-LT.build({
-  data: mtcars,
-  interactive: { filter: { cols: { mpg: true } }, pager: [3, 6, 0], resize: true }
-});
-```
-
-Typed filters — a dropdown on `cyl`, a range slider on `wt`, a checklist on
-`hp` — with a plain box as the default for the other columns. A typed filter
-on a *hidden* column has no header to sit under, so it moves into the control
-bar as a labelled chip (clicking anywhere on the chip opens its control):
-here `gear` is hidden yet still filterable through its chip.
-
-```{js}
-LT.build({
-  data: mtcars,
-  interactive: {
-    search: false, pager: 6,
-    hide: { hidden: [&quot;gear&quot;] },
-    filter: { default: true, cols: {
-      cyl: { type: &quot;select&quot; }, wt: { type: &quot;range&quot; }, hp: { type: &quot;checklist&quot; },
-      gear: { type: &quot;select&quot; }
-    } }
-  }
-});
-```
-
-With `{ type: &quot;auto&quot; }` as the default, each column gets the control that suits
-its data: a slider for the numeric columns and a checklist for `Species`.
-
-```{js}
-LT.build({
-  data: iris,
-  interactive: { search: false, pager: 5, filter: { default: { type: &quot;auto&quot; } } }
-});
-```
-
-A column mapped to `false` gets no filter, even under the `&quot;auto&quot;` default.
-Here `Species` is left out:
-
-```{js}
-LT.build({
-  data: iris,
-  interactive: {
-    search: false, pager: 5,
-    filter: { default: { type: &quot;auto&quot; }, cols: { Species: false } }
-  }
-});
-```
-
-A `&quot;range&quot;` slider has two thumbs, for the low and high ends. Drag a thumb to
-move it: the readout tracks it live, but the filter is applied only on release,
-so the table does not reflow (and shift the thumb) out from under the cursor
-mid-drag. A thumb can also be driven from the keyboard once focused — the arrow
-keys step it by one step and `Home` / `End` jump it to the ends. With `min`/
-`max` (and `step`) omitted, they are derived from the column data as round,
-data-bracketing values.
-
-Open the eye menu to toggle columns; `hp` and `wt` start hidden here:
-
-```{js}
-LT.build({
-  data: mtcars,
-  interactive: { hide: { hidden: [&quot;hp&quot;, &quot;wt&quot;] }, pager: 5 }
-});
-```
-
-Profiles chart each column in its header (or, with `profile: &quot;filter&quot;`, in the
-filter popover); filter a column to see its bars highlight the kept rows:
-
-```{js}
-LT.build({
-  data: mtcars,
-  interactive: { profile: &quot;header&quot;, pager: 5 }
-});
-```
-
-A download button writes the current view to a CSV file (filter or sort
-first, and the file follows):
-
-```{js}
-LT.build({
-  data: mtcars,
-  interactive: { download: &quot;cars.csv&quot;, filter: { default: true }, pager: 5 }
-});
-```
-
-Row structure is honored: sorting and filtering happen *within* each
-group or subtree, never across it. A `row_group` op sorts and filters
-within each group — a separator group (a string column) whose rows all
-filter out drops its header, while a rowspan group (an array of columns)
-reorders its blocks when its header is clicked and stays nested with
-several columns. An `indent` op sorts siblings under each parent and
-keeps a match's ancestors visible. Spanners, styles, and footnotes are
-no obstacle.
-
-```{js}
-LT.build({
-  data: mtcars,
-  row_group: [&quot;cyl&quot;],
-  interactive: { pager: [8] }
-});
-```
-
-### Server mode (`data_url`) {#sec:server}
-
-With `lt-server.js` loaded before `lt-interactive.js`, `interactive.data_url`
-points to a server that holds the rows; the table then asks it for just the
-current page whenever the sort, filters, search, or page change. R's
-`lt_serve()` sets this up (see the first example), and any server that speaks
-the protocol below can feed a table, e.g., one backed by a database or Parquet
-files. `spec.data` only needs the column names (empty arrays will do), since
-the first page is fetched too. Three more optional fields: `data_times` lists
-date-time columns (sent as ISO 8601 strings), `data_n` is the number of rows
-in the whole data (the pager shows it beside the count of a filtered view, and
-offers page sizes only if it exceeds the smallest), and `data_cols` holds a summary
-per column (see `summary` in `lt-interactive.js`) for profiles and filter
-widgets; without it, columns get a plain filter box.
-
-The browser sends `POST &lt;data_url&gt;` with a JSON body (`Content-Type:
-text/plain`, to avoid a CORS preflight), an object with:
-
-- `where`: the rows to keep, or `null` for all. A condition is a leaf
-  `{ col, term }` or a group `{ op: &quot;and&quot; | &quot;or&quot;, items }`. A leaf applies its
-  `term` to column `col`, or to any of the visible columns `cols` if `col` is
-  `null`. A `term` that uses `x` for the cell value and is a JavaScript
-  expression (`x &gt; 5`, `x == null`, `[&quot;a&quot;, &quot;b&quot;].includes(x)`) keeps the rows
-  where it is true; one that starts with `!` or is `x != ...` negates (every
-  column must pass, not any). Any other term is a case-insensitive substring
-  of the cell text;
-- `sort`: `[{ col, dir: &quot;asc&quot; | &quot;desc&quot; }, ...]`, most significant first,
-  missing values last;
-- `page` (from 0) and `size`: the page to return; `size` 0 is every row;
-- `cols`: the visible columns;
-- `prof` (optional): the columns whose profile bars are wanted; absent when
-  profiles are off, and for a download.
-
-The server replies with JSON (`Content-Type: application/json`, plus an
-`Access-Control-Allow-Origin` header if the page is on another origin):
-
-- `n`: the number of rows in the view;
-- `page`: the page returned (the requested one, clamped to the last page);
-- `data`: the page's values by column, e.g., `{ &quot;a&quot;: [1, 2], &quot;b&quot;: [&quot;x&quot;, &quot;y&quot;] }`,
-  with `null` for missing values and dates as `&quot;YYYY-MM-DD&quot;`;
-- `prof` (optional): when `where` keeps only some rows, the bar counts over
-  the kept rows of each column requested in `prof`, by column.
-
-### Rendering on demand
-
-`LT.build()` has to run while the page is parsing, since it renders the
-table where its `&lt;script&gt;` sits. `LT.render(element, spec)` has no such
-constraint: it renders the spec into a container element whenever it is
-called, returning the table element. Interactive tables built this way
-are enhanced like any other, which is how a table can be built lazily —
-for instance, only when the reader asks for it:
-
-```{js}
-const box = document.createElement(&quot;div&quot;);
-const btn = document.createElement(&quot;button&quot;);
-btn.textContent = &quot;Build a table&quot;;
-btn.onclick = () =&gt; {
-  LT.render(box, { data: iris, interactive: { pager: [3] } });
-  btn.disabled = true;
-};
-document.currentScript.after(box);
-document.currentScript.after(btn);
-```
-
-### Driving a table from outside
-
-Every enhanced table carries a small controller at `el._lt`, so widgets
-outside the table — a dropdown, a range slider — can filter it without
-using the built-in boxes:
-
-- `el._lt.filter(id, func)` registers a predicate `func(row)` under `id`,
-  where `row` is the row's raw values keyed by column; the rows kept are
-  those for which `func` returns a truthy value. Call it again with the same
-  `id` to replace that predicate, or with a `null` `func` to remove it. The
-  predicates from every id — together with the built-in column filters and
-  the search — combine with AND.
-- `el._lt.refresh()` re-renders the body; `filter()` calls it for you, so
-  you rarely need it directly.
-- `el._lt.view()` returns the current view as 1-based original row indices
-  (every row the filters and search keep, in sort order, across all pages) —
-  what a &quot;download what's shown&quot; button reads.
-- `el._lt.spec` and `el._lt.state` are exposed for reading. A widget reads
-  `el._lt.spec.data[col]` for a column's raw values to build its choices
-  (the unique categories for a dropdown, the min/max for a slider).
-
-Predicates live in the table's state, so they survive sorting and paging.
-Here an outside `&lt;select&gt;` filters the table by `Species`:
-
-```{js}
-// An outside widget wires up once the page (and lt.js) has loaded.
 const host = document.createElement(&quot;div&quot;);
 document.currentScript.after(host);
 addEventListener(&quot;load&quot;, () =&gt; {
   const t = LT.render(host, { data: iris, interactive: { search: false, pager: [5] } });
   const sel = document.createElement(&quot;select&quot;);
   sel.innerHTML = '&lt;option value=&quot;&quot;&gt;All species&lt;/option&gt;' +
-    [...new Set(t._lt.spec.data.Species)].map(s =&gt; &quot;&lt;option&gt;&quot; + s + &quot;&lt;/option&gt;&quot;).join(&quot;&quot;);
+    [...new Set(t._lt.spec.data.Species)].map(s =&gt; `&lt;option&gt;${s}&lt;/option&gt;`).join(&quot;&quot;);
   sel.onchange = () =&gt; t._lt.filter(
     &quot;species&quot;, sel.value ? row =&gt; row.Species === sel.value : null
   );

@@ -1,0 +1,17 @@
+---
+title: Row indentation
+---
+
+`lt_indent()` nests rows to show hierarchy, one level per step.
+
+```{r}
+library(lt)
+d = data.frame(
+  label = c("Any AE", "Cardiac", "Tachycardia", "Bradycardia", "GI", "Nausea"),
+  n_pct = c("45 (67%)", "30 (45%)", "15 (22%)", "18 (27%)", "20 (30%)", "12 (18%)")
+)
+lt(d) |>
+  lt_header("Adverse events", "Safety population") |>
+  lt_indent(c(2, 5), level = 1) |>
+  lt_indent(c(3, 4, 6), level = 2)
+```

@@ -1,0 +1,20 @@
+---
+title: Manual groups and group order
+---
+
+Groups need not come from a column: name row ranges yourself. Pass group labels to a second `lt_group()` call to put the groups in the order you like.
+
+```{r}
+library(lt)
+tbl = lt(head(mtcars[, 1:4], 6))
+tbl |> lt_group("First three" = 1:3, "Last three" = 4:6)
+
+d = data.frame(
+  arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+  stat = c("n", "Mean", "n", "Mean"),
+  value = c(30, 4.2, 31, 6.8)
+)
+lt(d) |>
+  lt_group(~ arm, sep = TRUE) |>
+  lt_group("Treatment", "Placebo")
+```

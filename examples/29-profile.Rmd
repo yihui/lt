@@ -1,0 +1,10 @@
+---
+title: Column profiles
+---
+
+`profile = TRUE` draws a mini chart of each column's values in the header, with summary statistics on hover. The bars light up the share of rows your filters keep, so filter a column and watch.
+
+```{r}
+library(lt)
+lt(iris) |> lt_interactive(profile = TRUE, pager = 5)
+```

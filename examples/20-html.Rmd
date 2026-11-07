@@ -1,0 +1,21 @@
+---
+title: HTML in cells and labels
+---
+
+Everything is HTML-escaped by default. Mark whole columns as HTML with `lt_html()`, and wrap any other text (titles, labels, notes) in `I()`.
+
+```{r}
+library(lt)
+d = data.frame(
+  Package = c(
+    "<a href='https://cran.r-project.org/package=xfun'>xfun</a>",
+    "<a href='https://cran.r-project.org/package=litedown'>litedown</a>"
+  ),
+  Mood = c("<b style='color:#090'>stable</b>", "<i>always evolving</i>")
+)
+lt(d) |>
+  lt_html(~ Package + Mood) |>
+  lt_header(I("Packages <sup>&#9733;</sup>")) |>
+  lt_label(Package = I("Name<sup>*</sup>")) |>
+  lt_note(I("See <a href='https://yihui.org/'>the author</a>."))
+```
