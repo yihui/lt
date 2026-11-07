@@ -10,8 +10,7 @@ source('_ex.R')  # defines ex(), which embeds examples from ../examples
 ```
 
 ```{css, echo = FALSE}
-.epigraph { margin: 0 0 2em 2em; font-style: italic; }
-.ex-link { float: right; font-size: .8em; }
+.ex-link { text-align: right; font-size: .8em; }
 ```
 
 # Preface {.unnumbered}

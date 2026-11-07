@@ -12,7 +12,7 @@ ex = function(name) {
   x = gsub('```\\{r assets.*?\n```\n', '', x)
   p = tempfile(fileext = '.Rmd')
   xfun::write_utf8(c(x, '', sprintf(
-    '[Open as a page](../examples/%s){.ex-link}', xfun::with_ext(basename(f), '.html')
+    '::: ex-link\n[Open as a page](../examples/%s)\n:::', xfun::with_ext(basename(f), '.html')
   )), p)
   p
 }

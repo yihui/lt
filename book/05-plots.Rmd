@@ -12,12 +12,10 @@ small on purpose: each chart is a handful of SVG shapes, drawn by the browser
 from the numbers in the table. No image is rendered, and no chart library is
 loaded.
 
-::: {.callout-tip data-legend="The lightweight promise"}
 Only the numbers travel to the page. The shapes are drawn in the browser when the
 table is shown. In an interactive table (@chp:interactive), that means only the
 rows on the current page are drawn, so a sparkline on a page of 10 rows costs
 10 drawings, not 10,000.
-:::
 
 ## Error bars: a forest plot in a column {#sec:errorbar}
 
@@ -66,14 +64,12 @@ such as `c("#5b8ff9", "#f6903d")` if you want specific ones. The bounds are
 hidden by default because the plot already shows them. `color = FALSE`, the
 default, draws every series in a single color, and the legend is then omitted.
 
-::: {.callout-tip data-legend="Scale"}
 Every bar in a column shares one scale. The scale runs from the smallest to the
 largest finite value across all the columns the plot reads, so a single extreme
 row squeezes the rest. Set `limits = c(min, max)` to choose the scale yourself,
 for example to match another table, or to keep a confidence interval that runs
 off the chart from being clipped unnoticed. Values outside the limits are pinned
 to the edges.
-:::
 
 ## Dot plots: a few values per row {#sec:dotplot}
 
@@ -96,12 +92,10 @@ moves each column's dot onto its own track, so both stay visible. The position
 up or down is cosmetic. The value still reads from left to right, and the cell
 grows taller to make room for the tracks.
 
-::: {.callout-warning data-legend="Labels"}
 The cell shows every column at once, so its column header should name them all.
 Use `lt_label()` to write something like `"Before / After"`, as the example
 does. Otherwise a reader sees a single "Before" header over a row of dots that
 mean two things.
-:::
 
 ## Sparklines: a trend in a cell {#sec:sparkline}
 
@@ -151,11 +145,9 @@ shrinks as the column is resized, which pairs nicely with the resizable columns
 of an interactive table (@chp:interactive). Use `list(min = 200, width = "100%")` to
 keep it from shrinking below 200 pixels.
 
-::: {.callout-tip data-legend="Interactive tables"}
 Plots work in interactive tables, and they are drawn only for the visible page.
 Sorting a table with a sparkline in it reorders the rows and redraws their
 charts. Filtering keeps the charts of the rows that remain.
-:::
 
 ## Where the charts live {#sec:plot-module}
 

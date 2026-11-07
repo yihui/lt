@@ -8,5 +8,5 @@ output:
       toc:
         depth: 3
     meta:
-      css: ["@key-buttons", "@callout"]
+      css: ["@book-litedown", "@key-buttons", "@callout"]
       js: ["@chapter-toc", "@external-link", "@right-quote", "@key-buttons", "@callout"]

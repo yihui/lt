@@ -106,7 +106,12 @@ once, not once per table.
 ### The selectors worth knowing {#sec:style-selectors}
 
 Every part of a table has a class, so you can restyle anything without guessing
-at the structure. These are the ones you will reach for most:
+at the structure. @tab:style-selectors lists the ones you will reach for most.
+
+:::: {.table #tab:style-selectors}
+::: caption
+[ ](#@tab:style-selectors) CSS selectors for the parts of an lt table.
+:::
 
 | Part | Selector |
 |:-----|:---------|
@@ -119,6 +124,7 @@ at the structure. These are the ones you will reach for most:
 | Footnote marks | `.lt-fnref` |
 | Right/center aligned cells | `.al-r`, `.al-c` |
 | Column type labels | `.lt-type` |
+::::
 
 The table is an ordinary HTML table, so `thead th`, `tbody td`, and
 `tr:nth-child(odd)` all work too.

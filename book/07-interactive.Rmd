@@ -26,12 +26,6 @@ the rows with the controls below. Each feature is an option of `lt_interactive()
 and each option can be switched off with `FALSE`, so you only ever pay for the
 controls you keep.
 
-::: {.callout-tip data-legend="Try it"}
-Interactive tables need a browser, so the examples in this chapter are rendered
-as HTML. In the R console, printing an interactive table opens it in the viewer
-or your browser, where the controls work the same way.
-:::
-
 ## Searching and sorting {#sec:search-sort}
 
 Let's start with the feature readers reach for first. This example combines
@@ -59,12 +53,6 @@ the same rule (`~ cyl + -mpg`, for instance):
 lt(mtcars[, 1:4]) |> lt_interactive(sort = c("cyl", "-mpg"), search = FALSE, filter = FALSE, pager = 5)
 ```
 
-::: {.callout-tip data-legend="Sorting is safe"}
-Sorting never destroys anything. The original order comes back when the third
-click cycles past descending, so a reader can always return to the data as you
-wrote it.
-:::
-
 ### Search and the plain-language box {#sec:search}
 
 The search box looks for a term in every cell of every row, and keeps only the
@@ -79,7 +67,12 @@ value:
 lt(mtcars[, 1:5]) |> lt_interactive(search = TRUE, pager = 5, filter = FALSE)
 ```
 
-Here are the phrases the box understands, each with what it keeps:
+@tab:query-phrases shows the phrases the box understands, each with what it keeps.
+
+:::: {.table #tab:query-phrases}
+::: caption
+[ ](#@tab:query-phrases) Phrases the search box understands.
+:::
 
 | You type | It keeps the rows where |
 |:---------------------------------|:------------------------------------------|
@@ -96,6 +89,7 @@ Here are the phrases the box understands, each with what it keeps:
 | `cyl is 4 or cyl is 6` | either one holds (`or` gives alternatives) |
 | `cyl is 4 or cyl is 6, mpg over 20` | `cyl` is 4, or `cyl` is 6 *and* `mpg` is over 20 |
 | `"Hornet Sportabout"` | the quoted phrase, matched as one piece |
+::::
 
 Two rules make the mini-language predictable. First, `and` binds tighter than
 `or`, so the last example reads as "4, or (6 and over 20)": the comma and `and`
@@ -107,11 +101,9 @@ A line under the box shows how the query was read. If it reads `cyl is 4 or
 cyl is 6` as you meant it, you are good to go; if it reads it differently, you
 have found a typo before the rows have a chance to mislead anyone.
 
-::: {.callout-tip data-legend="Stuck? Ask for examples"}
 Click the box to see a few random queries built from the table's own values, and
 pick one to run it. It is the fastest way to learn the mini-language, and it
 works on any table, including tables you did not build yourself.
-:::
 
 If the mini-language is too gentle for you, a term that mentions `x` is
 evaluated as a JavaScript expression against each raw cell value. So `x > 20`
@@ -207,12 +199,10 @@ the slider follows. When you type something the widget cannot show, such as a
 value outside its choices, the widget hides itself rather than lie about what
 it is filtering.
 
-::: {.callout-tip data-legend="Widget only"}
 If you want the widget without the expression box, pass a list with
 `box = FALSE`, such as `list(type = "select", box = FALSE)`. The reader then
 picks from the widget's own choices and nothing else, which is handy for a
 strict dropdown.
-:::
 
 ### Range sliders, by hand and by keyboard
 
@@ -304,10 +294,8 @@ Name columns to start with them hidden, as the example does, or use
 `hide = NA` to start with everything visible. Passing `label` swaps the eye icon for a labeled chip in the
 control bar, which is clearer when the reader might not know what the eye means.
 
-::: {.callout-note data-legend="A note on hide = TRUE"}
 Older code passes `hide = TRUE` to mean "show the menu". It still works, but it
 will be dropped in a future release, so write `hide = NA` for the same effect.
-:::
 
 ## Profiles: a picture of each column {#sec:profile}
 
@@ -422,11 +410,9 @@ available, or in your browser otherwise. Remove the title with
 `lt_header(NULL)`. Every argument of `lt_interactive()` also works here, so
 `lt_viewer(iris, pager = 5)` is a viewer with five-row pages.
 
-::: {.callout-tip data-legend="Viewer vs. table"}
 Use `lt_viewer()` to explore, and `lt_interactive()` to publish. The viewer
 packs in types and profiles for the explorer's benefit. In a report, a leaner
 table that says exactly what you mean usually reads better.
-:::
 
 ## Large data: serving rows from R {#sec:large-data}
 

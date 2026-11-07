@@ -14,7 +14,12 @@ sit around your table and make the big numbers trustworthy.
 
 `lt_footnote()` hangs a numbered footnote on whatever you point at. The
 `where` argument picks the target, and `columns`, `rows`, or `match` narrow it
-down:
+down (@tab:footnote-where).
+
+:::: {.table #tab:footnote-where}
+::: caption
+[ ](#@tab:footnote-where) The targets of `lt_footnote()` and how to narrow each one.
+:::
 
 | `where`      | Attaches to               | Narrow it with            |
 |--------------|---------------------------|---------------------------|
@@ -24,6 +29,7 @@ down:
 | `"spanner"`  | a spanner label           | `columns` (the spanner)   |
 | `"group"`    | a row group label         | `match`                   |
 | `"body"`     | specific cells            | `columns` and `rows`      |
+::::
 
 Numbers go to footnotes in order of first appearance, so the count always runs
 1, 2, 3 and never skips. Two footnotes with identical text share one number. The
@@ -33,11 +39,9 @@ sensible table needs. Think of it as a stress test.
 ```{r, child = ex('footnote')}
 ```
 
-::: callout-tip
 Footnotes on body cells are the sharpest tool in the box. Use `rows` to point at
 the exact cells that need the caveat, rather than footnoting a whole column that
 is mostly fine.
-:::
 
 ## Source notes {#sec:note}
 

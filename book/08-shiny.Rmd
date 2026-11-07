@@ -34,10 +34,8 @@ output$tbl = render_lt(
 )
 ```
 
-::: {.callout-tip data-legend="Big data"}
 Pair `render_lt()` with `lt_serve()` (see @sec:serve) and the rows stay in R.
 The browser asks the Shiny session for one page at a time.
-:::
 
 ## Editable tables {#sec:shiny-input}
 
@@ -79,8 +77,7 @@ At the console this opens a local server. Inside Shiny, `render_lt()` serves the
 rows from the session itself, so no extra port is needed. Either way the pager
 shows the size of the whole data, not just of the page.
 
-::: {.callout-note data-legend="Under the hood"}
 The conversation between the table and its server is a small JSON protocol. It
 is documented in @sec:server, in case you would rather feed a table from a
 database or a file than from R.
-:::
+

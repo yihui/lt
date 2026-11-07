@@ -31,8 +31,13 @@ to-do list; the to-do list is carried out later, in the browser. That is why an
 (hover over a cell, or press <kbd>Alt</kbd> and click the table to reveal the
 raw values).
 
-The verbs fall into a few families, which also happen to be the chapters of this
-book:
+The verbs fall into a few families (@tab:verb-families), which also happen to be
+the chapters of this book.
+
+:::: {.table #tab:verb-families}
+::: caption
+[ ](#@tab:verb-families) The verb families and where each is covered.
+:::
 
 | Family | Verbs |
 |:-----------------|:---------------------------------------------------------------|
@@ -44,6 +49,7 @@ book:
 | Make it interactive | `lt_interactive()`, `lt_viewer()`, `lt_serve()` (@chp:interactive) |
 | Shiny | `lt_output()`, `render_lt()`, `lt_input()` (@chp:shiny) |
 | Get it out | `lt_export()`, `lt_spec()` (@chp:export) |
+::::
 
 Many verbs take columns as their second argument. You can name them as a
 one-sided formula (`~ mpg + disp`), as a character vector (`c("mpg", "disp")`),
@@ -130,9 +136,8 @@ function, return it from a package, and let the caller add a few verbs of their
 own. That is how a package can offer tables that its users can still customize
 (@chp:extend).
 
-::: {.callout-tip data-legend="Missing values"}
 By default, `NA` is displayed as an em dash (—), so that a missing value is never
 mistaken for an empty string. To show something else everywhere, set
 `options(lt.missing = "n/a")`; to leave `NA` cells blank, use `""`. To change it
 for one column, use `lt_sub()` (@sec:sub).
-:::
+

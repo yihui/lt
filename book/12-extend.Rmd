@@ -7,97 +7,50 @@
 :::
 
 Sooner or later, a package author wants to print their own objects as tables: a
-model summary, a design object, a study result. This chapter is for you. The good
-news is that **lt** was built to be extended, and the whole recipe fits on one
-page.
+model summary, a fitted object, a study result. The good news is that **lt** is
+built to be extended, and the whole recipe fits on one page.
 
-## Why `lt()` is an S3 generic {#sec:generic}
+## `lt()` is an S3 generic {#sec:generic}
 
-`gt::gt()` is not an S3 generic; it is a plain function. A package that wants
-`gt()`-style output for its own object classes therefore has nowhere to hang a
-method. Both **gsDesign** and **gsDesign2** worked around this the same way: each
-declared its *own* `as_gt()` generic,
-
-```r
-as_gt = function(x, ...) UseMethod("as_gt")
-as_gt.fixed_design = function(x, ...) { ... }
-as_gt.gs_design    = function(x, ...) { ... }
-```
-
-This is awkward. Every package invents a differently named entry point
-(`as_gt()`, `as_flextable()`, `as_kable()`, ...), so users must learn a new verb
-per package. Two packages can even define clashing `as_gt()` generics that mask
-each other on the search path. And none of it composes: there is no single
-function you can call on "whatever table-like object I have".
-
-**lt** takes the boring, standard route instead. `lt()` *is* an S3 generic:
+`lt()` dispatches on its first argument, so a method for your class is all it
+takes:
 
 ```r
 lt = function(data, ...) UseMethod("lt")
 ```
 
-Extending it to a custom class means defining a method. Users then call the one
-verb they already know, `lt(x)`, on any object, yours included. No new generic, no
-name collisions, and `summary() |> lt()` reads the same everywhere.
-
-::: {.callout-tip data-legend="No as_lt()"}
-You may be tempted to define an `as_lt()` generic for symmetry with `as_gt()`.
-Don't. It would bring back exactly the problem described above, one package at a
-time.
-:::
+Users then call the one verb they already know, `lt(x)`, on any object, yours
+included. No new generic and no name collisions. Piping works the same way
+everywhere: `summary(fit) |> lt()`.
 
 ## Shipping lt methods from your package {#sec:ship}
 
-The pattern **gsDesign2** and **gsDesign** settled on has two steps.
+Two steps:
 
 1.  **Re-export the generic**, so that users can call `lt()` without attaching
-    **lt** via `library(lt)` or writing `lt::lt()`. Re-exporting puts `lt()` in
-    your package's namespace.
+    **lt** or writing `lt::lt()`.
 2.  **Define `lt.<class>()` methods** for your summary or result classes. With the
-    generic re-exported into your namespace, each method is registered with a
-    plain `#' @export`.
+    generic re-exported, each method is registered with a plain `#' @export`.
 
-Here is a sketch, adapted from **gsDesign2**'s `as_lt.R`:
+Here is a sketch for a hypothetical package **mypkg** and its `summary` class:
 
 ```r
-# re-export the lt() generic so that users can call lt() without attaching
-# lt via library(lt) or qualifying it as lt::lt()
+# re-export the lt() generic so that users can call lt() without attaching lt
 #' @importFrom lt lt
 #' @export
 lt::lt
 
-# in R/as_lt.R; with the generic re-exported into your namespace, each method
-# can be registered with a plain #' @export
+# R/lt.R: a method builds a table; it does not print it
 #' @export
-lt.fixed_design_summary = function(data, title = NULL, footnote = NULL, ...) {
-  if (is.null(title))    title    = attr(data, "title")
-  if (is.null(footnote)) footnote = attr(data, "footnote")
-  ans = lt::lt(as.data.frame(data), ...) |> lt::lt_header(title = title)
-  if (!isFALSE(footnote))
-    ans = lt::lt_footnote(ans, footnote, where = "title")
-  ans
-}
-
-#' @export
-lt.gs_design_summary = function(data, ...) {
+lt.mypkg_summary = function(data, title = NULL, ...) {
+  if (is.null(title)) title = attr(data, 'title')
   lt::lt(as.data.frame(data), ...) |>
-    lt::lt_group(~ Analysis, sep = TRUE) |>
-    lt::lt_spanner(
-      label = "Cumulative boundary crossing probability",
-      columns = c("Alternate hypothesis", "Null hypothesis")
-    ) |>
-    lt::lt_format(
-      c("Z", "~HR at bound", "Nominal p",
-        "Alternate hypothesis", "Null hypothesis"),
-      decimals = 4
-    )
+    lt::lt_header(title = title) |>
+    lt::lt_format(c('estimate', 'p_value'), decimals = 3)
 }
 ```
 
-Users then write `fixed_design_ahr(...) |> summary() |> lt()` in place of
-`... |> summary() |> as_gt()`. The full version in **gsDesign2** drives the title,
-subtitle, spanner, per-location footnotes (`where = "group"`, `"body"`,
-`"spanner"`), bound selection, and column selection all from arguments.
+Users then write `summary(fit) |> lt()`, and the method does the rest.
 
 A few habits make such methods pleasant to use:
 
@@ -109,17 +62,10 @@ A few habits make such methods pleasant to use:
 -   **Put sensible defaults in arguments** (a `title`, a `footnote`) rather than
     hard-coding them, and let the caller switch them off.
 
-## Keeping an old as_gt() alive {#sec:deprecate}
-
-If your package currently exports `as_gt()`, keep it as a thin deprecated wrapper
-that calls `lt::lt()`, and move the real logic into the `lt.*` methods. This is
-exactly what **gsDesign2** and **gsDesign** now do. Old scripts keep working while
-new ones use the one verb.
-
 ## Embedding tables in other widgets {#sec:embed-pointer}
 
 Methods return tables for R to print. If instead you need an **lt** table *inside*
-another HTML widget (a **reactable** cell, a tooltip, a custom htmlwidget), use
+another HTML widget (a table cell, a tooltip, a custom htmlwidget), use
 `lt_spec()` and `lt_dependency()` to ship the table as JSON and render it in the
 browser with `LT.render()`. That story is told in @chp:export, and the JavaScript
 side in @chp:js.

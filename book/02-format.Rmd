@@ -27,13 +27,11 @@ their values by 100 and adding a `%`. It also leaves year-like columns alone, so
 ```{r, child = ex('auto-format')}
 ```
 
-::: {.callout-tip data-legend="When to switch it off"}
 Automatic formatting is a sensible default for exploring data, but a publication
 table usually needs exact control. Use `lt(d, auto_format = FALSE)` to see the
 raw values, or keep auto-formatting on and override the columns you care about
 with the verbs below. Either way, the raw values are never lost: hover over a
 cell, or press <kbd>Alt</kbd> and click the table, to see them.
-:::
 
 ## Number formatting {#sec:number}
 
@@ -119,8 +117,7 @@ exactly zero. That honesty is the point. A reader who sees `0.00` will assume
 nothing happened, while `< 0.001` tells them something did, and roughly how
 much. `Inf` and `-Inf` need no help at all, since they print as ∞ and −∞.
 
-::: {.callout-tip data-legend="A table-wide default for missing values"}
 If every missing value in your report should look the same, set it once with
 `options(lt.missing = "n/a")` rather than calling `lt_sub()` for each column.
 `lt_sub()` is for the exceptions.
-:::
+

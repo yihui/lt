@@ -18,11 +18,9 @@ output only, and in exchange keeps its dependencies and its runtime tiny.[^gt-ht
     slide deck. It just builds those from the HTML rather than from a separate
     rendering backend (see @chp:export).
 
-::: {.callout-tip data-legend="gt > < lt"}
 A happy coincidence fits the spirit of this trade-off: in the comparison
 operators **gt** is *greater than* and **lt** is *less than*. **lt** does
 deliberately less.
-:::
 
 How much less? **gt** pulls in about 54 recursive dependencies (base64enc, cli,
 dplyr, htmltools, V8, ...), whereas **lt** depends only on **xfun**. The output
@@ -38,11 +36,17 @@ migrations, and you can read their pull requests for more worked examples:
 
 ## The phrasebook {#sec:mapping}
 
-Nearly every `lt_*()` function has a **gt** counterpart. The tables below cover
-the common ones, grouped by what you are trying to say; the last table lists
-things **lt** can do that have no direct **gt** equivalent.
+Nearly every `lt_*()` function has a **gt** counterpart. The tables below cover the common ones, grouped by what you are
+trying to say; the last one lists things **lt** can do that have no direct **gt** equivalent.
 
 ### Building the table
+
+@tab:gt-build maps the constructors, including grouped data.
+
+:::: {.table #tab:gt-build}
+::: caption
+[ ](#@tab:gt-build) Building the table: **gt** and **lt**.
+:::
 
 | gt | lt |
 |------------------------------------|--------------------------------------------|
@@ -50,8 +54,16 @@ things **lt** can do that have no direct **gt** equivalent.
 | `gt(x, groupname_col = "col")` (separator rows) | `lt(x) \|> lt_group(~ col, sep = TRUE)` |
 | `gt(x, groupname_col = "col", row_group_as_column = TRUE)` | `lt(x) \|> lt_group(~ col, sep = FALSE)` (rowspan) |
 | `dplyr::group_by(x, col) \|> gt()` | `dplyr::group_by(x, col) \|> lt()` |
+::::
 
 ### Labels, headers, spanners, and notes
+
+Titles, labels, and every flavor of footnote are in @tab:gt-labels.
+
+:::: {.table #tab:gt-labels}
+::: caption
+[ ](#@tab:gt-labels) Labels, headers, spanners, and notes: **gt** and **lt**.
+:::
 
 | gt | lt |
 |------------------------------------|--------------------------------------------|
@@ -66,8 +78,16 @@ things **lt** can do that have no direct **gt** equivalent.
 | `tab_footnote(footnote, cells_body(col, rows))` | `lt_footnote(text, "body", columns, rows)` |
 | `tab_footnote(footnote)` (no location) | `lt_note(text)` |
 | `tab_source_note(source_note=)` | `lt_note(text)` |
+::::
 
 ### Formatting values
+
+@tab:gt-format covers formatting and substitution.
+
+:::: {.table #tab:gt-format}
+::: caption
+[ ](#@tab:gt-format) Formatting values: **gt** and **lt**.
+:::
 
 | gt | lt |
 |------------------------------------|--------------------------------------------|
@@ -77,8 +97,16 @@ things **lt** can do that have no direct **gt** equivalent.
 | `sub_missing()` / `sub_zero()` / `sub_small_vals()` | `lt_sub(missing=, zero=, small=)` |
 | `html(value)` (mark a value as raw HTML) | `I(value)` (title/labels/footnotes); `lt_html(columns)` for body cells |
 | `fmt_*()` applied to everything, by hand | automatic: `lt(auto_format = TRUE)` (@sec:auto) |
+::::
 
 ### Layout and styling
+
+@tab:gt-layout covers alignment, widths, column order, and style.
+
+:::: {.table #tab:gt-layout}
+::: caption
+[ ](#@tab:gt-layout) Layout and styling: **gt** and **lt**.
+:::
 
 | gt | lt |
 |------------------------------------|--------------------------------------------|
@@ -90,11 +118,17 @@ things **lt** can do that have no direct **gt** equivalent.
 | `tab_stub_indent(rows=, indent=)` | `lt_indent(rows, level=)` |
 | `tab_style(style=, locations=)` | `lt_style(columns=, rows=, ...)` |
 | `opt_css(css=)` | `lt_css(...)` |
+::::
 
 ### Interactivity
 
 **gt** splits interactivity across `opt_interactive()` and `cols_hide()`; **lt**
-gathers it all into `lt_interactive()`.
+gathers it all into `lt_interactive()` (@tab:gt-interactive).
+
+:::: {.table #tab:gt-interactive}
+::: caption
+[ ](#@tab:gt-interactive) Interactivity: **gt** and **lt**.
+:::
 
 | gt | lt |
 |------------------------------------|--------------------------------------------|
@@ -104,19 +138,33 @@ gathers it all into `lt_interactive()`.
 | `opt_interactive(use_resizers = TRUE)` | `lt_interactive(resize = TRUE)` (the default) |
 | `cols_hide(columns)` (always hidden) | `lt_hide(columns)` |
 | --- (reader toggles columns) | `lt_interactive(hide=)` (a column menu) |
+::::
 
 ### Output and Shiny
+
+Saving and Shiny bindings are in @tab:gt-output.
+
+:::: {.table #tab:gt-output}
+::: caption
+[ ](#@tab:gt-output) Output and Shiny: **gt** and **lt**.
+:::
 
 | gt                    | lt                                  |
 |-----------------------|-------------------------------------|
 | `gtsave(x, file)`     | `lt_export(x, file)`                |
 | `gt_output()` (Shiny) | `lt_output()`                       |
 | `render_gt()` (Shiny) | `render_lt()`                       |
+::::
 
 ### Things gt does not do (or needs an add-on for)
 
 Some of **lt**'s verbs have no **gt** twin, and a few overlap with what you might
-have used **DT** or **gtExtras** for.
+have used **DT** or **gtExtras** for (@tab:gt-extra).
+
+:::: {.table #tab:gt-extra}
+::: caption
+[ ](#@tab:gt-extra) Things **lt** does that **gt** does not (or needs an add-on for).
+:::
 
 | You want ... | In lt | Chapter |
 |------------------------------------|--------------------------------------------|---------------|
@@ -133,6 +181,7 @@ have used **DT** or **gtExtras** for.
 | Millions of rows (rows stay in R, pages are fetched) | `lt_serve()` (cf. **DT**'s server-side processing) | @chp:interactive |
 | An editable table as a Shiny input | `lt_input()` / `lt_update()` (cf. **DT**'s `editable`) | @chp:shiny |
 | The table as plain JSON, to embed elsewhere | `lt_spec()` / `lt_dependency()` | @chp:export |
+::::
 
 ## Notable differences {#sec:differences}
 
@@ -274,12 +323,10 @@ lt(df) |> lt_group(~ Group, sep = TRUE, sort = FALSE)
 value, which would discard the factor order you set. With it off, the groups
 appear in first-seen row order, i.e., the factor-level order you sorted into.
 
-::: {.callout-tip data-legend="Smaller escape hatches"}
 If all you need is to reorder groups that already exist, you do not need a factor:
 a second `lt_group()` call with the labels in the order you want does it, and
 `lt_group("Label" = rows)` defines groups by hand from row numbers
 (@sec:group-manual).
-:::
 
 ### Raw HTML: `I()` is the new `html()` and `md()` {#sec:raw-html}
 

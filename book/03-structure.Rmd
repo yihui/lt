@@ -32,11 +32,9 @@ the `Tertiary` row has no confidence interval, so the whole `(lo, hi)` part is
 dropped, while the rows that have one keep it. This is a small trick with a large
 payoff in real reports, where missing pieces are common.
 
-::: {.callout-tip data-legend="Merge first, format second"}
 `lt_merge()` uses the displayed values. Format the source columns first with
 `lt_format()`, as the example does, so that the merged text reads
 `0.61 (0.40, 0.82)` and not the raw `0.6123 (0.401234, ...)`.
-:::
 
 ## Column spanners {#sec:spanner}
 
@@ -70,10 +68,8 @@ page".
 ```{r, child = ex('move-hide')}
 ```
 
-::: {.callout-tip data-legend="Hidden is not gone"}
 Use `lt_hide()` when a value helps a reader but clutters the page. If you want a
 column gone for good, drop it from the data frame before calling `lt()`.
-:::
 
 ## Row groups {#sec:group}
 
