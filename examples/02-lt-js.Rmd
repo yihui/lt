@@ -18,10 +18,10 @@ cat(
 ```
 
 ```{js, echo = FALSE}
-// lt.js is deferred: queue LT.build() calls until it loads
-if (!window.LT) window.LT = {
-  q: [],
-  build(spec) { this.q.push({s: document.currentScript, d: spec}); }
+// lt.js is deferred: queue LT.build() calls until it loads (other chapters
+// may have created window.LT already, so add build() to it)
+(window.LT ??= {}).build ??= function(spec) {
+  (this.q ??= []).push({s: document.currentScript, d: spec});
 };
 ```
 
