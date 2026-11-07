@@ -18,6 +18,9 @@ extension.
 ```{r, child = ex('export')}
 ```
 
+The PNG (@fig:export-png) and PDF (@fig:export-pdf) above come from the same
+table; the last chunk prints the static HTML.
+
 - **`.html`** gives a static table baked in advance: a real `<table>` that needs
   no JavaScript to view, which is perfect for email and for pages that forbid
   scripts.

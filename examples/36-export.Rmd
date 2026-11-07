@@ -6,16 +6,30 @@ title: Exporting a table
 
 ```{r}
 library(lt)
-tbl = lt(head(mtcars[, 1:5])) |> lt_header("Cars")
+tbl = lt(head(mtcars[, 1:5], 2)) |> lt_header("Cars")
 can_export = lt:::can_bake()
 ```
 
 ```{r, eval = can_export}
-out = file.path(tempdir(), c("cars.png", "cars.pdf"))
-lt_export(tbl, out[1], width = "min-content")
-lt_export(tbl, out[2])
-file.exists(out)
+lt_export(tbl, "cars.png", width = "min-content")
+lt_export(tbl, "cars.pdf")
 ```
+
+:::: {#fig:export-png .figure}
+![table in png](cars.png)
+
+::: caption
+[ ](#@fig:export-png) A table exported to PNG.
+:::
+::::
+
+:::: {#fig:export-pdf .figure}
+<embed src="cars.pdf" type="application/pdf" width="100%" height="300">
+
+::: caption
+[ ](#@fig:export-pdf) A table exported to PDF.
+:::
+::::
 
 A static `<table>`, with no JavaScript needed to view it, is one more option:
 

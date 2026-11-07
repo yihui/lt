@@ -3,3 +3,5 @@
 examples/*.html
 examples/*.png
 examples/*.pdf
+book/*.png
+book/*.pdf
