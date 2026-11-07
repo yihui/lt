@@ -48,7 +48,9 @@ a list instead of the string, e.g. \code{list(type = "select", label = "Cylinder
 entry in the list
 is the default applied to every other visible column, so
 \code{list(TRUE, cyl = "select")} boxes every column but gives \code{cyl} a dropdown, and
-\code{FALSE} leaves a column without a filter, e.g. \code{list("auto", id = FALSE)}.
+\code{FALSE} leaves a column without a filter, e.g. \code{list("auto", id = FALSE)};
+set on a named column, it shows a disabled (inert) funnel, so the column
+reads as filterable but off.
 A column with nothing to filter (every value blank) gets no box, even under
 that default. \code{"auto"} (alone, or as a list entry, e.g. \code{list("auto", cyl = "select")}) picks each column's filter from its data: a range slider
 for numbers and for dates and date-times (a search-only funnel if every value

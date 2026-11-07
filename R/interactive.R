@@ -48,7 +48,9 @@
 #'   entry in the list
 #'   is the default applied to every other visible column, so
 #'   `list(TRUE, cyl = "select")` boxes every column but gives `cyl` a dropdown, and
-#'   `FALSE` leaves a column without a filter, e.g. `list("auto", id = FALSE)`.
+#'   `FALSE` leaves a column without a filter, e.g. `list("auto", id = FALSE)`;
+#'   set on a named column, it shows a disabled (inert) funnel, so the column
+#'   reads as filterable but off.
 #'   A column with nothing to filter (every value blank) gets no box, even under
 #'   that default. `"auto"` (alone, or as a list entry, e.g. `list("auto",
 #'   cyl = "select")`) picks each column's filter from its data: a range slider

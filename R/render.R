@@ -252,7 +252,16 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
 #' @examples
 #' print(lt(head(mtcars)))
 print.lt_tbl = function(x, ...) {
-  xfun::html_view(view_html(x, ...), name = 'lt')
+  # assets live under the reserved `_lt/` path (other paths are left for the
+  # working dir) and are read from disk per request: edits show on refresh
+  op = options(lt.assets_url = '_lt/')
+  html = tryCatch(view_html(x, inline_assets = FALSE, ...), finally = options(op))
+  xfun::new_app('lt', function(path, ...) {
+    f = if (grepl('^_lt/', path)) asset_path(basename(path))
+    if (length(f) && file.exists(f))
+      list(file = f, `content-type` = xfun::mime_type(f))
+    else list(payload = html)
+  })
   invisible(x)
 }
 

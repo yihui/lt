@@ -82,3 +82,10 @@ assert("a column's own box takes a condition without the column name", {
   (p$expr %==% '(x > 100) || (x < 5)')
   (read_query('rash', names = c(), col0 = 'name')$parsed %==% FALSE)
 })
+
+assert('contains takes the whole phrase, even with special characters', {
+  (read_query('name contains ~HR at bound')$text %==% 'name: "~HR at bound"')
+  (read_query('name has p (1-sided)')$text %==% 'name: "p (1-sided)"')
+  (read_query('name does not contain p (1-sided)')$expr %==% '!String(x).toLowerCase().includes("p (1-sided)")')
+  (read_query('name contains ~HR at bound, price over 5')$text %==% 'name: "~HR at bound" and price: x > 5')
+})
