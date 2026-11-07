@@ -1,0 +1,158 @@
+# Styling {#chp:style}
+
+::: epigraph
+> It's not just what it looks like and feels like. Design is how it works.
+>
+> ---Steve Jobs, as quoted in *The New York Times Magazine* (2003)
+:::
+
+The default look of an **lt** table is deliberately plain: a rule on top, a rule
+below the header, a rule at the bottom, and nothing else. It is a good canvas.
+This chapter is about the three functions that let you paint on it:
+`lt_style()` for individual cells, `lt_css()` for rules that apply to the whole
+table, and `lt_wrap()` for keeping those rules from leaking into other tables on
+the same page.
+
+## Paint a few cells {#sec:style-cells}
+
+Start with the shortcuts. `lt_style()` takes the columns and rows to hit, and
+then a handful of arguments you would otherwise have to spell in CSS: `bold`,
+`italic`, `color`, and `bg`. Leave `columns` out to cover every column, and leave
+`rows` out to cover every row.
+
+```{r}
+lt(head(mtcars[, 1:4], 5)) |>
+  lt_style("mpg", rows = 1, bold = TRUE, color = "#06c") |>
+  lt_style(rows = 5, italic = TRUE, bg = "#fff3cd")
+```
+
+Anything else goes in the dots. Write the property name in camelCase
+(`borderBottom`) or as a quoted dash-case name (`` `border-bottom` ``), with the
+value as a string. Those are plain CSS properties, so you can reach for whatever
+the browser supports:
+
+```{r}
+lt(head(mtcars[, 1:4], 4)) |>
+  lt_style("mpg", rows = 1, borderBottom = "2px solid crimson", letterSpacing = ".1em")
+```
+
+## Let the data pick the cells {#sec:style-test}
+
+Hard-coding row numbers works until the data changes. A better habit is to say
+*what* should be highlighted and let the table find it. Pass `test`, a small
+JavaScript function that receives the raw value of each cell and returns `true`
+for the cells that deserve the style.
+
+The example below does exactly that. It also shows the second trick: instead of
+inline styles, tag matching cells with a `class` and write the rules once with
+`lt_css()`. The table then carries a class name per cell instead of a copy of the
+style, which keeps the output small.
+
+```{r, child = ex('style')}
+```
+
+::: {.callout-note data-legend="Why JavaScript?"}
+The test runs in the browser, not in R. That is what lets the highlighting
+survive sorting, filtering, and paging in an interactive table (@chp:interactive):
+the table re-evaluates the test whenever the rows move. The price is that `test`
+is a string of JavaScript, not an R expression, and it sees the *raw* value, so
+`v < 0.05` compares numbers even if the cell shows `"<0.05"` after formatting.
+:::
+
+A missing value arrives in the test as `null`, which makes it easy to flag the
+holes in your data:
+
+```{r}
+d = data.frame(Site = c("A", "B", "C"), Enrolled = c(120, NA, 87))
+lt(d) |>
+  lt_style("Enrolled", test = "v => v == null", bg = "#fde2e2") |>
+  lt_style("Enrolled", test = "v => v > 100", bold = TRUE)
+```
+
+By default `NA` cells show an em dash (@sec:printing explains how to change the
+text), so a pink background plus the dash is hard to miss.
+
+## Rules for the whole table {#sec:style-css}
+
+`lt_css()` is the home for everything that is not a one-off. It attaches CSS that
+is emitted after the built-in stylesheet, so your rules win ties.
+
+A **named** argument is an inline rule: the name is a selector, the value is
+either a CSS string or a list of properties. Rules are scoped to the table, so
+`.good` really means `.lt-table .good`. In a list, property names can be written
+in camelCase as in `lt_style()`.
+
+```{r}
+lt(head(mtcars[, 1:3], 5)) |>
+  lt_style("mpg", test = "v => v >= 21", class = "good") |>
+  lt_css(
+    .good = list(color = "darkgreen", fontWeight = "bold"),
+    "tbody tr:hover" = "background: #f4f8ff",
+    "th" = "text-transform: uppercase; font-size: .8em"
+  )
+```
+
+An **unnamed** argument is a stylesheet: a path or a URL. Use it when the rules
+live in a file you maintain, such as a house style shared by every table in a
+report. Paths stay as written, so a relative one remains portable.
+
+```r
+lt(d) |> lt_css("company-tables.css")
+```
+
+If a page holds many tables with the same `lt_css()`, the stylesheet is emitted
+once, not once per table.
+
+### The selectors worth knowing {#sec:style-selectors}
+
+Every part of a table has a class, so you can restyle anything without guessing
+at the structure. @tab:style-selectors lists the ones you will reach for most.
+
+:::: {.table #tab:style-selectors}
+::: caption
+[ ](#@tab:style-selectors) CSS selectors for the parts of an lt table.
+:::
+
+| Part | Selector |
+|:-----|:---------|
+| The table | `.lt-table` |
+| Title, subtitle | `.lt-title`, `.lt-subtitle` (inside `caption.lt-caption`) |
+| Column spanners | `.lt-spanner` |
+| Row group labels | `.lt-row-group` |
+| Indented stub cells | `.lt-indent` |
+| Footer rows | `.lt-footer`, `.lt-footnote`, `.lt-source-note` |
+| Footnote marks | `.lt-fnref` |
+| Right/center aligned cells | `.al-r`, `.al-c` |
+| Column type labels | `.lt-type` |
+::::
+
+The table is an ordinary HTML table, so `thead th`, `tbody td`, and
+`tr:nth-child(odd)` all work too.
+
+## Keep it on one table {#sec:wrap}
+
+Page-wide CSS is great until the page has two tables. `lt_wrap()` solves that by
+putting attributes on the `<div>` that wraps the table. Give it a `class`, and a
+stylesheet rule that begins with that class touches this table only.
+
+```{r, child = ex('css-wrap')}
+```
+
+The wrapper takes any HTML attribute, not only `class`. A fixed width and an
+`id` for deep links are the usual suspects:
+
+```{r}
+lt(head(mtcars[, 1:4], 3)) |>
+  lt_wrap(id = "cars", style = "max-width: 28em")
+```
+
+Repeated calls accumulate classes instead of replacing them, so a helper
+function can add its own class without wiping the caller's.
+
+## Peek behind the format {#sec:style-raw}
+
+One last trick needs no code. **Alt-click** on a table to reveal the *raw* value
+behind every cell that was formatted: `0.0012` appears next to `0.001`, and an
+ISO timestamp next to its friendly date. **Alt-double-click** does the same for
+every table on the page. It is a cheap way to check that a format hides noise
+and not information.

@@ -1,0 +1,16 @@
+---
+title: Automatic formatting
+---
+
+By default `lt()` formats numbers for you: about four significant digits, thin-space thousands separators, a typographic minus, percent for columns named like `*_pct`, and a hands-off policy for years. Set `auto_format = FALSE` to see the raw values.
+
+```{r}
+library(lt)
+d = data.frame(
+  Year = c(2020, 2021, 2022),
+  Revenue = c(1234567.89, 2345678.12, -3456.789),
+  Margin_pct = c(0.1234, 0.0567, 0.2345)
+)
+lt(d)
+lt(d, auto_format = FALSE)
+```

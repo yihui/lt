@@ -1,0 +1,15 @@
+---
+title: Sparklines
+---
+
+`lt_sparkline()` draws a small line or bar chart per row from a list-column, or from several columns read across the row.
+
+```{r}
+library(lt)
+d = data.frame(City = c("Oslo", "Cairo", "Lima"))
+d$Temp = list(c(-3, -2, 1, 6, 12, 16), c(14, 15, 18, 23, 28, 31), c(19, 19, 18, 16, 15, 15))
+d$Rain = list(c(49, 36, 47, 41, 53, 60), c(5, 4, 4, 1, 0, 0), c(8, 4, 2, 1, 1, 1))
+lt(d) |>
+  lt_sparkline(~ Temp) |>
+  lt_sparkline(~ Rain, type = "bar", color = "#4caf50")
+```

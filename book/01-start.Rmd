@@ -1,0 +1,143 @@
+# Your First Table {#chp:start}
+
+A table is the one data visualization that everyone can read without a legend.
+This chapter shows how to make one with **lt**, and then how to give it a title,
+sensible labels, and a bit of polish.
+
+## One function, many verbs {#sec:verbs}
+
+Everything starts with `lt()`, which takes a data frame:
+
+```{r}
+library(lt)
+lt(head(mtcars))
+```
+
+That is already a respectable table: numbers are rounded sensibly and right
+aligned, and the column names are cleaned up. But the real fun begins when you
+pipe it into one of the `lt_*()` verbs. Each verb adds one instruction to the
+table, and you can stack as many as you like, in any order:
+
+```{r}
+lt(head(mtcars[, 1:4])) |>
+  lt_header("Cars, Briefly", "Four measurements of six cars") |>
+  lt_format(~ disp, decimals = 0) |>
+  lt_note("Data from the 1974 Motor Trend US magazine.")
+```
+
+Notice that your data frame is never modified. A table is the data *plus* a
+to-do list; the to-do list is carried out later, in the browser. That is why an
+**lt** table can show `160` while remembering that the real value was `160.0`
+(hover over a cell, or press <kbd>Alt</kbd> and click the table to reveal the
+raw values).
+
+The verbs fall into a few families (@tab:verb-families), which also happen to be
+the chapters of this book.
+
+:::: {.table #tab:verb-families}
+::: caption
+[ ](#@tab:verb-families) The verb families and where each is covered.
+:::
+
+| Family | Verbs |
+|:-----------------|:---------------------------------------------------------------|
+| Format values | `lt_format()`, `lt_date()`, `lt_sub()` (@chp:format) |
+| Shape the table | `lt_spanner()`, `lt_merge()`, `lt_move()`, `lt_hide()`, `lt_group()`, `lt_indent()` (@chp:structure) |
+| Explain it | `lt_footnote()`, `lt_note()`, `lt_html()` (@chp:notes) |
+| Draw in cells | `lt_errorbar()`, `lt_sparkline()`, `lt_dotplot()` (@chp:plots) |
+| Style it | `lt_style()`, `lt_css()`, `lt_wrap()` (@chp:style) |
+| Make it interactive | `lt_interactive()`, `lt_viewer()`, `lt_serve()` (@chp:interactive) |
+| Shiny | `lt_output()`, `render_lt()`, `lt_input()` (@chp:shiny) |
+| Get it out | `lt_export()`, `lt_spec()` (@chp:export) |
+::::
+
+Many verbs take columns as their second argument. You can name them as a
+one-sided formula (`~ mpg + disp`), as a character vector (`c("mpg", "disp")`),
+or by position (`1:2`). A formula can even use the pronoun `.` for "the column
+names", so `~ endsWith(., "_time")` selects every column whose name ends in
+`_time`.
+
+## The cheat sheet {#sec:cheatsheet}
+
+Before we go through the verbs one by one, here is the whole package on one
+page. This table is self-documenting: each function's name is placed exactly
+where that function acts. The title reads `lt_header(title = ...)` because
+`lt_header()` put it there; each column header is the name of the function that
+shaped the column; the row group label is `lt_group()`; and the footnotes
+explain the rest. Come back to it whenever you want a quick reminder, and
+perhaps try to guess which verb is responsible for each detail before reading on.
+
+```{r, child = ex('lt')}
+```
+
+## Titles and labels {#sec:labels}
+
+`lt_header()` puts a title, and optionally a subtitle, above the table:
+
+```{r, child = ex('header')}
+```
+
+Column names are cleaned for display: dots and underscores become spaces, so
+`Sepal.Length` is shown as "Sepal Length". Use `auto_label = FALSE` if you want
+the raw names back, or `lt_label()` to say exactly what a column should be
+called. `lt_label()` also accepts a named list or vector if your labels are
+already stored somewhere:
+
+```{r, child = ex('label')}
+```
+
+A label does not have to be plain text. Wrap it in `I()` to use HTML, as shown
+in @sec:html.
+
+## Alignment and widths {#sec:align}
+
+Numbers are right-aligned and text is left-aligned, which is what you want most
+of the time. When it is not, `lt_align()` takes `"left"`, `"center"`, or
+`"right"`, and `lt_width()` sets how wide a column is, in any CSS unit. Call
+`lt_width()` with an unnamed argument to set the width of the whole table:
+
+```{r, child = ex('align-width')}
+```
+
+## What kind of column is this? {#sec:types}
+
+When you explore a new data set, the first question is often "what *is* this
+column?". With `show_types = TRUE`, `lt()` tags each column with its type, the
+same way a tibble does when printed: `<dbl>`, `<chr>`, `<fct>`, `<date>`, and
+so on. It also makes a pleasant default for tables meant for exploration (see
+`lt_viewer()` in @sec:viewer).
+
+```{r, child = ex('show-types')}
+```
+
+## Where tables show up {#sec:printing}
+
+An `lt` table is displayed wherever R can display HTML:
+
+-   **At the console**, printing a table opens it in the RStudio or Positron
+    viewer, or in your web browser otherwise. The table is scaled to fit the
+    window, and a table that is too tall scrolls inside its frame with the
+    header kept in view.
+
+-   **In a document**, you simply print it, from a chunk of a
+    [litedown](https://yihui.org/litedown/) document, a **knitr** R Markdown
+    document, or a Quarto document. The runtime assets are included once per
+    page, however many tables the page holds. In a `litedown::fuse()` document,
+    tables built from the same data frame also share one copy of the data, which
+    keeps the output file small.
+
+-   **In a Shiny app**, with `lt_output()` and `render_lt()` (@chp:shiny).
+
+-   **In a file**, with `lt_export()`: standalone HTML, PDF, or PNG
+    (@chp:export).
+
+Because a table is just an object until it is printed, you can build it in a
+function, return it from a package, and let the caller add a few verbs of their
+own. That is how a package can offer tables that its users can still customize
+(@chp:extend).
+
+By default, `NA` is displayed as an em dash (—), so that a missing value is never
+mistaken for an empty string. To show something else everywhere, set
+`options(lt.missing = "n/a")`; to leave `NA` cells blank, use `""`. To change it
+for one column, use `lt_sub()` (@sec:sub).
+

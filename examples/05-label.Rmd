@@ -1,0 +1,13 @@
+---
+title: Column labels
+---
+
+Column names are cleaned for display (`.` and `_` become spaces). Override any of them with `lt_label()`, or show the raw names with `auto_label = FALSE`.
+
+```{r}
+library(lt)
+tbl = lt(head(iris))
+tbl
+lt(head(iris), auto_label = FALSE)
+tbl |> lt_label(Sepal.Length = "Length (cm)", Sepal.Width = "Width (cm)")
+```

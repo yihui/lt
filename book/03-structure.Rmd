@@ -1,0 +1,119 @@
+# Shaping the Table {#chp:structure}
+
+::: epigraph
+> Form ever follows function.
+>
+> ---Louis Sullivan, *The Tall Office Building Artistically Considered*
+:::
+
+A table is not only a grid of values. It has a shape: a few columns that belong
+together under a shared heading, rows that form families, a child row that hangs
+off its parent, and a column or two that exists only to feed the others. This is
+the chapter where you give your table that shape.
+
+## Merging columns {#sec:merge}
+
+Consider a row that reads "Age: 67 (100%)". The number and the percentage belong
+together, so they should share a cell. `lt_merge()` does exactly that: the first
+column you name receives the combined text, and a pattern says how to put the
+pieces together. `{1}` is the first column, `{2}` the second, and so on.
+
+```{r, child = ex('merge')}
+```
+
+By default, the source columns (all but the first) are hidden, since their
+content now lives in the target. Set `hide = FALSE` if you want to keep them
+visible.
+
+Sometimes one of the pieces is missing, and the sentence should not be left
+dangling with an empty parenthesis. Wrap the optional part in `<<` and `>>`, and
+it vanishes whenever any value it refers to is missing. In the example above,
+the `Tertiary` row has no confidence interval, so the whole `(lo, hi)` part is
+dropped, while the rows that have one keep it. This is a small trick with a large
+payoff in real reports, where missing pieces are common.
+
+`lt_merge()` uses the displayed values. Format the source columns first with
+`lt_format()`, as the example does, so that the merged text reads
+`0.61 (0.40, 0.82)` and not the raw `0.6123 (0.401234, ...)`.
+
+## Column spanners {#sec:spanner}
+
+A spanner is a label that sits above a run of columns, telling the reader that
+these columns are one family. Name it with a formula, `Label ~ col1 + col2`.
+The columns must be next to each other, but you do not have to list them in
+visual order: **lt** reorders them to match the body.
+
+```{r, child = ex('spanner')}
+```
+
+If your columns already share a prefix, you may not need to name anything at
+all. Calling `lt_spanner()` with no arguments looks for a common prefix before
+the first `.` or `_` and groups the columns that share it, shortening each
+column label to its suffix. In the example, `Sepal.Length` and `Sepal.Width`
+collapse under a "Sepal" spanner, and their labels become "Length" and "Width".
+
+## Moving and hiding columns {#sec:move-hide}
+
+Your data frame has the column order it has, but the report should read
+differently. `lt_move()` shuffles columns without touching the data. Name the
+columns to move and say where to put them with `after`: a column name, a
+position, or `NULL` for the very front.
+
+`lt_hide()` is the quieter cousin. It removes columns from the table, but not
+from the data behind it. That distinction matters: a hidden column still travels
+with each row, so an interactive table can use it for a row's detail pane (see
+@sec:detail). Hiding is therefore the right tool for "useful, but not on the
+page".
+
+```{r, child = ex('move-hide')}
+```
+
+Use `lt_hide()` when a value helps a reader but clutters the page. If you want a
+column gone for good, drop it from the data frame before calling `lt()`.
+
+## Row groups {#sec:group}
+
+Tables are easier to scan when rows come in families. `lt_group()` partitions the
+rows by the values of one or more columns, and removes those columns from the
+body so that the group labels do the work instead.
+
+By default, groups are drawn as **rowspan** cells that run down the left side,
+which is compact and looks like the tables in many journals. But a long group
+label does not fit in a narrow cell, so **lt** switches to full-width
+**separator rows** on its own when a single text column has a label longer than
+20 characters. You can force either style with `sep = TRUE` (separator rows) or
+`sep = FALSE` (rowspan cells). Separator rows take only one grouping column, while
+rowspan cells can nest several, one inside another.
+
+```{r, child = ex('group')}
+```
+
+Groups are sorted by default, so that identical values sit together. If your
+rows already come in the order you want, `sort = FALSE` keeps them as they are.
+
+### Manual groups and their order {#sec:group-manual}
+
+Sometimes no column tells the story. Maybe the first three rows are the
+treatment arm because you know it from the study design, not because a column
+says so. In that case, name the row ranges yourself: `"Label" = rows` makes a
+group from a set of row numbers.
+
+The same trick reorders groups. Pass the group labels, unnamed, to a later
+`lt_group()` call, and those groups move to the front in the order you list them.
+
+```{r, child = ex('group-manual')}
+```
+
+## Indentation {#sec:indent}
+
+Hierarchies such as adverse events, where "Cardiac" contains "Tachycardia", read
+best when the children are indented under their parent. `lt_indent()` nudges the
+first column of the chosen rows to the right, one `level` per step. Call it once
+for the parents and again for the children, with a deeper level.
+
+```{r, child = ex('indent')}
+```
+
+Indentation is about looks; it does not change which rows belong to which parent.
+If you also want interactive sorting to keep each child with its parent, see
+@sec:structure.

@@ -1,0 +1,13 @@
+---
+title: Column visibility menu
+---
+
+`hide` adds a menu to show or hide columns. Give column names to start with those hidden, or `NA` to start with everything visible; a `label` turns the eye icon into a text chip.
+
+```{r}
+library(lt)
+d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
+lt(d) |>
+  lt_interactive(hide = list(label = "Columns", columns = c("hp", "wt")),
+    pager = 5, filter = FALSE)
+```

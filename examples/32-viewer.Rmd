@@ -1,0 +1,10 @@
+---
+title: A data viewer
+---
+
+`lt_viewer()` is a ready-made explorer for a data frame: column types, profiles, filters, and a column menu, with the data expression as the title.
+
+```{r}
+library(lt)
+lt_viewer(iris)
+```

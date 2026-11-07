@@ -1,0 +1,62 @@
+# Exporting and Embedding {#chp:export}
+
+::: epigraph
+> Measure twice, cut once.
+>
+> ---Proverb
+:::
+
+An lt table is born in a browser, but your readers are not always there. They
+open PDFs, paste tables into slides, and read Markdown on GitHub. This chapter
+is about getting a table out, and about the plain data underneath it.
+
+## Saving a file {#sec:export}
+
+`lt_export()` writes a table to `.html`, `.pdf`, or `.png`, chosen by the file
+extension.
+
+```{r, child = ex('export')}
+```
+
+The PNG (@fig:export-png) and PDF (@fig:export-pdf) above come from the same
+table; the last chunk prints the static HTML.
+
+- **`.html`** gives a static table baked in advance: a real `<table>` that needs
+  no JavaScript to view, which is perfect for email and for pages that forbid
+  scripts.
+- **`.pdf`** and **`.png`** are printed by a headless browser. PNG output is
+  cropped to the table (this needs the **magick** package); `width = "min-content"`
+  shrinks the canvas to fit.
+- Passing `NA` as the output returns the HTML as a string instead of writing a
+  file. With `fragment = TRUE` you get just the `<table>`, and `css = FALSE`
+  leaves the stylesheet out, handy when you embed it somewhere that already
+  has one.
+
+Baking a table, as opposed to drawing it in the browser, needs Node.js or a
+Chromium-based browser. If neither is around, the examples above are skipped
+rather than failing.
+
+## Static output everywhere {#sec:static}
+
+Tables in a document like this one are dynamic. For output formats that cannot
+run scripts, such as GitHub-flavored Markdown, set the `lt.lt_static` option
+and every table is baked on the way out:
+
+```{r, eval = FALSE}
+options(lt.lt_static = list(fragment = TRUE))
+```
+
+The list holds arguments of `lt_export()`. Leave the option unset and tables
+stay dynamic.
+
+## The spec underneath {#sec:spec}
+
+Strip away the browser and an lt table is just data plus a list of
+declarative operations. `lt_spec()` hands you that payload as an R list.
+
+```{r, child = ex('spec')}
+```
+
+The list is ready for `xfun::tojson()`. That is the bridge to everything else:
+store it, diff it, send it to another widget, or give it to `LT.render()` on a
+page written in plain JavaScript, which is where the next chapter begins.

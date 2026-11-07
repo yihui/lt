@@ -1,0 +1,12 @@
+---
+title: Alignment and widths
+---
+
+Numbers align right and text left by default. `lt_align()` changes that, and `lt_width()` sets column widths; an unnamed width sizes the whole table.
+
+```{r}
+library(lt)
+lt(head(mtcars[, 1:5])) |>
+  lt_align(~ mpg + cyl, "center") |>
+  lt_width("80%", mpg = "8em", cyl = "5em")
+```

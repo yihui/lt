@@ -1,0 +1,123 @@
+# Making Numbers Behave {#chp:format}
+
+::: epigraph
+> Less is more.
+>
+> ---Ludwig Mies van der Rohe
+:::
+
+Raw numbers are honest, which is the problem. `0.1234567891` is a true value, but
+no reader wants to see it. They want `12.3%`, or `$1,234.50`, or a date that says
+"January 15" instead of a timestamp with a time zone attached. Formatting is how
+you turn honest numbers into readable ones, without changing the numbers
+themselves.
+
+The good news is that **lt** does a lot of this before you ask.
+
+## Automatic formatting {#sec:auto}
+
+By default, `lt()` formats every numeric column for you. It rounds to about four
+significant digits, so a value that needs decimals in one row and a million in
+another both look reasonable. It adds a thin-space thousands separator, uses a
+proper typographic minus sign (`−`) rather than a hyphen, and recognizes
+percentage columns by their names (`rate_pct`, `Margin_percent`), multiplying
+their values by 100 and adding a `%`. It also leaves year-like columns alone, so
+`2024` never becomes `2,024`.
+
+```{r, child = ex('auto-format')}
+```
+
+Automatic formatting is a sensible default for exploring data, but a publication
+table usually needs exact control. Use `lt(d, auto_format = FALSE)` to see the
+raw values, or keep auto-formatting on and override the columns you care about
+with the verbs below. Either way, the raw values are never lost: hover over a
+cell, or press <kbd>Alt</kbd> and click the table, to see them.
+
+## Number formatting {#sec:number}
+
+When you know what a column should look like, say so with `lt_format()`. It
+takes the columns and then whichever of these you need:
+
+-   `decimals`: how many digits after the decimal point, always the same for
+    every value in the column.
+-   `sig_digits`: how many significant digits to keep, which adapts to the size
+    of each value. This is the better choice when a column spans several orders
+    of magnitude, such as particle masses.
+-   `big_mark`: a thousands separator, such as `","`.
+-   `percent`: `TRUE` multiplies values by 100 and adds a `%`; `"%"` only adds
+    the sign, for values that are already in percent.
+-   `prefix` and `suffix`: text glued to each value, such as `"$"` or `" kg"`.
+
+```{r, child = ex('number')}
+```
+
+Two rules of thumb. First, `decimals` and `sig_digits` are alternatives, so pick
+one: asking for both is an error, because they answer the same question in two
+different ways. Second, when you want a column left completely alone, even by
+automatic formatting, call `lt_format()` with just the columns and nothing else.
+That opts the column out without changing how it looks.
+
+```{r}
+d = data.frame(Year = c(2020, 2021), Count = c(1234.5, 999.9))
+lt(d) |> lt_format(~ Count)  # Count is no longer auto-formatted
+```
+
+::: {.callout-warning data-legend="Percent is a multiplication"}
+`percent = TRUE` multiplies by 100, so a value of `0.25` shows as `25%`. If your
+data already holds `25` for twenty-five percent, use `percent = "%"` instead;
+otherwise your reader sees `2500%`.
+:::
+
+## Dates and times {#sec:date}
+
+Dates need more care, because the browser is the one that formats them. `lt_date()`
+hands each value to the browser's own date formatting, so the output follows the
+reader's locale and the options you ask for. Pass a `locale` such as `"fr-FR"` or
+`"zh-CN"`, and an `options` list in the style of `Intl.DateTimeFormat`, to choose
+what appears: weekday, month name, hours, time zone, and so on.
+
+```{r, child = ex('date')}
+```
+
+Here is the gotcha that has bitten nearly everyone once. A plain date such as
+`2024-01-15` is stored as midnight in UTC. Show it in a time zone behind UTC, and
+the reader sees the day before. Passing `timeZone = "UTC"` in `options` tells the
+browser to format the date in UTC as well, so the day stays put.
+
+::: {.callout-warning data-legend="Watch the time zone"}
+Without `timeZone = "UTC"`, a reader west of Greenwich may see `2024-01-14` for a
+date you wrote as `2024-01-15`. For date-times, the opposite is what you usually
+want: leave the time zone alone so that each reader sees the time in their own
+zone.
+:::
+
+Two more things. The `method` argument calls a specific JavaScript date method,
+such as `"toDateString"` or `"toISOString"`, when you want one exact format rather
+than a locale-aware one. And for a date-time column, add `hour` and `minute` to
+`options` to show the time as well; without them, the time is dropped.
+
+```{r}
+d = data.frame(Event = "Launch", Date = as.Date("2024-01-15"))
+lt(d) |> lt_date(~ Date, method = "toDateString")
+```
+
+## Substituting special values {#sec:sub}
+
+Numbers have three awkward cases that deserve better text than a bare `NA` or a
+long string of zeros: missing values, zeros, and values so small that rounding
+would show them as `0.00`. `lt_sub()` takes care of all three. Give it the
+replacement text for each case, and a threshold below which values count as
+"small":
+
+```{r, child = ex('sub')}
+```
+
+Notice the `small_text`: it reads `< 0.001` rather than pretending the value is
+exactly zero. That honesty is the point. A reader who sees `0.00` will assume
+nothing happened, while `< 0.001` tells them something did, and roughly how
+much. `Inf` and `-Inf` need no help at all, since they print as ∞ and −∞.
+
+If every missing value in your report should look the same, set it once with
+`options(lt.missing = "n/a")` rather than calling `lt_sub()` for each column.
+`lt_sub()` is for the exceptions.
+

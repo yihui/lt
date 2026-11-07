@@ -1,0 +1,18 @@
+---
+title: Column filters
+---
+
+By default each column gets the filter that suits its data: a slider for numbers, a checklist for text with few distinct values. Ask for other widgets by name, or switch a column's filter off with `FALSE`.
+
+```{r}
+library(lt)
+lt(iris) |>
+  lt_interactive(filter = list("auto", Species = FALSE), search = FALSE, pager = 5)
+
+d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
+lt(d) |>
+  lt_interactive(
+    filter = list(TRUE, mpg = "range", cyl = "checklist", gear = "select"),
+    search = FALSE, pager = 5
+  )
+```

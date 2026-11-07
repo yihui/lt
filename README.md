@@ -48,7 +48,8 @@ without installing it.
 
 `lt()` creates a table object from a data frame. The `lt_*()` functions build
 on it via the pipe. See <https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet>
-for a "cheat table" as an overview of these functions.
+for a "cheat table" as an overview of these functions, or read the book at
+<https://pkg.yihui.org/lt/book/> for a guided tour.
 
 **Structure**
 
@@ -203,7 +204,7 @@ LT.build({
 
 You can find more examples at <https://pkg.yihui.org/lt/examples.html>. If you
 are coming from **gt**, see the migration guide at
-<https://pkg.yihui.org/lt/examples/03-gt.html> for a function-by-function mapping and
+<https://pkg.yihui.org/lt/book/#chp:gt> for a function-by-function mapping and
 notes on where **lt** differs.
 
 ## Acknowledgements

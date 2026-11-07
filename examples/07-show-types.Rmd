@@ -1,0 +1,16 @@
+---
+title: Column types
+---
+
+`show_types = TRUE` tags each column with its type under the label, the way a data viewer does.
+
+```{r}
+library(lt)
+d = data.frame(
+  species = factor(c("cat", "dog", "owl")),
+  weight = c(4.2, 18.5, 0.9),
+  adopted = as.Date(c("2024-03-01", "2024-05-17", "2024-08-09")),
+  vaccinated = c(TRUE, TRUE, FALSE)
+)
+lt(d, show_types = TRUE)
+```

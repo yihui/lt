@@ -1,0 +1,18 @@
+---
+title: Error bars
+---
+
+`lt_errorbar()` turns `estimate ~ lower + upper` into a tiny forest plot on a shared scale. `ref` draws a reference line, `axis` a shared axis, and `into` puts the plot in its own column.
+
+```{r}
+library(lt)
+d = data.frame(
+  Term = c("Age", "Dose", "Baseline", "Sex"),
+  Est  = c(0.12, -0.34, 0.45, -0.08),
+  Lo   = c(-0.05, -0.52, 0.21, -0.29),
+  Hi   = c(0.29, -0.16, 0.69, 0.13)
+)
+lt(d) |>
+  lt_errorbar(Est ~ Lo + Hi, ref = 0, into = "Forest", hide = FALSE,
+    axis = "Effect (95% CI)")
+```

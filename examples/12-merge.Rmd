@@ -1,0 +1,19 @@
+---
+title: Merging columns
+---
+
+`lt_merge()` folds several columns into one with a pattern. Wrap a part in `<<` and `>>` to drop it when a referenced value is missing.
+
+```{r}
+library(lt)
+d = data.frame(
+  endpoint = c("Primary", "Secondary", "Tertiary"),
+  est = c(0.61, 0.79, 0.45),
+  lo = c(0.40, 0.57, NA),
+  hi = c(0.82, 1.01, NA)
+)
+lt(d) |>
+  lt_format(~ est + lo + hi, decimals = 2) |>
+  lt_merge(~ est + lo + hi, pattern = "{1}<< ({2}, {3})>>") |>
+  lt_label(est = "Estimate (95% CI)")
+```

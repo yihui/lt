@@ -1,0 +1,11 @@
+---
+title: Downloading a CSV
+---
+
+`download` adds a button that saves the current view (filtered, sorted, across all pages) as a CSV file. Try filtering first.
+
+```{r}
+library(lt)
+d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
+lt(d) |> lt_interactive(download = "cars.csv", pager = 5)
+```
