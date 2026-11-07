@@ -6,7 +6,7 @@ title: Exporting a table
 
 ```{r}
 library(lt)
-tbl = lt(head(mtcars[, 1:5], 2)) |> lt_header("Cars")
+tbl = lt(head(mtcars[, 1:5])) |> lt_header("Cars")
 can_export = lt:::can_bake()
 ```
 
@@ -34,5 +34,6 @@ lt_export(tbl, "cars.pdf")
 A static `<table>`, with no JavaScript needed to view it, is one more option:
 
 ```{r, eval = can_export, attr.output = ".html"}
-lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
+lt(head(mtcars[, 1:5], 2)) |> lt_header("Cars") |>
+  lt_export(NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 ```
