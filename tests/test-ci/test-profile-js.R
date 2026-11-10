@@ -2,7 +2,7 @@
 # summary stats as the tooltip.
 
 prof = function(x, i) strsplit(lti_eval(
-  x, sprintf('[...t.querySelectorAll(".lti-prof")].map(p => p.title + "#" + p.querySelectorAll("rect:not(.s)").length)[%d]', i)
+  x, sprintf('[...t.querySelectorAll(".lti-prof")].map(p => p.title + "#" + p.querySelectorAll("rect:not(.s), line").length)[%d]', i)
 ), '#', fixed = TRUE)[[1]]
 
 assert('profile draws a histogram for numbers and top-value bars for text', {
@@ -48,4 +48,9 @@ assert('profile bars highlight the rows kept by the filters', {
 assert('categorical profile counts NA as a value', {
   x = lt(data.frame(s = c('a', 'a', 'b', NA, 'a'))) |> lt_interactive(profile = TRUE, filter = FALSE)
   (prof(x, 0)[1] %==% 'a (3), b (1); 1 NA')
+})
+
+assert('empty histogram bins are drawn as dashed baseline segments', {
+  x = lt(data.frame(n = c(1, 1, 2, 9))) |> lt_interactive(profile = TRUE, filter = FALSE)
+  (lti_eval(x, 't.querySelectorAll(".lti-prof rect:not(.s)").length + "," + t.querySelectorAll(".lti-prof line").length') %==% '2,1')
 })
