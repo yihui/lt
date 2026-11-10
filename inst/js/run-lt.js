@@ -8,7 +8,7 @@ const root = {}, args = process.argv.slice(2);
 const fmt = (args.find(a => a.startsWith('--export=')) || '').slice(9);
 for (const f of args.filter(a => !a.startsWith('--'))) {
   const src = fs.readFileSync(f, 'utf8');
-  vm.runInNewContext(src.replace('(window)', '(root)'), { root });
+  vm.runInNewContext(src, { window: root });
 }
 const raw = fs.readFileSync(0, 'utf8');
 const spec = eval('(' + raw + ')');
