@@ -146,7 +146,14 @@ data_key = function(d) {
 
 # Interactivity scripts a table needs (server mode adds its transport first)
 int_js = function(x) if (!is.null(x$interactive))
-  c('lt-query.js', if (!is.null(x$interactive$data_url)) 'lt-server.js', 'lt-interactive.js')
+  c('lt-query.js', if (!is.null(x$interactive$data_url)) 'lt-server.js',
+    if (has_download(x)) 'lt-export.js', 'lt-interactive.js')
+
+# Formats of lt-export.js (CSV, RTF), by file extension
+export_formats = c('csv', 'rtf')
+
+# Does the table have a download button (which needs lt-export.js)?
+has_download = function(x) !is.null(x$interactive$download)
 
 # Per-table block: queue the spec with a reference to the current script;
 # runtime drains the queue on load. With `share`, data repeated across tables
@@ -278,6 +285,7 @@ view_html = function(x, ...) sub(
 .css_flag = 'lt.css_added'
 .int_flag = 'lt.interactive_added'
 .plot_flag = 'lt.plot_added'
+.exp_flag = 'lt.export_added'
 
 # TRUE the first time `flag` is seen in this knit (recorded, so later calls
 # return FALSE): emits each shared asset bundle once per document.
@@ -302,6 +310,7 @@ knit_print.lt_tbl = function(x, ...) {
   # around the table below.
   int_first  = !is.null(x$interactive) && knit_once(.int_flag)
   plot_first = has_plot(x) && knit_once(.plot_flag)
+  exp_first  = has_download(x) && knit_once(.exp_flag)
   # Dedup user CSS (lt_css()) across the document: a stylesheet shared by many
   # tables should be emitted once. Identical <link> hrefs dedup in the
   # browser, inlined <style> blocks (absolute paths) don't, so filter here.
@@ -313,8 +322,14 @@ knit_print.lt_tbl = function(x, ...) {
   # Late extension goes where format() would put it: interactivity script
   # after core; graphics module (renderer must exist before core builds)
   # entirely before the table.
+  # (the export module goes before the interactivity script, or, if that is
+  # already loaded, before the table)
   if (int_first && !first)
-    html = wrap_assets(html, css_block('lt-interactive.css'), js_block(c('lt-query.js', 'lt-interactive.js')))
+    html = wrap_assets(html, css_block('lt-interactive.css'), js_block(c(
+      'lt-query.js', if (exp_first) 'lt-export.js', 'lt-interactive.js'
+    )))
+  else if (exp_first && !first)
+    html = wrap_assets(html, js_block('lt-export.js'))
   if (plot_first && !first)
     html = wrap_assets(html, c(css_block('lt-plot.css'), js_block('lt-plot.js')))
   structure(xfun::raw_string(html), class = c('knit_asis', 'html'))
@@ -423,21 +438,49 @@ lt_static_browser = function(x, css = TRUE) {
 }
 
 lt_static_node = function(x, css = TRUE) {
+  c(
+    css_block(c(if (css) 'lt.css', if (css && has_plot(x)) 'lt-plot.css')),
+    user_css_block(x$css), rules_block(x$rules), node_lt(x)
+  )
+}
+
+# Run lt.js in Node.js on the spec (plus `scripts` from the runtime and runner
+# `args`, e.g. `--export=rtf`), returning the lines it prints.
+node_lt = function(x, scripts = NULL, args = NULL) {
   runner = pkg_file('js', 'run-lt.js')
-  plot = has_plot(x)
   # lt-plot.js before lt.js: its renderer must be registered when core builds.
-  js = pkg_file('www', c(if (plot) 'lt-plot.js', 'lt.js'))
+  js = pkg_file('www', c(if (has_plot(x)) 'lt-plot.js', 'lt.js', scripts))
   spec = x; spec$css = spec$rules = NULL
   if (!length(spec$ops)) spec$ops = NULL
   spec = with_missing(with_col_order(spec))
   json = xfun::tojson(spec)
-  out = system2('node', shQuote(c(runner, js)), input = json, stdout = TRUE)
+  out = system2('node', shQuote(c(runner, js, args)), input = json, stdout = TRUE)
   if (!is.null(attr(out, 'status'))) stop('Node.js failed to render the lt table.')
   Encoding(out) = 'UTF-8'
-  c(
-    css_block(c(if (css) 'lt.css', if (css && plot) 'lt-plot.css')),
-    user_css_block(x$css), rules_block(x$rules), out
+  out
+}
+
+# The table's text in a format of lt-export.js (`fmt`: csv, rtf): built in
+# Node.js, else in headless Chromium.
+lt_text = function(x, fmt, browser = NULL, node = has_node()) {
+  if (node) return(node_lt(x, 'lt-export.js', paste0('--export=', fmt)))
+  if (!has_browser()) stop(
+    'Exporting to .', fmt, ' requires Node.js or a Chromium-based browser.'
   )
+  # Build the table in the page, then stamp the text of its spec on <body>,
+  # URL-encoded to survive the DOM dump (like lt_measure()).
+  inject = sprintf(paste0(
+    '<script>%s</script><script>addEventListener("load",function(){',
+    'document.body.dataset.ltx=encodeURIComponent(LT.plugins.export.text("%s",',
+    'document.querySelector(".lt-table")._ltSpec))})</script></body>'
+  ), paste(read_asset('lt-export.js'), collapse = '\n'), fmt)
+  html = sub('</body>', inject, format(x, fragment = FALSE), fixed = TRUE)
+  dom = with_temp_html(html, function(f) xfun::browser_dom(f, browser = browser))
+  m = regmatches(dom, regexec('data-ltx="([^"]*)"', dom))[[1]]
+  if (length(m) != 2L) stop('Failed to build the table text in the browser.')
+  out = utils::URLdecode(m[2])
+  Encoding(out) = 'UTF-8'
+  strsplit(out, '\n', fixed = TRUE)[[1]]
 }
 
 # Write `html` to a temp file, run it through headless Chromium via `fun`,
@@ -497,9 +540,11 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' Export an lt table to a file
 #'
 #' Save a table to disk. The output format is chosen from the file extension
-#' of `output`: `.html` writes an HTML table, `.pdf` writes a vector PDF, and
-#' any other extension writes a PNG. PDF and PNG are produced by rendering the
-#' table in a headless Chromium browser (via [xfun::browser_print()]).
+#' of `output`: `.html` writes an HTML table, `.pdf` writes a vector PDF, `.csv`
+#' and `.rtf` write the table's text (all rows, with the title, column spanners,
+#' and notes in RTF; this needs Node.js or a Chromium-based browser), and any
+#' other extension writes a PNG. PDF and PNG are produced by rendering the table in a headless Chromium
+#' browser (via [xfun::browser_print()]).
 #'
 #' For `.html` output, `method` controls how the `<table>` is produced:
 #' `"raw"` writes the JavaScript-spec HTML, so the table is built in the
@@ -573,7 +618,11 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #'   lt_export(tbl, f3, width = 400)
 #' }
 #'
-#' unlink(c(f1, f2, f3))
+#' # The table's text as CSV or RTF.
+#' f4 = tempfile(fileext = '.rtf')
+#' if (lt:::has_node()) lt_export(tbl, f4)
+#'
+#' unlink(c(f1, f2, f3, f4))
 lt_export = function(
   x, output = 'lt.html', method = c('auto', 'node', 'browser', 'raw'),
   css = TRUE, fragment = FALSE, tidy = FALSE, crop = TRUE, width = NULL,
@@ -585,6 +634,11 @@ lt_export = function(
     html = lt_static(x, method, css, fragment, tidy)
     if (is.na(output)) return(html)
     xfun::write_utf8(html, output)
+    return(output)
+  }
+  # CSV/RTF: the table's text, built by lt-export.js
+  if ((fmt <- tolower(xfun::file_ext(output))) %in% export_formats) {
+    xfun::write_utf8(lt_text(x, fmt, browser, node = has_node() && method[1L] != 'browser'), output)
     return(output)
   }
   # PDF/PNG render from a temp directory (with_temp_html), where a relative

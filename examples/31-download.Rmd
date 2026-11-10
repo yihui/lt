@@ -1,8 +1,8 @@
 ---
-title: Downloading a CSV
+title: Downloading the view
 ---
 
-`download` adds a button that saves the current view (filtered, sorted, across all pages) as a CSV file. Try filtering first.
+`download` adds a button that saves the current view (filtered, sorted, across all pages) as a CSV or RTF file, picked from a menu. Try filtering first.
 
 ```{r}
 library(lt)

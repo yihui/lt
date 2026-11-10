@@ -116,16 +116,21 @@ instead, which saves header space (only columns with a popover filter,
 e.g., the range slider or checklist of \code{filter = "auto"}, get a profile
 then).}
 
-\item{download}{Whether to add a button that downloads the table as a CSV
-file. The file holds the current view (every row the filters and search
-keep, in sort order, across all pages) of the table's columns. \code{TRUE} adds
-the button with a default file name; a string sets the file name (a \code{.csv}
-extension is added if missing). For more control, pass a list with any of
-\code{file} (the file name) and \code{mode}: \code{"display"} (the default) exports the
-displayed cell text, while \code{"raw"} exports the underlying unformatted
-values (full precision, no thousands separators or percent signs), handier
-to re-import for analysis. Row detail (\code{detail}) is never included. \code{FALSE}
-(the default) adds no button.}
+\item{download}{Whether to add a button that downloads the table. The file
+holds the current view (every row the filters and search keep, in sort
+order, across all pages) of the table's columns, with the title, column
+spanners, and notes of formats that have room for them. The button opens a
+menu of the available formats (CSV and RTF); with a single format, it
+downloads directly. \code{TRUE} adds the button with a default file name; a
+string sets the file name (a format extension in it is replaced by the
+chosen format's). For more control, pass a list with any of \code{file} (the
+file name), \code{formats} (which formats to offer, e.g., \code{"rtf"}; all by
+default), and \code{mode}: \code{"display"} (the default) exports the displayed cell
+text, while \code{"raw"} exports the underlying unformatted values (full
+precision, no thousands separators or percent signs), handier to re-import
+for analysis. Row detail (\code{detail}) is never included. \code{FALSE} (the
+default) adds no button. To save a table to a file from R instead, use
+\code{\link[=lt_export]{lt_export()}}.}
 }
 \value{
 \code{x} with interactivity enabled.
@@ -181,9 +186,11 @@ lt(head(mtcars)) |> lt_interactive(
 # a distribution plot in each column header, or in the filter popover
 lt(iris) |> lt_interactive(profile = TRUE)
 lt(iris) |> lt_interactive(profile = 'filter')
-# a button to download the current view as a CSV file
+# a button to download the current view as a CSV or RTF file
 lt(head(mtcars)) |> lt_interactive(download = TRUE)
-lt(head(mtcars)) |> lt_interactive(download = 'cars.csv')
+lt(head(mtcars)) |> lt_interactive(download = 'cars')
+# offer only RTF, which downloads directly
+lt(head(mtcars)) |> lt_interactive(download = list(formats = 'rtf'))
 # export the raw (unformatted) values instead of the displayed text
 lt(head(mtcars)) |> lt_interactive(download = list(file = 'cars.csv', mode = 'raw'))
 }

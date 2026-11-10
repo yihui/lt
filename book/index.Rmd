@@ -22,10 +22,10 @@ source('_ex.R')  # defines ex(), which embeds examples from ../examples
 > ---Antoine de Saint-Exupéry, *Wind, Sand and Stars* (1939, trans. Lewis Galantière)
 :::
 
-Every report I have ever written ended up with a table in it. Not a glamorous
-one: a few rows, a few columns, a title, a footnote that says *"p-values are
-two-sided"*. And every time, getting that humble table to look right took more
-effort than the analysis it summarized.
+Many reports end up with tables in them. Not glamorous ones: a few rows, a few
+columns, a title, a footnote that says *"p-values are two-sided"*. Getting such
+humble tables to look right often takes more effort than the analysis they
+summarize.
 
 The **lt** package is my attempt to make tables boring again, in the good sense.
 You hand it a data frame, pipe it through a handful of small verbs, and get
@@ -57,54 +57,74 @@ breaking a sweat, and become an editable input in a Shiny app.
 
 ## Why another table package?
 
-Because the table packages I admire are big. [**gt**](https://gt.rstudio.com)
-has a beautiful grammar of tables, but it brings dozens of packages along.
-[**DT**](https://github.com/rstudio/DT) makes tables interactive, but it ships
-a whole JavaScript library with it. I wanted the vocabulary of the former and
-the interactivity of the latter in something I could install in a heartbeat and
-read in an afternoon.
+The origin story is a small moment of shock. A project required
+[**gt**](https://gt.rstudio.com), so I ran `install.packages("gt")` in a fresh R
+session on Linux, and watched R install one package after another, as if it were
+going to install half of CRAN. Some had to be compiled, and a few took ages
+(**V8** in particular). I wondered whether I had mistyped something, because surely a
+table package could not need *this* much. That was when I learned how deep
+**gt**'s recursive dependency tree goes.
 
-So **lt** makes a few deliberate trade-offs:
+**gt** has a beautiful grammar of tables, and **lt** owes it the inspiration.
+[**DT**](https://github.com/rstudio/DT) makes tables interactive, but ships a
+whole JavaScript library with it. I wanted the vocabulary of the former and the
+interactivity of the latter in something I could install in a heartbeat and read
+in an afternoon. So I asked a question I keep asking: how small can this be if I
+only care about HTML? The answer turned out to be *quite* small, with a few
+deliberate trade-offs:
 
--   **HTML only.** No LaTeX, no RTF. Everything that can be done in a browser
-    is done in a browser. (You can still export to PDF and PNG; see
-    @chp:export.)
+-   **HTML first.** In HTML I trust: it reflows, it styles with a line of CSS,
+    and it opens on any phone. Every other format starts from HTML. PDF, PNG,
+    and RTF can all be generated from a browser, which almost every machine
+    already has (see @chp:export). Once you commit to HTML, an enormous amount
+    of complexity simply evaporates.
 
 -   **One dependency.** **lt** imports **xfun**, and that is all. No sass, no V8,
     no htmltools.
 
 -   **A tiny runtime.** R does not render the `<table>`. It ships your data and
     a short list of instructions as JSON, and a small, plain JavaScript file
-    builds the table in the browser. A page full of tables loads that file once.
+    (about 10 KB minified, no framework, no build step) builds the table in the
+    browser. A page full of tables loads that file once.
 
 -   **Pay for what you use.** Inline plots and interactivity live in separate
     extensions that a page loads only when some table asks for them. A plain
     table never pays for sorting it doesn't have.
 
+I don't want to match **gt** or **DT** feature for feature. I want to cover the
+table structure most reports actually need, and to show that if you are willing
+to trust HTML, you can go a remarkably long way with remarkably little.
+
 ## How it works
 
-```{mermaid}
+```{pele}
 #| how-it-works, echo = FALSE,
 #| fig.cap = 'From a data frame to a table: R describes, the browser draws.'
 
 flowchart LR
-  A[data frame] --> B["lt() |> lt_*()"]
-  B --> C[("JSON spec: data + ops")]
-  C --> D["lt.js in the browser"]
-  D --> E[table]
+  A[data frame] -->|"lt() |> lt_*()"| B[("data + instructions<br>(JSON)")]
+  B -->|"lt.js in<br>browser"| C[table]
 ```
 
 Each `lt_*()` function records an instruction (*format this column*, *group
 those rows*, *add a footnote here*) on the table object without touching the
 data. When the table is printed, the data and instructions travel to the page as
 a compact JSON spec, and the runtime applies them. Because the spec is plain
-JSON, three nice things follow:
+JSON, nice things follow:
 
--   The same table can be built straight from JavaScript, with no R involved
-    (@chp:js).
--   Values you formatted remain available in their raw form: hover over a cell,
-    or press <kbd>Alt</kbd> and click the table.
--   Other tools can embed an **lt** table, by shipping the spec and calling
+-   **Any language can drive it.** All the table logic lives in the JavaScript
+    runtime, once, and knows nothing about R. The R package is a thin front end
+    that writes JSON; a Python or Julia package could be another, with no second
+    implementation of the table engine, just a different keyboard for the same
+    piano. You can also build a table straight from JavaScript (@chp:js).
+
+-   **The truth is always one hover away.** The browser holds the original data,
+    so formatting never throws values away. Hover over a cell to see its raw
+    value, or press <kbd>Alt</kbd> and click the table to reveal all of them. We
+    no longer have to argue about the right number of decimal places: readers
+    can always look underneath, which a static PDF or image can never offer.
+
+-   **Other tools can embed an lt table**, by shipping the spec and calling
     `LT.render()` (@chp:export).
 
 ## Installation

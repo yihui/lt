@@ -323,9 +323,10 @@ lt(iris) |> lt_interactive(profile = "filter", pager = 3, search = FALSE)
 ## Downloading the view {#sec:download}
 
 The reader has sorted, filtered, and searched their way to exactly the rows they
-need. The `download` option turns that view into a CSV file with one click. The
-file holds every row the filters and search keep, in sort order, across all
-pages, not just the page on screen:
+need. The `download` option turns that view into a file with one click. The
+button opens a menu of formats, CSV and RTF (a table for Word, with the title,
+column spanners, and notes). The file holds every row the filters and search
+keep, in sort order, across all pages, not just the page on screen:
 
 ```{r, child = ex('download')}
 ```
@@ -339,7 +340,13 @@ lt(mtcars) |> lt_interactive(download = list(file = "cars.csv", mode = "raw"))
 ```
 
 Row detail is never included in the download. Pass `download = TRUE` for a
-default file name, or a string to name the file yourself.
+default file name, or a string to name the file yourself (an extension in it is
+replaced by the chosen format's). To offer only some formats, name them: with a
+single format the button downloads directly, without a menu.
+
+```{r, eval = FALSE}
+lt(mtcars) |> lt_interactive(download = list(file = "cars", formats = "rtf"))
+```
 
 ## When rows have structure {#sec:structure}
 
@@ -449,7 +456,7 @@ it:
 -   **Some table features are missing.** Row groups, indentation, row-specific
     styles and footnotes, and external filter predicates do not work through
     the server. A JavaScript row detail sees only the current page.
--   **The CSV download fetches every row of the view.** It is complete, but a
+-   **The download fetches every row of the view.** It is complete, but a
     huge view takes a while to arrive.
 
 ::: {.callout-warning data-legend="For viewing, not publishing"}

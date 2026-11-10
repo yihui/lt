@@ -22,7 +22,7 @@ vanilla-JS file (see the size badge above).
 Tables can also hold inline plots (`lt_errorbar()`, `lt_sparkline()`,
 `lt_dotplot()`) and be made interactive — sorting, searching, per-column
 filtering, pagination, resizable columns, column hiding, expandable row detail,
-and CSV download — with `lt_interactive()`.
+and CSV/RTF download — with `lt_interactive()`.
 
 Both inline plots and interactivity live in separate extensions on top of the
 core runtime (`lt-plot.js` and `lt-interactive.js`), each loaded only for the
@@ -117,7 +117,7 @@ By default a plot draws into the first value column's cells; `lt_errorbar()` and
 
 - `lt_interactive()` — opt a table into client-side sorting, a search box,
   per-column filters (text, dropdown, range slider, or checklist), pagination,
-  resizable columns, column hiding, expandable row detail (drill-down), and CSV
+  resizable columns, column hiding, expandable row detail (drill-down), and CSV/RTF
   download of the current view. Features are handled by a small JavaScript
   extension loaded only for interactive tables.
 

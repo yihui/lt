@@ -70,9 +70,11 @@ The \code{output} path, or (when \code{output} is \code{NA}) the HTML as a strin
 }
 \description{
 Save a table to disk. The output format is chosen from the file extension
-of \code{output}: \code{.html} writes an HTML table, \code{.pdf} writes a vector PDF, and
-any other extension writes a PNG. PDF and PNG are produced by rendering the
-table in a headless Chromium browser (via \code{\link[xfun:browser_print]{xfun::browser_print()}}).
+of \code{output}: \code{.html} writes an HTML table, \code{.pdf} writes a vector PDF, \code{.csv}
+and \code{.rtf} write the table's text (all rows, with the title, column spanners,
+and notes in RTF; this needs Node.js or a Chromium-based browser), and any
+other extension writes a PNG. PDF and PNG are produced by rendering the table in a headless Chromium
+browser (via \code{\link[xfun:browser_print]{xfun::browser_print()}}).
 }
 \details{
 For \code{.html} output, \code{method} controls how the \verb{<table>} is produced:
@@ -113,5 +115,9 @@ if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f3, width = 400)
 }
 
-unlink(c(f1, f2, f3))
+# The table's text as CSV or RTF.
+f4 = tempfile(fileext = '.rtf')
+if (lt:::has_node()) lt_export(tbl, f4)
+
+unlink(c(f1, f2, f3, f4))
 }

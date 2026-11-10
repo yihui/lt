@@ -12,8 +12,8 @@ is about getting a table out, and about the plain data underneath it.
 
 ## Saving a file {#sec:export}
 
-`lt_export()` writes a table to `.html`, `.pdf`, or `.png`, chosen by the file
-extension.
+`lt_export()` writes a table to `.html`, `.pdf`, `.png`, `.csv`, or `.rtf`, chosen
+by the file extension.
 
 ```{r, child = ex('export')}
 ```
@@ -27,6 +27,11 @@ table; the last chunk prints the static HTML.
 - **`.pdf`** and **`.png`** are printed by a headless browser. PNG output is
   cropped to the table (this needs the **magick** package); `width = "min-content"`
   shrinks the canvas to fit.
+- **`.csv`** and **`.rtf`** write the table's text (all rows, in order), without
+  printing: Node.js (or else a Chromium-based browser) runs the same code as the
+  download button of an interactive table. RTF opens in Word and keeps the title, column spanners (as merged
+  cells), alignment, indentation, and notes, with a fixed look: a bold header
+  between rules.
 - Passing `NA` as the output returns the HTML as a string instead of writing a
   file. With `fragment = TRUE` you get just the `<table>`, and `css = FALSE`
   leaves the stylesheet out, handy when you embed it somewhere that already

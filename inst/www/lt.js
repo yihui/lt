@@ -747,6 +747,9 @@
     // Also formatted cell text (all columns, hidden too), so plugins can
     // show displayed values (e.g. row detail).
     spec._display = display;
+    // Resolved labels, alignment, spanners, titles, and notes, for exporters
+    // (lt-export.js).
+    spec._tbl = { labels: colLabels, align, spanners, header: hdr, notes };
     // Expose resolved row structure for interactive plugin: separator
     // groups ({label, rows, raw}), per-row indent levels (array or null),
     // rowspan group columns (outermost first, or null). Plugin

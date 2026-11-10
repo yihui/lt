@@ -141,10 +141,10 @@
     height: 1.2em;
   }
 
-  /* column-visibility menu: eye button + checklist popup */
-  .lti-cols {
+  /* popup menus: column-visibility checklist (eye button) and download formats */
+  .lti-cols, .lti-dl {
     position: relative;
-    & > button {
+    & > button:not(.lti-download) {
       background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="1.5"><path d="M1 8s2.5-4.5 7-4.5 7 4.5 7 4.5-2.5 4.5-7 4.5-7-4.5-7-4.5z"/><circle cx="8" cy="8" r="2"/></svg>');
     }
     .lti-menu {
@@ -167,11 +167,12 @@
       }
       .lti-sub { padding-left: 1em; }
     }
-    /* a labeled chip sits at the bar's end: open leftward, inside the table */
-    .lti-chip + .lti-menu { left: auto; right: 0; }
+    /* a labeled chip sits at the bar's end, as does the download button: open
+       leftward, inside the table */
+    .lti-chip + .lti-menu, &.lti-dl .lti-menu { left: auto; right: 0; }
   }
 
-  /* CSV download icon button */
+  /* download icon button */
   .lti-download {
     background: center / contain no-repeat url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="gray" stroke-width="1.5"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5"/><path d="M2 11v3h12v-3"/></svg>');
   }

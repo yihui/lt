@@ -11,7 +11,10 @@ under it is what the browser built from it.
 # link the runtime (lt-plot loads before the core script)
 cat(
   lt:::css_block(c('lt.css', 'lt-plot.css', 'lt-interactive.css'), inline = FALSE),
-  lt:::js_block(c('lt-plot.js', 'lt.js', 'lt-interactive.js'), inline = FALSE),
+  lt:::js_block(
+    c('lt-plot.js', 'lt.js', 'lt-query.js', 'lt-export.js', 'lt-interactive.js'),
+    inline = FALSE
+  ),
   sep = '\n'
 )
 ```
@@ -33,13 +36,30 @@ A page needs a stylesheet and a script for the core:
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js"></script>
 ```
 
-Two optional modules sit beside it, and a page pays only for what it uses:
+Everything else is optional, and a page pays only for what it uses. The files
+below are listed in the order to load them, with the core in its place. Each
+name stands for a file under `@xiee/utils`: `lt-plot.js` is
+`js/lt-plot.min.js` and `lt-plot.css` is `css/lt-plot.min.css`, in the same URL
+pattern as the core above. Load the stylesheets in the same order too (the ones
+that exist).
 
-- Interactivity (sorting, search, filters, paging, resizing, and so on) comes
-  from `lt-interactive`. Load it *after* the core.
-- Inline graphics (error bars, sparklines, dot plots) come from `lt-plot`. Load
-  it *before* the core, so its cell renderers are registered by the time the
-  runtime builds a table.
+:::: {.table #tab:js-files}
+::: caption
+[ ](#@tab:js-files) Files of the **lt** library, in the order to load them.
+:::
+
+| File | What it does |
+|--------------------|----------------------------------------------|
+| `lt-plot.js`, `lt-plot.css` | Optional. Inline graphics (error bars, sparklines, dot plots). Load *before* the core, so its cell renderers are registered by the time a table is built. |
+| `lt.js`, `lt.css` | Required. The core: builds a table from a spec. Everything below goes *after* it. |
+| `lt-query.js` | Needed by `lt-interactive.js`. Reads plain-language search and filter queries. It has no styles, and also runs on its own in Node.js. |
+| `lt-server.js` | Optional. Server mode: fetch rows from a server (@sec:server). Before `lt-interactive.js`. |
+| `lt-export.js` | Optional. The CSV and RTF formats, needed by the `download` button. Before `lt-interactive.js`; it also works without a DOM (see below). |
+| `lt-interactive.js`, `lt-interactive.css` | Optional. Interactivity: sorting, search, filters, paging, resizing, and so on. |
+| `lt-input.js`, `lt-input.css` | Optional. Editable cells (`input`), the JavaScript side of `lt_input()`. Not for use with `lt-interactive`, which reorders rows. |
+::::
+
+For example, a page with plots and interactive features can load this:
 
 ``` html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt-plot.min.css">
@@ -47,13 +67,20 @@ Two optional modules sit beside it, and a page pays only for what it uses:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt-interactive.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-plot.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-query.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-export.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-interactive.min.js"></script>
 ```
 
 The files are published on npm as `@xiee/utils`. The URLs above track the latest
 release; to pin a version, put it after the package name, such as
-`@xiee/utils@1.14.154/js/lt.min.js` (use the version you tested with). Server mode
-adds one more script, `lt-server.js`; see @sec:server.
+`@xiee/utils@1.14.154/js/lt.min.js` (use the version you tested with). Shiny
+apps have one more script, `lt-binding.js`, which ships with the R package and
+is loaded for you by `lt_output()`.
+
+`lt-export.js` and `lt-query.js` need no DOM: `LT.plugins.export.text(format,
+spec)` turns a built spec into CSV or RTF text, which is how `lt_export()` writes
+those files in Node.js, and `LT.plugins.query` is the query parser.
 
 Then call `LT.build(spec)` from an inline `<script>` wherever you want a table.
 The runtime renders it right after the calling script element. To build a table
@@ -967,7 +994,7 @@ them; the rest of the section explains each.
 | `hide` | The column-visibility menu. |
 | `detail` | Expandable row detail. |
 | `profile` | A mini chart of each column. |
-| `download` | A CSV download button. |
+| `download` | A download button (CSV, RTF). |
 ::::
 
 ### Sorting {#sec:js-sort}
@@ -1127,9 +1154,11 @@ LT.build({
 ### Downloading the view {#sec:js-download}
 
 `download` adds a button that saves the current view (every row the filters and
-search keep, in sort order, across all pages) as a CSV file of the displayed
-text. `true` picks a default file name; a string sets it. Filter or sort first,
-and the file follows:
+search keep, in sort order, across all pages) as a file of the displayed text,
+in a format picked from a menu (CSV or RTF). `true` picks a default file name; a
+string sets it. `{ file, mode: "raw", formats: ["rtf"] }` names the file, exports
+raw values, and limits the formats (one format downloads directly). Filter or
+sort first, and the file follows:
 
 ```{js}
 LT.build({

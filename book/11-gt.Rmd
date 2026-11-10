@@ -176,7 +176,7 @@ have used **DT** or **gtExtras** for (@tab:gt-extra).
 | Per-column filters picked from the data (sliders, checklists) | `lt_interactive(filter = "auto")` | @chp:interactive |
 | A mini histogram of each column | `lt_interactive(profile = TRUE)` | @chp:interactive |
 | Expandable row detail | `lt_interactive(detail = )` | @chp:interactive |
-| Download the filtered view as CSV | `lt_interactive(download = )` | @chp:interactive |
+| Download the filtered view as CSV or RTF | `lt_interactive(download = )` | @chp:interactive |
 | A one-call data explorer | `lt_viewer(x)` | @sec:viewer |
 | Millions of rows (rows stay in R, pages are fetched) | `lt_serve()` (cf. **DT**'s server-side processing) | @chp:interactive |
 | An editable table as a Shiny input | `lt_input()` / `lt_update()` (cf. **DT**'s `editable`) | @chp:shiny |
@@ -244,7 +244,7 @@ not need `lt_format()` at all; see @sec:auto.)
 **gt** turns on client-side interactivity with `opt_interactive()`, and hides
 columns with the unrelated `cols_hide()`. **lt** folds all of it into
 `lt_interactive()`: sorting, searching, filtering, paging, resizing, row detail,
-profiles, a CSV download, and a reader-togglable column menu. Whatever you do not
+profiles, a CSV or RTF download, and a reader-togglable column menu. Whatever you do not
 ask for is not loaded, so non-interactive tables cost nothing extra
 (@chp:interactive).
 
