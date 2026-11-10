@@ -101,7 +101,7 @@ d = data.frame(
   Try = c("click a header", "type a query", "pick a value", "change page size",
           "drag a header edge", "hide columns", "expand a row",
           "summarize columns", "save CSV or RTF"),
-  Popularity = c(92, 85, 71, 64, 38, 22, 17, 9, 6)
+  Popularity = c(95, 64, 61, 36, 20, 16, 12, 8, 5)
 )
 
 tbl_interactive = lt(d) |>
