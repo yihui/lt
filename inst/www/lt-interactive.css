@@ -47,7 +47,13 @@
     height: 1.5em;
     min-width: 4em;
     fill: currentColor;
-    rect { opacity: 0.25; }
+    overflow: visible;
+    rect, line { opacity: 0.25; }
+    line {
+      stroke: currentColor;
+      stroke-dasharray: 2 1;
+      vector-effect: non-scaling-stroke;
+    }
     rect.s { fill: var(--lti-accent); opacity: 1; }
   }
 

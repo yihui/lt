@@ -563,7 +563,7 @@
         queryExamples = (vals, cols, labelOf) => {
           const filled = cols.filter(c => hasData(vals[c])),
                 ncs = filled.filter(c => numCol(vals[c])), tcs = filled.filter(c => !numCol(vals[c])),
-                one = cs => { const c = rnd(cs); return colExample(vals[c], `${qv(labelOf(c))} `); },
+                one = cs => { const c = rnd(cs); return colExample(vals[c], `"${labelOf(c)}" `); },
                 gens = [ncs.length && (() => one(ncs)), tcs.length && (() => one(tcs)),
                         ncs.length && tcs.length && (() => `${one(ncs)}${rnd([", ", " and "])}${one(tcs)}`)].filter(Boolean);
           return gens.length ? sample(i => gens[i % gens.length]()) : [];
@@ -809,8 +809,9 @@
           ] : S.kind === "date" ? [`min ${S.lo}`, `max ${S.hi}`, S.na && `${Math.round(100 * S.na / S.len)}% NA`]
             : [`min ${sig(S.lo, 6)}`, `max ${sig(S.hi, 6)}`, `mean ${sig(S.mean, 4)}`,
               S.na && `${Math.round(100 * S.na / S.len)}% NA`],
-          rects = (c, cls) => c.map((k, i) =>
-            `<rect${cls} x="${i}" y="${1 - k / max}" width=".9" height="${k / max}"/>`).join(""),
+          // empty bars of the light layer: a dashed baseline segment, so no gaps
+          rects = (c, cls) => c.map((k, i) => k || cls ? `<rect${cls} x="${i}" y="${1 - k / max}" width=".9" height="${k / max}"/>` :
+            `<line x1="${i}" x2="${i + .9}" y1="1" y2="1"/>`).join(""),
           paint = (view, counts) => {
             const c = counts?.[name] || (view?.length < S.len && S.count?.(view));
             p.innerHTML = `<svg viewBox="0 0 ${full.length || 1} 1" preserveAspectRatio="none">${rects(full, "")}${c ? rects(c, ' class="s"') : ""}</svg>`;
