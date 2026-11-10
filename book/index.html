@@ -3,24 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.9">
+<meta name="generator" content="litedown 1.0.13">
 <title>lt: Lightweight Tables for R</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/book.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/book-litedown.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/key-buttons.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/callout.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/book.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/book-litedown.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/key-buttons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/callout.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/prism-xcode.min.css">
 </head>
 <body>
 <header class="frontmatter">
 <div class="title"><h1>lt: Lightweight Tables for R</h1></div>
 <div class="author"><h2>Yihui Xie</h2></div>
-<div class="date"><h3>2026-11-07</h3></div>
+<div class="date"><h3>2026-11-10</h3></div>
 </header>
 <main>
 <div class="">
@@ -287,10 +287,10 @@ but when there is nothing more to take away.</p>
 <p>—Antoine de Saint-Exupéry, <em>Wind, Sand and Stars</em> (1939, trans. Lewis Galantière)</p>
 </blockquote>
 </div>
-<p>Every report I have ever written ended up with a table in it. Not a glamorous
-one: a few rows, a few columns, a title, a footnote that says <em>“p-values are
-two-sided”</em>. And every time, getting that humble table to look right took more
-effort than the analysis it summarized.</p>
+<p>Many reports end up with tables in them. Not glamorous ones: a few rows, a few
+columns, a title, a footnote that says <em>“p-values are two-sided”</em>. Getting such
+humble tables to look right often takes more effort than the analysis they
+summarize.</p>
 <p>The <strong>lt</strong> package is my attempt to make tables boring again, in the good sense.
 You hand it a data frame, pipe it through a handful of small verbs, and get
 back a table that already looks like it belongs in a publication:</p>
@@ -310,7 +310,7 @@ lt(d) |&gt;
   lt_sub(~ P_Value, missing = &quot;n/a&quot;) |&gt;
   lt_footnote(&quot;Two-sided p-value from log-rank test.&quot;, &quot;column&quot;, ~ P_Value)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/lt.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["dc25b969"]=
 {
   "Group": ["Treatment", "Treatment", "Control", "Control"],
@@ -358,25 +358,34 @@ lt(d) |&gt;
   "data_key": "dc25b969"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/lt.min.js" defer></script>
 <p>That is the whole idea. The rest of this book is about the details, and there
 are more of them than the pitch suggests: <strong>lt</strong> can also draw forest plots
 and sparklines inside cells, turn a table into an interactive explorer with
 filters and plain-language search, serve a million rows from R without
 breaking a sweat, and become an editable input in a Shiny app.</p>
 <h2 id="sec:why-another-table-package">Why another table package?</h2>
-<p>Because the table packages I admire are big. <a href="https://gt.rstudio.com"><strong>gt</strong></a>
-has a beautiful grammar of tables, but it brings dozens of packages along.
-<a href="https://github.com/rstudio/DT"><strong>DT</strong></a> makes tables interactive, but it ships
-a whole JavaScript library with it. I wanted the vocabulary of the former and
-the interactivity of the latter in something I could install in a heartbeat and
-read in an afternoon.</p>
-<p>So <strong>lt</strong> makes a few deliberate trade-offs:</p>
+<p>The origin story is a small moment of shock. A project required
+<a href="https://gt.rstudio.com"><strong>gt</strong></a>, so I ran <code>install.packages(&quot;gt&quot;)</code> in a fresh R
+session on Linux, and watched R install one package after another, as if it were
+going to install half of CRAN. Some had to be compiled, and a few took ages
+(<strong>V8</strong> in particular). I wondered whether I had mistyped something, because surely a
+table package could not need <em>this</em> much. That was when I learned how deep
+<strong>gt</strong>’s recursive dependency tree goes.</p>
+<p><strong>gt</strong> has a beautiful grammar of tables, and <strong>lt</strong> owes it the inspiration.
+<a href="https://github.com/rstudio/DT"><strong>DT</strong></a> makes tables interactive, but ships a
+whole JavaScript library with it. I wanted the vocabulary of the former and the
+interactivity of the latter in something I could install in a heartbeat and read
+in an afternoon. So I asked a question I keep asking: how small can this be if I
+only care about HTML? The answer turned out to be <em>quite</em> small, with a few
+deliberate trade-offs:</p>
 <ul>
 <li>
-<p><strong>HTML only.</strong> No LaTeX, no RTF. Everything that can be done in a browser
-is done in a browser. (You can still export to PDF and PNG; see
-<a class="cross-ref-chp" href="#chp:export">9</a>.)</p>
+<p><strong>HTML first.</strong> In HTML I trust: it reflows, it styles with a line of CSS,
+and it opens on any phone. Every other format starts from HTML. PDF, PNG,
+and RTF can all be generated from a browser, which almost every machine
+already has (see <a class="cross-ref-chp" href="#chp:export">9</a>). Once you commit to HTML, an enormous amount
+of complexity simply evaporates.</p>
 </li>
 <li>
 <p><strong>One dependency.</strong> <strong>lt</strong> imports <strong>xfun</strong>, and that is all. No sass, no V8,
@@ -385,7 +394,8 @@ no htmltools.</p>
 <li>
 <p><strong>A tiny runtime.</strong> R does not render the <code>&lt;table&gt;</code>. It ships your data and
 a short list of instructions as JSON, and a small, plain JavaScript file
-builds the table in the browser. A page full of tables loads that file once.</p>
+(about 10 KB minified, no framework, no build step) builds the table in the
+browser. A page full of tables loads that file once.</p>
 </li>
 <li>
 <p><strong>Pay for what you use.</strong> Inline plots and interactivity live in separate
@@ -393,13 +403,14 @@ extensions that a page loads only when some table asks for them. A plain
 table never pays for sorting it doesn’t have.</p>
 </li>
 </ul>
+<p>I don’t want to match <strong>gt</strong> or <strong>DT</strong> feature for feature. I want to cover the
+table structure most reports actually need, and to show that if you are willing
+to trust HTML, you can go a remarkably long way with remarkably little.</p>
 <h2 id="sec:how-it-works">How it works</h2>
 <div class="figure" id="fig:how-it-works">
-<pre class="mermaid">flowchart LR
-  A[data frame] --&gt; B[&quot;lt() |&gt; lt_*()&quot;]
-  B --&gt; C[(&quot;JSON spec: data + ops&quot;)]
-  C --&gt; D[&quot;lt.js in the browser&quot;]
-  D --&gt; E[table]
+<pre class="pele">flowchart LR
+  A[data frame] --&gt;|&quot;lt() |&gt; lt_*()&quot;| B[(&quot;data + instructions&lt;br&gt;(JSON)&quot;)]
+  B --&gt;|&quot;lt.js in&lt;br&gt;browser&quot;| C[table]
 </pre>
 <div class="caption">
 <p><span class="ref-number-fig">1</span>
@@ -410,14 +421,26 @@ From a data frame to a table: R describes, the browser draws.</p>
 those rows</em>, <em>add a footnote here</em>) on the table object without touching the
 data. When the table is printed, the data and instructions travel to the page as
 a compact JSON spec, and the runtime applies them. Because the spec is plain
-JSON, three nice things follow:</p>
+JSON, nice things follow:</p>
 <ul>
-<li>The same table can be built straight from JavaScript, with no R involved
-(<a class="cross-ref-chp" href="#chp:js">10</a>).</li>
-<li>Values you formatted remain available in their raw form: hover over a cell,
-or press <kbd>Alt</kbd> and click the table.</li>
-<li>Other tools can embed an <strong>lt</strong> table, by shipping the spec and calling
-<code>LT.render()</code> (<a class="cross-ref-chp" href="#chp:export">9</a>).</li>
+<li>
+<p><strong>Any language can drive it.</strong> All the table logic lives in the JavaScript
+runtime, once, and knows nothing about R. The R package is a thin front end
+that writes JSON; a Python or Julia package could be another, with no second
+implementation of the table engine, just a different keyboard for the same
+piano. You can also build a table straight from JavaScript (<a class="cross-ref-chp" href="#chp:js">10</a>).</p>
+</li>
+<li>
+<p><strong>The truth is always one hover away.</strong> The browser holds the original data,
+so formatting never throws values away. Hover over a cell to see its raw
+value, or press <kbd>Alt</kbd> and click the table to reveal all of them. We
+no longer have to argue about the right number of decimal places: readers
+can always look underneath, which a static PDF or image can never offer.</p>
+</li>
+<li>
+<p><strong>Other tools can embed an lt table</strong>, by shipping the spec and calling
+<code>LT.render()</code> (<a class="cross-ref-chp" href="#chp:export">9</a>).</p>
+</li>
 </ul>
 <h2 id="sec:installation">Installation</h2>
 <p>Install the released version from CRAN, or the development version from
@@ -656,7 +679,7 @@ tbl_cheat = lt(d, auto_format = FALSE) |&gt;
   lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
 tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/lt-plot.min.css">
 <style>.lt-table {
   .highlight { font-weight: bold; color: #c60; }
 }</style>
@@ -821,7 +844,7 @@ tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
   "data_key": "a94ed67b"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/lt-plot.min.js" defer></script>
 <div class="ex-link">
 <p><a href="../examples/01-lt.html">Open as a page</a></p>
 </div>
@@ -2621,7 +2644,7 @@ leave it off and the table costs nothing extra.</p>
 <pre><code class="language-r">library(lt)
 lt(mtcars[, 1:4]) |&gt; lt_interactive()
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/css/lt-interactive.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["87fa402a"]=
 {
   "mpg": [21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 24.4, 22.8, 19.2, 17.8, 16.4, 17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 30.4, 33.9, 21.5, 15.5, 15.2, 13.3, 19.2, 27.3, 26, 30.4, 15.8, 19.7, 15, 21.4],
@@ -2646,8 +2669,8 @@ lt(mtcars[, 1:4]) |&gt; lt_interactive()
   "data_key": "87fa402a"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/lt-query.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/lt-interactive.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/lt-query.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/lt-interactive.min.js" defer></script>
 <p>Click a header to sort, use the box above the table to search, and page through
 the rows with the controls below. Each feature is an option of <code>lt_interactive()</code>,
 and each option can be switched off with <code>FALSE</code>, so you only ever pay for the
@@ -3201,9 +3224,10 @@ typed filter, so pair this option with <code>filter = &quot;auto&quot;</code>:</
 })</script>
 <h2 id="sec:download"><span class="section-number">7.7</span> Downloading the view</h2>
 <p>The reader has sorted, filtered, and searched their way to exactly the rows they
-need. The <code>download</code> option turns that view into a CSV file with one click. The
-file holds every row the filters and search keep, in sort order, across all
-pages, not just the page on screen:</p>
+need. The <code>download</code> option turns that view into a file with one click. The
+button opens a menu of formats, CSV and RTF (a table for Word, with the title,
+column spanners, and notes). The file holds every row the filters and search
+keep, in sort order, across all pages, not just the page on screen:</p>
 <pre><code class="language-r">d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;, &quot;gear&quot;)]
 lt(d) |&gt; lt_interactive(download = &quot;cars.csv&quot;, pager = 5)
 </code></pre>
@@ -3224,6 +3248,7 @@ lt(d) |&gt; lt_interactive(download = &quot;cars.csv&quot;, pager = 5)
   "data_key": "3d00d273"
 }
 })</script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/lt-export.min.js" defer></script>
 <div class="ex-link">
 <p><a href="../examples/31-download.html">Open as a page</a></p>
 </div>
@@ -3233,7 +3258,11 @@ re-importing into analysis code, ask for the raw values instead:</p>
 <pre><code class="language-r">lt(mtcars) |&gt; lt_interactive(download = list(file = &quot;cars.csv&quot;, mode = &quot;raw&quot;))
 </code></pre>
 <p>Row detail is never included in the download. Pass <code>download = TRUE</code> for a
-default file name, or a string to name the file yourself.</p>
+default file name, or a string to name the file yourself (an extension in it is
+replaced by the chosen format’s). To offer only some formats, name them: with a
+single format the button downloads directly, without a menu.</p>
+<pre><code class="language-r">lt(mtcars) |&gt; lt_interactive(download = list(file = &quot;cars&quot;, formats = &quot;rtf&quot;))
+</code></pre>
 <h2 id="sec:structure"><span class="section-number">7.8</span> When rows have structure</h2>
 <p>Tables with row groups or indentation carry a shape that sorting could easily
 break. <strong>lt</strong> keeps that shape. Sorting and filtering always happen <em>within</em> each
@@ -3417,7 +3446,7 @@ Plots drawn in cells scale to the current page.</li>
 <li><strong>Some table features are missing.</strong> Row groups, indentation, row-specific
 styles and footnotes, and external filter predicates do not work through
 the server. A JavaScript row detail sees only the current page.</li>
-<li><strong>The CSV download fetches every row of the view.</strong> It is complete, but a
+<li><strong>The download fetches every row of the view.</strong> It is complete, but a
 huge view takes a while to arrive.</li>
 </ul>
 <div class="callout-warning" data-legend="For viewing, not publishing">
@@ -3556,8 +3585,8 @@ database or a file than from R.</p>
 open PDFs, paste tables into slides, and read Markdown on GitHub. This chapter
 is about getting a table out, and about the plain data underneath it.</p>
 <h2 id="sec:export"><span class="section-number">9.1</span> Saving a file</h2>
-<p><code>lt_export()</code> writes a table to <code>.html</code>, <code>.pdf</code>, or <code>.png</code>, chosen by the file
-extension.</p>
+<p><code>lt_export()</code> writes a table to <code>.html</code>, <code>.pdf</code>, <code>.png</code>, <code>.csv</code>, or <code>.rtf</code>, chosen
+by the file extension.</p>
 <pre><code class="language-r">tbl = lt(head(mtcars[, 1:5])) |&gt; lt_header(&quot;Cars&quot;)
 can_export = lt:::can_bake()
 </code></pre>
@@ -3631,6 +3660,11 @@ scripts.</li>
 <li><strong><code>.pdf</code></strong> and <strong><code>.png</code></strong> are printed by a headless browser. PNG output is
 cropped to the table (this needs the <strong>magick</strong> package); <code>width = &quot;min-content&quot;</code>
 shrinks the canvas to fit.</li>
+<li><strong><code>.csv</code></strong> and <strong><code>.rtf</code></strong> write the table’s text (all rows, in order), without
+printing: Node.js (or else a Chromium-based browser) runs the same code as the
+download button of an interactive table. RTF opens in Word and keeps the title, column spanners (as merged
+cells), alignment, indentation, and notes, with a fixed look: a bold header
+between rules.</li>
 <li>Passing <code>NA</code> as the output returns the HTML as a string instead of writing a
 file. With <code>fragment = TRUE</code> you get just the <code>&lt;table&gt;</code>, and <code>css = FALSE</code>
 leaves the stylesheet out, handy when you embed it somewhere that already
@@ -3701,25 +3735,72 @@ under it is what the browser built from it.</p>
 <pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css&quot;&gt;
 &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js&quot;&gt;&lt;/script&gt;
 </code></pre>
-<p>Two optional modules sit beside it, and a page pays only for what it uses:</p>
-<ul>
-<li>Interactivity (sorting, search, filters, paging, resizing, and so on) comes
-from <code>lt-interactive</code>. Load it <em>after</em> the core.</li>
-<li>Inline graphics (error bars, sparklines, dot plots) come from <code>lt-plot</code>. Load
-it <em>before</em> the core, so its cell renderers are registered by the time the
-runtime builds a table.</li>
-</ul>
+<p>Everything else is optional, and a page pays only for what it uses. The files
+below are listed in the order to load them, with the core in its place. Each
+name stands for a file under <code>@xiee/utils</code>: <code>lt-plot.js</code> is
+<code>js/lt-plot.min.js</code> and <code>lt-plot.css</code> is <code>css/lt-plot.min.css</code>, in the same URL
+pattern as the core above. Load the stylesheets in the same order too (the ones
+that exist).</p>
+<div class="table" id="tab:js-files">
+<div class="caption">
+<p><span class="ref-number-tab">5</span> Files of the <strong>lt</strong> library, in the order to load them.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lt-plot.js</code>, <code>lt-plot.css</code></td>
+<td>Optional. Inline graphics (error bars, sparklines, dot plots). Load <em>before</em> the core, so its cell renderers are registered by the time a table is built.</td>
+</tr>
+<tr>
+<td><code>lt.js</code>, <code>lt.css</code></td>
+<td>Required. The core: builds a table from a spec. Everything below goes <em>after</em> it.</td>
+</tr>
+<tr>
+<td><code>lt-query.js</code></td>
+<td>Needed by <code>lt-interactive.js</code>. Reads plain-language search and filter queries. It has no styles, and also runs on its own in Node.js.</td>
+</tr>
+<tr>
+<td><code>lt-server.js</code></td>
+<td>Optional. Server mode: fetch rows from a server (<a class="cross-ref-sec" href="#sec:server">10.15</a>). Before <code>lt-interactive.js</code>.</td>
+</tr>
+<tr>
+<td><code>lt-export.js</code></td>
+<td>Optional. The CSV and RTF formats, needed by the <code>download</code> button. Before <code>lt-interactive.js</code>; it also works without a DOM (see below).</td>
+</tr>
+<tr>
+<td><code>lt-interactive.js</code>, <code>lt-interactive.css</code></td>
+<td>Optional. Interactivity: sorting, search, filters, paging, resizing, and so on.</td>
+</tr>
+<tr>
+<td><code>lt-input.js</code>, <code>lt-input.css</code></td>
+<td>Optional. Editable cells (<code>input</code>), the JavaScript side of <code>lt_input()</code>. Not for use with <code>lt-interactive</code>, which reorders rows.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>For example, a page with plots and interactive features can load this:</p>
 <pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt-plot.min.css&quot;&gt;
 &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css&quot;&gt;
 &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt-interactive.min.css&quot;&gt;
 &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-plot.min.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-query.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-export.min.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-interactive.min.js&quot;&gt;&lt;/script&gt;
 </code></pre>
 <p>The files are published on npm as <code>@xiee/utils</code>. The URLs above track the latest
 release; to pin a version, put it after the package name, such as
-<code>@xiee/utils@1.14.154/js/lt.min.js</code> (use the version you tested with). Server mode
-adds one more script, <code>lt-server.js</code>; see <a class="cross-ref-sec" href="#sec:server">10.15</a>.</p>
+<code>@xiee/utils@1.14.154/js/lt.min.js</code> (use the version you tested with). Shiny
+apps have one more script, <code>lt-binding.js</code>, which ships with the R package and
+is loaded for you by <code>lt_output()</code>.</p>
+<p><code>lt-export.js</code> and <code>lt-query.js</code> need no DOM: <code>LT.plugins.export.text(format, spec)</code> turns a built spec into CSV or RTF text, which is how <code>lt_export()</code> writes
+those files in Node.js, and <code>LT.plugins.query</code> is the query parser.</p>
 <p>Then call <code>LT.build(spec)</code> from an inline <code>&lt;script&gt;</code> wherever you want a table.
 The runtime renders it right after the calling script element. To build a table
 at any other time, such as when the reader expands a row, use
@@ -3734,7 +3815,7 @@ is needed.</p>
 <p>A spec is a plain object. Only <code>data</code> is required; everything else decorates it.</p>
 <div class="table" id="tab:js-spec">
 <div class="caption">
-<p><span class="ref-number-tab">5</span> The top-level keys of a spec.</p>
+<p><span class="ref-number-tab">6</span> The top-level keys of a spec.</p>
 </div>
 <table>
 <thead>
@@ -3792,7 +3873,7 @@ operation, and they run in the order given, so format a number <em>before</em> y
 merge it into a string.</p>
 <div class="table" id="tab:js-ops">
 <div class="caption">
-<p><span class="ref-number-tab">6</span> The operations, with the section that shows each.</p>
+<p><span class="ref-number-tab">7</span> The operations, with the section that shows each.</p>
 </div>
 <table>
 <thead>
@@ -4992,11 +5073,11 @@ text): pass a one-element array instead of a string. <code>&quot;&lt;b&gt;x&lt;/
 });</script>
 <h2 id="sec:js-interactive"><span class="section-number">10.12</span> Interactive tables</h2>
 <p>With <code>lt-interactive.js</code> on the page, a spec carrying an <code>interactive</code> object
-gets the requested controls. Every field is optional. <a class="cross-ref-tab" href="#tab:js-interactive">7</a> lists
+gets the requested controls. Every field is optional. <a class="cross-ref-tab" href="#tab:js-interactive">8</a> lists
 them; the rest of the section explains each.</p>
 <div class="table" id="tab:js-interactive">
 <div class="caption">
-<p><span class="ref-number-tab">7</span> Fields of <code>interactive</code>.</p>
+<p><span class="ref-number-tab">8</span> Fields of <code>interactive</code>.</p>
 </div>
 <table>
 <thead>
@@ -5040,7 +5121,7 @@ them; the rest of the section explains each.</p>
 </tr>
 <tr>
 <td><code>download</code></td>
-<td>A CSV download button.</td>
+<td>A download button (CSV, RTF).</td>
 </tr>
 </tbody>
 </table>
@@ -5208,9 +5289,11 @@ highlight the rows the filters keep. <code>&quot;header&quot;</code> puts it in 
 });</script>
 <h3 id="sec:js-download"><span class="section-number">10.12.8</span> Downloading the view</h3>
 <p><code>download</code> adds a button that saves the current view (every row the filters and
-search keep, in sort order, across all pages) as a CSV file of the displayed
-text. <code>true</code> picks a default file name; a string sets it. Filter or sort first,
-and the file follows:</p>
+search keep, in sort order, across all pages) as a file of the displayed text,
+in a format picked from a menu (CSV or RTF). <code>true</code> picks a default file name; a
+string sets it. <code>{ file, mode: &quot;raw&quot;, formats: [&quot;rtf&quot;] }</code> names the file, exports
+raw values, and limits the formats (one format downloads directly). Filter or
+sort first, and the file follows:</p>
 <pre><code class="language-js">LT.build({
   data: mtcars,
   interactive: { download: &quot;cars.csv&quot;, filter: { default: true }, pager: 5 }
@@ -5390,10 +5473,10 @@ migrations, and you can read their pull requests for more worked examples:</p>
 <p>Nearly every <code>lt_*()</code> function has a <strong>gt</strong> counterpart. The tables below cover the common ones, grouped by what you are
 trying to say; the last one lists things <strong>lt</strong> can do that have no direct <strong>gt</strong> equivalent.</p>
 <h3 id="sec:building-the-table"><span class="section-number">11.1.1</span> Building the table</h3>
-<p><a class="cross-ref-tab" href="#tab:gt-build">8</a> maps the constructors, including grouped data.</p>
+<p><a class="cross-ref-tab" href="#tab:gt-build">9</a> maps the constructors, including grouped data.</p>
 <div class="table" id="tab:gt-build">
 <div class="caption">
-<p><span class="ref-number-tab">8</span> Building the table: <strong>gt</strong> and <strong>lt</strong>.</p>
+<p><span class="ref-number-tab">9</span> Building the table: <strong>gt</strong> and <strong>lt</strong>.</p>
 </div>
 <table>
 <thead>
@@ -5423,10 +5506,10 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </table>
 </div>
 <h3 id="sec:labels-headers-spanners-and-notes"><span class="section-number">11.1.2</span> Labels, headers, spanners, and notes</h3>
-<p>Titles, labels, and every flavor of footnote are in <a class="cross-ref-tab" href="#tab:gt-labels">9</a>.</p>
+<p>Titles, labels, and every flavor of footnote are in <a class="cross-ref-tab" href="#tab:gt-labels">10</a>.</p>
 <div class="table" id="tab:gt-labels">
 <div class="caption">
-<p><span class="ref-number-tab">9</span> Labels, headers, spanners, and notes: <strong>gt</strong> and <strong>lt</strong>.</p>
+<p><span class="ref-number-tab">10</span> Labels, headers, spanners, and notes: <strong>gt</strong> and <strong>lt</strong>.</p>
 </div>
 <table>
 <thead>
@@ -5484,10 +5567,10 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </table>
 </div>
 <h3 id="sec:formatting-values"><span class="section-number">11.1.3</span> Formatting values</h3>
-<p><a class="cross-ref-tab" href="#tab:gt-format">10</a> covers formatting and substitution.</p>
+<p><a class="cross-ref-tab" href="#tab:gt-format">11</a> covers formatting and substitution.</p>
 <div class="table" id="tab:gt-format">
 <div class="caption">
-<p><span class="ref-number-tab">10</span> Formatting values: <strong>gt</strong> and <strong>lt</strong>.</p>
+<p><span class="ref-number-tab">11</span> Formatting values: <strong>gt</strong> and <strong>lt</strong>.</p>
 </div>
 <table>
 <thead>
@@ -5525,10 +5608,10 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </table>
 </div>
 <h3 id="sec:layout-and-styling"><span class="section-number">11.1.4</span> Layout and styling</h3>
-<p><a class="cross-ref-tab" href="#tab:gt-layout">11</a> covers alignment, widths, column order, and style.</p>
+<p><a class="cross-ref-tab" href="#tab:gt-layout">12</a> covers alignment, widths, column order, and style.</p>
 <div class="table" id="tab:gt-layout">
 <div class="caption">
-<p><span class="ref-number-tab">11</span> Layout and styling: <strong>gt</strong> and <strong>lt</strong>.</p>
+<p><span class="ref-number-tab">12</span> Layout and styling: <strong>gt</strong> and <strong>lt</strong>.</p>
 </div>
 <table>
 <thead>
@@ -5575,10 +5658,10 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </div>
 <h3 id="sec:interactivity"><span class="section-number">11.1.5</span> Interactivity</h3>
 <p><strong>gt</strong> splits interactivity across <code>opt_interactive()</code> and <code>cols_hide()</code>; <strong>lt</strong>
-gathers it all into <code>lt_interactive()</code> (<a class="cross-ref-tab" href="#tab:gt-interactive">12</a>).</p>
+gathers it all into <code>lt_interactive()</code> (<a class="cross-ref-tab" href="#tab:gt-interactive">13</a>).</p>
 <div class="table" id="tab:gt-interactive">
 <div class="caption">
-<p><span class="ref-number-tab">12</span> Interactivity: <strong>gt</strong> and <strong>lt</strong>.</p>
+<p><span class="ref-number-tab">13</span> Interactivity: <strong>gt</strong> and <strong>lt</strong>.</p>
 </div>
 <table>
 <thead>
@@ -5616,10 +5699,10 @@ gathers it all into <code>lt_interactive()</code> (<a class="cross-ref-tab" href
 </table>
 </div>
 <h3 id="sec:output-and-shiny"><span class="section-number">11.1.6</span> Output and Shiny</h3>
-<p>Saving and Shiny bindings are in <a class="cross-ref-tab" href="#tab:gt-output">13</a>.</p>
+<p>Saving and Shiny bindings are in <a class="cross-ref-tab" href="#tab:gt-output">14</a>.</p>
 <div class="table" id="tab:gt-output">
 <div class="caption">
-<p><span class="ref-number-tab">13</span> Output and Shiny: <strong>gt</strong> and <strong>lt</strong>.</p>
+<p><span class="ref-number-tab">14</span> Output and Shiny: <strong>gt</strong> and <strong>lt</strong>.</p>
 </div>
 <table>
 <thead>
@@ -5646,10 +5729,10 @@ gathers it all into <code>lt_interactive()</code> (<a class="cross-ref-tab" href
 </div>
 <h3 id="sec:things-gt-does-not-do-or-needs-an-add-on-for"><span class="section-number">11.1.7</span> Things gt does not do (or needs an add-on for)</h3>
 <p>Some of <strong>lt</strong>’s verbs have no <strong>gt</strong> twin, and a few overlap with what you might
-have used <strong>DT</strong> or <strong>gtExtras</strong> for (<a class="cross-ref-tab" href="#tab:gt-extra">14</a>).</p>
+have used <strong>DT</strong> or <strong>gtExtras</strong> for (<a class="cross-ref-tab" href="#tab:gt-extra">15</a>).</p>
 <div class="table" id="tab:gt-extra">
 <div class="caption">
-<p><span class="ref-number-tab">14</span> Things <strong>lt</strong> does that <strong>gt</strong> does not (or needs an add-on for).</p>
+<p><span class="ref-number-tab">15</span> Things <strong>lt</strong> does that <strong>gt</strong> does not (or needs an add-on for).</p>
 </div>
 <table>
 <thead>
@@ -5701,7 +5784,7 @@ have used <strong>DT</strong> or <strong>gtExtras</strong> for (<a class="cross-
 <td><a class="cross-ref-chp" href="#chp:interactive">7</a></td>
 </tr>
 <tr>
-<td>Download the filtered view as CSV</td>
+<td>Download the filtered view as CSV or RTF</td>
 <td><code>lt_interactive(download = )</code></td>
 <td><a class="cross-ref-chp" href="#chp:interactive">7</a></td>
 </tr>
@@ -5777,7 +5860,7 @@ not need <code>lt_format()</code> at all; see <a class="cross-ref-sec" href="#se
 <p><strong>gt</strong> turns on client-side interactivity with <code>opt_interactive()</code>, and hides
 columns with the unrelated <code>cols_hide()</code>. <strong>lt</strong> folds all of it into
 <code>lt_interactive()</code>: sorting, searching, filtering, paging, resizing, row detail,
-profiles, a CSV download, and a reader-togglable column menu. Whatever you do not
+profiles, a CSV or RTF download, and a reader-togglable column menu. Whatever you do not
 ask for is not loaded, so non-interactive tables cost nothing extra
 (<a class="cross-ref-chp" href="#chp:interactive">7</a>).</p>
 <h3 id="sec:footnotes-vs-notes"><span class="section-number">11.2.3</span> Footnotes and source notes are two different functions</h3>
@@ -6123,18 +6206,19 @@ stripped. It is the right tool there, just not a good default elsewhere.) <a hre
 </section>
 </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/chapter-toc.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/external-link.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/right-quote.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/key-buttons.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.154/js/callout.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/chapter-toc.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/external-link.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/right-quote.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/key-buttons.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/callout.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pele@1.13.0/dist/pele.global.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/render-pele.min.js" defer></script>
 </body>
 </html>

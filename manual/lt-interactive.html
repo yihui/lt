@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 1.0.13">
+<title>Enable interactive table features</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/prism-xcode.min.css">
+</head>
+<body>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.22</small>
+<a href="../examples.html">Examples</a>
+<a href="../manual.html">Manual</a>
+<a href="../news.html">News</a>
+<a href="../book/">Book</a>
+<a href="../playground/">Playground</a>
+<span class="pagesjs-toggle"></span>
+<a href="https://github.com/yihui/lt/" title="GitHub repository"><img src="https://cdn.jsdelivr.net/npm/@primer/octicons@19/build/svg/mark-github-24.svg" alt="GitHub" class="no-invert" /></a></p></nav>
+<header class="frontmatter">
+<div class="title"><h1>Enable interactive table features</h1></div>
+
+
+
+</header>
+<main>
+<article class="">
+<nav id="TOC" class="side side-left">
+<ul>
+<li><a href="#sec:description">Description</a></li>
+<li><a href="#sec:usage">Usage</a></li>
+<li><a href="#sec:arguments">Arguments</a></li>
+<li><a href="#sec:details">Details</a></li>
+<li><a href="#sec:value">Value</a></li>
+<li><a href="#sec:examples">Examples</a></li>
+</ul>
+</nav>
+<h2 id="sec:description" class="unnumbered">Description</h2>
+<p>Make a table interactive in the browser: pagination, a table-wide search box,
+click-to-sort column headers, per-column filter boxes, and resizable
+columns. The features are handled client-side by an opt-in JavaScript
+extension, loaded only for tables that call this function.
+</p>
+<h2 id="sec:usage" class="unnumbered">Usage</h2>
+<pre><code class="language-r">lt_interactive(
+  x,
+  sort = TRUE,
+  search = TRUE,
+  filter = "auto",
+  pager = c(10, 25, 50, Inf),
+  resize = TRUE,
+  hide = NULL,
+  detail = NULL,
+  profile = FALSE,
+  download = FALSE
+)</code></pre>
+<h2 id="sec:arguments" class="unnumbered">Arguments</h2>
+<table class="desc-table" role = "presentation">
+<tr><td><code>x</code></td>
+<td>
+<p>An <code><a href="lt.html">lt()</a></code> object.</p>
+</td></tr>
+<tr><td><code>sort</code></td>
+<td>
+<p>Whether clicking a column header sorts the table by that column
+(cycling ascending, descending, then unsorted); shift-clicking adds a
+column as a further tie-breaker, so several columns can sort at once.
+Sorting uses the raw values, so numeric columns sort numerically and dates
+and date-times chronologically. Can also request an initial sort by one or
+more columns, given either as a character vector of column names or as a
+one-sided formula (e.g. <code>~ x + -y</code>); a name prefixed with <code>-</code> (or a negated
+formula term) sorts that column descending, e.g. <code>c('g', '-x')</code> or
+<code>~ g + -x</code>.</p>
+</td></tr>
+<tr><td><code>search</code></td>
+<td>
+<p>Whether to show a table-wide search box. A row is kept when
+any cell matches the term. Besides plain substring matching, a term that
+references the cell variable <code>x</code> (e.g. <code>x &gt; 5</code> or <code>x != "A"</code>) is evaluated
+as a JavaScript expression against each cell's value.</p>
+</td></tr>
+<tr><td><code>filter</code></td>
+<td>
+<p>The per-column filters. <code>TRUE</code> shows a filter box under every
+column header, matching terms the same way as <code>search</code> but against that
+column only (a row is kept when it passes every filter and the search). A
+character vector of column names restricts the boxes to those columns. A
+named list gives each named column its own filter: <code>TRUE</code> for a plain box,
+<code>"select"</code> for a value dropdown, <code>"range"</code> for a two-thumb range slider, or
+<code>"checklist"</code> for a popover of checkboxes that keeps the rows whose value is
+checked (the dropdown's / checklist's choices and the slider's ends are
+taken from the column's data). For a custom label or hand-set options, pass
+a list instead of the string, e.g. <code>list(type = "select", label = "Cylinders")</code> or <code>list(type = "range", min = 0, max = 100)</code>. One <em>unnamed</em>
+entry in the list
+is the default applied to every other visible column, so
+<code>list(TRUE, cyl = "select")</code> boxes every column but gives <code>cyl</code> a dropdown, and
+<code>FALSE</code> leaves a column without a filter, e.g. <code>list("auto", id = FALSE)</code>;
+set on a named column, it shows a disabled (inert) funnel, so the column
+reads as filterable but off.
+A column with nothing to filter (every value blank) gets no box, even under
+that default. <code>"auto"</code> (alone, or as a list entry, e.g. <code>list("auto", cyl = "select")</code>) picks each column's filter from its data: a range slider
+for numbers and for dates and date-times (a search-only funnel if every value
+is the same; a date filter expression compares text, e.g. <code>x &gt;= "2024-01-05"</code>),
+a checklist for text with at most 10 distinct values, and a search-only
+funnel otherwise.
+A typed filter renders as a funnel + popover (holding the widget <em>and</em> an
+expression box, kept in sync) under its column header, or — when the column
+is hidden from the table (e.g. with <code><a href="lt-hide.html">lt_hide()</a></code>) — as a chip in the control
+bar, a natural way to offer a control for a value you don't show. Add <code>box = FALSE</code> to a typed spec's list to drop the expression box, restricting the
+column to the widget's own choices (e.g. a single-select dropdown with no
+custom set). The widget hides itself whenever a hand-typed expression
+outruns it (a value it cannot represent), so it never shows a value out of
+step with the box.</p>
+</td></tr>
+<tr><td><code>pager</code></td>
+<td>
+<p>The page sizes to offer, as a vector of row counts; the
+first one is used initially. Paging shows that many of the filtered and
+sorted rows at a time, with a pager (first, previous, next, last), the row
+range, and (for more than one size) a selector below the table. <code>Inf</code> is a
+valid size (every row on one page), offered as an infinity symbol in the
+selector. The selector is omitted when the table has no more rows than the
+smallest page size (no size would split it), though the pager's nav and
+row-count readout stay, the latter being useful as a filter narrows the
+rows. Use <code>FALSE</code> or <code>NULL</code> to show all rows with no pager at all.</p>
+</td></tr>
+<tr><td><code>resize</code></td>
+<td>
+<p>Whether to let the reader drag a column's right edge to resize
+it (double-clicking the edge fits the column to its content). Widening a
+column widens the table, leaving the other columns as they are. Initial
+widths can be set with <code><a href="lt-width.html">lt_width()</a></code>.</p>
+</td></tr>
+<tr><td><code>hide</code></td>
+<td>
+<p>Column-visibility control: an eye button in the
+control bar opens a checklist of every column, where unchecking a column
+hides it (header and cells) and re-checking restores it. <code>NA</code> adds the
+menu with all columns shown; column names (a character vector or a one-sided
+formula, e.g. <code>~ x + y</code>) adds it with those columns hidden to begin with
+(every column is still listed, so any can be toggled). To label the button
+instead of showing the eye icon, use a list with <code>label</code> (a string, shown as
+a chip in the control bar) and optionally <code>columns</code> (the
+columns hidden to begin with), e.g. <code>list(label = "Show/Hide columns")</code>.
+<code>NULL</code> (the default) adds no menu.</p>
+</td></tr>
+<tr><td><code>detail</code></td>
+<td>
+<p>Row detail (drill-down). An expand caret is added to each row;
+clicking it reveals a table built from that row below it. Give the columns
+to show, as a character vector of names or a one-sided formula (e.g.
+<code>~ gear + carb</code>); their displayed (formatted) values are laid out as a
+one-row table. The columns can be ones hidden from the main table with
+<code><a href="lt-hide.html">lt_hide()</a></code>, a natural way to tuck extra fields into the detail. For full
+control, pass a JavaScript callback instead, wrapped in <code><a href="../..//help/js.html">js()</a></code>: it is
+called as <code>(row, index, display)</code> — <code>row</code> the raw values, <code>display</code> the
+formatted text, each keyed by column name — and returns a table spec, which
+may carry its own <code>interactive</code> field to make the detail table interactive.
+<code>NULL</code> (the default) adds no row detail.</p>
+</td></tr>
+<tr><td><code>profile</code></td>
+<td>
+<p>Whether to show a profile of each column: a mini bar chart of
+its values (a histogram of up to 10 bins for numbers, dates, and
+date-times; one bar per category for text, left blank if over half of
+the values are distinct). Hovering over it shows summary statistics (min,
+max, and mean, or the number of distinct values and the most frequent ones)
+and the amount of missing values. When the filters keep only some rows, the bars
+highlight their share. <code>TRUE</code> or <code>"header"</code> puts the chart in the column
+header; <code>"filter"</code> puts it at the top of the column's filter popover
+instead, which saves header space (only columns with a popover filter,
+e.g., the range slider or checklist of <code>filter = "auto"</code>, get a profile
+then).</p>
+</td></tr>
+<tr><td><code>download</code></td>
+<td>
+<p>Whether to add a button that downloads the table. The file
+holds the current view (every row the filters and search keep, in sort
+order, across all pages) of the table's columns, with the title, column
+spanners, and notes of formats that have room for them. The button opens a
+menu of the available formats (CSV and RTF); with a single format, it
+downloads directly. <code>TRUE</code> adds the button with a default file name; a
+string sets the file name (a format extension in it is replaced by the
+chosen format's). For more control, pass a list with any of <code>file</code> (the
+file name), <code>formats</code> (which formats to offer, e.g., <code>"rtf"</code>; all by
+default), and <code>mode</code>: <code>"display"</code> (the default) exports the displayed cell
+text, while <code>"raw"</code> exports the underlying unformatted values (full
+precision, no thousands separators or percent signs), handier to re-import
+for analysis. Row detail (<code>detail</code>) is never included. <code>FALSE</code> (the
+default) adds no button. To save a table to a file from R instead, use
+<code><a href="lt-export.html">lt_export()</a></code>.</p>
+</td></tr>
+</table>
+<h2 id="sec:details" class="unnumbered">Details</h2>
+<p>Sorting and filtering respect the row structure, happening <em>within</em> each
+group or subtree rather than across it. Separator row groups (<code><a href="lt-group.html">lt_group()</a></code>
+with <code>sep = TRUE</code>, or manual groups) keep their order, and a group whose rows
+all filter out drops its header. Indentation (<code><a href="lt-indent.html">lt_indent()</a></code>) sorts siblings
+under each parent, and an indented child keeps its ancestors visible for
+context. Rowspan row groups (<code><a href="lt-group.html">lt_group()</a></code> with its default rowspan rendering)
+sort and filter within each run and clicking a group header reorders its
+blocks; with several group columns the view stays nested (an inner column
+reorders only within its parent block), and the spanning cells are redrawn to
+match.
+</p>
+<h2 id="sec:value" class="unnumbered">Value</h2>
+<p><code>x</code> with interactivity enabled.
+</p>
+<h2 id="sec:examples" class="unnumbered">Examples</h2>
+<pre><code class="language-r">lt(head(mtcars)) |&gt; lt_interactive()
+# search only, no click-to-sort or pagination
+lt(head(mtcars)) |&gt; lt_interactive(sort = FALSE, pager = FALSE)
+# 5 rows at a time, or all of them, with a filter box on one column
+lt(mtcars) |&gt; lt_interactive(filter = 'cyl', pager = c(5, Inf))
+# filters are on by default, a widget per column chosen from its data
+# (sliders, checklists, boxes); filter = FALSE turns them off
+lt(iris) |&gt; lt_interactive(filter = FALSE)
+# fixed (non-resizable) columns
+lt(head(mtcars)) |&gt; lt_interactive(resize = FALSE)
+# a column-visibility menu (all columns shown, or with some hidden to start)
+lt(head(mtcars)) |&gt; lt_interactive(hide = NA)
+lt(head(mtcars)) |&gt; lt_interactive(hide = ~ hp + drat)
+# a labeled button instead of the eye icon
+lt(head(mtcars)) |&gt; lt_interactive(hide = list(label = 'Show/Hide columns'))
+# an initial sort by cyl, then mpg descending within each
+lt(mtcars) |&gt; lt_interactive(sort = ~ cyl + -mpg)
+# expandable row detail (drill-down): name the columns to show. Here gear and
+# carb are hidden from the main table but revealed in the detail that appears
+# when a row is expanded.
+lt(head(mtcars)) |&gt;
+  lt_hide(~ gear + carb) |&gt;
+  lt_interactive(detail = ~ gear + carb)
+# for full control, pass a JavaScript callback yourself: (raw row, index,
+# displayed row); here showing the row number and mpg as the table displays it
+lt(head(mtcars)) |&gt; lt_interactive(
+  detail = js('(row, i, d) =&gt; ({ data: { metric: [&quot;row&quot;, &quot;mpg&quot;],
+    value: [i, d.mpg] } })')
+)
+# a distribution plot in each column header, or in the filter popover
+lt(iris) |&gt; lt_interactive(profile = TRUE)
+lt(iris) |&gt; lt_interactive(profile = 'filter')
+# a button to download the current view as a CSV or RTF file
+lt(head(mtcars)) |&gt; lt_interactive(download = TRUE)
+lt(head(mtcars)) |&gt; lt_interactive(download = 'cars')
+# offer only RTF, which downloads directly
+lt(head(mtcars)) |&gt; lt_interactive(download = list(formats = 'rtf'))
+# export the raw (unformatted) values instead of the displayed text
+lt(head(mtcars)) |&gt; lt_interactive(download = list(file = 'cars.csv', mode = 'raw'))
+</code></pre>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/manual.min.css">
+
+</article>
+</main>
+<footer><div class="flex-col">
+<p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.13</p>
+</div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</body>
+</html>

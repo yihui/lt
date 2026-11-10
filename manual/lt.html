@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 1.0.13">
+<title>Create a table specification</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/prism-xcode.min.css">
+</head>
+<body>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.22</small>
+<a href="../examples.html">Examples</a>
+<a href="../manual.html">Manual</a>
+<a href="../news.html">News</a>
+<a href="../book/">Book</a>
+<a href="../playground/">Playground</a>
+<span class="pagesjs-toggle"></span>
+<a href="https://github.com/yihui/lt/" title="GitHub repository"><img src="https://cdn.jsdelivr.net/npm/@primer/octicons@19/build/svg/mark-github-24.svg" alt="GitHub" class="no-invert" /></a></p></nav>
+<header class="frontmatter">
+<div class="title"><h1>Create a table specification</h1></div>
+
+
+
+</header>
+<main>
+<article class="">
+<nav id="TOC" class="side side-left">
+<ul>
+<li><a href="#sec:description">Description</a></li>
+<li><a href="#sec:usage">Usage</a></li>
+<li><a href="#sec:arguments">Arguments</a></li>
+<li><a href="#sec:value">Value</a></li>
+<li><a href="#sec:html-in-cells">HTML in cells</a></li>
+<li><a href="#sec:interactivity">Interactivity</a></li>
+<li><a href="#sec:missing-values">Missing values</a></li>
+<li><a href="#sec:repeated-data-in-litedown-fuse-documents">Repeated data in <code>litedown::fuse()</code> documents</a></li>
+<li><a href="#sec:examples">Examples</a></li>
+</ul>
+</nav>
+<h2 id="sec:description" class="unnumbered">Description</h2>
+<p>Entry point of the lightweight grammar of tables. Returns an object (a
+list) that records the data plus a list of table-modifying operations. The
+object is rendered to HTML by <code><a href="https://rdrr.io/r/base/format.html">format()</a></code> (called automatically by the
+print method).
+</p>
+<h2 id="sec:usage" class="unnumbered">Usage</h2>
+<pre><code class="language-r">lt(data, ...)
+
+## Default S3 method:
+lt(data, auto_format = TRUE, auto_label = TRUE, show_types = FALSE, ...)</code></pre>
+<h2 id="sec:arguments" class="unnumbered">Arguments</h2>
+<table class="desc-table" role = "presentation">
+<tr><td><code>data</code></td>
+<td>
+<p>A data frame (or anything coercible to one).</p>
+</td></tr>
+<tr><td><code>...</code></td>
+<td>
+<p>Arguments passed to methods.</p>
+</td></tr>
+<tr><td><code>auto_format</code></td>
+<td>
+<p>Whether to automatically format numeric columns (rounding,
+thousand separators, percentage detection) and date/time columns (as
+<code>YYYY-MM-DD</code> or <code>YYYY-MM-DD HH:MM:SS</code>). Set to <code>FALSE</code> to disable
+for the whole table; use <code><a href="lt-format.html">lt_format()</a></code> on specific columns to disable
+selectively.</p>
+</td></tr>
+<tr><td><code>auto_label</code></td>
+<td>
+<p>Whether to automatically clean column names for display
+by replacing separators (<code>.</code> and <code>_</code>) with spaces. Set to <code>FALSE</code> to
+show raw column names.</p>
+</td></tr>
+<tr><td><code>show_types</code></td>
+<td>
+<p>Whether to tag each column with its type (e.g., <code>&lt;dbl&gt;</code>,
+<code>&lt;chr&gt;</code>, <code>&lt;fct&gt;</code>, <code>&lt;date&gt;</code>) under the column labels, like the types
+printed under a tibble's column names. In an interactive table (see
+<code><a href="lt-interactive.html">lt_interactive()</a></code>), the filter controls follow the tags.</p>
+</td></tr>
+</table>
+<h2 id="sec:value" class="unnumbered">Value</h2>
+<p>A table object that can be piped into <code>lt_*()</code> functions.
+</p>
+<h2 id="sec:html-in-cells" class="unnumbered">HTML in cells</h2>
+<p>By default all cell values and text (titles, labels, footnotes, ...) are
+HTML-escaped, so special characters like <code>&lt;</code>, <code>&gt;</code>, and <code>&amp;</code> render as
+literal text. To emit content as raw HTML instead:
+</p>
+<ul>
+<li><p> For body cells, mark whole columns with <code><a href="lt-html.html">lt_html()</a></code>.
+</p>
+</li>
+<li><p> For a title, subtitle, column label, spanner, footnote, or note, wrap the
+text in <code><a href="https://rdrr.io/r/base/AsIs.html">I()</a></code>. For example, <code>lt_header(x, I("&lt;b&gt;Report&lt;/b&gt;"))</code> renders the
+title as raw HTML, while <code>lt_header(x, "&lt;b&gt;Report&lt;/b&gt;")</code> shows the literal
+<code>&lt;b&gt;</code> tags.
+</p>
+</li></ul>
+<h2 id="sec:interactivity" class="unnumbered">Interactivity</h2>
+<p>When a cell value has been formatted (e.g., by auto-formatting or
+<code><a href="lt-format.html">lt_format()</a></code>), the original value is stored in the cell's <code>title</code>
+attribute and shown as a tooltip on hover. Additionally:
+</p>
+<ul>
+<li> <p><code>Alt + Click</code> on a table toggles display of all raw values in that table.
+</p>
+</li>
+<li> <p><code>Alt + Double-Click</code> on a table toggles raw values globally (all tables
+on the page).
+</p>
+</li></ul>
+<p>Raw values are shown as <code>(value)</code> after the formatted text, highlighted
+with a light yellow background.
+</p>
+<h2 id="sec:missing-values" class="unnumbered">Missing values</h2>
+<p>By default, missing (<code>NA</code>) cells display an em dash (<code>—</code>) so they are not
+confused with empty strings. Change the table-wide default with the
+<code>lt.missing</code> global option, e.g. <code>options(lt.missing = "n/a")</code>; set it to
+the empty string (<code>options(lt.missing = "")</code>) to leave <code>NA</code> cells blank.
+Use <code><a href="lt-sub.html">lt_sub()</a></code> with <code>missing =</code> to override the text for specific columns.
+</p>
+<h2 id="sec:repeated-data-in-litedown-fuse-documents" class="unnumbered">Repeated data in <code>litedown::fuse()</code> documents</h2>
+<p>A document often shows several tables built from the same data, e.g., one
+data frame with different columns, groups, or formatting in each table.
+To keep the output file small, <code>lt()</code> writes the data into the document only
+once; the other tables just point to that copy instead of repeating the
+data. This happens automatically when the document is rendered by
+<code><a href="https://rdrr.io/cran/litedown/man/fuse.html">litedown::fuse()</a></code>, including documents that include child documents.
+</p>
+<p>Sharing saves space except for tiny data: a data frame with roughly 15 cells
+or fewer (e.g., 5 rows by 3 columns) is about as small as the pointer to it,
+so sharing it gains nothing and may add a few bytes. For anything larger, the
+saving grows with the size of the data and the number of tables using it.
+To share only data frames above a certain size, set the <code>lt.share_size</code>
+global option (in bytes, as reported by <code><a href="https://rdrr.io/cran/utils/man/object.size.html">utils::object.size()</a></code>), e.g.,
+<code>options(lt.share_size = 1e4)</code>; smaller data is then written into each
+table. Use <code>options(lt.share_size = Inf)</code> to turn sharing off.
+</p>
+<h2 id="sec:examples" class="unnumbered">Examples</h2>
+<pre><code class="language-r">lt(head(mtcars[, 1:4]))
+</code></pre>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/manual.min.css">
+
+</article>
+</main>
+<footer><div class="flex-col">
+<p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.13</p>
+</div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</body>
+</html>
