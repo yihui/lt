@@ -164,9 +164,7 @@ lt(head(mtcars[, 1:5])) |>
 -   Many [small examples](../examples.html), one feature each.
 
 ```{r, include = FALSE}
-# the PNGs on the README: lt_export() needs Node.js or a headless browser,
-# which are unavailable in some environments (e.g., webR)
-w = list(static = "min-content", interactive = "min-content", plots = "min-content")
-if (lt:::can_bake()) for (i in names(w))
-  lt_export(get(paste0("tbl_", i)), sprintf("01-lt-%s.png", i), width = w[[i]])
+# for the PNGs on the README
+if (lt:::can_bake()) for (i in c("static", "interactive", "plots"))
+  lt_export(get(paste0("tbl_", i)), sprintf("01-lt-%s.png", i), width = "min-content")
 ```
