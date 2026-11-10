@@ -47,7 +47,7 @@ assert("the download button opens a menu of formats; each downloads its own file
 
 assert("a file name is a stem: a format extension is replaced", {
   x = lt(dt) |> lt_interactive(download = 'cars.csv')
-  (dl_text(x, menu_pick('RTF')) |> strsplit('\n') |> _[[1]][1] %==% 'cars.rtf')
+  (strsplit(dl_text(x, menu_pick('RTF')), '\n')[[1]][1] %==% 'cars.rtf')
 })
 
 assert("one format downloads directly, without a menu", {
