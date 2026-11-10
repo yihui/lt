@@ -62,6 +62,15 @@ assert("I()-wrapped column label is raw HTML", {
   (has_match(html, "&lt;b&gt;B&lt;/b&gt;</th>"))
 })
 
+assert("relabeled column header shows original name as title", {
+  html = build(list(
+    data = list(a_b = 1, c = 2),
+    ops = list(list(type = "label", labels = list(a_b = "Alpha")))
+  ))
+  (has_match(html, '<th scope="col" class="al-r" title="a_b">Alpha</th>'))
+  (!has_match(html, 'title="c"'))
+})
+
 assert("html_cols makes separator-row group labels raw HTML", {
   html = build(list(
     data = list(g = c("<b>A</b>", "<b>A</b>", "<b>B</b>"), v = 1:3),

@@ -595,7 +595,7 @@
     for (const rs of rowSpans)
       out.push(`<th scope="col" class="lt-row-group">${txt(rs.label)}</th>`);
     cols.forEach((c, i) =>
-      out.push(`<th scope="col"${attr("class", colCls[i])}>${txt(colLabels[i])}${mark("column_labels", c)}${
+      out.push(`<th scope="col"${attr("class", colCls[i])}${colLabels[i] !== c ? ` title="${esc(c)}"` : ""}>${txt(colLabels[i])}${mark("column_labels", c)}${
         spec.types ? `<br><span class="lt-type">${esc(spec.types[c])}</span>` : ""}</th>`));
     out.push(`</tr></thead>`);
 
