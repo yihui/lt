@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.13">
+<meta name="generator" content="litedown 1.0.14">
 <title>An Introduction to lt</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/article.min.css">
@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.22</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.23</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -34,99 +34,89 @@
 <article class="">
 <nav id="TOC" class="side side-left">
 <ul class="numbered">
-<li><a href="#sec:cheatsheet"><span class="section-number main-number">1</span> The cheat sheet (table)</a></li>
+<li><a href="#sec:cheatsheet"><span class="section-number main-number">1</span> The cheat sheet</a>
+<ul>
+<li><a href="#sec:cheat-static"><span class="section-number">1.1</span> Static tables</a></li>
+<li><a href="#sec:cheat-interactive"><span class="section-number">1.2</span> Interactive tables</a></li>
+<li><a href="#sec:cheat-plots"><span class="section-number">1.3</span> Inline plots</a></li>
+</ul>
+</li>
 <li><a href="#sec:a-minimal-table"><span class="section-number main-number">2</span> A minimal table</a></li>
 <li><a href="#sec:where-to-go-next"><span class="section-number main-number">3</span> Where to go next</a></li>
 </ul>
 </nav>
 <p><strong>lt</strong> builds lightweight tables from a data frame and a few pipeable verbs.
-This page is only a taste: a cheat sheet that is itself a table, one minimal
+This page is only a taste: three cheat tables, one minimal
 example, and pointers to the <a href="../book/">book</a> for the details.</p>
-<h2 id="sec:cheatsheet"><span class="section-number main-number">1</span> The cheat sheet (table)</h2>
-<p>The table below is a self-documenting cheat sheet: many functions in this
-package are used to build it, and each function’s name is placed where
-that function acts. The title reads <code>lt_header(title = ...)</code> because
-<code>lt_header()</code> put it there; every column header is the name of the function
-that shaped that column; the row-group label is <code>lt_group()</code>; the footnote text
-is <code>lt_footnote()</code>; and so on.</p>
+<h2 id="sec:cheatsheet"><span class="section-number main-number">1</span> The cheat sheet</h2>
+<p>Three cheat tables give an overview, one each for static tables, interactive
+tables, and inline plots. Each is self-documenting: functions in this package
+build it, and each function’s name is placed where that function acts.</p>
+<pre><code class="language-r">library(lt)
+</code></pre>
+<h3 id="sec:cheat-static"><span class="section-number">1.1</span> Static tables</h3>
+<p>The title reads <code>lt_header(title = ...)</code> because <code>lt_header()</code> put it there;
+every column header is the name of the function that shaped that column; the
+row-group label is <code>lt_group()</code>; the footnote text is <code>lt_footnote()</code>; and so on.</p>
 <pre><code class="language-r">d = data.frame(
   Grp   = paste(&quot;Group&quot;, c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;)),
   Label = c(&quot;&lt;a href='#sec:cheatsheet'&gt;lt(): make a table&lt;/a&gt;&quot;,
-            &quot;lt_indent(): child A&quot;,
-            &quot;lt_indent(): child B&quot;, &quot;lt_style() + lt_css()&quot;),
+            &quot;lt_indent(): child A&quot;, &quot;lt_indent(): child B&quot;, &quot;lt_style() + lt_css()&quot;),
   Fmt   = c(1234567.89, -0.51234, Inf, -Inf),
   Sub   = c(0, NA, 3.14, 0.0002),
   Date  = as.Date(c(&quot;2024-01-15&quot;, &quot;2024-02-20&quot;, &quot;2024-03-25&quot;, &quot;2024-04-30&quot;)),
   Align = c(1, 22, 333, 4),
-  Width = c(&quot;lt_width()&quot;, &quot;sets&quot;, &quot;column&quot;, &quot;widths&quot;),
   Est   = c(&quot;0.6&quot;, &quot;0.8&quot;, &quot;0.5&quot;, &quot;0.9&quot;),
-  CI    = c(&quot;(0.4, 0.8)&quot;, &quot;(0.6, 1.0)&quot;, &quot;(0.2, 0.7)&quot;, &quot;(0.7, 1.1)&quot;),
-  Eff   = c(0.1, -0.3, 0.4, -0.1),
-  EffLo = c(-0.1, -0.4, 0.2, -0.3),
-  EffHi = c(0.3, -0.2, 0.6, 0.1)
+  CI    = c(&quot;(0.4, 0.8)&quot;, &quot;(0.6, 1.0)&quot;, &quot;(0.2, 0.7)&quot;, &quot;(0.7, 1.1)&quot;)
 )
 
-library(lt)
-tbl_cheat = lt(d, auto_format = FALSE) |&gt;
+tbl_static = lt(d, auto_format = FALSE) |&gt;
   # lt_group(): the &quot;lt_group()&quot; row-group header on the left
   lt_group(~ Grp) |&gt;
   # lt_header(): the title and subtitle at the top
-  lt_header(
-    title    = &quot;lt_header(title = ...)&quot;,
-    subtitle = &quot;lt_header(subtitle = ...)&quot;
-  ) |&gt;
+  lt_header(title = &quot;lt_header(title = ...)&quot;, subtitle = &quot;lt_header(subtitle = ...)&quot;) |&gt;
   # lt_merge(): fold CI into Est to make the &quot;lt_merge()&quot; column
   lt_merge(~ Est + CI, pattern = &quot;{1} {2}&quot;) |&gt;
   # lt_spanner(): the &quot;lt_spanner()&quot; label above two columns
   lt_spanner(`lt_spanner()` ~ Fmt + Sub) |&gt;
   # lt_label(): every column header is renamed to the function acting on it
   lt_label(
-    Grp = &quot;lt_group()&quot;, Width = &quot;lt_width()&quot;, Label = &quot;lt_label(old = new, ...)&quot;,
-    Fmt = &quot;lt_format()&quot;, Sub = &quot;lt_sub()&quot;, Date = &quot;lt_date()&quot;,
-    Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;, Eff = &quot;lt_errorbar()&quot;
+    Grp = &quot;lt_group()&quot;, Label = &quot;lt_label(old = new, ...)&quot;, Fmt = &quot;lt_format()&quot;,
+    Sub = &quot;lt_sub()&quot;, Date = &quot;lt_date()&quot;, Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;
   ) |&gt;
-  # lt_errorbar(): draw an inline forest plot in the &quot;lt_errorbar()&quot; column
-  lt_errorbar(Eff ~ EffLo + EffHi, ref = 0, width = 80) |&gt;
   # lt_html(): render the &quot;Label&quot; column as raw HTML (note the link in row 1)
   lt_html(~ Label) |&gt;
   # lt_align(): center the &quot;lt_align()&quot; column
   lt_align(~ Align, &quot;center&quot;) |&gt;
-  # lt_width(): the &quot;lt_width()&quot; column is where widths are set
-  lt_width(Width = &quot;9em&quot;, Label = &quot;16em&quot;) |&gt;
+  # lt_width(): set the width of the first column
+  lt_width(Label = &quot;11em&quot;) |&gt;
   # lt_format(): round and add a thousands separator
   lt_format(~ Fmt, decimals = 1, big_mark = &quot;,&quot;) |&gt;
   # lt_date(): format the &quot;lt_date()&quot; column
-  lt_date(~ Date, options = list(
-    month = &quot;short&quot;, day = &quot;numeric&quot;, timeZone = &quot;UTC&quot;
-  )) |&gt;
+  lt_date(~ Date, options = list(month = &quot;short&quot;, day = &quot;numeric&quot;, timeZone = &quot;UTC&quot;)) |&gt;
   # lt_sub(): NA/zero/small are replaced with self-naming placeholders
-  lt_sub(~ Sub, missing = &quot;n/a&quot;, zero = &quot;—&quot;,
-    small = 0.01, small_text = &quot;&lt; 0.01&quot;) |&gt;
+  lt_sub(~ Sub, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.01, small_text = &quot;&lt; 0.01&quot;) |&gt;
   # lt_indent(): indent the two &quot;lt_indent()&quot; child rows
   lt_indent(c(2, 3), level = 1) |&gt;
   # lt_style() + lt_css(): style the cell that names them
-  lt_style(&quot;Label&quot;, rows = 4L, class = &quot;highlight&quot;) |&gt;
-  lt_css(.highlight = list(fontWeight = &quot;bold&quot;, color = &quot;#c60&quot;)) |&gt;
+  lt_style(~ Label, rows = 4L, class = &quot;highlight&quot;) |&gt;
+  lt_css(.highlight = list(fontWeight = &quot;bold&quot;, color = &quot;orange&quot;)) |&gt;
   # lt_footnote(): provide the footnote text
   lt_footnote(&quot;lt_footnote() can add a footnote anywhere.&quot;, &quot;title&quot;) |&gt;
-  lt_footnote(I(&quot;&lt;code&gt;Alt + Click&lt;/code&gt; a table to toggle raw values.&quot;), &quot;subtitle&quot;) |&gt;
-  # I(): wrapping text in I() marks it as raw HTML (here, a bold tag)
-  lt_footnote(I(&quot;Wrap text in &lt;code&gt;I()&lt;/code&gt; for raw HTML.&quot;), &quot;column&quot;, &quot;Label&quot;) |&gt;
-  # lt_move(): explain it via a footnote, since it has no column of its own here
-  lt_footnote(&quot;lt_move() can reorder columns as desired.&quot;, &quot;column&quot;, &quot;Est&quot;) |&gt;
-  # lt_errorbar(): point to the other inline plot types via a footnote
-  lt_footnote(&quot;lt_sparkline() and lt_dotplot() draw other inline plots.&quot;,
-    &quot;column&quot;, &quot;Eff&quot;) |&gt;
+  # I(): wrapping text in I() marks it as raw HTML
+  lt_footnote(I(&quot;Wrap text in &lt;code&gt;I()&lt;/code&gt; for raw HTML.&quot;), &quot;column&quot;, ~ Label) |&gt;
+  # lt_width() and lt_move() have no column of their own: explain via footnotes
+  lt_footnote(&quot;lt_width() sets column widths.&quot;, &quot;column&quot;, ~ Label) |&gt;
+  lt_footnote(&quot;lt_move() can reorder columns as desired.&quot;, &quot;column&quot;, ~ Est) |&gt;
   # lt_note(): the footer note names itself and lt_export()
   lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
-tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
+tbl_static
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/lt.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/lt.min.css">
 <style>.lt-table {
-  .highlight { font-weight: bold; color: #c60; }
+  .highlight { font-weight: bold; color: orange; }
 }</style>
-<script>((window.LT=window.LT||{}).d=window.LT.d||{})["a94ed67b"]=
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["62be29ef"]=
 {
   "Grp": ["Group A", "Group A", "Group B", "Group B"],
   "Label": ["<a href='#sec:cheatsheet'>lt(): make a table</a>", "lt_indent(): child A", "lt_indent(): child B", "lt_style() + lt_css()"],
@@ -134,12 +124,8 @@ tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
   "Sub": [0, null, 3.14, 2e-04],
   "Date": ["2024-01-15", "2024-02-20", "2024-03-25", "2024-04-30"],
   "Align": [1, 22, 333, 4],
-  "Width": ["lt_width()", "sets", "column", "widths"],
   "Est": ["0.6", "0.8", "0.5", "0.9"],
-  "CI": ["(0.4, 0.8)", "(0.6, 1.0)", "(0.2, 0.7)", "(0.7, 1.1)"],
-  "Eff": [0.1, -0.3, 0.4, -0.1],
-  "EffLo": [-0.1, -0.4, 0.2, -0.3],
-  "EffHi": [0.3, -0.2, 0.6, 0.1]
+  "CI": ["(0.4, 0.8)", "(0.6, 1.0)", "(0.2, 0.7)", "(0.7, 1.1)"]
 }
 </script>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -155,30 +141,13 @@ tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
       "type": "label",
       "labels": {
         "Grp": "lt_group()",
-        "Width": "lt_width()",
         "Label": "lt_label(old = new, ...)",
         "Fmt": "lt_format()",
         "Sub": "lt_sub()",
         "Date": "lt_date()",
         "Align": "lt_align()",
-        "Est": "lt_merge()",
-        "Eff": "lt_errorbar()"
+        "Est": "lt_merge()"
       }
-    },
-    {
-      "type": "hide",
-      "columns": ["EffLo", "EffHi"]
-    },
-    {
-      "type": "errorbar",
-      "columns": ["Eff"],
-      "lowers": ["EffLo"],
-      "uppers": ["EffHi"],
-      "min": -0.4,
-      "max": 0.6,
-      "ref": 0,
-      "width": 80,
-      "height": 16
     },
     {
       "type": "align",
@@ -188,8 +157,7 @@ tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
     {
       "type": "width",
       "widths": {
-        "Width": "9em",
-        "Label": "16em"
+        "Label": "11em"
       }
     },
     {
@@ -250,14 +218,14 @@ tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
       }
     },
     {
-      "text": ["<code>Alt + Click</code> a table to toggle raw values."],
+      "text": ["Wrap text in <code>I()</code> for raw HTML."],
       "location": {
-        "type": "title",
-        "group": "subtitle"
+        "type": "column_labels",
+        "columns": ["Label"]
       }
     },
     {
-      "text": ["Wrap text in <code>I()</code> for raw HTML."],
+      "text": "lt_width() sets column widths.",
       "location": {
         "type": "column_labels",
         "columns": ["Label"]
@@ -269,26 +237,198 @@ tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
         "type": "column_labels",
         "columns": ["Est"]
       }
-    },
-    {
-      "text": "lt_sparkline() and lt_dotplot() draw other inline plots.",
-      "location": {
-        "type": "column_labels",
-        "columns": ["Eff"]
-      }
     }
   ],
   "notes": [
     "lt_note() — and lt_export() saves this table to HTML/PDF/PNG."
   ],
-  "wrap": {
-    "class": "fullwidth pagesjs-wide"
-  },
-  "data_key": "a94ed67b"
+  "data_key": "62be29ef"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/lt-plot.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt.min.js" defer></script>
+<h3 id="sec:cheat-interactive"><span class="section-number">1.2</span> Interactive tables</h3>
+<p><code>lt_interactive()</code> adds sorting, search, filters, and paging in the browser.
+Each row below names an argument and tells you how to try it on this table:
+click a header to sort, type <code>Kind is Layout</code> in the search box, or pick a value
+from a filter.</p>
+<pre><code class="language-r">d = data.frame(
+  Argument = c(&quot;sort&quot;, &quot;search&quot;, &quot;filter&quot;, &quot;pager&quot;, &quot;resize&quot;, &quot;hide&quot;, &quot;detail&quot;,
+               &quot;profile&quot;, &quot;download&quot;),
+  Kind = c(&quot;Find rows&quot;, &quot;Find rows&quot;, &quot;Find rows&quot;, &quot;Layout&quot;, &quot;Layout&quot;, &quot;Layout&quot;,
+           &quot;Layout&quot;, &quot;Inspect&quot;, &quot;Output&quot;),
+  Default = c(&quot;TRUE&quot;, &quot;TRUE&quot;, &quot;auto&quot;, &quot;10, 25, 50, Inf&quot;, &quot;TRUE&quot;, &quot;NULL&quot;, &quot;NULL&quot;,
+              &quot;FALSE&quot;, &quot;FALSE&quot;),
+  Try = c(&quot;click a header&quot;, &quot;type a query&quot;, &quot;pick a value&quot;, &quot;change page size&quot;,
+          &quot;drag a header edge&quot;, &quot;hide columns&quot;, &quot;expand a row&quot;,
+          &quot;summarize columns&quot;, &quot;save CSV or RTF&quot;),
+  Popularity = c(95, 64, 61, 36, 20, 16, 12, 8, 5)
+)
+
+tbl_interactive = lt(d) |&gt;
+  lt_header(&quot;lt_interactive(...)&quot;, &quot;Click, type, and pick&quot;) |&gt;
+  lt_interactive(pager = c(5, 10, Inf), hide = NA, profile = TRUE, download = TRUE) |&gt;
+  lt_note(&quot;lt_viewer() and lt_serve() view and serve big data.&quot;)
+tbl_interactive
+</code></pre>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/lt-interactive.min.css">
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["025aa0f9"]=
+{
+  "Argument": ["sort", "search", "filter", "pager", "resize", "hide", "detail", "profile", "download"],
+  "Kind": ["Find rows", "Find rows", "Find rows", "Layout", "Layout", "Layout", "Layout", "Inspect", "Output"],
+  "Default": ["TRUE", "TRUE", "auto", "10, 25, 50, Inf", "TRUE", "NULL", "NULL", "FALSE", "FALSE"],
+  "Try": ["click a header", "type a query", "pick a value", "change page size", "drag a header edge", "hide columns", "expand a row", "summarize columns", "save CSV or RTF"],
+  "Popularity": [95, 64, 61, 36, 20, 16, 12, 8, 5]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "header": {
+    "title": "lt_interactive(...)",
+    "subtitle": "Click, type, and pick"
+  },
+  "interactive": {
+    "sort": true,
+    "search": true,
+    "filter": {
+      "default": {
+        "type": "auto"
+      }
+    },
+    "pager": [5, 10, 0],
+    "resize": true,
+    "profile": "header",
+    "hide": true,
+    "download": true
+  },
+  "notes": [
+    "lt_viewer() and lt_serve() view and serve big data."
+  ],
+  "data_key": "025aa0f9"
+}
+})</script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt-query.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt-export.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt-interactive.min.js" defer></script>
+<h3 id="sec:cheat-plots"><span class="section-number">1.3</span> Inline plots</h3>
+<p>Each plotting function draws in the cell of the column that carries its name.</p>
+<pre><code class="language-r">d = data.frame(
+  Study = c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;),
+  Eff = c(0.1, -0.3, 0.4), Lo = c(-0.1, -0.4, 0.2), Hi = c(0.3, -0.2, 0.6),
+  Temp = I(list(c(-3, 1, 6, 12), c(14, 18, 28, 31), c(19, 18, 15, 15))),
+  Rain = I(list(c(49, 47, 53, 60), c(5, 4, 0, 0), c(8, 2, 1, 1))),
+  Before = c(3.1, 3.4, 3.0), After = c(3.2, 4.1, 5.2)
+)
+
+tbl_plots = lt(d) |&gt;
+  lt_header(&quot;Plot functions in lt&quot;) |&gt;
+  lt_errorbar(Eff ~ Lo + Hi, ref = 0, width = 90) |&gt;
+  lt_sparkline(~ Temp, width = 70) |&gt;
+  lt_sparkline(~ Rain, type = &quot;bar&quot;, color = &quot;#4caf50&quot;, width = 70) |&gt;
+  lt_dotplot(~ Before + After, color = TRUE, width = 100) |&gt;
+  lt_spanner(`lt_sparkline()` ~ Temp + Rain) |&gt;
+  lt_label(
+    Eff = &quot;lt_errorbar()&quot;, Temp = &quot;line&quot;, Rain = &quot;bar&quot;, Before = &quot;lt_dotplot()&quot;
+  )
+tbl_plots
+</code></pre>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/lt-plot.min.css">
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["beb9e5fd"]=
+{
+  "Study": ["A", "B", "C"],
+  "Eff": [0.1, -0.3, 0.4],
+  "Lo": [-0.1, -0.4, 0.2],
+  "Hi": [0.3, -0.2, 0.6],
+  "Temp": [
+    [-3, 1, 6, 12],
+    [14, 18, 28, 31],
+    [19, 18, 15, 15]
+  ],
+  "Rain": [
+    [49, 47, 53, 60],
+    [5, 4, 0, 0],
+    [8, 2, 1, 1]
+  ],
+  "Before": [3.1, 3.4, 3],
+  "After": [3.2, 4.1, 5.2]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "ops": [
+    {
+      "type": "hide",
+      "columns": ["Lo", "Hi"]
+    },
+    {
+      "type": "errorbar",
+      "columns": ["Eff"],
+      "lowers": ["Lo"],
+      "uppers": ["Hi"],
+      "min": -0.4,
+      "max": 0.6,
+      "ref": 0,
+      "width": 90,
+      "height": 16
+    },
+    {
+      "type": "sparkline",
+      "columns": ["Temp"],
+      "kind": "line",
+      "width": 70,
+      "height": 20
+    },
+    {
+      "type": "sparkline",
+      "columns": ["Rain"],
+      "kind": "bar",
+      "color": "#4caf50",
+      "width": 70,
+      "height": 20
+    },
+    {
+      "type": "hide",
+      "columns": ["After"]
+    },
+    {
+      "type": "label",
+      "labels": {
+        "Before": "Before / After"
+      }
+    },
+    {
+      "type": "dotplot",
+      "columns": ["Before", "After"],
+      "colors": ["black", "#DF536B"],
+      "labels": ["Before", "After"],
+      "min": 3,
+      "max": 5.2,
+      "width": 100,
+      "height": 16,
+      "axis": true
+    },
+    {
+      "type": "label",
+      "labels": {
+        "Eff": "lt_errorbar()",
+        "Temp": "line",
+        "Rain": "bar",
+        "Before": "lt_dotplot()"
+      }
+    }
+  ],
+  "header": {
+    "title": "Plot functions in lt"
+  },
+  "spanners": [
+    {
+      "label": "lt_sparkline()",
+      "columns": ["Temp", "Rain"]
+    }
+  ],
+  "data_key": "beb9e5fd"
+}
+})</script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt-plot.min.js" defer></script>
 <!-- end -->
 <h2 id="sec:a-minimal-table"><span class="section-number main-number">2</span> A minimal table</h2>
 <p>Pass a data frame to <code>lt()</code>, then pipe it through the verbs you need:</p>
@@ -342,7 +482,7 @@ users</a>.</li>
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.13</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.14</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/toc-highlight.min.js" defer></script>

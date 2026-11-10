@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.13">
+<meta name="generator" content="litedown 1.0.14">
 <title>lt: Lightweight Tables via JSON Specs and JavaScript</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/article.min.css">
@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.22</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.23</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -40,7 +40,7 @@
 <div class="side side-right">
 <dl class="pkg-desc">
 <dt>Version</dt>
-<dd>0.5.22</dd>
+<dd>0.5.23</dd>
 <dt>Depends</dt>
 <dd>R (&gt;= 4.1.0)</dd>
 <dt>Imports</dt>
@@ -79,7 +79,9 @@ and CSV/RTF download — with <code>lt_interactive()</code>.</p>
 core runtime (<code>lt-plot.js</code> and <code>lt-interactive.js</code>), each loaded only for the
 tables that use it. A plain static table pulls in neither, so it stays as light
 as ever.</p>
-<p><a href="https://pkg.yihui.org/lt/examples/01-lt.html"><img src="https://pkg.yihui.org/lt/examples/01-lt.png" alt="An lt cheat table demonstrating the package’s functions." /></a></p>
+<p><a href="https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheat-static"><img src="https://pkg.yihui.org/lt/examples/01-lt-static.png" alt="An lt cheat table for static tables." /></a>
+<a href="https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheat-interactive"><img src="https://pkg.yihui.org/lt/examples/01-lt-interactive.png" alt="An lt cheat table for interactive tables." /></a>
+<a href="https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheat-plots"><img src="https://pkg.yihui.org/lt/examples/01-lt-plots.png" alt="An lt cheat table for inline plots." /></a></p>
 <h2 id="sec:installation"><span class="section-number main-number">1</span> Installation</h2>
 <pre><code class="language-r"># CRAN version
 install.packages(&quot;lt&quot;)
@@ -92,7 +94,7 @@ without installing it.</p>
 <h2 id="sec:functions"><span class="section-number main-number">2</span> Functions</h2>
 <p><code>lt()</code> creates a table object from a data frame. The <code>lt_*()</code> functions build
 on it via the pipe. See <a href="https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet">https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet</a>
-for a “cheat table” as an overview of these functions, or read the book at
+for “cheat tables” as an overview of these functions, or read the book at
 <a href="https://pkg.yihui.org/lt/book/">https://pkg.yihui.org/lt/book/</a> for a guided tour.</p>
 <p><strong>Structure</strong></p>
 <ul>
@@ -248,12 +250,12 @@ developed with collaborators.</p>
 <h2 id="sec:citation" class="unnumbered">Citation</h2>
 <p>To cite the package <strong>lt</strong> in publications, please use:</p>
 <p>Xie Y (2026). <em>lt: Lightweight Tables via JSON Specs and JavaScript</em>. R
-package version 0.5.22, <a href="https://github.com/yihui/lt">https://github.com/yihui/lt</a>.</p>
+package version 0.5.23, <a href="https://github.com/yihui/lt">https://github.com/yihui/lt</a>.</p>
 <pre><code class="language-latex">@Manual{,
   title = {lt: Lightweight Tables via JSON Specs and JavaScript},
   author = {Yihui Xie},
   year = {2026},
-  note = {R package version 0.5.22},
+  note = {R package version 0.5.23},
   url = {https://github.com/yihui/lt},
 }
 </code></pre>
@@ -262,7 +264,7 @@ package version 0.5.22, <a href="https://github.com/yihui/lt">https://github.com
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.13</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.14</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/toc-highlight.min.js" defer></script>

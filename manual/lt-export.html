@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.13">
+<meta name="generator" content="litedown 1.0.14">
 <title>Export an lt table to a file</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/article.min.css">
@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.22</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.23</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -162,7 +162,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmpats5jM/file89a43e41bbc.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp6FHlp6/fileb084f15bf08.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table class=&quot;desc-table&quot;&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -276,13 +276,13 @@ if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmpats5jM/file89a55ae52f6.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp6FHlp6/fileb08704218f0.png&quot;
 </code></pre>
 <pre><code class="language-r"># The table's text as CSV or RTF.
 f4 = tempfile(fileext = '.rtf')
 if (lt:::has_node()) lt_export(tbl, f4)
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmpats5jM/file89a1e74d317.rtf&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp6FHlp6/fileb0849d5d321.rtf&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3, f4))
 </code></pre>
@@ -292,7 +292,7 @@ if (lt:::has_node()) lt_export(tbl, f4)
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.13</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.14</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/toc-highlight.min.js" defer></script>

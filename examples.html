@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.13">
+<meta name="generator" content="litedown 1.0.14">
 <title>Examples</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/default.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/article.min.css">
@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/prism-xcode.min.css">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.22</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.23</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -43,7 +43,7 @@
 <li><a href="#sec:javascript"><span class="section-number main-number">9</span> JavaScript</a></li>
 </ul>
 </nav>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yihui/litedown/inst/resources/listing.css?v=1.0.13">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yihui/litedown/inst/resources/listing.css?v=1.0.14">
 <style type="text/css">
 .box pre {
   & > code {
@@ -83,90 +83,133 @@ output:
 ---
 
 **lt** builds lightweight tables from a data frame and a few pipeable verbs.
-This page is only a taste: a cheat sheet that is itself a table, one minimal
+This page is only a taste: three cheat tables, one minimal
 example, and pointers to the [book](../book/) for the details.
 
-## The cheat sheet (table) {#sec:cheatsheet}
+## The cheat sheet {#sec:cheatsheet}
 
-The table below is a self-documenting cheat sheet: many functions in this
-package are used to build it, and each function's name is placed where
-that function acts. The title reads `lt_header(title = ...)` because
-`lt_header()` put it there; every column header is the name of the function
-that shaped that column; the row-group label is `lt_group()`; the footnote text
-is `lt_footnote()`; and so on.
+Three cheat tables give an overview, one each for static tables, interactive
+tables, and inline plots. Each is self-documenting: functions in this package
+build it, and each function's name is placed where that function acts.
+
+```{r}
+library(lt)
+```
+
+### Static tables {#sec:cheat-static}
+
+The title reads `lt_header(title = ...)` because `lt_header()` put it there;
+every column header is the name of the function that shaped that column; the
+row-group label is `lt_group()`; the footnote text is `lt_footnote()`; and so on.
 
 ```{r}
 d = data.frame(
   Grp   = paste(&quot;Group&quot;, c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;)),
   Label = c(&quot;&lt;a href='#sec:cheatsheet'&gt;lt(): make a table&lt;/a&gt;&quot;,
-            &quot;lt_indent(): child A&quot;,
-            &quot;lt_indent(): child B&quot;, &quot;lt_style() + lt_css()&quot;),
+            &quot;lt_indent(): child A&quot;, &quot;lt_indent(): child B&quot;, &quot;lt_style() + lt_css()&quot;),
   Fmt   = c(1234567.89, -0.51234, Inf, -Inf),
   Sub   = c(0, NA, 3.14, 0.0002),
   Date  = as.Date(c(&quot;2024-01-15&quot;, &quot;2024-02-20&quot;, &quot;2024-03-25&quot;, &quot;2024-04-30&quot;)),
   Align = c(1, 22, 333, 4),
-  Width = c(&quot;lt_width()&quot;, &quot;sets&quot;, &quot;column&quot;, &quot;widths&quot;),
   Est   = c(&quot;0.6&quot;, &quot;0.8&quot;, &quot;0.5&quot;, &quot;0.9&quot;),
-  CI    = c(&quot;(0.4, 0.8)&quot;, &quot;(0.6, 1.0)&quot;, &quot;(0.2, 0.7)&quot;, &quot;(0.7, 1.1)&quot;),
-  Eff   = c(0.1, -0.3, 0.4, -0.1),
-  EffLo = c(-0.1, -0.4, 0.2, -0.3),
-  EffHi = c(0.3, -0.2, 0.6, 0.1)
+  CI    = c(&quot;(0.4, 0.8)&quot;, &quot;(0.6, 1.0)&quot;, &quot;(0.2, 0.7)&quot;, &quot;(0.7, 1.1)&quot;)
 )
 
-library(lt)
-tbl_cheat = lt(d, auto_format = FALSE) |&gt;
+tbl_static = lt(d, auto_format = FALSE) |&gt;
   # lt_group(): the &quot;lt_group()&quot; row-group header on the left
   lt_group(~ Grp) |&gt;
   # lt_header(): the title and subtitle at the top
-  lt_header(
-    title    = &quot;lt_header(title = ...)&quot;,
-    subtitle = &quot;lt_header(subtitle = ...)&quot;
-  ) |&gt;
+  lt_header(title = &quot;lt_header(title = ...)&quot;, subtitle = &quot;lt_header(subtitle = ...)&quot;) |&gt;
   # lt_merge(): fold CI into Est to make the &quot;lt_merge()&quot; column
   lt_merge(~ Est + CI, pattern = &quot;{1} {2}&quot;) |&gt;
   # lt_spanner(): the &quot;lt_spanner()&quot; label above two columns
   lt_spanner(`lt_spanner()` ~ Fmt + Sub) |&gt;
   # lt_label(): every column header is renamed to the function acting on it
   lt_label(
-    Grp = &quot;lt_group()&quot;, Width = &quot;lt_width()&quot;, Label = &quot;lt_label(old = new, ...)&quot;,
-    Fmt = &quot;lt_format()&quot;, Sub = &quot;lt_sub()&quot;, Date = &quot;lt_date()&quot;,
-    Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;, Eff = &quot;lt_errorbar()&quot;
+    Grp = &quot;lt_group()&quot;, Label = &quot;lt_label(old = new, ...)&quot;, Fmt = &quot;lt_format()&quot;,
+    Sub = &quot;lt_sub()&quot;, Date = &quot;lt_date()&quot;, Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;
   ) |&gt;
-  # lt_errorbar(): draw an inline forest plot in the &quot;lt_errorbar()&quot; column
-  lt_errorbar(Eff ~ EffLo + EffHi, ref = 0, width = 80) |&gt;
   # lt_html(): render the &quot;Label&quot; column as raw HTML (note the link in row 1)
   lt_html(~ Label) |&gt;
   # lt_align(): center the &quot;lt_align()&quot; column
   lt_align(~ Align, &quot;center&quot;) |&gt;
-  # lt_width(): the &quot;lt_width()&quot; column is where widths are set
-  lt_width(Width = &quot;9em&quot;, Label = &quot;16em&quot;) |&gt;
+  # lt_width(): set the width of the first column
+  lt_width(Label = &quot;11em&quot;) |&gt;
   # lt_format(): round and add a thousands separator
   lt_format(~ Fmt, decimals = 1, big_mark = &quot;,&quot;) |&gt;
   # lt_date(): format the &quot;lt_date()&quot; column
-  lt_date(~ Date, options = list(
-    month = &quot;short&quot;, day = &quot;numeric&quot;, timeZone = &quot;UTC&quot;
-  )) |&gt;
+  lt_date(~ Date, options = list(month = &quot;short&quot;, day = &quot;numeric&quot;, timeZone = &quot;UTC&quot;)) |&gt;
   # lt_sub(): NA/zero/small are replaced with self-naming placeholders
-  lt_sub(~ Sub, missing = &quot;n/a&quot;, zero = &quot;—&quot;,
-    small = 0.01, small_text = &quot;&lt; 0.01&quot;) |&gt;
+  lt_sub(~ Sub, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.01, small_text = &quot;&lt; 0.01&quot;) |&gt;
   # lt_indent(): indent the two &quot;lt_indent()&quot; child rows
   lt_indent(c(2, 3), level = 1) |&gt;
   # lt_style() + lt_css(): style the cell that names them
-  lt_style(&quot;Label&quot;, rows = 4L, class = &quot;highlight&quot;) |&gt;
-  lt_css(.highlight = list(fontWeight = &quot;bold&quot;, color = &quot;#c60&quot;)) |&gt;
+  lt_style(~ Label, rows = 4L, class = &quot;highlight&quot;) |&gt;
+  lt_css(.highlight = list(fontWeight = &quot;bold&quot;, color = &quot;orange&quot;)) |&gt;
   # lt_footnote(): provide the footnote text
   lt_footnote(&quot;lt_footnote() can add a footnote anywhere.&quot;, &quot;title&quot;) |&gt;
-  lt_footnote(I(&quot;&lt;code&gt;Alt + Click&lt;/code&gt; a table to toggle raw values.&quot;), &quot;subtitle&quot;) |&gt;
-  # I(): wrapping text in I() marks it as raw HTML (here, a bold tag)
-  lt_footnote(I(&quot;Wrap text in &lt;code&gt;I()&lt;/code&gt; for raw HTML.&quot;), &quot;column&quot;, &quot;Label&quot;) |&gt;
-  # lt_move(): explain it via a footnote, since it has no column of its own here
-  lt_footnote(&quot;lt_move() can reorder columns as desired.&quot;, &quot;column&quot;, &quot;Est&quot;) |&gt;
-  # lt_errorbar(): point to the other inline plot types via a footnote
-  lt_footnote(&quot;lt_sparkline() and lt_dotplot() draw other inline plots.&quot;,
-    &quot;column&quot;, &quot;Eff&quot;) |&gt;
+  # I(): wrapping text in I() marks it as raw HTML
+  lt_footnote(I(&quot;Wrap text in &lt;code&gt;I()&lt;/code&gt; for raw HTML.&quot;), &quot;column&quot;, ~ Label) |&gt;
+  # lt_width() and lt_move() have no column of their own: explain via footnotes
+  lt_footnote(&quot;lt_width() sets column widths.&quot;, &quot;column&quot;, ~ Label) |&gt;
+  lt_footnote(&quot;lt_move() can reorder columns as desired.&quot;, &quot;column&quot;, ~ Est) |&gt;
   # lt_note(): the footer note names itself and lt_export()
   lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
-tbl_cheat |&gt; lt_wrap(class = &quot;fullwidth pagesjs-wide&quot;)
+tbl_static
+```
+
+### Interactive tables {#sec:cheat-interactive}
+
+`lt_interactive()` adds sorting, search, filters, and paging in the browser.
+Each row below names an argument and tells you how to try it on this table:
+click a header to sort, type `Kind is Layout` in the search box, or pick a value
+from a filter.
+
+```{r}
+d = data.frame(
+  Argument = c(&quot;sort&quot;, &quot;search&quot;, &quot;filter&quot;, &quot;pager&quot;, &quot;resize&quot;, &quot;hide&quot;, &quot;detail&quot;,
+               &quot;profile&quot;, &quot;download&quot;),
+  Kind = c(&quot;Find rows&quot;, &quot;Find rows&quot;, &quot;Find rows&quot;, &quot;Layout&quot;, &quot;Layout&quot;, &quot;Layout&quot;,
+           &quot;Layout&quot;, &quot;Inspect&quot;, &quot;Output&quot;),
+  Default = c(&quot;TRUE&quot;, &quot;TRUE&quot;, &quot;auto&quot;, &quot;10, 25, 50, Inf&quot;, &quot;TRUE&quot;, &quot;NULL&quot;, &quot;NULL&quot;,
+              &quot;FALSE&quot;, &quot;FALSE&quot;),
+  Try = c(&quot;click a header&quot;, &quot;type a query&quot;, &quot;pick a value&quot;, &quot;change page size&quot;,
+          &quot;drag a header edge&quot;, &quot;hide columns&quot;, &quot;expand a row&quot;,
+          &quot;summarize columns&quot;, &quot;save CSV or RTF&quot;),
+  Popularity = c(95, 64, 61, 36, 20, 16, 12, 8, 5)
+)
+
+tbl_interactive = lt(d) |&gt;
+  lt_header(&quot;lt_interactive(...)&quot;, &quot;Click, type, and pick&quot;) |&gt;
+  lt_interactive(pager = c(5, 10, Inf), hide = NA, profile = TRUE, download = TRUE) |&gt;
+  lt_note(&quot;lt_viewer() and lt_serve() view and serve big data.&quot;)
+tbl_interactive
+```
+
+### Inline plots {#sec:cheat-plots}
+
+Each plotting function draws in the cell of the column that carries its name.
+
+```{r}
+d = data.frame(
+  Study = c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;),
+  Eff = c(0.1, -0.3, 0.4), Lo = c(-0.1, -0.4, 0.2), Hi = c(0.3, -0.2, 0.6),
+  Temp = I(list(c(-3, 1, 6, 12), c(14, 18, 28, 31), c(19, 18, 15, 15))),
+  Rain = I(list(c(49, 47, 53, 60), c(5, 4, 0, 0), c(8, 2, 1, 1))),
+  Before = c(3.1, 3.4, 3.0), After = c(3.2, 4.1, 5.2)
+)
+
+tbl_plots = lt(d) |&gt;
+  lt_header(&quot;Plot functions in lt&quot;) |&gt;
+  lt_errorbar(Eff ~ Lo + Hi, ref = 0, width = 90) |&gt;
+  lt_sparkline(~ Temp, width = 70) |&gt;
+  lt_sparkline(~ Rain, type = &quot;bar&quot;, color = &quot;#4caf50&quot;, width = 70) |&gt;
+  lt_dotplot(~ Before + After, color = TRUE, width = 100) |&gt;
+  lt_spanner(`lt_sparkline()` ~ Temp + Rain) |&gt;
+  lt_label(
+    Eff = &quot;lt_errorbar()&quot;, Temp = &quot;line&quot;, Rain = &quot;bar&quot;, Before = &quot;lt_dotplot()&quot;
+  )
+tbl_plots
 ```
 
 &lt;!-- end --&gt;
@@ -196,9 +239,9 @@ lt(head(mtcars[, 1:5])) |&gt;
 -   Many [small examples](../examples.html), one feature each.
 
 ```{r, include = FALSE}
-# the PNG on the README: lt_export() needs Node.js or a headless browser,
-# which are unavailable in some environments (e.g., webR)
-if (lt:::can_bake()) lt_export(tbl_cheat, &quot;01-lt.png&quot;, width = &quot;min-content&quot;)
+# for the PNGs on the README
+if (lt:::can_bake()) for (i in c(&quot;static&quot;, &quot;interactive&quot;, &quot;plots&quot;))
+  lt_export(get(paste0(&quot;tbl_&quot;, i)), sprintf(&quot;01-lt-%s.png&quot;, i), width = &quot;min-content&quot;)
 ```
 </code></pre>
 </div>
@@ -608,10 +651,10 @@ lt(d) |&gt;
   lt_spanner(Summary ~ Value + SE) |&gt;
   lt_footnote(&quot;Source: simulated trial data.&quot;, &quot;title&quot;) |&gt;
   lt_footnote(&quot;Intention-to-treat population.&quot;, &quot;subtitle&quot;) |&gt;
-  lt_footnote(&quot;Standard error of the mean.&quot;, &quot;column&quot;, &quot;SE&quot;) |&gt;
+  lt_footnote(&quot;Standard error of the mean.&quot;, &quot;column&quot;, ~ SE) |&gt;
   lt_footnote(&quot;Per-arm summary statistics.&quot;, &quot;spanner&quot;, &quot;Summary&quot;) |&gt;
   lt_footnote(&quot;Received active drug.&quot;, &quot;group&quot;, &quot;Treatment&quot;) |&gt;
-  lt_footnote(&quot;SE is undefined for counts.&quot;, &quot;body&quot;, &quot;SE&quot;, rows = c(1, 3))
+  lt_footnote(&quot;SE is undefined for counts.&quot;, &quot;body&quot;, ~ SE, rows = c(1, 3))
 ```
 </code></pre>
 </div>
@@ -682,9 +725,9 @@ d = data.frame(
 )
 lt(d) |&gt;
   lt_format(~ HR + P, decimals = 3) |&gt;
-  lt_style(&quot;Endpoint&quot;, rows = 1, bold = TRUE, color = &quot;#06c&quot;) |&gt;
-  lt_style(&quot;HR&quot;, test = &quot;v =&gt; v &lt; 1&quot;, class = &quot;good&quot;) |&gt;
-  lt_style(&quot;P&quot;, test = &quot;v =&gt; v &lt; 0.05&quot;, class = &quot;sig&quot;) |&gt;
+  lt_style(~ Endpoint, rows = 1, bold = TRUE, color = &quot;#06c&quot;) |&gt;
+  lt_style(~ HR, test = &quot;v =&gt; v &lt; 1&quot;, class = &quot;good&quot;) |&gt;
+  lt_style(~ P, test = &quot;v =&gt; v &lt; 0.05&quot;, class = &quot;sig&quot;) |&gt;
   lt_css(.good = list(color = &quot;green&quot;), .sig = list(fontWeight = &quot;bold&quot;))
 ```
 </code></pre>
@@ -1210,7 +1253,7 @@ addEventListener(&quot;load&quot;, () =&gt; {
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.13</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.14</p>
 </div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/sidenotes.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/toc-highlight.min.js" defer></script>
