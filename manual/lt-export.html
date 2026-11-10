@@ -162,7 +162,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = '.html')
 lt_export(tbl, f1, method = 'raw')  # file output
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmpVn7Yl8/file98b23d2f3d.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmpats5jM/file89a43e41bbc.html&quot;
 </code></pre>
 <pre><code class="language-r"># Bake a static &lt;table class=&quot;desc-table&quot;&gt; (needs Node.js or a headless browser).
 if (lt:::can_bake())
@@ -276,13 +276,13 @@ if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f3, width = 400)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmpVn7Yl8/file98b27e620a2.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmpats5jM/file89a55ae52f6.png&quot;
 </code></pre>
 <pre><code class="language-r"># The table's text as CSV or RTF.
 f4 = tempfile(fileext = '.rtf')
 if (lt:::has_node()) lt_export(tbl, f4)
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmpVn7Yl8/file98b3457ee1a.rtf&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmpats5jM/file89a1e74d317.rtf&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3, f4))
 </code></pre>
