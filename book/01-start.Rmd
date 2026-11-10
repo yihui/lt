@@ -59,13 +59,12 @@ names", so `~ endsWith(., "_time")` selects every column whose name ends in
 
 ## The cheat sheet {#sec:cheatsheet}
 
-Before we go through the verbs one by one, here is the whole package on one
-page. This table is self-documenting: each function's name is placed exactly
-where that function acts. The title reads `lt_header(title = ...)` because
-`lt_header()` put it there; each column header is the name of the function that
-shaped the column; the row group label is `lt_group()`; and the footnotes
-explain the rest. Come back to it whenever you want a quick reminder, and
-perhaps try to guess which verb is responsible for each detail before reading on.
+Before we go through the verbs one by one, here is the whole package in three
+cheat tables: one for static tables, one for interactive tables, and one for
+inline plots. Each table is self-documenting: each function's name is placed
+exactly where that function acts. Come back to them whenever you want a quick
+reminder, and perhaps try to guess which verb is responsible for each detail
+before reading on.
 
 ```{r, child = ex('lt')}
 ```

@@ -29,7 +29,9 @@ core runtime (`lt-plot.js` and `lt-interactive.js`), each loaded only for the
 tables that use it. A plain static table pulls in neither, so it stays as light
 as ever.
 
-[![An lt cheat table demonstrating the package's functions.](https://pkg.yihui.org/lt/examples/01-lt.png)](https://pkg.yihui.org/lt/examples/01-lt.html)
+[![An lt cheat table for static tables.](https://pkg.yihui.org/lt/examples/01-lt-static.png)](https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheat-static)
+[![An lt cheat table for interactive tables.](https://pkg.yihui.org/lt/examples/01-lt-interactive.png)](https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheat-interactive)
+[![An lt cheat table for inline plots.](https://pkg.yihui.org/lt/examples/01-lt-plots.png)](https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheat-plots)
 
 ## Installation
 
@@ -48,7 +50,7 @@ without installing it.
 
 `lt()` creates a table object from a data frame. The `lt_*()` functions build
 on it via the pipe. See <https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet>
-for a "cheat table" as an overview of these functions, or read the book at
+for "cheat tables" as an overview of these functions, or read the book at
 <https://pkg.yihui.org/lt/book/> for a guided tour.
 
 **Structure**

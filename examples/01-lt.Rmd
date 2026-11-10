@@ -8,72 +8,64 @@ output:
 ---
 
 **lt** builds lightweight tables from a data frame and a few pipeable verbs.
-This page is only a taste: a cheat sheet that is itself a table, one minimal
+This page is only a taste: three cheat tables, one minimal
 example, and pointers to the [book](../book/) for the details.
 
-## The cheat sheet (table) {#sec:cheatsheet}
+## The cheat sheet {#sec:cheatsheet}
 
-The table below is a self-documenting cheat sheet: many functions in this
-package are used to build it, and each function's name is placed where
-that function acts. The title reads `lt_header(title = ...)` because
-`lt_header()` put it there; every column header is the name of the function
-that shaped that column; the row-group label is `lt_group()`; the footnote text
-is `lt_footnote()`; and so on.
+Three cheat tables give an overview, one each for static tables, interactive
+tables, and inline plots. Each is self-documenting: functions in this package
+build it, and each function's name is placed where that function acts.
+
+```{r}
+library(lt)
+```
+
+### Static tables {#sec:cheat-static}
+
+The title reads `lt_header(title = ...)` because `lt_header()` put it there;
+every column header is the name of the function that shaped that column; the
+row-group label is `lt_group()`; the footnote text is `lt_footnote()`; and so on.
 
 ```{r}
 d = data.frame(
   Grp   = paste("Group", c("A", "A", "B", "B")),
   Label = c("<a href='#sec:cheatsheet'>lt(): make a table</a>",
-            "lt_indent(): child A",
-            "lt_indent(): child B", "lt_style() + lt_css()"),
+            "lt_indent(): child A", "lt_indent(): child B", "lt_style() + lt_css()"),
   Fmt   = c(1234567.89, -0.51234, Inf, -Inf),
   Sub   = c(0, NA, 3.14, 0.0002),
   Date  = as.Date(c("2024-01-15", "2024-02-20", "2024-03-25", "2024-04-30")),
   Align = c(1, 22, 333, 4),
-  Width = c("lt_width()", "sets", "column", "widths"),
   Est   = c("0.6", "0.8", "0.5", "0.9"),
-  CI    = c("(0.4, 0.8)", "(0.6, 1.0)", "(0.2, 0.7)", "(0.7, 1.1)"),
-  Eff   = c(0.1, -0.3, 0.4, -0.1),
-  EffLo = c(-0.1, -0.4, 0.2, -0.3),
-  EffHi = c(0.3, -0.2, 0.6, 0.1)
+  CI    = c("(0.4, 0.8)", "(0.6, 1.0)", "(0.2, 0.7)", "(0.7, 1.1)")
 )
 
-library(lt)
-tbl_cheat = lt(d, auto_format = FALSE) |>
+tbl_static = lt(d, auto_format = FALSE) |>
   # lt_group(): the "lt_group()" row-group header on the left
   lt_group(~ Grp) |>
   # lt_header(): the title and subtitle at the top
-  lt_header(
-    title    = "lt_header(title = ...)",
-    subtitle = "lt_header(subtitle = ...)"
-  ) |>
+  lt_header(title = "lt_header(title = ...)", subtitle = "lt_header(subtitle = ...)") |>
   # lt_merge(): fold CI into Est to make the "lt_merge()" column
   lt_merge(~ Est + CI, pattern = "{1} {2}") |>
   # lt_spanner(): the "lt_spanner()" label above two columns
   lt_spanner(`lt_spanner()` ~ Fmt + Sub) |>
   # lt_label(): every column header is renamed to the function acting on it
   lt_label(
-    Grp = "lt_group()", Width = "lt_width()", Label = "lt_label(old = new, ...)",
-    Fmt = "lt_format()", Sub = "lt_sub()", Date = "lt_date()",
-    Align = "lt_align()", Est = "lt_merge()", Eff = "lt_errorbar()"
+    Grp = "lt_group()", Label = "lt_label(old = new, ...)", Fmt = "lt_format()",
+    Sub = "lt_sub()", Date = "lt_date()", Align = "lt_align()", Est = "lt_merge()"
   ) |>
-  # lt_errorbar(): draw an inline forest plot in the "lt_errorbar()" column
-  lt_errorbar(Eff ~ EffLo + EffHi, ref = 0, width = 80) |>
   # lt_html(): render the "Label" column as raw HTML (note the link in row 1)
   lt_html(~ Label) |>
   # lt_align(): center the "lt_align()" column
   lt_align(~ Align, "center") |>
-  # lt_width(): the "lt_width()" column is where widths are set
-  lt_width(Width = "9em", Label = "16em") |>
+  # lt_width(): set the width of the first column
+  lt_width(Label = "11em") |>
   # lt_format(): round and add a thousands separator
   lt_format(~ Fmt, decimals = 1, big_mark = ",") |>
   # lt_date(): format the "lt_date()" column
-  lt_date(~ Date, options = list(
-    month = "short", day = "numeric", timeZone = "UTC"
-  )) |>
+  lt_date(~ Date, options = list(month = "short", day = "numeric", timeZone = "UTC")) |>
   # lt_sub(): NA/zero/small are replaced with self-naming placeholders
-  lt_sub(~ Sub, missing = "n/a", zero = "—",
-    small = 0.01, small_text = "< 0.01") |>
+  lt_sub(~ Sub, missing = "n/a", zero = "—", small = 0.01, small_text = "< 0.01") |>
   # lt_indent(): indent the two "lt_indent()" child rows
   lt_indent(c(2, 3), level = 1) |>
   # lt_style() + lt_css(): style the cell that names them
@@ -81,17 +73,67 @@ tbl_cheat = lt(d, auto_format = FALSE) |>
   lt_css(.highlight = list(fontWeight = "bold", color = "#c60")) |>
   # lt_footnote(): provide the footnote text
   lt_footnote("lt_footnote() can add a footnote anywhere.", "title") |>
-  lt_footnote(I("<code>Alt + Click</code> a table to toggle raw values."), "subtitle") |>
-  # I(): wrapping text in I() marks it as raw HTML (here, a bold tag)
+  # I(): wrapping text in I() marks it as raw HTML
   lt_footnote(I("Wrap text in <code>I()</code> for raw HTML."), "column", "Label") |>
-  # lt_move(): explain it via a footnote, since it has no column of its own here
+  # lt_width() and lt_move() have no column of their own: explain via footnotes
+  lt_footnote("lt_width() sets column widths.", "column", "Label") |>
   lt_footnote("lt_move() can reorder columns as desired.", "column", "Est") |>
-  # lt_errorbar(): point to the other inline plot types via a footnote
-  lt_footnote("lt_sparkline() and lt_dotplot() draw other inline plots.",
-    "column", "Eff") |>
   # lt_note(): the footer note names itself and lt_export()
   lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG.")
-tbl_cheat |> lt_wrap(class = "fullwidth pagesjs-wide")
+tbl_static
+```
+
+### Interactive tables {#sec:cheat-interactive}
+
+`lt_interactive()` adds sorting, search, filters, and paging in the browser.
+Each row below names an argument and tells you how to try it on this table:
+click a header to sort, type `Kind is Layout` in the search box, or pick a value
+from a filter.
+
+```{r}
+d = data.frame(
+  Argument = c("sort", "search", "filter", "pager", "resize", "hide", "detail",
+               "profile", "download"),
+  Kind = c("Find rows", "Find rows", "Find rows", "Layout", "Layout", "Layout",
+           "Layout", "Inspect", "Output"),
+  Default = c("TRUE", "TRUE", "auto", "10, 25, 50, Inf", "TRUE", "NULL", "NULL",
+              "FALSE", "FALSE"),
+  Try = c("click a header", "type a query", "pick a value", "change page size",
+          "drag a header edge", "hide columns", "expand a row",
+          "summarize columns", "save CSV or RTF")
+)
+
+tbl_interactive = lt(d) |>
+  lt_header("lt_interactive(...)", "Click, type, and pick") |>
+  lt_interactive(pager = c(5, 10, Inf), download = TRUE) |>
+  lt_note("lt_viewer() and lt_serve() view and serve big data.")
+tbl_interactive
+```
+
+### Inline plots {#sec:cheat-plots}
+
+Each plotting function draws in the cell of the column that carries its name.
+
+```{r}
+d = data.frame(
+  Study = c("A", "B", "C"),
+  Eff = c(0.1, -0.3, 0.4), Lo = c(-0.1, -0.4, 0.2), Hi = c(0.3, -0.2, 0.6),
+  Temp = I(list(c(-3, 1, 6, 12), c(14, 18, 28, 31), c(19, 18, 15, 15))),
+  Rain = I(list(c(49, 47, 53, 60), c(5, 4, 0, 0), c(8, 2, 1, 1))),
+  Before = c(3.1, 3.4, 3.0), After = c(3.2, 4.1, 5.2)
+)
+
+tbl_plots = lt(d) |>
+  lt_header("lt_header(title = ...)") |>
+  lt_errorbar(Eff ~ Lo + Hi, ref = 0, width = 90) |>
+  lt_sparkline(~ Temp, width = 70) |>
+  lt_sparkline(~ Rain, type = "bar", color = "#4caf50", width = 70) |>
+  lt_dotplot(~ Before + After, color = TRUE, width = 100) |>
+  lt_spanner(`lt_sparkline()` ~ Temp + Rain) |>
+  lt_label(
+    Eff = "lt_errorbar()", Temp = "line", Rain = "bar", Before = "lt_dotplot()"
+  )
+tbl_plots
 ```
 
 <!-- end -->
@@ -121,7 +163,9 @@ lt(head(mtcars[, 1:5])) |>
 -   Many [small examples](../examples.html), one feature each.
 
 ```{r, include = FALSE}
-# the PNG on the README: lt_export() needs Node.js or a headless browser,
+# the PNGs on the README: lt_export() needs Node.js or a headless browser,
 # which are unavailable in some environments (e.g., webR)
-if (lt:::can_bake()) lt_export(tbl_cheat, "01-lt.png", width = "min-content")
+w = list(static = "min-content", interactive = 520, plots = "min-content")
+if (lt:::can_bake()) for (i in names(w))
+  lt_export(get(paste0("tbl_", i)), sprintf("01-lt-%s.png", i), width = w[[i]])
 ```
