@@ -30,7 +30,7 @@
   const escIf = (raw, s) => raw ? String(s ?? "") : esc(s);
   // Column `c` raw HTML? `hc` = spec.html_cols: true (all) or column names.
   const rawCol = (hc, c) => hc === true || (Array.isArray(hc) && hc.includes(c));
-  const sup = i => `<sup class="lt-fnref">${i}</sup>`;
+  const sup = i => `<sup class="lt-fnref">${[].concat(i)}</sup>`;  // i: number or array (joined by ",")
   // Stringify; null/undefined -> "". ±Infinity -> ∞/-∞ (ASCII minus, raw
   // values); formatted columns get typographic minus via fmtNumber.
   const str = v => v === Infinity ? "∞" : v === -Infinity ? "-∞" : String(v ?? "");
@@ -439,23 +439,23 @@
     return { order, idx };
   }
 
-  // Footnote index for (type, value) location; 0 if none. `val` scalar: title
-  // group, column, spanner label, or row-group label, per `type`.
+  // Footnote indices (sorted, deduped) for (type, value) location; [] if none.
+  // `val` scalar: title group, column, spanner label, or row-group label, per
+  // `type`.
   const matcher = (fns, idx) => (type, val) => {
+    const hits = new Set();
     for (const f of fns) {
       const loc = f.location;
       if (loc.type !== type) continue;
-      const hit = idx[f.text];
-      if (type === "title" && loc.group === val) return hit;
-      if (type === "column_labels" && loc.columns.includes(val)) return hit;
-      if (type === "column_spanners" && loc.spanners.includes(val)) return hit;
-      if (type === "row_groups") {
-        if (loc.match === "all") return hit;
-        if (loc.match === "exact" && loc.values.includes(val)) return hit;
-        if (loc.match === "starts_with" && val.startsWith(loc.value)) return hit;
-      }
+      if (type === "title" ? loc.group === val
+        : type === "column_labels" ? loc.columns.includes(val)
+        : type === "column_spanners" ? loc.spanners.includes(val)
+        : type === "row_groups" && (loc.match === "all" ||
+          (loc.match === "exact" && loc.values.includes(val)) ||
+          (loc.match === "starts_with" && val.startsWith(loc.value))))
+        hits.add(idx[f.text]);
     }
-    return 0;
+    return [...hits].sort((a, b) => a - b);
   };
 
   function sortByGroups(spec) {
@@ -525,7 +525,7 @@
           // bake renders all. `_viewRows` overrides.
           pg = root.LT?.plugins?.interactive && spec.interactive?.pager,
           lim = (!spec._viewRows && Array.isArray(pg) && pg[0]) ? pg[0] : 0;
-    const mark = (type, val) => { const i = fIdx(type, val); return i ? sup(i) : ""; },
+    const mark = (type, val) => { const i = fIdx(type, val); return i.length ? sup(i) : ""; },
           cell = (c, r) => display[c]?.[r - 1] ?? "";
     // ` name="val"` if val truthy, else "" (optional attrs).
     const attr = (n, v) => v ? ` ${n}="${v}"` : "";
@@ -604,7 +604,10 @@
     for (const f of fns) {
       if (f.location.type !== "body") continue;
       const fi = reg.idx[f.text];
-      eachLoc(f.location.rows, f.location.columns || [], key => { bodyMarks[key] = fi; });
+      eachLoc(f.location.rows, f.location.columns || [], key => {
+        const a = bodyMarks[key] ||= [];
+        if (!a.includes(fi)) a.push(fi);
+      });
     }
 
     // Row rendering
@@ -643,12 +646,12 @@
           // class (e.g. zero padding for unbroken gridlines).
           const extra = cm.rnd.cellClass?.(cm.cfg) || "",
                 pcls = [cls, extra].filter(Boolean).join(" ");
-          out.push(`<td${attr("class", pcls)}${attr("style", s)}>${cm.rnd.cell(cm.cfg, data, r, U)}${m ? sup(m) : ""}</td>`);
+          out.push(`<td${attr("class", pcls)}${attr("style", s)}>${cm.rnd.cell(cm.cfg, data, r, U)}${m ? sup(m.sort((a, b) => a - b)) : ""}</td>`);
           continue;
         }
         const raw = str(data[c][r - 1]), disp = display[c][r - 1],
               tip = raw !== disp ? ` title="${esc(raw)}"` : "";
-        out.push(`<td${attr("class", cls)}${attr("style", s)}${tip}>${escIf(isRaw(c), disp)}${m ? sup(m) : ""}</td>`);
+        out.push(`<td${attr("class", cls)}${attr("style", s)}${tip}>${escIf(isRaw(c), disp)}${m ? sup(m.sort((a, b) => a - b)) : ""}</td>`);
       }
       out.push(`</tr>`);
     };

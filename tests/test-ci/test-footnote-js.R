@@ -51,3 +51,18 @@ assert("footnote on row groups renders in rowspan mode", {
   (has_match(html, 'class="lt-row-group lt-row-open">A<sup class="lt-fnref"'))
   (has_match(html, !">B<sup"))
 })
+
+assert("several footnotes at one location all show, numbered together", {
+  loc = function(...) list(type = "column_labels", columns = list("x"))
+  html = build(list(
+    data = list(x = 1, y = 2),
+    footnotes = list(
+      list(text = "one", location = loc()), list(text = "two", location = loc()),
+      list(text = "three", location = list(type = "body", columns = list("y"), rows = list(1L))),
+      list(text = "one", location = list(type = "body", columns = list("y"), rows = list(1L)))
+    )
+  ))
+  (has_match(html, '>x<sup class="lt-fnref">1,2</sup>'))
+  (has_match(html, '<td[^>]*>2<sup class="lt-fnref">1,3</sup>'))
+  (has_match(html, '> two</td>'))
+})
