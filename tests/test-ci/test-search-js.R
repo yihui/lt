@@ -36,6 +36,8 @@ assert("a column label with spaces can be named in the query", {
      i.value = %s; i.dispatchEvent(new Event("change"))', xfun::tojson(term)
   )
   (lti_rows(x, find('sepal length over 5.5')) %==% c('7', '6'))
+  # the original column name still works alongside the label
+  (lti_rows(x, find('Sepal_Length over 5.5')) %==% c('7', '6'))
 })
 
 assert("search boxes drop down random example queries", {
@@ -44,10 +46,10 @@ assert("search boxes drop down random example queries", {
   x = itbl()
   parts = strsplit(lti_eval(x, opts('.lti-search')), '|', fixed = TRUE)[[1]]
   # the first two are numeric and text, in that order
-  (grepl('^n ', parts[1]))
-  (grepl('^name ', parts[2]))
+  (grepl('^"n" ', parts[1]))
+  (grepl('^"name" ', parts[2]))
   # the placeholder shows a sample
-  (lti_eval(x, 't.querySelector(".lti-search").placeholder.startsWith("e.g. n ")') %==% 'true')
+  (lti_eval(x, 't.querySelector(".lti-search").placeholder.startsWith(\'e.g. "n" \')') %==% 'true')
   # picking one (an input event with no typing) applies it at once, no debounce
   pick = 'var i = t.querySelector(".lti-search"); i.value = i.list.options[0].value;
           i.dispatchEvent(new Event("input"))'

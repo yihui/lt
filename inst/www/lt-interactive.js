@@ -563,7 +563,7 @@
         queryExamples = (vals, cols, labelOf) => {
           const filled = cols.filter(c => hasData(vals[c])),
                 ncs = filled.filter(c => numCol(vals[c])), tcs = filled.filter(c => !numCol(vals[c])),
-                one = cs => { const c = rnd(cs); return colExample(vals[c], `${qv(labelOf(c))} `); },
+                one = cs => { const c = rnd(cs); return colExample(vals[c], `"${labelOf(c)}" `); },
                 gens = [ncs.length && (() => one(ncs)), tcs.length && (() => one(tcs)),
                         ncs.length && tcs.length && (() => `${one(ncs)}${rnd([", ", " and "])}${one(tcs)}`)].filter(Boolean);
           return gens.length ? sample(i => gens[i % gens.length]()) : [];
