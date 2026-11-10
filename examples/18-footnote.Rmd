@@ -18,8 +18,8 @@ lt(d) |>
   lt_spanner(Summary ~ Value + SE) |>
   lt_footnote("Source: simulated trial data.", "title") |>
   lt_footnote("Intention-to-treat population.", "subtitle") |>
-  lt_footnote("Standard error of the mean.", "column", "SE") |>
+  lt_footnote("Standard error of the mean.", "column", ~ SE) |>
   lt_footnote("Per-arm summary statistics.", "spanner", "Summary") |>
   lt_footnote("Received active drug.", "group", "Treatment") |>
-  lt_footnote("SE is undefined for counts.", "body", "SE", rows = c(1, 3))
+  lt_footnote("SE is undefined for counts.", "body", ~ SE, rows = c(1, 3))
 ```

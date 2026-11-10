@@ -13,8 +13,8 @@ d = data.frame(
 )
 lt(d) |>
   lt_format(~ HR + P, decimals = 3) |>
-  lt_style("Endpoint", rows = 1, bold = TRUE, color = "#06c") |>
-  lt_style("HR", test = "v => v < 1", class = "good") |>
-  lt_style("P", test = "v => v < 0.05", class = "sig") |>
+  lt_style(~ Endpoint, rows = 1, bold = TRUE, color = "#06c") |>
+  lt_style(~ HR, test = "v => v < 1", class = "good") |>
+  lt_style(~ P, test = "v => v < 0.05", class = "sig") |>
   lt_css(.good = list(color = "green"), .sig = list(fontWeight = "bold"))
 ```

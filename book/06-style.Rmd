@@ -22,7 +22,7 @@ then a handful of arguments you would otherwise have to spell in CSS: `bold`,
 
 ```{r}
 lt(head(mtcars[, 1:4], 5)) |>
-  lt_style("mpg", rows = 1, bold = TRUE, color = "#06c") |>
+  lt_style(~ mpg, rows = 1, bold = TRUE, color = "#06c") |>
   lt_style(rows = 5, italic = TRUE, bg = "#fff3cd")
 ```
 
@@ -33,7 +33,7 @@ the browser supports:
 
 ```{r}
 lt(head(mtcars[, 1:4], 4)) |>
-  lt_style("mpg", rows = 1, borderBottom = "2px solid crimson", letterSpacing = ".1em")
+  lt_style(~ mpg, rows = 1, borderBottom = "2px solid crimson", letterSpacing = ".1em")
 ```
 
 ## Let the data pick the cells {#sec:style-test}
@@ -65,8 +65,8 @@ holes in your data:
 ```{r}
 d = data.frame(Site = c("A", "B", "C"), Enrolled = c(120, NA, 87))
 lt(d) |>
-  lt_style("Enrolled", test = "v => v == null", bg = "#fde2e2") |>
-  lt_style("Enrolled", test = "v => v > 100", bold = TRUE)
+  lt_style(~ Enrolled, test = "v => v == null", bg = "#fde2e2") |>
+  lt_style(~ Enrolled, test = "v => v > 100", bold = TRUE)
 ```
 
 By default `NA` cells show an em dash (@sec:printing explains how to change the
@@ -84,7 +84,7 @@ in camelCase as in `lt_style()`.
 
 ```{r}
 lt(head(mtcars[, 1:3], 5)) |>
-  lt_style("mpg", test = "v => v >= 21", class = "good") |>
+  lt_style(~ mpg, test = "v => v >= 21", class = "good") |>
   lt_css(
     .good = list(color = "darkgreen", fontWeight = "bold"),
     "tbody tr:hover" = "background: #f4f8ff",

@@ -69,15 +69,15 @@ tbl_static = lt(d, auto_format = FALSE) |>
   # lt_indent(): indent the two "lt_indent()" child rows
   lt_indent(c(2, 3), level = 1) |>
   # lt_style() + lt_css(): style the cell that names them
-  lt_style("Label", rows = 4L, class = "highlight") |>
-  lt_css(.highlight = list(fontWeight = "bold", color = "#c60")) |>
+  lt_style(~ Label, rows = 4L, class = "highlight") |>
+  lt_css(.highlight = list(fontWeight = "bold", color = "orange")) |>
   # lt_footnote(): provide the footnote text
   lt_footnote("lt_footnote() can add a footnote anywhere.", "title") |>
   # I(): wrapping text in I() marks it as raw HTML
-  lt_footnote(I("Wrap text in <code>I()</code> for raw HTML."), "column", "Label") |>
+  lt_footnote(I("Wrap text in <code>I()</code> for raw HTML."), "column", ~ Label) |>
   # lt_width() and lt_move() have no column of their own: explain via footnotes
-  lt_footnote("lt_width() sets column widths.", "column", "Label") |>
-  lt_footnote("lt_move() can reorder columns as desired.", "column", "Est") |>
+  lt_footnote("lt_width() sets column widths.", "column", ~ Label) |>
+  lt_footnote("lt_move() can reorder columns as desired.", "column", ~ Est) |>
   # lt_note(): the footer note names itself and lt_export()
   lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG.")
 tbl_static
@@ -100,12 +100,13 @@ d = data.frame(
               "FALSE", "FALSE"),
   Try = c("click a header", "type a query", "pick a value", "change page size",
           "drag a header edge", "hide columns", "expand a row",
-          "summarize columns", "save CSV or RTF")
+          "summarize columns", "save CSV or RTF"),
+  Popularity = c(92, 85, 71, 64, 38, 22, 17, 9, 6)
 )
 
 tbl_interactive = lt(d) |>
   lt_header("lt_interactive(...)", "Click, type, and pick") |>
-  lt_interactive(pager = c(5, 10, Inf), download = TRUE) |>
+  lt_interactive(pager = c(5, 10, Inf), hide = NA, profile = TRUE, download = TRUE) |>
   lt_note("lt_viewer() and lt_serve() view and serve big data.")
 tbl_interactive
 ```
@@ -124,7 +125,7 @@ d = data.frame(
 )
 
 tbl_plots = lt(d) |>
-  lt_header("lt_header(title = ...)") |>
+  lt_header("Plot functions in lt") |>
   lt_errorbar(Eff ~ Lo + Hi, ref = 0, width = 90) |>
   lt_sparkline(~ Temp, width = 70) |>
   lt_sparkline(~ Rain, type = "bar", color = "#4caf50", width = 70) |>
@@ -165,7 +166,7 @@ lt(head(mtcars[, 1:5])) |>
 ```{r, include = FALSE}
 # the PNGs on the README: lt_export() needs Node.js or a headless browser,
 # which are unavailable in some environments (e.g., webR)
-w = list(static = "min-content", interactive = 520, plots = "min-content")
+w = list(static = "min-content", interactive = "min-content", plots = "min-content")
 if (lt:::can_bake()) for (i in names(w))
   lt_export(get(paste0("tbl_", i)), sprintf("01-lt-%s.png", i), width = w[[i]])
 ```
