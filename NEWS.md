@@ -2,23 +2,17 @@
 
 - New book at <https://pkg.yihui.org/lt/book/> covering every feature, from the first table to Shiny, export, and the JavaScript runtime. The long examples `01-lt`, `02-lt-js`, and `03-gt` are now short overviews that point to it, and 36 new one-feature examples (`04-*` to `39-*`) cover the functions one at a time.
 
-- Search and filter boxes in `lt_interactive()` read plain language: `price over 100, color is red or blue`, `between 5 and 10`, `is not`, `does not contain`, and `col value` for contains. Column labels may contain spaces; `,` and `;` separate conditions and `or` alternates them. A line under the box shows how the query was read, and boxes drop down random example queries built from the data (a column box gets ones for its own values), written in plain language as well as with operators (`price > 100`, `color == "red"`) and, in column boxes, expressions on `x` (`x > 5 && x < 9`); hovering a column box explains that `x` stands for the column's values. Text that isn't recognized is searched as typed. The parser is a standalone file, `lt-query.js`, usable outside lt.
+- Added `lt_viewer()`, a data viewer for exploring a data frame: an interactive table with the data expression as the title, each column's type and profile, filters, and a column-visibility menu (thanks, @keaven, #56).
 
 - New `lt_serve()` makes an interactive table fetch its rows from a data URL, for data too big for the browser: the browser requests only the current page as JSON whenever the sort, filters, search, or page change. By default a local app (built on `xfun::new_app()`) serves the rows of the table in R; pass `url` to use your own server (e.g., backed by a database or Parquet files), whose request and response format is documented in `?lt_serve`. In Shiny, `render_lt()` serves the rows from the session itself.
 
 - `lt_interactive(profile = TRUE)` shows a profile of each column: a mini bar chart of its values (a histogram for numbers and dates; one bar per category for text where at most half of the values are distinct, left blank otherwise) that highlights the rows kept by the filters, with summary statistics and the amount of missing values as a tooltip. Use `profile = "filter"` to put it in the column's filter popover instead of the header.
 
-- Tables in a scrolling `lt_wrap()` box keep the whole header (spanners, labels, and interactive controls) in view while scrolling.
-
-- Printing an `lt_tbl` in the viewer or browser fits the table to the window: a table too tall to fit scrolls inside its container (with the header kept in view) instead of adding a page scrollbar.
-
-- `lt_interactive()` now defaults to `filter = "auto"`, `resize = TRUE`, and page sizes `c(10, 25, 50, Inf)` (the last size shows every row on one page, previously 100). Use `filter = FALSE` or `resize = FALSE` to turn those off.
-
-- A `"select"` or `"checklist"` filter now offers the missing (`NA`) value as its own choice, so rows with missing values can be kept.
+- Search and filter boxes in `lt_interactive()` read plain language: `price over 100, color is red or blue`, `between 5 and 10`, `is not`, `does not contain`, and `col value` for contains. Column labels may contain spaces; `,` and `;` separate conditions and `or` alternates them. A line under the box shows how the query was read, and boxes drop down random example queries built from the data (a column box gets ones for its own values), written in plain language as well as with operators (`price > 100`, `color == "red"`) and, in column boxes, expressions on `x` (`x > 5 && x < 9`); hovering a column box explains that `x` stands for the column's values. Text that isn't recognized is searched as typed. The parser is a standalone file, `lt-query.js`, usable outside lt.
 
 - `lt()` gains `show_types`: when `TRUE`, each column is tagged with its type (`<dbl>`, `<chr>`, `<fct>`, `<date>`, ...) under the column labels (followed by the filters of an interactive table).
 
-- Added `lt_viewer()`, a data viewer for exploring a data frame: an interactive table with the data expression as the title, each column's type and profile, filters, and a column-visibility menu (thanks, @keaven, #56).
+- Added `lt_input()` and `lt_update()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
 
 - With `auto_format = TRUE`, `lt()` shows date columns as `YYYY-MM-DD` and date-time columns as `YYYY-MM-DD HH:MM:SS` in the local time zone by default; use `lt_date()` to format them differently. In `lt_interactive()`, these columns sort chronologically and `filter = "auto"` gives them a range slider.
 
@@ -32,9 +26,19 @@
 
 - `lt_interactive(hide = NA)` now adds the column-visibility menu with all columns shown (`hide = TRUE` still works for now but will be dropped in the future).
 
-- The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, CSV download), and the column menu button's tooltip reads "Show/Hide columns".
+- `lt_interactive()` now defaults to `filter = "auto"`, `resize = TRUE`, and page sizes `c(10, 25, 50, Inf)` (the last size shows every row on one page, previously 100). Use `filter = FALSE` or `resize = FALSE` to turn those off.
 
-- Added `lt_input()` and `lt_update()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
+- A `"select"` or `"checklist"` filter now offers the missing (`NA`) value as its own choice, so rows with missing values can be kept.
+
+- The `download` button of `lt_interactive()` now offers RTF as well as CSV, picked from a menu (a single format downloads directly). The RTF table keeps the title, column spanners (as merged cells), alignment, indentation, and notes. Use `download = list(formats = "rtf")` to offer only some formats. A file name given in `download` is a stem: its extension is replaced by the chosen format's.
+
+- `lt_export()` also writes `.csv` and `.rtf` files (all rows; needs Node.js or a Chromium-based browser). The formats live in a new standalone `lt-export.js`, loaded only for tables with a download button.
+
+- The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, download), and the column menu button's tooltip reads "Show/Hide columns".
+
+- Printing an `lt_tbl` in the viewer or browser fits the table to the window: a table too tall to fit scrolls inside its container (with the header kept in view) instead of adding a page scrollbar.
+
+- Tables in a scrolling `lt_wrap()` box keep the whole header (spanners, labels, and interactive controls) in view while scrolling.
 
 - In `litedown::fuse()` documents, tables built from the same data frame now write the data to the output only once and refer to it from the other tables, which makes the output file smaller. This also works across child documents. Set the `lt.share_size` global option (in bytes) to share only data frames above that size.
 

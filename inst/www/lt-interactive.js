@@ -445,7 +445,7 @@
       elem(el.ownerDocument, "div", { className: "lti-icons" }, headBar) : null;
     if (opts.hide)
       addColumnToggle(icons, el, hrow, cols, labels, opts.hide, layout, postSwap);
-    if (opts.download) addDownload(icons, el, spec, cols, labels, opts.download);
+    if (opts.download) addDownload(icons, el, spec, opts.download);
     // Control bar (`.lti-bar`; null if no table-wide controls) for callers to add
     // widgets to; `chips` is its chip group (null only without a bar), home for
     // caller chips
@@ -614,40 +614,58 @@
     });
   }
 
-  // CSV-escape: quote (doubling quotes) only if comma, quote, or newline.
-  function csvField(v) {
-    const s = v == null ? "" : String(v);
-    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  }
-
-  // Button downloading the current view (all pages, `el._lt.view()`) as CSV.
-  // `opt` = file name or `{file?, mode?}`; `mode: "raw"` exports `spec.data`
-  // instead of displayed text (`spec._display`). Skips group columns (null in
-  // `cols`). Uses Blob + <a>, no library.
-  function addDownload(cell, el, spec, cols, labels, opt) {
-    const doc = el.ownerDocument,
+  // Download button for the current view (all pages, `el._lt.view()`) in the
+  // formats of lt-export.js: a menu of them, or a direct download if only one.
+  // `opt` = file name or `{file?, mode?, formats?}`; `mode: "raw"` exports
+  // `spec.data` instead of displayed text. The file name is a stem: a format
+  // extension is replaced by the chosen format's. Uses Blob + <a>, no library.
+  function addDownload(cell, el, spec, opt) {
+    const doc = el.ownerDocument, X = LT.plugins.export,
           o = typeof opt === "object" ? opt : { file: opt },
-          raw = o.mode === "raw",
-          file = (typeof o.file === "string" && o.file ? o.file : "table")
-            .replace(/(\.csv)?$/i, ".csv"),
-          keep = cols.map((c, i) => i).filter(i => cols[i] != null),
+          fmts = o.formats ? [].concat(o.formats) : Object.keys(X.formats),
+          stem = (typeof o.file === "string" && o.file ? o.file : "lt-table")
+            .replace(new RegExp(`\\.(${Object.keys(X.formats).join("|")})$`, "i"), ""),
+          one = fmts.length === 1, name = X.formats[fmts[0]].label,
+          wrap = elem(doc, "span", { className: "lti-dl" }, cell),
           btn = elem(doc, "button", {
-            type: "button", className: "lti-download", title: "Download CSV",
-            "aria-label": "Download table as CSV"
-          }, cell);
-    btn.onclick = async () => {
+            type: "button", className: "lti-download",
+            title: one ? `Download ${name}` : "Download",
+            "aria-label": one ? `Download table as ${name}` : "Download table"
+          }, wrap);
+    const save = async fmt => {
       // server mode: fetch every row of the view first
       const all = await el._lt.server?.load(el._lt.state, true), s = all ? { ...spec, data: all.data } : spec;
       if (all) LT.buildHtml(s);
-      const src = (raw ? textual(s) : s._display) || {},
-            lines = [keep.map(i => csvField(labels[i] ?? cols[i])).join(",")];
-      for (const r of all ? Array.from({ length: all.rows }, (_, i) => i + 1) : el._lt.view())
-        lines.push(keep.map(i => csvField((src[cols[i]] || [])[r - 1])).join(","));
-      const url = URL.createObjectURL(
-        new Blob([lines.join("\n")], { type: "text/csv" }));
-      elem(doc, "a", { href: url, download: file }).click();
+      const rows = all ? Array.from({ length: all.rows }, (_, i) => i + 1) : el._lt.view(),
+            url = URL.createObjectURL(new Blob(
+              [X.text(fmt, s, rows, o.mode === "raw" ? textual(s) : undefined)],
+              { type: X.formats[fmt].mime }));
+      elem(doc, "a", { href: url, download: `${stem}.${fmt}` }).click();
       URL.revokeObjectURL(url);
     };
+    if (one) return btn.onclick = () => save(fmts[0]);
+    const menu = elem(doc, "div", { className: "lti-menu", hidden: true, role: "menu" }, wrap),
+          close = dropdown(doc, wrap, btn, menu);
+    for (const f of fmts) {
+      const item = elem(doc, "label", { textContent: X.formats[f].label, role: "menuitem", tabIndex: 0 }, menu);
+      item.onclick = () => { close(); save(f); };
+      item.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); item.click(); } };
+    }
+  }
+
+  // Open/close the popup `menu` from `btn`; it closes on an outside click or
+  // Escape. Returns the closer.
+  function dropdown(doc, wrap, btn, menu) {
+    const open = on => {
+      menu.hidden = !on;
+      btn.setAttribute("aria-expanded", String(on));
+    };
+    open(false);
+    btn.onclick = e => { e.stopPropagation(); open(menu.hidden); };
+    btn.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); btn.click(); } };
+    on(doc, "click", e => { if (!wrap.contains(e.target)) open(false); });
+    on(doc, "keydown", e => { if (e.key === "Escape") open(false); });
+    return () => open(false);
   }
 
   // Cycle a column asc -> desc -> unsorted in `state.sort`. Plain click sorts by
@@ -1066,7 +1084,6 @@
               type: "button", title: "Show/Hide columns",
               "aria-label": "Show/Hide columns"
             });
-    btn.setAttribute("aria-expanded", "false");
     wrap.append(btn);
     const menu = elem(doc, "div", { className: "lti-menu", hidden: true }, wrap);
     // checkbox per column; `sub` indents under a spanner header
@@ -1092,14 +1109,7 @@
       for (let i = c._start; i < c._start + c._span; i++) addBox(i, span);
     } else cols.forEach((_, i) => addBox(i));
     cols.forEach((_, i) => apply(i));  // apply initially hidden columns
-    const open = on => {
-      menu.hidden = !on;
-      btn.setAttribute("aria-expanded", String(on));
-    };
-    btn.onclick = e => { e.stopPropagation(); open(menu.hidden); };
-    btn.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); btn.click(); } };
-    on(doc, "click", e => { if (!wrap.contains(e.target)) open(false); });
-    on(doc, "keydown", e => { if (e.key === "Escape") open(false); });
+    dropdown(doc, wrap, btn, menu);
   }
 
   // --- Typed column filters (`filter` named-list form). A typed spec is

@@ -53,7 +53,10 @@ Two optional modules sit beside it, and a page pays only for what it uses:
 The files are published on npm as `@xiee/utils`. The URLs above track the latest
 release; to pin a version, put it after the package name, such as
 `@xiee/utils@1.14.154/js/lt.min.js` (use the version you tested with). Server mode
-adds one more script, `lt-server.js`; see @sec:server.
+adds one more script, `lt-server.js`; see @sec:server. A table with `download`
+needs `lt-export.js`, loaded before `lt-interactive.js`; it also works without a
+DOM, as `LT.plugins.export.text(format, spec)` on a built spec, which is how
+`lt_export()` writes CSV and RTF in Node.js.
 
 Then call `LT.build(spec)` from an inline `<script>` wherever you want a table.
 The runtime renders it right after the calling script element. To build a table
@@ -967,7 +970,7 @@ them; the rest of the section explains each.
 | `hide` | The column-visibility menu. |
 | `detail` | Expandable row detail. |
 | `profile` | A mini chart of each column. |
-| `download` | A CSV download button. |
+| `download` | A download button (CSV, RTF). |
 ::::
 
 ### Sorting {#sec:js-sort}
@@ -1127,9 +1130,11 @@ LT.build({
 ### Downloading the view {#sec:js-download}
 
 `download` adds a button that saves the current view (every row the filters and
-search keep, in sort order, across all pages) as a CSV file of the displayed
-text. `true` picks a default file name; a string sets it. Filter or sort first,
-and the file follows:
+search keep, in sort order, across all pages) as a file of the displayed text,
+in a format picked from a menu (CSV or RTF). `true` picks a default file name; a
+string sets it. `{ file, mode: "raw", formats: ["rtf"] }` names the file, exports
+raw values, and limits the formats (one format downloads directly). Filter or
+sort first, and the file follows:
 
 ```{js}
 LT.build({

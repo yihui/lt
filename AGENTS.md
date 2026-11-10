@@ -158,6 +158,10 @@ joins all names", not "… rather than just the first").
 In `NEWS.md`, never hard-wrap: one line per bullet (and sub-bullet). Readability
 comes from the bullet structure, not from wrapping.
 
+Order `NEWS.md` bullets within a version by importance to users, most
+important first: breaking changes, new features, changes to existing behavior,
+bug fixes, then documentation and internal changes.
+
 ### Verify browser fixes
 
 When a change affects rendered HTML/JS, confirm it in a headless browser before

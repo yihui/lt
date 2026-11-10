@@ -128,6 +128,11 @@ assert("download reaches the client spec as true or a file name, else absent", {
   # display mode stays implicit: bare string (or TRUE), never a mode key
   (download_opt(list(file = 'cars.csv', mode = 'display')) %==% 'cars.csv')
   (download_opt(list(mode = 'display')) %==% TRUE)
+  # a format subset is kept (validated); all formats is the default, so omitted
+  (download_opt(list(formats = 'rtf')) %==% list(formats = I('rtf')))
+  (download_opt(list(formats = c('csv', 'rtf'))) %==% TRUE)
+  (download_opt(list(file = 'cars', formats = c('csv', 'rtf'))) %==% 'cars')
+  (has_error(download_opt(list(formats = 'pdf'))))
 })
 
 assert("detail = column names resolves to a name array", {

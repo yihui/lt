@@ -112,16 +112,21 @@
 #'   instead, which saves header space (only columns with a popover filter,
 #'   e.g., the range slider or checklist of `filter = "auto"`, get a profile
 #'   then).
-#' @param download Whether to add a button that downloads the table as a CSV
-#'   file. The file holds the current view (every row the filters and search
-#'   keep, in sort order, across all pages) of the table's columns. `TRUE` adds
-#'   the button with a default file name; a string sets the file name (a `.csv`
-#'   extension is added if missing). For more control, pass a list with any of
-#'   `file` (the file name) and `mode`: `"display"` (the default) exports the
-#'   displayed cell text, while `"raw"` exports the underlying unformatted
-#'   values (full precision, no thousands separators or percent signs), handier
-#'   to re-import for analysis. Row detail (`detail`) is never included. `FALSE`
-#'   (the default) adds no button.
+#' @param download Whether to add a button that downloads the table. The file
+#'   holds the current view (every row the filters and search keep, in sort
+#'   order, across all pages) of the table's columns, with the title, column
+#'   spanners, and notes of formats that have room for them. The button opens a
+#'   menu of the available formats (CSV and RTF); with a single format, it
+#'   downloads directly. `TRUE` adds the button with a default file name; a
+#'   string sets the file name (a format extension in it is replaced by the
+#'   chosen format's). For more control, pass a list with any of `file` (the
+#'   file name), `formats` (which formats to offer, e.g., `"rtf"`; all by
+#'   default), and `mode`: `"display"` (the default) exports the displayed cell
+#'   text, while `"raw"` exports the underlying unformatted values (full
+#'   precision, no thousands separators or percent signs), handier to re-import
+#'   for analysis. Row detail (`detail`) is never included. `FALSE` (the
+#'   default) adds no button. To save a table to a file from R instead, use
+#'   [lt_export()].
 #' @return `x` with interactivity enabled.
 #' @export
 #' @examples
@@ -157,9 +162,11 @@
 #' # a distribution plot in each column header, or in the filter popover
 #' lt(iris) |> lt_interactive(profile = TRUE)
 #' lt(iris) |> lt_interactive(profile = 'filter')
-#' # a button to download the current view as a CSV file
+#' # a button to download the current view as a CSV or RTF file
 #' lt(head(mtcars)) |> lt_interactive(download = TRUE)
-#' lt(head(mtcars)) |> lt_interactive(download = 'cars.csv')
+#' lt(head(mtcars)) |> lt_interactive(download = 'cars')
+#' # offer only RTF, which downloads directly
+#' lt(head(mtcars)) |> lt_interactive(download = list(formats = 'rtf'))
 #' # export the raw (unformatted) values instead of the displayed text
 #' lt(head(mtcars)) |> lt_interactive(download = list(file = 'cars.csv', mode = 'raw'))
 lt_interactive = function(
@@ -199,15 +206,18 @@ lt_interactive = function(
 
 # Shape `download` for the client: a bare file name (or `TRUE`) when only the
 # name differs, else an object of non-default slots; a plain download never
-# serializes a `mode` key.
+# serializes a `mode` or `formats` key.
 download_opt = function(download) {
   if (is.null(download) || isFALSE(download)) return()
   if (isTRUE(download)) return(TRUE)
   if (is.character(download)) download = list(file = download)
   mode = download$mode
   if (identical(mode, 'display')) mode = NULL  # the default; keep it implicit
-  if (is.null(mode)) return(download$file %||% TRUE)
-  drop_null(list(file = download$file, mode = mode))
+  fmts = download$formats
+  if (!is.null(fmts)) fmts = match.arg(fmts, export_formats, several.ok = TRUE)
+  if (setequal(fmts, export_formats)) fmts = NULL  # all: the default
+  if (is.null(mode) && is.null(fmts)) return(download$file %||% TRUE)
+  drop_null(list(file = download$file, mode = mode, formats = if (length(fmts)) I(fmts)))
 }
 
 # Shape `filter` for the client as { default?, cols? }. `TRUE` -> a box on
