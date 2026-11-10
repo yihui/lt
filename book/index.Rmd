@@ -91,9 +91,9 @@ deliberate trade-offs:
     extensions that a page loads only when some table asks for them. A plain
     table never pays for sorting it doesn't have.
 
-I don't want to match **gt** feature for feature. I want to cover the table
-structure most reports actually need, and to show that if you are willing to
-trust HTML, you can go a remarkably long way with remarkably little.
+I don't want to match **gt** or **DT** feature for feature. I want to cover the
+table structure most reports actually need, and to show that if you are willing
+to trust HTML, you can go a remarkably long way with remarkably little.
 
 ## How it works
 
