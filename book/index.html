@@ -4,23 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="generator" content="litedown 1.0.14">
-<title>lt: Lightweight Tables for R</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/book.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/book-litedown.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/key-buttons.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/callout.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/css/prism-xcode.min.css">
+<title>lt: Tables That Travel Light</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/book.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/book-litedown.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/key-buttons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/callout.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/prism-xcode.min.css">
 </head>
 <body>
 <header class="frontmatter">
-<div class="title"><h1>lt: Lightweight Tables for R</h1></div>
+<div class="title"><h1>lt: Tables That Travel Light</h1></div>
+<div class="subtitle"><h2>A grammar of lightweight static and interactive tables for R and beyond</h2></div>
 <div class="author"><h2>Yihui Xie</h2></div>
-<div class="date"><h3>2026-11-10</h3></div>
+<div class="date"><h3>2026-11-11</h3></div>
 </header>
 <main>
 <div class="">
@@ -50,7 +51,7 @@
 <li><a href="#sec:printing"><span class="section-number">1.6</span> Where tables show up</a></li>
 </ul>
 </li>
-<li><a href="#chp:format"><span class="section-number main-number">2</span> Making Numbers Behave</a>
+<li><a href="#chp:format"><span class="section-number main-number">2</span> Formatting Values</a>
 <ul>
 <li><a href="#sec:auto"><span class="section-number">2.1</span> Automatic formatting</a></li>
 <li><a href="#sec:number"><span class="section-number">2.2</span> Number formatting</a></li>
@@ -263,6 +264,7 @@
 <li><a href="#sec:raw-html"><span class="section-number">11.2.5</span> Raw HTML: <code>I()</code> is the new <code>html()</code> and <code>md()</code></a></li>
 <li><a href="#sec:sub-defaults"><span class="section-number">11.2.6</span> Substitutions: the defaults already do the work</a></li>
 <li><a href="#sec:styling"><span class="section-number">11.2.7</span> Styling: you probably don’t need CSS</a></li>
+<li><a href="#sec:missing"><span class="section-number">11.2.8</span> What lt does not have</a></li>
 </ul>
 </li>
 <li><a href="#sec:gt-static"><span class="section-number">11.3</span> Generating a static HTML table</a></li>
@@ -282,9 +284,6 @@
 <div class="chapter-before side side-right">
 <p><a href="https://github.com/yihui/lt/edit/main/book/index.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
-<style type="text/css">
-.ex-link { text-align: right; font-size: .8em; }
-</style>
 <h1 id="chp:preface" class="unnumbered">Preface</h1>
 <div class="epigraph">
 <blockquote>
@@ -630,45 +629,28 @@ row-group label is <code>lt_group()</code>; the footnote text is <code>lt_footno
 )
 
 tbl_static = lt(d, auto_format = FALSE) |&gt;
-  # lt_group(): the &quot;lt_group()&quot; row-group header on the left
   lt_group(~ Grp) |&gt;
-  # lt_header(): the title and subtitle at the top
   lt_header(title = &quot;lt_header(title = ...)&quot;, subtitle = &quot;lt_header(subtitle = ...)&quot;) |&gt;
-  # lt_merge(): fold CI into Est to make the &quot;lt_merge()&quot; column
   lt_merge(~ Est + CI, pattern = &quot;{1} {2}&quot;) |&gt;
-  # lt_spanner(): the &quot;lt_spanner()&quot; label above two columns
   lt_spanner(`lt_spanner()` ~ Fmt + Sub) |&gt;
-  # lt_label(): every column header is renamed to the function acting on it
   lt_label(
     Grp = &quot;lt_group()&quot;, Label = &quot;lt_label(old = new, ...)&quot;, Fmt = &quot;lt_format()&quot;,
     Sub = &quot;lt_sub()&quot;, Date = &quot;lt_date()&quot;, Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;
   ) |&gt;
-  # lt_html(): render the &quot;Label&quot; column as raw HTML (note the link in row 1)
   lt_html(~ Label) |&gt;
-  # lt_align(): center the &quot;lt_align()&quot; column
   lt_align(~ Align, &quot;center&quot;) |&gt;
-  # lt_width(): set the width of the first column
-  lt_width(Label = &quot;11em&quot;) |&gt;
-  # lt_format(): round and add a thousands separator
+  lt_width(Align = &quot;6em&quot;) |&gt;
   lt_format(~ Fmt, decimals = 1, big_mark = &quot;,&quot;) |&gt;
-  # lt_date(): format the &quot;lt_date()&quot; column
   lt_date(~ Date, options = list(month = &quot;short&quot;, day = &quot;numeric&quot;, timeZone = &quot;UTC&quot;)) |&gt;
-  # lt_sub(): NA/zero/small are replaced with self-naming placeholders
   lt_sub(~ Sub, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.01, small_text = &quot;&lt; 0.01&quot;) |&gt;
-  # lt_indent(): indent the two &quot;lt_indent()&quot; child rows
   lt_indent(c(2, 3), level = 1) |&gt;
-  # lt_style() + lt_css(): style the cell that names them
   lt_style(~ Label, rows = 4L, class = &quot;highlight&quot;) |&gt;
   lt_css(.highlight = list(fontWeight = &quot;bold&quot;, color = &quot;orange&quot;)) |&gt;
-  # lt_footnote(): provide the footnote text
   lt_footnote(&quot;lt_footnote() can add a footnote anywhere.&quot;, &quot;title&quot;) |&gt;
-  # I(): wrapping text in I() marks it as raw HTML
   lt_footnote(I(&quot;Wrap text in &lt;code&gt;I()&lt;/code&gt; for raw HTML.&quot;), &quot;column&quot;, ~ Label) |&gt;
-  # lt_width() and lt_move() have no column of their own: explain via footnotes
-  lt_footnote(&quot;lt_width() sets column widths.&quot;, &quot;column&quot;, ~ Label) |&gt;
+  lt_footnote(&quot;lt_width() sets column widths.&quot;, &quot;column&quot;, ~ Align) |&gt;
   lt_footnote(&quot;lt_move() can reorder columns as desired.&quot;, &quot;column&quot;, ~ Est) |&gt;
-  # lt_note(): the footer note names itself and lt_export()
-  lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG.&quot;)
+  lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG/RTF.&quot;)
 tbl_static
 </code></pre>
 <style>.lt-table {
@@ -715,7 +697,7 @@ tbl_static
     {
       "type": "width",
       "widths": {
-        "Label": "11em"
+        "Align": "6em"
       }
     },
     {
@@ -786,7 +768,7 @@ tbl_static
       "text": "lt_width() sets column widths.",
       "location": {
         "type": "column_labels",
-        "columns": ["Label"]
+        "columns": ["Align"]
       }
     },
     {
@@ -798,7 +780,7 @@ tbl_static
     }
   ],
   "notes": [
-    "lt_note() — and lt_export() saves this table to HTML/PDF/PNG."
+    "lt_note() — and lt_export() saves this table to HTML/PDF/PNG/RTF."
   ],
   "data_key": "62be29ef"
 }
@@ -878,10 +860,10 @@ tbl_interactive
 
 tbl_plots = lt(d) |&gt;
   lt_header(&quot;Plot functions in lt&quot;) |&gt;
-  lt_errorbar(Eff ~ Lo + Hi, ref = 0, width = 90) |&gt;
-  lt_sparkline(~ Temp, width = 70) |&gt;
-  lt_sparkline(~ Rain, type = &quot;bar&quot;, color = &quot;#4caf50&quot;, width = 70) |&gt;
-  lt_dotplot(~ Before + After, color = TRUE, width = 100) |&gt;
+  lt_errorbar(Eff ~ Lo + Hi, ref = 0) |&gt;
+  lt_sparkline(~ Temp) |&gt;
+  lt_sparkline(~ Rain, type = &quot;bar&quot;, color = &quot;limegreen&quot;) |&gt;
+  lt_dotplot(~ Before + After, color = TRUE) |&gt;
   lt_spanner(`lt_sparkline()` ~ Temp + Rain) |&gt;
   lt_label(
     Eff = &quot;lt_errorbar()&quot;, Temp = &quot;line&quot;, Rain = &quot;bar&quot;, Before = &quot;lt_dotplot()&quot;
@@ -924,22 +906,22 @@ tbl_plots
       "min": -0.4,
       "max": 0.6,
       "ref": 0,
-      "width": 90,
+      "width": 160,
       "height": 16
     },
     {
       "type": "sparkline",
       "columns": ["Temp"],
       "kind": "line",
-      "width": 70,
+      "width": 120,
       "height": 20
     },
     {
       "type": "sparkline",
       "columns": ["Rain"],
       "kind": "bar",
-      "color": "#4caf50",
-      "width": 70,
+      "color": "limegreen",
+      "width": 120,
       "height": 20
     },
     {
@@ -959,7 +941,7 @@ tbl_plots
       "labels": ["Before", "After"],
       "min": 3,
       "max": 5.2,
-      "width": 100,
+      "width": 160,
       "height": 16,
       "axis": true
     },
@@ -986,9 +968,6 @@ tbl_plots
 }
 })</script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt-plot.min.js" defer></script>
-<div class="ex-link">
-<p><a href="../examples/01-lt.html">Open as a page</a></p>
-</div>
 <h2 id="sec:labels"><span class="section-number">1.3</span> Titles and labels</h2>
 <p><code>lt_header()</code> puts a title, and optionally a subtitle, above the table:</p>
 <pre><code class="language-r">lt(head(iris)) |&gt;
@@ -1012,9 +991,6 @@ tbl_plots
   "data_key": "e81b2918"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/04-header.html">Open as a page</a></p>
-</div>
 <p>Column names are cleaned for display: dots and underscores become spaces, so
 <code>Sepal.Length</code> is shown as “Sepal Length”. Use <code>auto_label = FALSE</code> if you want
 the raw names back, or <code>lt_label()</code> to say exactly what a column should be
@@ -1052,9 +1028,6 @@ tbl
   "data_key": "e81b2918"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/05-label.html">Open as a page</a></p>
-</div>
 <p>A label does not have to be plain text. Wrap it in <code>I()</code> to use HTML, as shown
 in <a class="cross-ref-sec" href="#sec:html">4.3</a>.</p>
 <h2 id="sec:align"><span class="section-number">1.4</span> Alignment and widths</h2>
@@ -1095,9 +1068,6 @@ of the time. When it is not, <code>lt_align()</code> takes <code>&quot;left&quot
   "data_key": "d4a3bfb2"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/06-align-width.html">Open as a page</a></p>
-</div>
 <h2 id="sec:types"><span class="section-number">1.5</span> What kind of column is this?</h2>
 <p>When you explore a new data set, the first question is often “what <em>is</em> this
 column?”. With <code>show_types = TRUE</code>, <code>lt()</code> tags each column with its type, the
@@ -1132,9 +1102,6 @@ lt(d, show_types = TRUE)
   "data_key": "b00758d4"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/07-show-types.html">Open as a page</a></p>
-</div>
 <h2 id="sec:printing"><span class="section-number">1.6</span> Where tables show up</h2>
 <p>An <code>lt</code> table is displayed wherever R can display HTML:</p>
 <ul>
@@ -1175,13 +1142,7 @@ for one column, use <code>lt_sub()</code> (<a class="cross-ref-sec" href="#sec:s
 <div class="chapter-before side side-right">
 <p><a href="https://github.com/yihui/lt/edit/main/book/02-format.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
-<h1 id="chp:format"><span class="section-number main-number">2</span> Making Numbers Behave</h1>
-<div class="epigraph">
-<blockquote>
-<p>Less is more.</p>
-<p>—Ludwig Mies van der Rohe</p>
-</blockquote>
-</div>
+<h1 id="chp:format"><span class="section-number main-number">2</span> Formatting Values</h1>
 <p>Raw numbers are honest, which is the problem. <code>0.1234567891</code> is a true value, but
 no reader wants to see it. They want <code>12.3%</code>, or <code>$1,234.50</code>, or a date that says
 “January 15” instead of a timestamp with a time zone attached. Formatting is how
@@ -1223,9 +1184,6 @@ lt(d)
   "data_key": "f29236c2"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/08-auto-format.html">Open as a page</a></p>
-</div>
 <p>Automatic formatting is a sensible default for exploring data, but a publication
 table usually needs exact control. Use <code>lt(d, auto_format = FALSE)</code> to see the
 raw values, or keep auto-formatting on and override the columns you care about
@@ -1298,9 +1256,6 @@ lt(d) |&gt;
   "data_key": "92905238"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/09-number.html">Open as a page</a></p>
-</div>
 <p>Two rules of thumb. First, <code>decimals</code> and <code>sig_digits</code> are alternatives, so pick
 one: asking for both is an error, because they answer the same question in two
 different ways. Second, when you want a column left completely alone, even by
@@ -1387,9 +1342,6 @@ lt(d) |&gt;
   "data_key": "96fd58c3"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/10-date.html">Open as a page</a></p>
-</div>
 <p>Here is the gotcha that has bitten nearly everyone once. A plain date such as
 <code>2024-01-15</code> is stored as midnight in UTC. Show it in a time zone behind UTC, and
 the reader sees the day before. Passing <code>timeZone = &quot;UTC&quot;</code> in <code>options</code> tells the
@@ -1466,9 +1418,6 @@ lt(d) |&gt;
   "data_key": "c587628c"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/11-sub.html">Open as a page</a></p>
-</div>
 <p>Notice the <code>small_text</code>: it reads <code>&lt; 0.001</code> rather than pretending the value is
 exactly zero. That honesty is the point. A reader who sees <code>0.00</code> will assume
 nothing happened, while <code>&lt; 0.001</code> tells them something did, and roughly how
@@ -1484,12 +1433,6 @@ much. <code>Inf</code> and <code>-Inf</code> need no help at all, since they pri
 <p><a href="https://github.com/yihui/lt/edit/main/book/03-structure.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:structure"><span class="section-number main-number">3</span> Shaping the Table</h1>
-<div class="epigraph">
-<blockquote>
-<p>Form ever follows function.</p>
-<p>—Louis Sullivan, <em>The Tall Office Building Artistically Considered</em></p>
-</blockquote>
-</div>
 <p>A table is not only a grid of values. It has a shape: a few columns that belong
 together under a shared heading, rows that form families, a child row that hangs
 off its parent, and a column or two that exists only to feed the others. This is
@@ -1542,9 +1485,6 @@ lt(d) |&gt;
   "data_key": "9a6d8d8e"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/12-merge.html">Open as a page</a></p>
-</div>
 <p>By default, the source columns (all but the first) are hidden, since their
 content now lives in the target. Set <code>hide = FALSE</code> if you want to keep them
 visible.</p>
@@ -1593,9 +1533,6 @@ tbl |&gt; lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
   "data_key": "e81b2918"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/13-spanner.html">Open as a page</a></p>
-</div>
 <p>If your columns already share a prefix, you may not need to name anything at
 all. Calling <code>lt_spanner()</code> with no arguments looks for a common prefix before
 the first <code>.</code> or <code>_</code> and groups the columns that share it, shortening each
@@ -1638,9 +1575,6 @@ tbl |&gt; lt_move(~ Species, after = NULL)
   "data_key": "e81b2918"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/14-move-hide.html">Open as a page</a></p>
-</div>
 <p>Use <code>lt_hide()</code> when a value helps a reader but clutters the page. If you want a
 column gone for good, drop it from the data frame before calling <code>lt()</code>.</p>
 <h2 id="sec:group"><span class="section-number">3.4</span> Row groups</h2>
@@ -1695,9 +1629,6 @@ lt(d) |&gt; lt_group(~ Region) |&gt; lt_header(&quot;Cities by region&quot;)
   "data_key": "ed0aa0fe"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/15-group.html">Open as a page</a></p>
-</div>
 <p>Groups are sorted by default, so that identical values sit together. If your
 rows already come in the order you want, <code>sort = FALSE</code> keeps them as they are.</p>
 <h3 id="sec:group-manual"><span class="section-number">3.4.1</span> Manual groups and their order</h3>
@@ -1763,9 +1694,6 @@ lt(d) |&gt;
   "data_key": "6eb51568"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/16-group-manual.html">Open as a page</a></p>
-</div>
 <h2 id="sec:indent"><span class="section-number">3.5</span> Indentation</h2>
 <p>Hierarchies such as adverse events, where “Cardiac” contains “Tachycardia”, read
 best when the children are indented under their parent. <code>lt_indent()</code> nudges the
@@ -1807,9 +1735,6 @@ lt(d) |&gt;
   "data_key": "83e7c04a"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/17-indent.html">Open as a page</a></p>
-</div>
 <p>Indentation is about looks; it does not change which rows belong to which parent.
 If you also want interactive sorting to keep each child with its parent, see
 <a class="cross-ref-sec" href="#sec:structure">7.8</a>.</p>
@@ -1821,12 +1746,6 @@ If you also want interactive sorting to keep each child with its parent, see
 <p><a href="https://github.com/yihui/lt/edit/main/book/04-notes.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:notes"><span class="section-number main-number">4</span> Footnotes, Notes, and HTML</h1>
-<div class="epigraph">
-<blockquote>
-<p>The devil is in the details.</p>
-<p>—Proverb</p>
-</blockquote>
-</div>
 <p>Every good table has fine print. A number needs a caveat, a column needs a
 definition, a source needs credit. This chapter is about the small words that
 sit around your table and make the big numbers trustworthy.</p>
@@ -1971,9 +1890,6 @@ lt(d) |&gt;
   "data_key": "0fa627b2"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/18-footnote.html">Open as a page</a></p>
-</div>
 <p>Footnotes on body cells are the sharpest tool in the box. Use <code>rows</code> to point at
 the exact cells that need the caveat, rather than footnoting a whole column that
 is mostly fine.</p>
@@ -2001,9 +1917,6 @@ whole table: where the data came from, what was excluded, who to blame.
   "data_key": "d4a3bfb2"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/19-note.html">Open as a page</a></p>
-</div>
 <p>Call it more than once to add more lines. Notes keep the order you gave them.</p>
 <h2 id="sec:html"><span class="section-number">4.3</span> HTML in cells and labels</h2>
 <p>By default, lt treats every string as plain text and escapes it. That is a
@@ -2056,9 +1969,6 @@ lt(d) |&gt;
   "data_key": "b3f8503e"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/20-html.html">Open as a page</a></p>
-</div>
 <div class="callout-warning">
 <p>Raw HTML is passed through untouched. If the text comes from users you do not
 trust, escape it first with <code>xfun::html_escape()</code>, or keep it out of
@@ -2137,9 +2047,6 @@ lt(d) |&gt;
   "data_key": "8093220d"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/23-errorbar.html">Open as a page</a></p>
-</div>
 <p>The <code>ref = 0</code> argument draws a vertical line at zero, which is where you want a
 reference line for a risk difference (or <code>ref = 1</code> for an odds ratio). The
 <code>axis</code> argument draws a proper axis in the footer, with tick marks at round
@@ -2268,9 +2175,6 @@ lt(d) |&gt;
   "data_key": "e276ed68"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/25-dotplot.html">Open as a page</a></p>
-</div>
 <p>Give <code>lt_dotplot()</code> the value columns as a formula, one dot per column. The
 <code>color = TRUE</code> argument colors the dots from the palette and adds a legend, and
 <code>axis</code> (on by default) puts the shared axis in the footer. The title of the
@@ -2333,9 +2237,6 @@ lt(d) |&gt;
   "data_key": "b93ca66d"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/24-sparkline.html">Open as a page</a></p>
-</div>
 <p>Each row is scaled to its own range by default, so the shape is what you see, and
 the actual values are in the cells next to it. The <code>type = &quot;bar&quot;</code> argument draws
 bars instead of a line, and <code>color</code> sets the color of either.</p>
@@ -2415,12 +2316,6 @@ tables that use one. A plain table does not pay for it. <code>lt_dependency(plot
 <p><a href="https://github.com/yihui/lt/edit/main/book/06-style.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:style"><span class="section-number main-number">6</span> Styling</h1>
-<div class="epigraph">
-<blockquote>
-<p>It’s not just what it looks like and feels like. Design is how it works.</p>
-<p>—Steve Jobs, as quoted in <em>The New York Times Magazine</em> (2003)</p>
-</blockquote>
-</div>
 <p>The default look of an <strong>lt</strong> table is deliberately plain: a rule on top, a rule
 below the header, a rule at the bottom, and nothing else. It is a good canvas.
 This chapter is about the three functions that let you paint on it:
@@ -2552,9 +2447,6 @@ lt(d) |&gt;
   "data_key": "40857e65"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/21-style.html">Open as a page</a></p>
-</div>
 <div class="callout-note" data-legend="Why JavaScript?">
 <p>The test runs in the browser, not in R. That is what lets the highlighting
 survive sorting, filtering, and paging in an interactive table (<a class="cross-ref-chp" href="#chp:interactive">7</a>):
@@ -2727,9 +2619,6 @@ stylesheet rule that begins with that class touches this table only.</p>
 <style type="text/css">
 .striped tbody tr:nth-child(even) td { background: #f2f6ff; }
 </style>
-<div class="ex-link">
-<p><a href="../examples/22-css-wrap.html">Open as a page</a></p>
-</div>
 <p>The wrapper takes any HTML attribute, not only <code>class</code>. A fixed width and an
 <code>id</code> for deep links are the usual suspects:</p>
 <pre><code class="language-r">lt(head(mtcars[, 1:4], 3)) |&gt;
@@ -2768,12 +2657,6 @@ and not information.</p>
 <p><a href="https://github.com/yihui/lt/edit/main/book/07-interactive.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:interactive"><span class="section-number main-number">7</span> Interactive Tables</h1>
-<div class="epigraph">
-<blockquote>
-<p>Simple things should be simple, complex things should be possible.</p>
-<p>—Alan Kay</p>
-</blockquote>
-</div>
 <p>A static table answers the question you thought to ask. An interactive table
 lets your reader ask the ones you did not. Which cars have the most horsepower
 per cylinder? Which species sits in the middle of the sepal lengths? Click a
@@ -2840,9 +2723,6 @@ lt(d) |&gt;
   "data_key": "3d00d273"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/26-sort-search.html">Open as a page</a></p>
-</div>
 <h3 id="sec:sort"><span class="section-number">7.1.1</span> Sorting</h3>
 <p>Click a column header once to sort ascending, again for descending, and a third
 time to go back to the original order. Sorting uses the raw values, so numbers
@@ -3077,9 +2957,6 @@ lt(d) |&gt;
   "data_key": "3d00d273"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/27-filter.html">Open as a page</a></p>
-</div>
 <p>The first table above asks for <code>filter = list(&quot;auto&quot;, Species = FALSE)</code>. The
 <code>&quot;auto&quot;</code> picks a filter per column from the data, and the <code>FALSE</code> removes the
 filter from <code>Species</code>. The second table asks for typed controls by name, one
@@ -3206,9 +3083,6 @@ lt(d) |&gt;
   "data_key": "3d00d273"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/28-detail.html">Open as a page</a></p>
-</div>
 <p>For full control, pass a JavaScript function wrapped in <code>js()</code>. It receives the
 row’s raw values, the formatted text, and the row number, and returns a table
 spec of its own. Here the detail is a small table that sorts itself:</p>
@@ -3299,9 +3173,6 @@ lt(d) |&gt;
   "data_key": "3d00d273"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/30-column-menu.html">Open as a page</a></p>
-</div>
 <p>Name columns to start with them hidden, as the example does, or use
 <code>hide = NA</code> to start with everything visible. Passing <code>label</code> swaps the eye icon for a labeled chip in the
 control bar, which is clearer when the reader might not know what the eye means.</p>
@@ -3335,9 +3206,6 @@ your filter kept. It is a surprisingly good way to see what a filter is doing.</
   "data_key": "999d7a90"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/29-profile.html">Open as a page</a></p>
-</div>
 <p>If the headers are already crowded, <code>profile = &quot;filter&quot;</code> moves each chart into
 its column’s filter popover instead. The popover only exists for columns with a
 typed filter, so pair this option with <code>filter = &quot;auto&quot;</code>:</p>
@@ -3386,9 +3254,6 @@ lt(d) |&gt; lt_interactive(download = &quot;cars.csv&quot;, pager = 5)
   "data_key": "3d00d273"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/31-download.html">Open as a page</a></p>
-</div>
 <p>The file uses the displayed text by default, so <code>4.2</code> is written as the rounded
 figure the reader saw. If you need the underlying numbers at full precision, for
 re-importing into analysis code, ask for the raw values instead:</p>
@@ -3540,9 +3405,6 @@ a profile, the column menu is on, and the title is the expression you passed:</p
   "data_key": "999d7a90"
 }
 })</script>
-<div class="ex-link">
-<p><a href="../examples/32-viewer.html">Open as a page</a></p>
-</div>
 <p>Printed at the console, a viewer opens in the RStudio or Positron pane when it is
 available, or in your browser otherwise. Remove the title with
 <code>lt_header(NULL)</code>. Every argument of <code>lt_interactive()</code> also works here, so
@@ -3559,9 +3421,6 @@ or turns the page, R sends back just those rows.</p>
 <pre><code class="language-r">big = data.frame(id = 1:1e6, x = rnorm(1e6), g = sample(letters, 1e6, TRUE))
 lt_viewer(big) |&gt; lt_serve()
 </code></pre>
-<div class="ex-link">
-<p><a href="../examples/33-serve.html">Open as a page</a></p>
-</div>
 <p>The app is local, built on <code>xfun::new_app()</code>, so it lives in your R session and
 serves the table while that session runs. In a Shiny app, you do not need it at
 all: return the table from <code>render_lt()</code>, and the session serves the rows.</p>
@@ -3614,12 +3473,6 @@ on.</p>
 <p><a href="https://github.com/yihui/lt/edit/main/book/08-shiny.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:shiny"><span class="section-number main-number">8</span> Tables in Shiny</h1>
-<div class="epigraph">
-<blockquote>
-<p>Many hands make light work.</p>
-<p>—Proverb</p>
-</blockquote>
-</div>
 <p>A Shiny app is a conversation: the reader changes something, R answers. lt joins
 in with three small pieces. <code>lt_output()</code> and <code>render_lt()</code> show a table.
 <code>lt_input()</code> lets the reader edit one. <code>lt_update()</code> lets the server rewrite
@@ -3638,9 +3491,6 @@ server = function(input, output) {
 }
 shinyApp(ui, server)
 </code></pre>
-<div class="ex-link">
-<p><a href="../examples/34-shiny-output.html">Open as a page</a></p>
-</div>
 <p>What travels over the wire is the table <em>spec</em> (see <a class="cross-ref-sec" href="#sec:spec">9.3</a>), not HTML. The
 browser builds the <code>&lt;table&gt;</code> itself, so a reactive table redraws quickly and
 the page stays small. Anything you can do to a table elsewhere in this book
@@ -3669,9 +3519,6 @@ server = function(input, output, session) {
 }
 shinyApp(ui, server)
 </code></pre>
-<div class="ex-link">
-<p><a href="../examples/35-shiny-input.html">Open as a page</a></p>
-</div>
 <p>A few things are worth knowing:</p>
 <ul>
 <li>Click a cell to edit it. <code>Enter</code> commits and moves down, and clicking away
@@ -3695,9 +3542,6 @@ happen on the server, and the table behaves as if it held everything.</p>
 <pre><code class="language-r">big = data.frame(id = 1:1e6, x = rnorm(1e6), g = sample(letters, 1e6, TRUE))
 lt_viewer(big) |&gt; lt_serve()
 </code></pre>
-<div class="ex-link">
-<p><a href="../examples/33-serve.html">Open as a page</a></p>
-</div>
 <p>At the console this opens a local server. Inside Shiny, <code>render_lt()</code> serves the
 rows from the session itself, so no extra port is needed. Either way the pager
 shows the size of the whole data, not just of the page.</p>
@@ -3712,12 +3556,6 @@ database or a file than from R.</p>
 <p><a href="https://github.com/yihui/lt/edit/main/book/09-export.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:export"><span class="section-number main-number">9</span> Exporting and Embedding</h1>
-<div class="epigraph">
-<blockquote>
-<p>Measure twice, cut once.</p>
-<p>—Proverb</p>
-</blockquote>
-</div>
 <p>An lt table is born in a browser, but your readers are not always there. They
 open PDFs, paste tables into slides, and read Markdown on GitHub. This chapter
 is about getting a table out, and about the plain data underneath it.</p>
@@ -3785,9 +3623,6 @@ can_export = lt:::can_bake()
   &lt;/table&gt;
 &lt;/div&gt;
 </code></pre>
-<div class="ex-link">
-<p><a href="../examples/36-export.html">Open as a page</a></p>
-</div>
 <p>The PNG (<a class="cross-ref-fig" href="#fig:export-png">2</a>) and PDF (<a class="cross-ref-fig" href="#fig:export-pdf">3</a>) above come from the same
 table; the last chunk prints the static HTML.</p>
 <ul>
@@ -3842,9 +3677,6 @@ str(lt_spec(tbl), max.level = 2)
   }
 ]
 </code></pre>
-<div class="ex-link">
-<p><a href="../examples/37-spec.html">Open as a page</a></p>
-</div>
 <p>The list is ready for <code>xfun::tojson()</code>. That is the bridge to everything else:
 store it, diff it, send it to another widget, or give it to <code>LT.render()</code> on a
 page written in plain JavaScript, which is where the next chapter begins.</p>
@@ -4085,9 +3917,6 @@ a title, two formatted columns, and a little interactivity.</p>
   ],
   interactive: { pager: false, filter: false }
 });</script>
-<div class="ex-link">
-<p><a href="../examples/38-js-build.html">Open as a page</a></p>
-</div>
 <p>The sections below take the pieces one at a time. First, sample data. The
 examples share two small datasets, filled in from R through litedown’s <code>fill</code>
 option and turned into JavaScript objects:</p>
@@ -5590,8 +5419,8 @@ for static HTML).</p>
 <p>We deeply appreciate <strong>gt</strong>’s pioneering work. It set the standard for display
 tables in R, and <strong>lt</strong> owes much of its design vocabulary—headers, spanners,
 row groups, footnotes—to the ground <strong>gt</strong> broke. <strong>lt</strong> is not a criticism of
-<strong>gt</strong>; it is a different point on the trade-off curve. <strong>lt</strong> targets HTML
-output only, and in exchange keeps its dependencies and its runtime tiny.<sup class="footnote-ref"><a href="#fn-gt-html" id="fnref-gt-html" data-footnote-ref>1</a></sup></p>
+<strong>gt</strong>; it is a different point on the trade-off curve. <strong>lt</strong> is HTML-first,
+and in exchange keeps its dependencies and its runtime tiny.<sup class="footnote-ref"><a href="#fn-gt-html" id="fnref-gt-html" data-footnote-ref>1</a></sup></p>
 <p>A happy coincidence fits the spirit of this trade-off: in the comparison
 operators <strong>gt</strong> is <em>greater than</em> and <strong>lt</strong> is <em>less than</em>. <strong>lt</strong> does
 deliberately less.</p>
@@ -5726,6 +5555,14 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 <td><code>lt_format(columns, percent = TRUE)</code></td>
 </tr>
 <tr>
+<td><code>fmt_currency(columns=, currency = &quot;USD&quot;)</code></td>
+<td><code>lt_format(columns, prefix = &quot;$&quot;)</code></td>
+</tr>
+<tr>
+<td><code>fmt_number(sep_mark = &quot;,&quot;)</code></td>
+<td><code>lt_format(columns, big_mark = &quot;,&quot;)</code></td>
+</tr>
+<tr>
 <td><code>fmt_date(columns=)</code></td>
 <td><code>lt_date(columns)</code></td>
 </tr>
@@ -5740,6 +5577,10 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 <tr>
 <td><code>fmt_*()</code> applied to everything, by hand</td>
 <td>automatic: <code>lt(auto_format = TRUE)</code> (<a class="cross-ref-sec" href="#sec:auto">2.1</a>)</td>
+</tr>
+<tr>
+<td><code>cols_nanoplot()</code></td>
+<td><code>lt_sparkline()</code> (<a class="cross-ref-chp" href="#chp:plots">5</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -5787,6 +5628,10 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 <td><code>lt_style(columns=, rows=, ...)</code></td>
 </tr>
 <tr>
+<td><code>tab_options(table.width=)</code> and other table-level settings</td>
+<td><code>lt_wrap(style = &quot;width: ...&quot;)</code>, <code>lt_css(...)</code></td>
+</tr>
+<tr>
 <td><code>opt_css(css=)</code></td>
 <td><code>lt_css(...)</code></td>
 </tr>
@@ -5794,8 +5639,9 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </table>
 </div>
 <h3 id="sec:interactivity"><span class="section-number">11.1.5</span> Interactivity</h3>
-<p><strong>gt</strong> splits interactivity across <code>opt_interactive()</code> and <code>cols_hide()</code>; <strong>lt</strong>
-gathers it all into <code>lt_interactive()</code> (<a class="cross-ref-tab" href="#tab:gt-interactive">13</a>).</p>
+<p><strong>gt</strong> has <code>opt_interactive()</code>, and hides columns permanently with
+<code>cols_hide()</code>; <strong>lt</strong> gathers all interactivity, including a reader-togglable
+column menu, into <code>lt_interactive()</code> (<a class="cross-ref-tab" href="#tab:gt-interactive">13</a>).</p>
 <div class="table" id="tab:gt-interactive">
 <div class="caption">
 <p><span class="ref-number-tab">13</span> Interactivity: <strong>gt</strong> and <strong>lt</strong>.</p>
@@ -5994,8 +5840,7 @@ the ones you do. (Tables already format numeric columns on their own, so you may
 not need <code>lt_format()</code> at all; see <a class="cross-ref-sec" href="#sec:auto">2.1</a>.)</p>
 </div>
 <h3 id="sec:one-interactive"><span class="section-number">11.2.2</span> Interactivity is one function, not a separate step</h3>
-<p><strong>gt</strong> turns on client-side interactivity with <code>opt_interactive()</code>, and hides
-columns with the unrelated <code>cols_hide()</code>. <strong>lt</strong> folds all of it into
+<p><strong>gt</strong> turns on client-side interactivity with <code>opt_interactive()</code>. <strong>lt</strong> folds all of it into
 <code>lt_interactive()</code>: sorting, searching, filtering, paging, resizing, row detail,
 profiles, a CSV or RTF download, and a reader-togglable column menu. Whatever you do not
 ask for is not loaded, so non-interactive tables cost nothing extra
@@ -6008,8 +5853,9 @@ cells; without one it adds a general note. <strong>lt</strong> splits these:</p>
 location and gives it a marker. <code>text</code> is the <em>first</em> positional argument
 (not the location). <code>where</code> is one of <code>&quot;title&quot;</code>, <code>&quot;subtitle&quot;</code>, <code>&quot;column&quot;</code>,
 <code>&quot;spanner&quot;</code>, <code>&quot;group&quot;</code>, <code>&quot;body&quot;</code>. For <code>&quot;column&quot;</code> and <code>&quot;spanner&quot;</code> pass the
-name(s) in <code>columns</code>; for <code>&quot;body&quot;</code> also pass <code>rows</code>; for <code>&quot;group&quot;</code> you can use
-<code>match = &quot;starts_with&quot;</code> to match a group label by prefix.</li>
+name(s) in <code>columns</code> (names, positions, or a formula); for <code>&quot;body&quot;</code> also pass
+<code>rows</code>; for <code>&quot;group&quot;</code>, <code>match</code> is <code>&quot;exact&quot;</code> (the default), <code>&quot;starts_with&quot;</code> to
+match a group label by prefix, or <code>&quot;all&quot;</code> for every group.</li>
 <li><code>lt_note(text)</code> adds a plain table note at the bottom. It is also the
 replacement for <code>tab_source_note()</code>.</li>
 </ul>
@@ -6026,7 +5872,8 @@ group. This is <strong>gt</strong>’s default; in <strong>lt</strong> you reque
 <code>sep = FALSE</code>.</li>
 </ul>
 <p><strong>lt</strong>’s default is neither: <code>sep = &quot;auto&quot;</code> picks rowspan for short labels and
-separator rows once any label exceeds about 20 characters. So a <strong>gt</strong> table
+separator rows when a single character grouping column has any label longer than
+about 20 characters. So a <strong>gt</strong> table
 will not necessarily match out of the box. Set <code>sep</code> explicitly if you need a
 specific style.</p>
 <pre><code class="language-r"># gt default (separator rows)
@@ -6083,7 +5930,9 @@ equivalent. Pass plain text (the common case: <code>md(&quot;**Power**&quot;)</c
 <p>Two <code>lt_sub()</code> defaults are worth knowing before you translate a <code>sub_*()</code> call.
 Missing values already render as an em dash (<code>—</code>), and nothing special is done to
 zeros or small values. So a <code>sub_missing(missing_text = &quot;—&quot;)</code> in <strong>gt</strong> is
-usually just noise in <strong>lt</strong>: drop it unless you want a <em>different</em> placeholder.</p>
+usually just noise in <strong>lt</strong>: drop it unless you want a <em>different</em> placeholder,
+set per column with <code>lt_sub(columns, missing = )</code> or table-wide with the
+<code>lt.missing</code> option (see <code>?lt</code>).</p>
 <h3 id="sec:styling"><span class="section-number">11.2.7</span> Styling: you probably don’t need CSS</h3>
 <p><strong>lt</strong>’s default look is close to <strong>gt</strong>’s out of the box, so you rarely need CSS
 just to reproduce <strong>gt</strong>‘s base appearance. The whole stylesheet
@@ -6098,6 +5947,17 @@ rules, with no need to fight a heavy default. Add them with <code>lt_css()</code
 document, e.g.:</p>
 <pre><code class="language-css">.lt-table { font-size: 0.9em; width: 100%; }
 </code></pre>
+<h3 id="sec:missing"><span class="section-number">11.2.8</span> What lt does not have</h3>
+<p>A few <strong>gt</strong> features have no <strong>lt</strong> counterpart:</p>
+<ul>
+<li><code>summary_rows()</code> and <code>grand_summary_rows()</code>: compute the summary in R and
+append it as ordinary rows (<code>lt_indent()</code> and <code>lt_style()</code> can set them apart).</li>
+<li><code>data_color()</code>: use <code>lt_style(test = , class = )</code> with a rule from <code>lt_css()</code>
+for conditional colors, or <code>lt_errorbar()</code>/<code>lt_dotplot()</code> for visual encoding.</li>
+<li><code>opt_row_striping()</code> and similar <code>opt_*()</code> themes: a few CSS rules, scoped to
+one table with <code>lt_wrap(class = )</code>.</li>
+<li><code>tab_stubhead()</code>: relabel the first column with <code>lt_label()</code>.</li>
+</ul>
 <h2 id="sec:gt-static"><span class="section-number">11.3</span> Generating a static HTML table</h2>
 <p>By default an <strong>lt</strong> table is built in the browser by the JavaScript runtime
 (<a class="cross-ref-chp" href="#chp:js">10</a>) at view time, which is perfect for HTML pages but useless for output
@@ -6107,11 +5967,10 @@ running the runtime once at export time (it can also write images and other
 formats, depending on the file extension). Because it runs the runtime, baking
 needs a JavaScript engine: either Node.js or a headless browser (e.g.,
 Chrome, Chromium, or Edge).<sup class="footnote-ref"><a href="#fn-gt-v8" id="fnref-gt-v8" data-footnote-ref>2</a></sup></p>
-<p>Inside R Markdown you do not need to call <code>lt_export()</code> per table: set
-<code>options(lt.lt_static = list(...))</code> and every <code>lt()</code> chunk in the document is
-baked with those arguments automatically. <em>This option only takes effect when
-knitting an Rmd</em>; anywhere else it does nothing, and you must call
-<code>lt_export()</code> explicitly.</p>
+<p>In a knitr or litedown document you do not need to call <code>lt_export()</code> per table:
+set <code>options(lt.lt_static = list(...))</code> and every <code>lt()</code> chunk in the document is
+baked with those arguments automatically (<a class="cross-ref-sec" href="#sec:static">9.2</a>). Outside such documents
+the option does nothing, and you must call <code>lt_export()</code> explicitly.</p>
 <p>That option is how <strong>gsDesign2</strong> turns <code>README.Rmd</code> into a <code>README.md</code> that GitHub
 renders with real tables. The trick is a custom <code>knit</code> field in the YAML header:
 it enables static baking, then knits directly with <code>knitr::knit()</code> instead of
@@ -6214,12 +6073,6 @@ shows how to offer <strong>lt</strong> tables the idiomatic way: with an S3 meth
 <p><a href="https://github.com/yihui/lt/edit/main/book/12-extend.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:extend"><span class="section-number main-number">12</span> Building on lt</h1>
-<div class="epigraph">
-<blockquote>
-<p>If I have seen further it is by standing on the shoulders of giants.</p>
-<p>—Isaac Newton, letter to Robert Hooke (1676)</p>
-</blockquote>
-</div>
 <p>Sooner or later, a package author wants to print their own objects as tables: a
 model summary, a design object, a study result. This chapter is for you. The good
 news is that <strong>lt</strong> was built to be extended, and the whole recipe fits on one
@@ -6315,8 +6168,8 @@ side in <a class="cross-ref-chp" href="#chp:js">10</a>.</p>
 <ol>
 <li id="fn-gt-html">
 <p>HTML-first does not mean HTML-only for your final artifacts.
-<code>lt_export()</code> renders a table to PDF or PNG (via a headless browser) as well
-as to static HTML, so you can still drop an <strong>lt</strong> table into a paper or
+<code>lt_export()</code> renders a table to PDF or PNG (via a headless browser), static
+HTML, CSV, or RTF, so you can still drop an <strong>lt</strong> table into a paper or
 slide deck. It just builds those from the HTML rather than from a separate
 rendering backend (see <a class="cross-ref-chp" href="#chp:export">9</a>). <a href="#fnref-gt-html" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="1" aria-label="Back to reference 1">↩</a></p>
 </li>
@@ -6343,19 +6196,19 @@ stripped. It is the right tool there, just not a good default elsewhere.) <a hre
 </section>
 </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/chapter-toc.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/external-link.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/right-quote.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/key-buttons.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/callout.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/chapter-toc.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/external-link.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/right-quote.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/key-buttons.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/callout.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/pele@1.13.0/dist/pele.global.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.157/js/render-pele.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/render-pele.min.js" defer></script>
 </body>
 </html>
