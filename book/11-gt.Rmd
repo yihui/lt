@@ -9,12 +9,12 @@ for static HTML).
 We deeply appreciate **gt**'s pioneering work. It set the standard for display
 tables in R, and **lt** owes much of its design vocabulary---headers, spanners,
 row groups, footnotes---to the ground **gt** broke. **lt** is not a criticism of
-**gt**; it is a different point on the trade-off curve. **lt** targets HTML
-output only, and in exchange keeps its dependencies and its runtime tiny.[^gt-html]
+**gt**; it is a different point on the trade-off curve. **lt** is HTML-first,
+and in exchange keeps its dependencies and its runtime tiny.[^gt-html]
 
 [^gt-html]: HTML-first does not mean HTML-only for your final artifacts.
-    `lt_export()` renders a table to PDF or PNG (via a headless browser) as well
-    as to static HTML, so you can still drop an **lt** table into a paper or
+    `lt_export()` renders a table to PDF or PNG (via a headless browser), static
+    HTML, CSV, or RTF, so you can still drop an **lt** table into a paper or
     slide deck. It just builds those from the HTML rather than from a separate
     rendering backend (see @chp:export).
 
@@ -93,10 +93,13 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 |------------------------------------|--------------------------------------------|
 | `fmt_number(columns=, decimals=)` | `lt_format(columns, decimals=)` |
 | `fmt_percent(columns=)` | `lt_format(columns, percent = TRUE)` |
+| `fmt_currency(columns=, currency = "USD")` | `lt_format(columns, prefix = "$")` |
+| `fmt_number(sep_mark = ",")` | `lt_format(columns, big_mark = ",")` |
 | `fmt_date(columns=)` | `lt_date(columns)` |
 | `sub_missing()` / `sub_zero()` / `sub_small_vals()` | `lt_sub(missing=, zero=, small=)` |
 | `html(value)` (mark a value as raw HTML) | `I(value)` (title/labels/footnotes); `lt_html(columns)` for body cells |
 | `fmt_*()` applied to everything, by hand | automatic: `lt(auto_format = TRUE)` (@sec:auto) |
+| `cols_nanoplot()` | `lt_sparkline()` (@chp:plots) |
 ::::
 
 ### Layout and styling
@@ -117,13 +120,15 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `cols_hide(columns)` | `lt_hide(columns)` |
 | `tab_stub_indent(rows=, indent=)` | `lt_indent(rows, level=)` |
 | `tab_style(style=, locations=)` | `lt_style(columns=, rows=, ...)` |
+| `tab_options(table.width=)` and other table-level settings | `lt_wrap(style = "width: ...")`, `lt_css(...)` |
 | `opt_css(css=)` | `lt_css(...)` |
 ::::
 
 ### Interactivity
 
-**gt** splits interactivity across `opt_interactive()` and `cols_hide()`; **lt**
-gathers it all into `lt_interactive()` (@tab:gt-interactive).
+**gt** has `opt_interactive()`, and hides columns permanently with
+`cols_hide()`; **lt** gathers all interactivity, including a reader-togglable
+column menu, into `lt_interactive()` (@tab:gt-interactive).
 
 :::: {.table #tab:gt-interactive}
 ::: caption
@@ -241,8 +246,7 @@ not need `lt_format()` at all; see @sec:auto.)
 
 ### Interactivity is one function, not a separate step {#sec:one-interactive}
 
-**gt** turns on client-side interactivity with `opt_interactive()`, and hides
-columns with the unrelated `cols_hide()`. **lt** folds all of it into
+**gt** turns on client-side interactivity with `opt_interactive()`. **lt** folds all of it into
 `lt_interactive()`: sorting, searching, filtering, paging, resizing, row detail,
 profiles, a CSV or RTF download, and a reader-togglable column menu. Whatever you do not
 ask for is not loaded, so non-interactive tables cost nothing extra
@@ -257,8 +261,9 @@ cells; without one it adds a general note. **lt** splits these:
     location and gives it a marker. `text` is the *first* positional argument
     (not the location). `where` is one of `"title"`, `"subtitle"`, `"column"`,
     `"spanner"`, `"group"`, `"body"`. For `"column"` and `"spanner"` pass the
-    name(s) in `columns`; for `"body"` also pass `rows`; for `"group"` you can use
-    `match = "starts_with"` to match a group label by prefix.
+    name(s) in `columns` (names, positions, or a formula); for `"body"` also pass
+    `rows`; for `"group"`, `match` is `"exact"` (the default), `"starts_with"` to
+    match a group label by prefix, or `"all"` for every group.
 -   `lt_note(text)` adds a plain table note at the bottom. It is also the
     replacement for `tab_source_note()`.
 
@@ -277,7 +282,8 @@ There are two rendering styles, chosen by `sep`:
     `sep = FALSE`.
 
 **lt**'s default is neither: `sep = "auto"` picks rowspan for short labels and
-separator rows once any label exceeds about 20 characters. So a **gt** table
+separator rows when a single character grouping column has any label longer than
+about 20 characters. So a **gt** table
 will not necessarily match out of the box. Set `sep` explicitly if you need a
 specific style.
 
@@ -349,7 +355,9 @@ equivalent. Pass plain text (the common case: `md("**Power**")` simply becomes
 Two `lt_sub()` defaults are worth knowing before you translate a `sub_*()` call.
 Missing values already render as an em dash (`—`), and nothing special is done to
 zeros or small values. So a `sub_missing(missing_text = "—")` in **gt** is
-usually just noise in **lt**: drop it unless you want a *different* placeholder.
+usually just noise in **lt**: drop it unless you want a *different* placeholder,
+set per column with `lt_sub(columns, missing = )` or table-wide with the
+`lt.missing` option (see `?lt`).
 
 ### Styling: you probably don't need CSS {#sec:styling}
 
@@ -369,6 +377,18 @@ document, e.g.:
 ```css
 .lt-table { font-size: 0.9em; width: 100%; }
 ```
+
+### What lt does not have {#sec:missing}
+
+A few **gt** features have no **lt** counterpart:
+
+-   `summary_rows()` and `grand_summary_rows()`: compute the summary in R and
+    append it as ordinary rows (`lt_indent()` and `lt_style()` can set them apart).
+-   `data_color()`: use `lt_style(test = , class = )` with a rule from `lt_css()`
+    for conditional colors, or `lt_errorbar()`/`lt_dotplot()` for visual encoding.
+-   `opt_row_striping()` and similar `opt_*()` themes: a few CSS rules, scoped to
+    one table with `lt_wrap(class = )`.
+-   `tab_stubhead()`: relabel the first column with `lt_label()`.
 
 ## Generating a static HTML table {#sec:gt-static}
 
@@ -399,11 +419,10 @@ Chrome, Chromium, or Edge).[^gt-v8]
     (Inlining is genuinely useful for email, where `<style>` blocks are often
     stripped. It is the right tool there, just not a good default elsewhere.)
 
-Inside R Markdown you do not need to call `lt_export()` per table: set
-`options(lt.lt_static = list(...))` and every `lt()` chunk in the document is
-baked with those arguments automatically. *This option only takes effect when
-knitting an Rmd*; anywhere else it does nothing, and you must call
-`lt_export()` explicitly.
+In a knitr or litedown document you do not need to call `lt_export()` per table:
+set `options(lt.lt_static = list(...))` and every `lt()` chunk in the document is
+baked with those arguments automatically (@sec:static). Outside such documents
+the option does nothing, and you must call `lt_export()` explicitly.
 
 That option is how **gsDesign2** turns `README.Rmd` into a `README.md` that GitHub
 renders with real tables. The trick is a custom `knit` field in the YAML header:

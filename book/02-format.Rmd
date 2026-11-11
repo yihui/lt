@@ -1,10 +1,4 @@
-# Making Numbers Behave {#chp:format}
-
-::: epigraph
-> Less is more.
->
-> ---Ludwig Mies van der Rohe
-:::
+# Formatting Values {#chp:format}
 
 Raw numbers are honest, which is the problem. `0.1234567891` is a true value, but
 no reader wants to see it. They want `12.3%`, or `$1,234.50`, or a date that says

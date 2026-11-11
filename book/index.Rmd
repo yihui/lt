@@ -1,5 +1,6 @@
 ---
-title: "lt: Lightweight Tables for R"
+title: "lt: Tables That Travel Light"
+subtitle: "A grammar of lightweight static and interactive tables for R and beyond"
 author: "Yihui Xie"
 date: "`{r} Sys.Date()`"
 ---
@@ -7,10 +8,6 @@ date: "`{r} Sys.Date()`"
 ```{r, include = FALSE}
 library(lt)
 source('_ex.R')  # defines ex(), which embeds examples from ../examples
-```
-
-```{css, echo = FALSE}
-.ex-link { text-align: right; font-size: .8em; }
 ```
 
 # Preface {.unnumbered}

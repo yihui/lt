@@ -11,8 +11,6 @@ ex = function(name) {
   x = paste(x[x != 'library(lt)'], collapse = '\n')
   x = gsub('```\\{r assets.*?\n```\n', '', x)
   p = tempfile(fileext = '.Rmd')
-  xfun::write_utf8(c(x, '', sprintf(
-    '::: ex-link\n[Open as a page](../examples/%s)\n:::', xfun::with_ext(basename(f), '.html')
-  )), p)
+  xfun::write_utf8(x, p)
   p
 }

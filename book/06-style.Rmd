@@ -1,11 +1,5 @@
 # Styling {#chp:style}
 
-::: epigraph
-> It's not just what it looks like and feels like. Design is how it works.
->
-> ---Steve Jobs, as quoted in *The New York Times Magazine* (2003)
-:::
-
 The default look of an **lt** table is deliberately plain: a rule on top, a rule
 below the header, a rule at the bottom, and nothing else. It is a good canvas.
 This chapter is about the three functions that let you paint on it:

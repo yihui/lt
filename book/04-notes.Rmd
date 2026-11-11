@@ -1,11 +1,5 @@
 # Footnotes, Notes, and HTML {#chp:notes}
 
-::: epigraph
-> The devil is in the details.
->
-> ---Proverb
-:::
-
 Every good table has fine print. A number needs a caveat, a column needs a
 definition, a source needs credit. This chapter is about the small words that
 sit around your table and make the big numbers trustworthy.

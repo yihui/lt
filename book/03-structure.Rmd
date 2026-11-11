@@ -1,11 +1,5 @@
 # Shaping the Table {#chp:structure}
 
-::: epigraph
-> Form ever follows function.
->
-> ---Louis Sullivan, *The Tall Office Building Artistically Considered*
-:::
-
 A table is not only a grid of values. It has a shape: a few columns that belong
 together under a shared heading, rows that form families, a child row that hangs
 off its parent, and a column or two that exists only to feed the others. This is

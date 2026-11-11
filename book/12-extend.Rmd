@@ -1,11 +1,5 @@
 # Building on lt {#chp:extend}
 
-::: epigraph
-> If I have seen further it is by standing on the shoulders of giants.
->
-> ---Isaac Newton, letter to Robert Hooke (1676)
-:::
-
 Sooner or later, a package author wants to print their own objects as tables: a
 model summary, a design object, a study result. This chapter is for you. The good
 news is that **lt** was built to be extended, and the whole recipe fits on one

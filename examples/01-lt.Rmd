@@ -41,45 +41,28 @@ d = data.frame(
 )
 
 tbl_static = lt(d, auto_format = FALSE) |>
-  # lt_group(): the "lt_group()" row-group header on the left
   lt_group(~ Grp) |>
-  # lt_header(): the title and subtitle at the top
   lt_header(title = "lt_header(title = ...)", subtitle = "lt_header(subtitle = ...)") |>
-  # lt_merge(): fold CI into Est to make the "lt_merge()" column
   lt_merge(~ Est + CI, pattern = "{1} {2}") |>
-  # lt_spanner(): the "lt_spanner()" label above two columns
   lt_spanner(`lt_spanner()` ~ Fmt + Sub) |>
-  # lt_label(): every column header is renamed to the function acting on it
   lt_label(
     Grp = "lt_group()", Label = "lt_label(old = new, ...)", Fmt = "lt_format()",
     Sub = "lt_sub()", Date = "lt_date()", Align = "lt_align()", Est = "lt_merge()"
   ) |>
-  # lt_html(): render the "Label" column as raw HTML (note the link in row 1)
   lt_html(~ Label) |>
-  # lt_align(): center the "lt_align()" column
   lt_align(~ Align, "center") |>
-  # lt_width(): set the width of the first column
-  lt_width(Label = "11em") |>
-  # lt_format(): round and add a thousands separator
+  lt_width(Align = "6em") |>
   lt_format(~ Fmt, decimals = 1, big_mark = ",") |>
-  # lt_date(): format the "lt_date()" column
   lt_date(~ Date, options = list(month = "short", day = "numeric", timeZone = "UTC")) |>
-  # lt_sub(): NA/zero/small are replaced with self-naming placeholders
   lt_sub(~ Sub, missing = "n/a", zero = "—", small = 0.01, small_text = "< 0.01") |>
-  # lt_indent(): indent the two "lt_indent()" child rows
   lt_indent(c(2, 3), level = 1) |>
-  # lt_style() + lt_css(): style the cell that names them
   lt_style(~ Label, rows = 4L, class = "highlight") |>
   lt_css(.highlight = list(fontWeight = "bold", color = "orange")) |>
-  # lt_footnote(): provide the footnote text
   lt_footnote("lt_footnote() can add a footnote anywhere.", "title") |>
-  # I(): wrapping text in I() marks it as raw HTML
   lt_footnote(I("Wrap text in <code>I()</code> for raw HTML."), "column", ~ Label) |>
-  # lt_width() and lt_move() have no column of their own: explain via footnotes
-  lt_footnote("lt_width() sets column widths.", "column", ~ Label) |>
+  lt_footnote("lt_width() sets column widths.", "column", ~ Align) |>
   lt_footnote("lt_move() can reorder columns as desired.", "column", ~ Est) |>
-  # lt_note(): the footer note names itself and lt_export()
-  lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG.")
+  lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG/RTF.")
 tbl_static
 ```
 
@@ -126,10 +109,10 @@ d = data.frame(
 
 tbl_plots = lt(d) |>
   lt_header("Plot functions in lt") |>
-  lt_errorbar(Eff ~ Lo + Hi, ref = 0, width = 90) |>
-  lt_sparkline(~ Temp, width = 70) |>
-  lt_sparkline(~ Rain, type = "bar", color = "#4caf50", width = 70) |>
-  lt_dotplot(~ Before + After, color = TRUE, width = 100) |>
+  lt_errorbar(Eff ~ Lo + Hi, ref = 0) |>
+  lt_sparkline(~ Temp) |>
+  lt_sparkline(~ Rain, type = "bar", color = "limegreen") |>
+  lt_dotplot(~ Before + After, color = TRUE) |>
   lt_spanner(`lt_sparkline()` ~ Temp + Rain) |>
   lt_label(
     Eff = "lt_errorbar()", Temp = "line", Rain = "bar", Before = "lt_dotplot()"
@@ -166,5 +149,5 @@ lt(head(mtcars[, 1:5])) |>
 ```{r, include = FALSE}
 # for the PNGs on the README
 if (lt:::can_bake()) for (i in c("static", "interactive", "plots"))
-  lt_export(get(paste0("tbl_", i)), sprintf("01-lt-%s.png", i), width = "min-content")
+  lt_export(get(paste0("tbl_", i)), sprintf("01-lt-%s.png", i), width = "max-content")
 ```
