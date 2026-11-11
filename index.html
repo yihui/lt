@@ -68,8 +68,8 @@
 <a href="https://github.com/rstudio/DT"><strong>DT</strong></a>.</p>
 <p><strong>lt</strong> provides a small grammar of tables that covers the structure most reports
 need — titles, column spanners, row groups, footnotes, and number formatting —
-without the heavy dependency stack. It targets HTML only (no LaTeX or RTF),
-which keeps the implementation minimal: the entire runtime is a single, tiny
+without the heavy dependency stack. Tables render as HTML, and <code>lt_export()</code>
+also writes PDF, PNG, CSV, and RTF. The entire runtime is a single, tiny
 vanilla-JS file (see the size badge above).</p>
 <p>Tables can also hold inline plots (<code>lt_errorbar()</code>, <code>lt_sparkline()</code>,
 <code>lt_dotplot()</code>) and be made interactive — sorting, searching, per-column
@@ -168,7 +168,7 @@ extension loaded only for interactive tables.</li>
 <ul>
 <li><code>lt_export()</code> — save a table to a file: <code>.html</code> (optionally baking a static
 <code>&lt;table&gt;</code> that needs no JavaScript to view), <code>.pdf</code>, or <code>.png</code> (rendered via a
-headless Chromium browser).</li>
+headless Chromium browser), or <code>.csv</code> / <code>.rtf</code> (the table’s text).</li>
 </ul>
 <p><strong>Shiny</strong></p>
 <ul>
