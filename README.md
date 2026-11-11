@@ -15,8 +15,8 @@ Lightweight tables for R, inspired by [**gt**](https://gt.rstudio.com) and
 
 **lt** provides a small grammar of tables that covers the structure most reports
 need — titles, column spanners, row groups, footnotes, and number formatting —
-without the heavy dependency stack. It targets HTML only (no LaTeX or RTF),
-which keeps the implementation minimal: the entire runtime is a single, tiny
+without the heavy dependency stack. Tables render as HTML, and `lt_export()`
+also writes PDF, PNG, CSV, and RTF. The entire runtime is a single, tiny
 vanilla-JS file (see the size badge above).
 
 Tables can also hold inline plots (`lt_errorbar()`, `lt_sparkline()`,
@@ -127,7 +127,7 @@ By default a plot draws into the first value column's cells; `lt_errorbar()` and
 
 - `lt_export()` — save a table to a file: `.html` (optionally baking a static
   `<table>` that needs no JavaScript to view), `.pdf`, or `.png` (rendered via a
-  headless Chromium browser).
+  headless Chromium browser), or `.csv` / `.rtf` (the table's text).
 
 **Shiny**
 
