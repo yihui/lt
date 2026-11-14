@@ -74,6 +74,11 @@ assert('expectation message', {
 ```
 
 -   Use `has_error()` instead of `tryCatch()` for error testing
+-   Match fixed strings with `I()` instead of escaping regex characters, e.g.,
+    `has_match(html, I('<circle cx="40"'))`; use `.*` regexes only when you need
+    them
+-   Negate a match with `!` on the pattern, not on the call:
+    `has_match(html, !I("<style>"))`, never `!has_match(html, "<style>")`
 -   Never use `:::` to access internal functions in tests; testit exposes
     internal functions automatically, so call them directly
 
@@ -154,6 +159,10 @@ internal variable names, data structures, queue mechanics) that may change and
 that only a maintainer would care about. Don't frame behavior against a past or
 alternative implementation the user never saw — state it directly ("the header
 joins all names", not "… rather than just the first").
+
+Write lists loose: put a blank line between items (and between a list and the
+text around it), in roxygen, Rmd, and Markdown alike. Tight lists render as one
+run-on block in some outputs.
 
 In `NEWS.md`, never hard-wrap: one line per bullet (and sub-bullet). Readability
 comes from the bullet structure, not from wrapping.
