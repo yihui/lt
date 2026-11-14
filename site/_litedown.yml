@@ -1,26 +1,29 @@
 site:
   manual:
-    Build tables:
-      desc: Create a table and add titles, spanners, row groups, notes, and layout.
-      contents: [lt, lt_header, lt_spanner, lt_group, lt_footnote, lt_note, lt_indent, lt_merge, lt_move, lt_hide, lt_summary]
-    Format cells:
-      desc: Format values, dates, and labels, and align and size columns.
-      contents: [lt_format, lt_date, lt_label, lt_html, lt_sub, lt_align, lt_width]
-    Style tables:
-      desc: Style cells and wrap or theme the table with CSS.
-      contents: [lt_style, lt_color, lt_css, lt_wrap]
-    Inline graphics:
-      desc: Draw error bars, sparklines, and dot plots inside cells.
+    Formatting values:
+      desc: Format numbers and dates, and substitute special values such as missing ones.
+      contents: [lt_format, lt_date, lt_sub]
+    Shaping the table:
+      desc: Create a table from a data frame, add a title and column labels, merge, span, move, and hide columns, and group, summarize, and indent rows.
+      contents: [lt, lt_header, lt_label, lt_merge, lt_spanner, lt_move, lt_hide, lt_group, lt_summary, lt_indent]
+    Footnotes, notes, and HTML:
+      desc: Add numbered footnotes and plain notes, and render cells as raw HTML.
+      contents: [lt_footnote, lt_note, lt_html]
+    Plots in cells:
+      desc: Draw error bars, sparklines, and dot plots inside table cells.
       contents: [lt_errorbar, lt_sparkline, lt_dotplot]
-    Interactivity:
-      desc: Sort, search, filter, page, resize, and drill down in the browser.
-      contents: [lt_interactive, lt_viewer, lt_serve]
-    Output and export:
-      desc: Print, serialize, and export tables as HTML, images, or PDF.
-      contents: [print.lt_tbl, format.lt_tbl, lt_spec, lt_export]
-    Shiny:
-      desc: Use lt tables as Shiny outputs and inputs.
-      contents: [lt_output, lt_dependency]
+    Styling:
+      desc: Align and size columns, style cells, color them by value, and apply CSS to the table or its container.
+      contents: [lt_align, lt_width, lt_style, lt_color, lt_css, lt_wrap]
+    Interactive tables:
+      desc: Make a table sortable, searchable, filterable, and paged in the browser, or open a data frame in a ready-made viewer.
+      contents: [lt_interactive, lt_viewer]
+    Tables in Shiny:
+      desc: Use lt tables as Shiny outputs and inputs, and keep big data in R by serving rows on demand.
+      contents: [lt_output, lt_serve]
+    Exporting and embedding:
+      desc: Print tables, format them as static HTML, export to HTML, PDF, PNG, CSV, or RTF, and extract the table spec or runtime assets to embed tables elsewhere.
+      contents: [print.lt_tbl, format.lt_tbl, lt_export, lt_spec, lt_dependency]
   examples:
     Get started:
       desc: An overview of lt, migrating from gt, and the basics of labels, alignment, and column types.
@@ -41,14 +44,17 @@ site:
       desc: Error bars, sparklines, and dot plots.
       contents: ["23-*", "24-*", "25-*"]
     Interactivity:
-      desc: Sort, search, filter, drill down, profile, download, view, and serve.
-      contents: ["26-*", "27-*", "28-*", "29-*", "30-*", "31-*", "32-*", "33-*"]
-    Shiny and export:
-      desc: Shiny outputs and inputs, and static export.
-      contents: ["34-*", "35-*", "36-*"]
+      desc: Sort, search, filter, drill down, profile, download, and view.
+      contents: ["26-*", "27-*", "28-*", "29-*", "30-*", "31-*", "32-*"]
+    Shiny:
+      desc: Shiny outputs and inputs, and serving big data from R.
+      contents: ["33-*", "34-*", "35-*"]
+    Export:
+      desc: Save tables as static files, and get the table spec.
+      contents: ["36-*", "37-*"]
     JavaScript:
       desc: Use the lt.js runtime directly.
-      contents: ["02-*", "37-*", "38-*", "39-*"]
+      contents: ["02-*", "38-*", "39-*"]
 
 output:
   html:
