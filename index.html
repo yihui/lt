@@ -94,95 +94,10 @@ install.packages(&quot;lt&quot;, repos = &quot;https://yihui.r-universe.dev&quot
 without installing it.</p>
 <h2 id="sec:functions"><span class="section-number main-number">2</span> Functions</h2>
 <p><code>lt()</code> creates a table object from a data frame. The <code>lt_*()</code> functions build
-on it via the pipe. See <a href="https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet">https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet</a>
-for “cheat tables” as an overview of these functions, or read the book at
-<a href="https://pkg.yihui.org/lt/book/">https://pkg.yihui.org/lt/book/</a> for a guided tour.</p>
-<p><strong>Structure</strong></p>
-<ul>
-<li><code>lt_header()</code> — title and optional subtitle above the table.</li>
-<li><code>lt_spanner()</code> — column-spanner label spanning a group of columns; or
-auto-infer spanners from column name prefixes.</li>
-<li><code>lt_group()</code> — partition rows into labeled groups (rowspan or full-width
-separator style), either by column values or manual row indices.</li>
-</ul>
-<p><strong>Content &amp; labels</strong></p>
-<ul>
-<li><code>lt_label()</code> — override column header labels.</li>
-<li><code>lt_footnote()</code> — attach a numbered footnote to any region (title, subtitle,
-column, spanner, group, or body cells).</li>
-<li><code>lt_note()</code> — append a plain unnumbered note below the table.</li>
-<li><code>lt_html()</code> — render selected columns’ cells as raw HTML instead of escaping
-them. For raw HTML in text (title, labels, footnotes, …), wrap the text in
-<code>I()</code> in the corresponding function.</li>
-</ul>
-<p><strong>Formatting</strong></p>
-<ul>
-<li><code>lt_format()</code> — numeric formatting: decimal places, thousand separators,
-prefix/suffix, percentage, scientific notation, etc.</li>
-<li><code>lt_date()</code> — date/datetime formatting using the browser locale.</li>
-<li><code>lt_sub()</code> — substitute specific values (e.g., replace <code>0</code> with <code>&quot;—&quot;</code> or
-<code>NA</code> with <code>&quot;n/a&quot;</code>).</li>
-<li><code>lt_merge()</code> — merge several columns into one using a sprintf-style pattern.</li>
-<li><code>lt_indent()</code> — indent selected rows (useful for hierarchical row labels).</li>
-</ul>
-<p><strong>Inline plots</strong></p>
-<p>Drawn as SVG in the browser from the numbers alone — nothing but the data
-travels to the client, and an interactive table draws only the visible rows.</p>
-<ul>
-<li><code>lt_errorbar()</code> — a point estimate with lower/upper bounds on a scale shared
-across rows (a forest plot of effect sizes); several series can stack in one
-cell, with a colored legend and optional reference line and axis.</li>
-<li><code>lt_sparkline()</code> — a per-row line or bar chart, from a list-column or several
-numeric columns read across the row.</li>
-<li><code>lt_dotplot()</code> — one dot per column on a shared scale, optionally colored with
-a legend and staggered onto separate tracks so near-equal values do not
-overlap.</li>
-</ul>
-<p>By default a plot draws into the first value column’s cells; <code>lt_errorbar()</code> and
-<code>lt_dotplot()</code> also take <code>into=</code> to name a dedicated column to draw into
-(created when it does not exist), keeping the value columns visible as text.</p>
-<p><strong>Appearance</strong></p>
-<ul>
-<li><code>lt_align()</code> — set column alignment (left / center / right).</li>
-<li><code>lt_width()</code> — set column widths.</li>
-<li><code>lt_style()</code> — apply CSS classes or inline styles to cells, conditionally or
-unconditionally.</li>
-<li><code>lt_css()</code> — attach an external CSS file or URL to the table.</li>
-<li><code>lt_wrap()</code> — set HTML attributes (<code>class</code>, <code>style</code>, <code>id</code>, …) on the table’s
-container, e.g. to scope custom CSS to one table or give it a fixed width.</li>
-</ul>
-<p><strong>Column order &amp; visibility</strong></p>
-<ul>
-<li><code>lt_move()</code> — reorder columns.</li>
-<li><code>lt_hide()</code> — hide columns from the rendered table (still shipped in the
-data, so an interactive row detail can surface them).</li>
-</ul>
-<p><strong>Interactivity</strong></p>
-<ul>
-<li><code>lt_interactive()</code> — opt a table into client-side sorting, a search box,
-per-column filters (text, dropdown, range slider, or checklist), pagination,
-resizable columns, column hiding, expandable row detail (drill-down), and CSV/RTF
-download of the current view. Features are handled by a small JavaScript
-extension loaded only for interactive tables.</li>
-</ul>
-<p><strong>Export</strong></p>
-<ul>
-<li><code>lt_export()</code> — save a table to a file: <code>.html</code> (optionally baking a static
-<code>&lt;table&gt;</code> that needs no JavaScript to view), <code>.pdf</code>, or <code>.png</code> (rendered via a
-headless Chromium browser), or <code>.csv</code> / <code>.rtf</code> (the table’s text).</li>
-</ul>
-<p><strong>Shiny</strong></p>
-<ul>
-<li><code>lt_output()</code> / <code>render_lt()</code> — Shiny UI and server bindings.</li>
-<li><code>lt_input()</code> / <code>lt_update()</code> — an editable table as a Shiny input.</li>
-</ul>
-<p><strong>Embedding</strong></p>
-<ul>
-<li><code>lt_spec()</code> — extract a table’s render-ready spec (data plus ops), to ship to
-the browser and render client-side with <code>LT.render()</code>.</li>
-<li><code>lt_dependency()</code> — the <code>htmlDependency</code> bundling lt’s runtime assets, for
-embedding lt tables in other HTML output (e.g. an htmlwidget).</li>
-</ul>
+on it via the pipe. See the manual at <a href="https://pkg.yihui.org/lt/manual.html">https://pkg.yihui.org/lt/manual.html</a>
+for all functions, grouped by task. The “cheat tables” at
+<a href="https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheatsheet">https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheatsheet</a> give a visual
+overview, and the book at <a href="https://pkg.yihui.org/lt/book/">https://pkg.yihui.org/lt/book/</a> is a guided tour.</p>
 <h2 id="sec:examples"><span class="section-number main-number">3</span> Examples</h2>
 <p>The R code below builds a table spec. Under the hood <strong>lt</strong> serializes it to a
 compact JSON object and ships it to the browser, where a tiny vanilla-JS runtime

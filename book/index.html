@@ -324,7 +324,7 @@ lt(d) |&gt;
   lt_sub(~ P_Value, missing = &quot;n/a&quot;) |&gt;
   lt_footnote(&quot;Two-sided p-value from log-rank test.&quot;, &quot;column&quot;, ~ P_Value)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.3/css/lt.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["dc25b969"]=
 {
   "Group": ["Treatment", "Treatment", "Control", "Control"],
@@ -372,7 +372,7 @@ lt(d) |&gt;
   "data_key": "dc25b969"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.3/js/lt.min.js" defer></script>
 <p>That is the whole idea. The rest of this book is about the details, and there
 are more of them than the pitch suggests: <strong>lt</strong> can also draw forest plots
 and sparklines inside cells, turn a table into an interactive explorer with
@@ -629,54 +629,59 @@ row-group label is <code>lt_group()</code>; the footnote text is <code>lt_footno
   Grp   = paste(&quot;Group&quot;, c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;)),
   Label = c(&quot;&lt;a href='#sec:cheatsheet'&gt;lt(): make a table&lt;/a&gt;&quot;,
             &quot;lt_indent(): child A&quot;, &quot;lt_indent(): child B&quot;, &quot;lt_style() + lt_css()&quot;),
-  Fmt   = c(1234567.89, -0.51234, Inf, -Inf),
+  Fmt   = c(1234567.89, -0.51234, Inf, 9876.54),
   Sub   = c(0, NA, 3.14, 0.0002),
-  Date  = as.Date(c(&quot;2024-01-15&quot;, &quot;2024-02-20&quot;, &quot;2024-03-25&quot;, &quot;2024-04-30&quot;)),
-  Align = c(1, 22, 333, 4),
+  Align = c(1, 99, 333, 4),
   Est   = c(&quot;0.6&quot;, &quot;0.8&quot;, &quot;0.5&quot;, &quot;0.9&quot;),
   CI    = c(&quot;(0.4, 0.8)&quot;, &quot;(0.6, 1.0)&quot;, &quot;(0.2, 0.7)&quot;, &quot;(0.7, 1.1)&quot;)
 )
 
 tbl_static = lt(d, auto_format = FALSE) |&gt;
   lt_group(~ Grp) |&gt;
+  lt_summary(&quot;sum&quot;, ~ Fmt + Align, by = ~ Grp, label = &quot;lt_summary()&quot;) |&gt;
   lt_header(title = &quot;lt_header(title = ...)&quot;, subtitle = &quot;lt_header(subtitle = ...)&quot;) |&gt;
   lt_merge(~ Est + CI, pattern = &quot;{1} {2}&quot;) |&gt;
   lt_spanner(`lt_spanner()` ~ Fmt + Sub) |&gt;
   lt_label(
-    Grp = &quot;lt_group()&quot;, Label = &quot;lt_label(old = new, ...)&quot;, Fmt = &quot;lt_format()&quot;,
-    Sub = &quot;lt_sub()&quot;, Date = &quot;lt_date()&quot;, Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;
+    Grp = &quot;lt_group()&quot;, Label = &quot;lt_label()&quot;, Fmt = &quot;lt_format()&quot;,
+    Sub = &quot;lt_sub()&quot;, Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;
   ) |&gt;
   lt_html(~ Label) |&gt;
   lt_align(~ Align, &quot;center&quot;) |&gt;
-  lt_width(Align = &quot;6em&quot;) |&gt;
+  lt_width(Align = &quot;4em&quot;) |&gt;
+  lt_color(~ Align, c(&quot;yellow&quot;, &quot;navy&quot;), domain = c(0, 400)) |&gt;
   lt_format(~ Fmt, decimals = 1, big_mark = &quot;,&quot;) |&gt;
-  lt_date(~ Date, options = list(month = &quot;short&quot;, day = &quot;numeric&quot;, timeZone = &quot;UTC&quot;)) |&gt;
   lt_sub(~ Sub, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.01, small_text = &quot;&lt; 0.01&quot;) |&gt;
-  lt_indent(c(2, 3), level = 1) |&gt;
-  lt_style(~ Label, rows = 4L, class = &quot;highlight&quot;) |&gt;
+  lt_indent(c(2, 4), level = 1) |&gt;
+  lt_style(~ Label, rows = 5L, class = &quot;highlight&quot;) |&gt;
   lt_css(.highlight = list(fontWeight = &quot;bold&quot;, color = &quot;orange&quot;)) |&gt;
   lt_footnote(&quot;lt_footnote() can add a footnote anywhere.&quot;, &quot;title&quot;) |&gt;
   lt_footnote(I(&quot;Wrap text in &lt;code&gt;I()&lt;/code&gt; for raw HTML.&quot;), &quot;column&quot;, ~ Label) |&gt;
-  lt_footnote(&quot;lt_width() sets column widths.&quot;, &quot;column&quot;, ~ Align) |&gt;
+  lt_footnote(&quot;lt_width() sets widths; lt_color() shades cells.&quot;, &quot;column&quot;, ~ Align) |&gt;
   lt_footnote(&quot;lt_move() can reorder columns as desired.&quot;, &quot;column&quot;, ~ Est) |&gt;
-  lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG/RTF.&quot;)
+  lt_note(&quot;lt_note() adds this note; lt_date() formats dates; lt_export() saves HTML/PDF/PNG/RTF.&quot;)
 tbl_static
 </code></pre>
-<script>((window.LT=window.LT||{}).d=window.LT.d||{})["62be29ef"]=
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["c1376030"]=
 {
-  "Grp": ["Group A", "Group A", "Group B", "Group B"],
-  "Label": ["<a href='#sec:cheatsheet'>lt(): make a table</a>", "lt_indent(): child A", "lt_indent(): child B", "lt_style() + lt_css()"],
-  "Fmt": [1234567.89, -0.51234, Infinity, -Infinity],
-  "Sub": [0, null, 3.14, 2e-04],
-  "Date": ["2024-01-15", "2024-02-20", "2024-03-25", "2024-04-30"],
-  "Align": [1, 22, 333, 4],
-  "Est": ["0.6", "0.8", "0.5", "0.9"],
-  "CI": ["(0.4, 0.8)", "(0.6, 1.0)", "(0.2, 0.7)", "(0.7, 1.1)"]
+  "Grp": ["Group A", "Group A", "Group A", "Group B", "Group B", "Group B", null],
+  "Label": ["<a href='#sec:cheatsheet'>lt(): make a table</a>", "lt_indent(): child A", "lt_summary()", "lt_indent(): child B", "lt_style() + lt_css()", "lt_summary()", "Total"],
+  "Fmt": [1234567.89, -0.51234, 1234567.37766, Infinity, 9876.54, Infinity, Infinity],
+  "Sub": [0, null, null, 3.14, 2e-04, null, null],
+  "Align": [1, 99, 100, 333, 4, 337, 437],
+  "Est": ["0.6", "0.8", null, "0.5", "0.9", null, null],
+  "CI": ["(0.4, 0.8)", "(0.6, 1.0)", null, "(0.2, 0.7)", "(0.7, 1.1)", null, null]
 }
 </script>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "ops": [
+    {
+      "type": "summary",
+      "by": "Grp",
+      "rows": [3, 6],
+      "grand": 7
+    },
     {
       "type": "merge",
       "columns": ["Est", "CI"],
@@ -687,10 +692,9 @@ tbl_static
       "type": "label",
       "labels": {
         "Grp": "lt_group()",
-        "Label": "lt_label(old = new, ...)",
+        "Label": "lt_label()",
         "Fmt": "lt_format()",
         "Sub": "lt_sub()",
-        "Date": "lt_date()",
         "Align": "lt_align()",
         "Est": "lt_merge()"
       }
@@ -703,23 +707,20 @@ tbl_static
     {
       "type": "width",
       "widths": {
-        "Align": "6em"
+        "Align": "4em"
       }
+    },
+    {
+      "type": "color",
+      "columns": ["Align"],
+      "palette": ["#FFFF00", "#000080"],
+      "domain": [0, 400]
     },
     {
       "type": "fmt_number",
       "columns": ["Fmt"],
       "decimals": 1,
       "big_mark": ","
-    },
-    {
-      "type": "fmt_date",
-      "columns": ["Date"],
-      "options": {
-        "month": "short",
-        "day": "numeric",
-        "timeZone": "UTC"
-      }
     },
     {
       "type": "sub",
@@ -731,18 +732,17 @@ tbl_static
     },
     {
       "type": "indent",
-      "rows": [2, 3],
+      "rows": [2, 4],
       "level": 1
     },
     {
       "type": "style",
       "columns": ["Label"],
-      "rows": [4],
+      "rows": [5],
       "class": "highlight"
     }
   ],
   "auto_format": false,
-  "dates": ["Date"],
   "row_group": ["Grp"],
   "header": {
     "title": "lt_header(title = ...)",
@@ -772,7 +772,7 @@ tbl_static
       }
     },
     {
-      "text": "lt_width() sets column widths.",
+      "text": "lt_width() sets widths; lt_color() shades cells.",
       "location": {
         "type": "column_labels",
         "columns": ["Align"]
@@ -787,9 +787,9 @@ tbl_static
     }
   ],
   "notes": [
-    "lt_note() — and lt_export() saves this table to HTML/PDF/PNG/RTF."
+    "lt_note() adds this note; lt_date() formats dates; lt_export() saves HTML/PDF/PNG/RTF."
   ],
-  "data_key": "62be29ef"
+  "data_key": "c1376030"
 }
 })</script>
 <h3 id="sec:cheat-interactive"><span class="section-number">1.2.2</span> Interactive tables</h3>
@@ -816,7 +816,7 @@ tbl_interactive = lt(d) |&gt;
   lt_note(&quot;lt_viewer() and lt_serve() view and serve big data.&quot;)
 tbl_interactive
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/lt-interactive.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.3/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["025aa0f9"]=
 {
   "Argument": ["sort", "search", "filter", "pager", "resize", "hide", "detail", "profile", "download"],
@@ -852,9 +852,9 @@ tbl_interactive
   "data_key": "025aa0f9"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt-query.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt-export.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt-interactive.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.3/js/lt-query.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.3/js/lt-export.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.3/js/lt-interactive.min.js" defer></script>
 <h3 id="sec:cheat-plots"><span class="section-number">1.2.3</span> Inline plots</h3>
 <p>Each plotting function draws in the cell of the column that carries its name.</p>
 <pre><code class="language-r">d = data.frame(
@@ -877,7 +877,7 @@ tbl_plots = lt(d) |&gt;
   )
 tbl_plots
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.3/css/lt-plot.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["beb9e5fd"]=
 {
   "Study": ["A", "B", "C"],
@@ -974,7 +974,7 @@ tbl_plots
   "data_key": "beb9e5fd"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.3/js/lt-plot.min.js" defer></script>
 <h2 id="sec:labels"><span class="section-number">1.3</span> Titles and labels</h2>
 <p><code>lt_header()</code> puts a title, and optionally a subtitle, above the table:</p>
 <pre><code class="language-r">lt(head(iris)) |&gt;
@@ -1735,10 +1735,10 @@ Without <code>by</code>, it adds just the total. Other columns stay empty.</p>
 )
 lt(d) |&gt; lt_summary(&quot;sum&quot;, by = ~ grp)
 </code></pre>
-<script>((window.LT=window.LT||{}).d=window.LT.d||{})["086d9618"]=
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["5e57fb8e"]=
 {
   "grp": ["A", "A", "A", "B", "B", "B", null],
-  "item": ["x", "y", "Sum", "x", "y", "Sum", "All"],
+  "item": ["x", "y", "Sum", "x", "y", "Sum", "Total"],
   "n": [10, 30, 40, 20, 40, 60, 100],
   "rate": [0.12, 0.34, 0.46, 0.56, 0.78, 1.34, 1.8]
 }
@@ -1754,11 +1754,11 @@ lt(d) |&gt; lt_summary(&quot;sum&quot;, by = ~ grp)
     }
   ],
   "row_group": ["grp"],
-  "data_key": "086d9618"
+  "data_key": "5e57fb8e"
 }
 })</script>
 <p>With <code>by</code>, the group rows are labeled with the function’s name (“Sum”) and a
-total labeled “All” closes the table; change them with <code>label</code> and <code>grand</code>, or
+total labeled “Total” closes the table; change them with <code>label</code> and <code>grand</code>, or
 drop the total with <code>grand = FALSE</code>. Give a named list to use a different
 function per column.</p>
 <pre><code class="language-r">lt(d) |&gt; lt_summary(list(n = &quot;sum&quot;, rate = &quot;mean&quot;), by = ~ grp, grand = FALSE)
@@ -1793,10 +1793,10 @@ lt(d) |&gt;
   lt_group(~ grp, sep = TRUE) |&gt;
   lt_format(~ rate, percent = TRUE, decimals = 1)
 </code></pre>
-<script>((window.LT=window.LT||{}).d=window.LT.d||{})["31d012c6"]=
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["7737f706"]=
 {
   "grp": ["A", "A", "A", "B", "B", "B", null],
-  "item": ["x", "y", "Subtotal", "x", "y", "Subtotal", "All"],
+  "item": ["x", "y", "Subtotal", "x", "y", "Subtotal", "Total"],
   "n": [10, 30, 40, 20, 40, 60, 100],
   "rate": [0.12, 0.34, 0.285, 0.56, 0.78, 0.706666666666667, 0.538]
 }
@@ -1818,7 +1818,7 @@ lt(d) |&gt;
     }
   ],
   "row_group": "grp",
-  "data_key": "31d012c6"
+  "data_key": "7737f706"
 }
 })</script>
 <p>Summary rows are shown in bold. The grand row stays at the bottom of the table

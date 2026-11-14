@@ -33,13 +33,14 @@
 <nav id="TOC" class="side side-left">
 <ul class="numbered">
 <li><a href="#sec:overview"><span class="section-number main-number">1</span> Overview</a></li>
-<li><a href="#sec:build-tables"><span class="section-number main-number">2</span> Build tables</a></li>
-<li><a href="#sec:format-cells"><span class="section-number main-number">3</span> Format cells</a></li>
-<li><a href="#sec:style-tables"><span class="section-number main-number">4</span> Style tables</a></li>
-<li><a href="#sec:inline-graphics"><span class="section-number main-number">5</span> Inline graphics</a></li>
-<li><a href="#sec:interactivity"><span class="section-number main-number">6</span> Interactivity</a></li>
-<li><a href="#sec:output-and-export"><span class="section-number main-number">7</span> Output and export</a></li>
-<li><a href="#sec:shiny"><span class="section-number main-number">8</span> Shiny</a></li>
+<li><a href="#sec:formatting-values"><span class="section-number main-number">2</span> Formatting values</a></li>
+<li><a href="#sec:shaping-the-table"><span class="section-number main-number">3</span> Shaping the table</a></li>
+<li><a href="#sec:footnotes-notes-and-html"><span class="section-number main-number">4</span> Footnotes, notes, and HTML</a></li>
+<li><a href="#sec:plots-in-cells"><span class="section-number main-number">5</span> Plots in cells</a></li>
+<li><a href="#sec:styling"><span class="section-number main-number">6</span> Styling</a></li>
+<li><a href="#sec:interactive-tables"><span class="section-number main-number">7</span> Interactive tables</a></li>
+<li><a href="#sec:tables-in-shiny"><span class="section-number main-number">8</span> Tables in Shiny</a></li>
+<li><a href="#sec:exporting-and-embedding"><span class="section-number main-number">9</span> Exporting and embedding</a></li>
 </ul>
 </nav>
 <style type="text/css">
@@ -52,67 +53,71 @@ h2 {
 <ul>
 <li><a href="manual/lt-package.html"><code>lt-package</code></a>: lt: Lightweight tables via JSON specs and JavaScript</li>
 </ul>
-<h2 id="sec:build-tables"><span class="section-number main-number">2</span> Build tables</h2>
-<p>Create a table and add titles, spanners, row groups, notes, and layout.</p>
+<h2 id="sec:formatting-values"><span class="section-number main-number">2</span> Formatting values</h2>
+<p>Format numbers and dates, and substitute special values such as missing ones.</p>
+<ul>
+<li><a href="manual/lt-date.html"><code>lt_date()</code></a>: Format date/time columns</li>
+<li><a href="manual/lt-format.html"><code>lt_format()</code></a>: Format numeric columns</li>
+<li><a href="manual/lt-sub.html"><code>lt_sub()</code></a>: Substitute cell values</li>
+</ul>
+<h2 id="sec:shaping-the-table"><span class="section-number main-number">3</span> Shaping the table</h2>
+<p>Create a table from a data frame, add a title and column labels, merge, span, move, and hide columns, and group, summarize, and indent rows.</p>
 <ul>
 <li><a href="manual/lt.html"><code>lt()</code>, <code>lt.default()</code></a>: Create a table specification</li>
-<li><a href="manual/lt-footnote.html"><code>lt_footnote()</code></a>: Add a footnote</li>
 <li><a href="manual/lt-group.html"><code>lt_group()</code></a>: Define row groups</li>
 <li><a href="manual/lt-header.html"><code>lt_header()</code></a>: Add a title and subtitle</li>
 <li><a href="manual/lt-hide.html"><code>lt_hide()</code></a>: Hide columns</li>
 <li><a href="manual/lt-indent.html"><code>lt_indent()</code></a>: Indent rows</li>
+<li><a href="manual/lt-label.html"><code>lt_label()</code></a>: Rename column labels</li>
 <li><a href="manual/lt-merge.html"><code>lt_merge()</code></a>: Merge columns</li>
 <li><a href="manual/lt-move.html"><code>lt_move()</code></a>: Move columns</li>
-<li><a href="manual/lt-note.html"><code>lt_note()</code></a>: Add a note</li>
 <li><a href="manual/lt-spanner.html"><code>lt_spanner()</code></a>: Add a column spanner</li>
 <li><a href="manual/lt-summary.html"><code>lt_summary()</code></a>: Add summary rows</li>
 </ul>
-<h2 id="sec:format-cells"><span class="section-number main-number">3</span> Format cells</h2>
-<p>Format values, dates, and labels, and align and size columns.</p>
+<h2 id="sec:footnotes-notes-and-html"><span class="section-number main-number">4</span> Footnotes, notes, and HTML</h2>
+<p>Add numbered footnotes and plain notes, and render cells as raw HTML.</p>
 <ul>
-<li><a href="manual/lt-align.html"><code>lt_align()</code></a>: Set column alignment</li>
-<li><a href="manual/lt-date.html"><code>lt_date()</code></a>: Format date/time columns</li>
-<li><a href="manual/lt-format.html"><code>lt_format()</code></a>: Format numeric columns</li>
+<li><a href="manual/lt-footnote.html"><code>lt_footnote()</code></a>: Add a footnote</li>
 <li><a href="manual/lt-html.html"><code>lt_html()</code></a>: Render column cells as raw HTML</li>
-<li><a href="manual/lt-label.html"><code>lt_label()</code></a>: Rename column labels</li>
-<li><a href="manual/lt-sub.html"><code>lt_sub()</code></a>: Substitute cell values</li>
-<li><a href="manual/lt-width.html"><code>lt_width()</code></a>: Set column and table widths</li>
+<li><a href="manual/lt-note.html"><code>lt_note()</code></a>: Add a note</li>
 </ul>
-<h2 id="sec:style-tables"><span class="section-number main-number">4</span> Style tables</h2>
-<p>Style cells and wrap or theme the table with CSS.</p>
-<ul>
-<li><a href="manual/lt-color.html"><code>lt_color()</code></a>: Color cells by value</li>
-<li><a href="manual/lt-css.html"><code>lt_css()</code></a>: Attach custom CSS</li>
-<li><a href="manual/lt-style.html"><code>lt_style()</code></a>: Style cells</li>
-<li><a href="manual/lt-wrap.html"><code>lt_wrap()</code></a>: Set attributes on the table’s container</li>
-</ul>
-<h2 id="sec:inline-graphics"><span class="section-number main-number">5</span> Inline graphics</h2>
-<p>Draw error bars, sparklines, and dot plots inside cells.</p>
+<h2 id="sec:plots-in-cells"><span class="section-number main-number">5</span> Plots in cells</h2>
+<p>Draw error bars, sparklines, and dot plots inside table cells.</p>
 <ul>
 <li><a href="manual/lt-dotplot.html"><code>lt_dotplot()</code></a>: Draw an inline dot plot in a column</li>
 <li><a href="manual/lt-errorbar.html"><code>lt_errorbar()</code></a>: Draw an inline error-bar plot in a column</li>
 <li><a href="manual/lt-sparkline.html"><code>lt_sparkline()</code></a>: Draw an inline sparkline in a column</li>
 </ul>
-<h2 id="sec:interactivity"><span class="section-number main-number">6</span> Interactivity</h2>
-<p>Sort, search, filter, page, resize, and drill down in the browser.</p>
+<h2 id="sec:styling"><span class="section-number main-number">6</span> Styling</h2>
+<p>Align and size columns, style cells, color them by value, and apply CSS to the table or its container.</p>
+<ul>
+<li><a href="manual/lt-align.html"><code>lt_align()</code></a>: Set column alignment</li>
+<li><a href="manual/lt-color.html"><code>lt_color()</code></a>: Color cells by value</li>
+<li><a href="manual/lt-css.html"><code>lt_css()</code></a>: Attach custom CSS</li>
+<li><a href="manual/lt-style.html"><code>lt_style()</code></a>: Style cells</li>
+<li><a href="manual/lt-width.html"><code>lt_width()</code></a>: Set column and table widths</li>
+<li><a href="manual/lt-wrap.html"><code>lt_wrap()</code></a>: Set attributes on the table’s container</li>
+</ul>
+<h2 id="sec:interactive-tables"><span class="section-number main-number">7</span> Interactive tables</h2>
+<p>Make a table sortable, searchable, filterable, and paged in the browser, or open a data frame in a ready-made viewer.</p>
 <ul>
 <li><a href="manual/lt-interactive.html"><code>lt_interactive()</code></a>: Enable interactive table features</li>
-<li><a href="manual/lt-serve.html"><code>lt_serve()</code></a>: Serve the rows of an interactive table from a data server</li>
 <li><a href="manual/lt-viewer.html"><code>lt_viewer()</code></a>: View a data frame as an interactive table</li>
 </ul>
-<h2 id="sec:output-and-export"><span class="section-number main-number">7</span> Output and export</h2>
-<p>Print, serialize, and export tables as HTML, images, or PDF.</p>
+<h2 id="sec:tables-in-shiny"><span class="section-number main-number">8</span> Tables in Shiny</h2>
+<p>Use lt tables as Shiny outputs and inputs, and keep big data in R by serving rows on demand.</p>
+<ul>
+<li><a href="manual/lt-output.html"><code>lt_output()</code>, <code>render_lt()</code>, <code>lt_input()</code>, <code>lt_update()</code></a>: Shiny bindings for lt</li>
+<li><a href="manual/lt-serve.html"><code>lt_serve()</code></a>: Serve the rows of an interactive table from a data server</li>
+</ul>
+<h2 id="sec:exporting-and-embedding"><span class="section-number main-number">9</span> Exporting and embedding</h2>
+<p>Print tables, format them as static HTML, export to HTML, PDF, PNG, CSV, or RTF, and extract the table spec or runtime assets to embed tables elsewhere.</p>
 <ul>
 <li><a href="manual/format-lt-tbl.html"><code>format.lt_tbl()</code></a>: Render an <code>lt_tbl</code> to HTML</li>
+<li><a href="manual/lt-dependency.html"><code>lt_dependency()</code></a>: HTML dependency for lt tables</li>
 <li><a href="manual/lt-export.html"><code>lt_export()</code></a>: Export an lt table to a file</li>
 <li><a href="manual/lt-spec.html"><code>lt_spec()</code></a>: Extract a table’s render-ready spec</li>
 <li><a href="manual/print-lt-tbl.html"><code>print.lt_tbl()</code></a>: Print an <code>lt_tbl</code> (opens in the viewer or browser)</li>
-</ul>
-<h2 id="sec:shiny"><span class="section-number main-number">8</span> Shiny</h2>
-<p>Use lt tables as Shiny outputs and inputs.</p>
-<ul>
-<li><a href="manual/lt-dependency.html"><code>lt_dependency()</code></a>: HTML dependency for lt tables</li>
-<li><a href="manual/lt-output.html"><code>lt_output()</code>, <code>render_lt()</code>, <code>lt_input()</code>, <code>lt_update()</code></a>: Shiny bindings for lt</li>
 </ul>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/manual.min.css">
 

@@ -40,8 +40,9 @@
 <li><a href="#sec:style"><span class="section-number main-number">5</span> Style</a></li>
 <li><a href="#sec:inline-graphics"><span class="section-number main-number">6</span> Inline graphics</a></li>
 <li><a href="#sec:interactivity"><span class="section-number main-number">7</span> Interactivity</a></li>
-<li><a href="#sec:shiny-and-export"><span class="section-number main-number">8</span> Shiny and export</a></li>
-<li><a href="#sec:javascript"><span class="section-number main-number">9</span> JavaScript</a></li>
+<li><a href="#sec:shiny"><span class="section-number main-number">8</span> Shiny</a></li>
+<li><a href="#sec:export"><span class="section-number main-number">9</span> Export</a></li>
+<li><a href="#sec:javascript"><span class="section-number main-number">10</span> JavaScript</a></li>
 </ul>
 </nav>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yihui/litedown/inst/resources/listing.css?v=1.0.19">
@@ -108,37 +109,37 @@ d = data.frame(
   Grp   = paste(&quot;Group&quot;, c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;)),
   Label = c(&quot;&lt;a href='#sec:cheatsheet'&gt;lt(): make a table&lt;/a&gt;&quot;,
             &quot;lt_indent(): child A&quot;, &quot;lt_indent(): child B&quot;, &quot;lt_style() + lt_css()&quot;),
-  Fmt   = c(1234567.89, -0.51234, Inf, -Inf),
+  Fmt   = c(1234567.89, -0.51234, Inf, 9876.54),
   Sub   = c(0, NA, 3.14, 0.0002),
-  Date  = as.Date(c(&quot;2024-01-15&quot;, &quot;2024-02-20&quot;, &quot;2024-03-25&quot;, &quot;2024-04-30&quot;)),
-  Align = c(1, 22, 333, 4),
+  Align = c(1, 99, 333, 4),
   Est   = c(&quot;0.6&quot;, &quot;0.8&quot;, &quot;0.5&quot;, &quot;0.9&quot;),
   CI    = c(&quot;(0.4, 0.8)&quot;, &quot;(0.6, 1.0)&quot;, &quot;(0.2, 0.7)&quot;, &quot;(0.7, 1.1)&quot;)
 )
 
 tbl_static = lt(d, auto_format = FALSE) |&gt;
   lt_group(~ Grp) |&gt;
+  lt_summary(&quot;sum&quot;, ~ Fmt + Align, by = ~ Grp, label = &quot;lt_summary()&quot;) |&gt;
   lt_header(title = &quot;lt_header(title = ...)&quot;, subtitle = &quot;lt_header(subtitle = ...)&quot;) |&gt;
   lt_merge(~ Est + CI, pattern = &quot;{1} {2}&quot;) |&gt;
   lt_spanner(`lt_spanner()` ~ Fmt + Sub) |&gt;
   lt_label(
-    Grp = &quot;lt_group()&quot;, Label = &quot;lt_label(old = new, ...)&quot;, Fmt = &quot;lt_format()&quot;,
-    Sub = &quot;lt_sub()&quot;, Date = &quot;lt_date()&quot;, Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;
+    Grp = &quot;lt_group()&quot;, Label = &quot;lt_label()&quot;, Fmt = &quot;lt_format()&quot;,
+    Sub = &quot;lt_sub()&quot;, Align = &quot;lt_align()&quot;, Est = &quot;lt_merge()&quot;
   ) |&gt;
   lt_html(~ Label) |&gt;
   lt_align(~ Align, &quot;center&quot;) |&gt;
-  lt_width(Align = &quot;6em&quot;) |&gt;
+  lt_width(Align = &quot;4em&quot;) |&gt;
+  lt_color(~ Align, c(&quot;yellow&quot;, &quot;navy&quot;), domain = c(0, 400)) |&gt;
   lt_format(~ Fmt, decimals = 1, big_mark = &quot;,&quot;) |&gt;
-  lt_date(~ Date, options = list(month = &quot;short&quot;, day = &quot;numeric&quot;, timeZone = &quot;UTC&quot;)) |&gt;
   lt_sub(~ Sub, missing = &quot;n/a&quot;, zero = &quot;—&quot;, small = 0.01, small_text = &quot;&lt; 0.01&quot;) |&gt;
-  lt_indent(c(2, 3), level = 1) |&gt;
-  lt_style(~ Label, rows = 4L, class = &quot;highlight&quot;) |&gt;
+  lt_indent(c(2, 4), level = 1) |&gt;
+  lt_style(~ Label, rows = 5L, class = &quot;highlight&quot;) |&gt;
   lt_css(.highlight = list(fontWeight = &quot;bold&quot;, color = &quot;orange&quot;)) |&gt;
   lt_footnote(&quot;lt_footnote() can add a footnote anywhere.&quot;, &quot;title&quot;) |&gt;
   lt_footnote(I(&quot;Wrap text in &lt;code&gt;I()&lt;/code&gt; for raw HTML.&quot;), &quot;column&quot;, ~ Label) |&gt;
-  lt_footnote(&quot;lt_width() sets column widths.&quot;, &quot;column&quot;, ~ Align) |&gt;
+  lt_footnote(&quot;lt_width() sets widths; lt_color() shades cells.&quot;, &quot;column&quot;, ~ Align) |&gt;
   lt_footnote(&quot;lt_move() can reorder columns as desired.&quot;, &quot;column&quot;, ~ Est) |&gt;
-  lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG/RTF.&quot;)
+  lt_note(&quot;lt_note() adds this note; lt_date() formats dates; lt_export() saves HTML/PDF/PNG/RTF.&quot;)
 tbl_static
 ```
 
@@ -811,7 +812,7 @@ lt(d) |&gt;
 </div>
 </div>
 <h2 id="sec:interactivity"><span class="section-number main-number">7</span> Interactivity</h2>
-<p>Sort, search, filter, drill down, profile, download, view, and serve.</p>
+<p>Sort, search, filter, drill down, profile, download, and view.</p>
 <div class="boxes">
 <div class="box">
 <div class="caption name">
@@ -942,6 +943,10 @@ lt_viewer(iris)
 ```
 </code></pre>
 </div>
+</div>
+<h2 id="sec:shiny"><span class="section-number main-number">8</span> Shiny</h2>
+<p>Shiny outputs and inputs, and serving big data from R.</p>
+<div class="boxes">
 <div class="box">
 <div class="caption name">
 <p>33. <a href="examples/33-serve.html">Serving big data from R</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/33-serve.Rmd">33-serve.Rmd</a>)</em> <a href="examples/33-serve.html" class="run">►</a></p>
@@ -959,10 +964,6 @@ lt_viewer(big) |&gt; lt_serve()
 ```
 </code></pre>
 </div>
-</div>
-<h2 id="sec:shiny-and-export"><span class="section-number main-number">8</span> Shiny and export</h2>
-<p>Shiny outputs and inputs, and static export.</p>
-<div class="boxes">
 <div class="box">
 <div class="caption name">
 <p>34. <a href="examples/34-shiny-output.html">Tables in Shiny</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/34-shiny-output.Rmd">34-shiny-output.Rmd</a>)</em> <a href="examples/34-shiny-output.html" class="run">►</a></p>
@@ -1013,6 +1014,10 @@ shinyApp(ui, server)
 ```
 </code></pre>
 </div>
+</div>
+<h2 id="sec:export"><span class="section-number main-number">9</span> Export</h2>
+<p>Save tables as static files, and get the table spec.</p>
+<div class="boxes">
 <div class="box">
 <div class="caption name">
 <p>36. <a href="examples/36-export.html">Exporting a table</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/36-export.Rmd">36-export.Rmd</a>)</em> <a href="examples/36-export.html" class="run">►</a></p>
@@ -1058,8 +1063,26 @@ lt(head(mtcars[, 1:5], 2)) |&gt; lt_header(&quot;Cars&quot;) |&gt;
 ```
 </code></pre>
 </div>
+<div class="box">
+<div class="caption name">
+<p>37. <a href="examples/37-spec.html">The table spec</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/37-spec.Rmd">37-spec.Rmd</a>)</em> <a href="examples/37-spec.html" class="run">►</a></p>
 </div>
-<h2 id="sec:javascript"><span class="section-number main-number">9</span> JavaScript</h2>
+<pre><code class="language-md">---
+title: The table spec
+---
+
+An lt table is data plus a list of declarative operations. `lt_spec()` hands you that payload as a list, ready for `xfun::tojson()`, for another widget to render with `LT.render()`.
+
+```{r}
+library(lt)
+tbl = lt(head(mtcars[, 1:3])) |&gt; lt_format(~ mpg, decimals = 0)
+str(lt_spec(tbl), max.level = 2)
+xfun::tojson(lt_spec(tbl)$ops)
+```
+</code></pre>
+</div>
+</div>
+<h2 id="sec:javascript"><span class="section-number main-number">10</span> JavaScript</h2>
 <p>Use the lt.js runtime directly.</p>
 <div class="boxes">
 <div class="box">
@@ -1127,24 +1150,6 @@ from your own server), see the chapter on the [JavaScript
 runtime](../book/#chp:js) in the book. Two small examples to start from:
 [a table from JavaScript](38-js-build.html) and [driving a table from
 outside](39-js-control.html).
-</code></pre>
-</div>
-<div class="box">
-<div class="caption name">
-<p>37. <a href="examples/37-spec.html">The table spec</a> <em>(source: <a href="https://github.com/yihui/lt/blob/HEAD/examples/37-spec.Rmd">37-spec.Rmd</a>)</em> <a href="examples/37-spec.html" class="run">►</a></p>
-</div>
-<pre><code class="language-md">---
-title: The table spec
----
-
-An lt table is data plus a list of declarative operations. `lt_spec()` hands you that payload as a list, ready for `xfun::tojson()`, for another widget to render with `LT.render()`.
-
-```{r}
-library(lt)
-tbl = lt(head(mtcars[, 1:3])) |&gt; lt_format(~ mpg, decimals = 0)
-str(lt_spec(tbl), max.level = 2)
-xfun::tojson(lt_spec(tbl)$ops)
-```
 </code></pre>
 </div>
 <div class="box">
