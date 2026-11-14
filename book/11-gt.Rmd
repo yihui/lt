@@ -307,14 +307,11 @@ difference from **gt**, which has only one level of row groups: `groupname_col`
 takes a single column, and multiple grouping variables are flattened into one
 combined label (joined by `row_group.sep`, default `" - "`) rather than nested.
 
-**Groups from row conditions, and controlling their order.** **gt** can define
-groups on the fly from row predicates (a `tab_row_group(label=, rows=<cond>)` per
-group) and then set their order with `row_group_order()`. **lt** has no predicate
-form: it groups only by the value of an existing column. So the port is to
-*materialize that column first*. Build a factor whose levels are the group order
-you want (e.g., with `data.table::fcase()` or nested `ifelse()`), sort the data
-by it, and group on it with `sort = FALSE` so that **lt** keeps your row order
-instead of re-sorting the labels alphabetically:
+**Groups from row conditions, and controlling their order.** **gt** defines
+groups from row predicates, `tab_row_group(label=, rows=<cond>)`, and sets their
+order with `row_group_order()`. **lt** does the same with a named argument per
+group, where the rows are a one-sided formula evaluated in the data. Groups
+appear in the order given, so there is no separate order step:
 
 ```r
 # gt: groups defined by conditions, ordered explicitly
@@ -322,23 +319,17 @@ tab_row_group(label = "Power",  rows = Metric == "Power") |>
 tab_row_group(label = "Events", rows = grepl("Events", Metric)) |>
 row_group_order(groups = c("Events", "Power"))
 
-# lt: derive an ordered factor column, then group by it
-df$Group = factor(
-  ifelse(grepl("Events", df$Metric), "Events", "Power"),
-  levels = c("Events", "Power")          # desired group order
+# lt: groups from conditions, in the order given
+lt(df) |> lt_group(
+  Events = ~ grepl("Events", Metric),
+  Power  = ~ Metric == "Power"
 )
-df = df[order(df$Group), ]
-lt(df) |> lt_group(~ Group, sep = TRUE, sort = FALSE)
 ```
 
-`sort = FALSE` is the key. By default `lt_group()` sorts rows by the grouping
-value, which would discard the factor order you set. With it off, the groups
-appear in first-seen row order, i.e., the factor-level order you sorted into.
+Rows that match no group stay at the end, without a label.
 
-If all you need is to reorder groups that already exist, you do not need a factor:
-a second `lt_group()` call with the labels in the order you want does it, and
-`lt_group("Label" = rows)` defines groups by hand from row numbers
-(@sec:group-manual).
+If all you need is to reorder groups that already exist, a second `lt_group()`
+call with the labels in the order you want does it (@sec:group-manual).
 
 ### Raw HTML: `I()` is the new `html()` and `md()` {#sec:raw-html}
 

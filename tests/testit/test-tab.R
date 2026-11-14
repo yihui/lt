@@ -7,6 +7,19 @@ assert("lt_group(~ col, sep = TRUE) sets scalar row_group", {
   (g$row_group %==% "g")
 })
 
+assert("lt_group() takes rows as indices, a logical vector, or a formula", {
+  d2 = data.frame(g = c("A", "B", "A", "C"), v = c(1, NA, 3, 4))
+  rows = function(x) unlist(lapply(x$ops, `[[`, 'rows'))
+  by_idx = lt(d2) |> lt_group(A = c(1L, 3L), B = 2L)
+  by_lgl = lt(d2) |> lt_group(A = d2$g == "A", B = d2$g == "B")
+  by_fml = lt(d2) |> lt_group(A = ~ g == "A", B = ~ g == "B")
+  (rows(by_lgl) %==% rows(by_idx))
+  (rows(by_fml) %==% rows(by_idx))
+  # groups follow the argument order; NA in the condition is no match
+  (lt(d2) |> lt_group(Hi = ~ v > 2, Lo = ~ v <= 2) |> rows()) %==% c(3L, 4L, 1L)
+  (vapply(by_fml$ops, `[[`, '', 'label') %==% c("A", "B"))
+})
+
 assert("lt_footnote() builds correct location", {
   f = lt_footnote(x, "note", "column", ~ a)
   (f$footnotes %==% list(list(

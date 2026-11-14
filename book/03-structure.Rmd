@@ -89,8 +89,10 @@ rows already come in the order you want, `sort = FALSE` keeps them as they are.
 
 Sometimes no column tells the story. Maybe the first three rows are the
 treatment arm because you know it from the study design, not because a column
-says so. In that case, name the row ranges yourself: `"Label" = rows` makes a
-group from a set of row numbers.
+says so. In that case, name the rows yourself: `"Label" = rows` makes a group
+from row numbers, a logical vector, or a one-sided formula evaluated in the data,
+such as `~ mpg > 20`. Groups appear in the order you give them, and rows that
+match none stay at the end.
 
 The same trick reorders groups. Pass the group labels, unnamed, to a later
 `lt_group()` call, and those groups move to the front in the order you list them.

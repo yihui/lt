@@ -66,8 +66,11 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' @inheritParams lt_align
 #' @param ... A column name, integer position, or formula (e.g., `~col` or
 #'   `~col1 + col2`) to group by column values, or named arguments of the form
-#'   `"Label" = rows` (integer vector of 1-based row indices) for manual
-#'   groups. Unnamed character strings reorder previously defined groups.
+#'   `"Label" = rows` for manual groups. The rows are integer indices
+#'   (1-based), a logical vector, or a one-sided formula evaluated in the data
+#'   (e.g., `~ mpg > 20`) that gives one. Groups appear in the order given, and
+#'   rows in no group stay at the end. Unnamed character strings reorder
+#'   previously defined groups.
 #' @param sep If `TRUE`, render groups as full-width separator rows instead
 #'   of the default rowspan style. Only supports a single grouping column. The
 #'   default `'auto'` uses separator rows when there is a single character
@@ -90,6 +93,10 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' # Manual groups (always separator rows)
 #' lt(head(mtcars)) |>
 #'   lt_group("First three" = 1:3, "Last three" = 4:6)
+#'
+#' # Manual groups from conditions on the data
+#' lt(head(mtcars[, 1:3])) |>
+#'   lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
 lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
   args = list(...)
   nms = names(args)
@@ -106,9 +113,18 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
     add_op(x, 'group_order', order = I(as.character(unlist(args))))
   } else {
     for (i in seq_along(args))
-      x = add_op(x, 'row_group', label = nms[i], rows = I(as.integer(args[[i]])))
+      x = add_op(x, 'row_group', label = nms[i],
+        rows = I(group_rows(args[[i]], x$data)))
     x
   }
+}
+
+# Rows of a manual group: indices, a logical vector, or a one-sided formula
+# evaluated in the data (NA counts as no match)
+group_rows = function(rows, data) {
+  if (inherits(rows, 'formula'))
+    rows = eval(rows[[length(rows)]], data, environment(rows))
+  as.integer(if (is.logical(rows)) which(rows) else rows)
 }
 
 #' Add a footnote
