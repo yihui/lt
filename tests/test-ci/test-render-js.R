@@ -68,7 +68,7 @@ assert("relabeled column header shows original name as title", {
     ops = list(list(type = "label", labels = list(a_b = "Alpha")))
   ))
   (has_match(html, '<th scope="col" class="al-r" title="a_b">Alpha</th>'))
-  (!has_match(html, 'title="c"'))
+  (has_match(html, !I('title="c"')))
 })
 
 assert("html_cols makes separator-row group labels raw HTML", {
@@ -104,4 +104,10 @@ assert("auto_label replaces separators with spaces in column headers", {
 assert("auto_label = FALSE preserves raw column names", {
   html = build(list(data = list(Sepal.Length = c(5.1), Petal_Width = c(0.2)), auto_label = FALSE))
   (has_match(html, '>Sepal\\.Length</th>.*>Petal_Width</th>'))
+})
+
+assert("lt_css() rules are scoped inside the table wrapper", {
+  html = build(list(data = list(x = 1), rules = ".hi { color: red }"))
+  (has_match(html, I("</table><style>@scope{:scope{.hi { color: red }}}</style></div>")))
+  (has_match(html, !I("<style>.lt-table")))
 })

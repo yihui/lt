@@ -14,7 +14,8 @@ filename (no directory component) that does not exist in the working
 directory is resolved against the stylesheets shipped with lt, so
 e.g. \code{lt_css(x, "lt-plot.css")} adds the stylesheet for inline plots.
 
-Named arguments define inline CSS rules scoped to \code{.lt-table}. Names
+Named arguments define inline CSS rules that apply to this table only (other
+tables on the page are unaffected). Names
 are selectors (e.g., \code{.high}, \code{td.highlight}) and values are either a
 CSS string or a named list of properties:
 \code{lt_css(x, .high = "background: #eee")} or
@@ -27,7 +28,8 @@ also be given as a single \code{list(selectors, rules)} of two parallel vectors
 }
 \description{
 Add user-supplied stylesheets or inline rules that render after the
-built-in CSS, so rules can override the defaults.
+built-in CSS, so rules can override the defaults. Inline rules are scoped to
+the table; stylesheets are page-wide, as usual.
 }
 \examples{
 tbl = lt(head(mtcars))

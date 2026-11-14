@@ -36,6 +36,8 @@
 
 - The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, download), and the column menu button's tooltip reads "Show/Hide columns".
 
+- The inline rules of `lt_css(.class = ...)` now apply to their own table only; they used to leak to every other table on the page. This needs a browser with CSS `@scope` support (Chrome 118+, Safari 17.4+, Firefox 128+). `lt_spec()` now keeps the rules.
+
 - Printing an `lt_tbl` in the viewer or browser fits the table to the window: a table too tall to fit scrolls inside its container (with the header kept in view) instead of adding a page scrollbar.
 
 - Tables in a scrolling `lt_wrap()` box keep the whole header (spanners, labels, and interactive controls) in view while scrolling.

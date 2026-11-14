@@ -769,7 +769,10 @@
     const w = spec.wrap || {}, cls = ["lt-wrap"].concat(w.class || []).join(" ");
     const wa = Object.keys(w).filter(k => k !== "class")
       .map(k => attr(k, esc(w[k]))).join("");
-    return `<div${attr("class", cls)}${wa}>${out.join("")}</div>`;
+    // lt_css() rules: a prelude-less @scope limits them to this wrapper, so
+    // they cannot leak to other tables on the page.
+    const rules = spec.rules ? `<style>@scope{:scope{${[].concat(spec.rules).join("")}}}</style>` : "";
+    return `<div${attr("class", cls)}${wa}>${out.join("")}${rules}</div>`;
   }
 
   // Plugin seam (lt-interactive.js): plugin attaches handle under LT.plugins

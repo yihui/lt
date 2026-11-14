@@ -124,14 +124,14 @@ assert("spec_block() records explicit column order for array-index names", {
   (has_match(sb3, !'"columns"'))
 })
 
-assert("lt_spec() returns a render-ready spec and drops css/rules", {
+assert("lt_spec() returns a render-ready spec and drops css and keeps rules", {
   x2 = lt(d) |> lt_align("x", "center") |> lt_interactive()
   x2$css = "some.css"; x2$rules = ".na { color: red }"
   s = lt_spec(x2)
   (is.list(s))
   (all(c("data", "ops", "interactive") %in% names(s)))
   (is.null(s$css))
-  (is.null(s$rules))
+  (s$rules %==% ".na { color: red }")
 })
 
 assert("lt_spec() is the payload spec_block() serializes", {

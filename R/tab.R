@@ -863,7 +863,8 @@ lt_dotplot = function(
 #' Attach custom CSS
 #'
 #' Add user-supplied stylesheets or inline rules that render after the
-#' built-in CSS, so rules can override the defaults.
+#' built-in CSS, so rules can override the defaults. Inline rules are scoped to
+#' the table; stylesheets are page-wide, as usual.
 #'
 #' @inheritParams lt_align
 #' @param ... Unnamed arguments are stylesheet paths or URLs. A bare
@@ -871,7 +872,8 @@ lt_dotplot = function(
 #'   directory is resolved against the stylesheets shipped with lt, so
 #'   e.g. `lt_css(x, "lt-plot.css")` adds the stylesheet for inline plots.
 #'
-#'   Named arguments define inline CSS rules scoped to `.lt-table`. Names
+#'   Named arguments define inline CSS rules that apply to this table only (other
+#'   tables on the page are unaffected). Names
 #'   are selectors (e.g., `.high`, `td.highlight`) and values are either a
 #'   CSS string or a named list of properties:
 #'   `lt_css(x, .high = "background: #eee")` or
