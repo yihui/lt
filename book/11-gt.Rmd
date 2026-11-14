@@ -389,9 +389,6 @@ document, e.g.:
 A few **gt** features have no **lt** function. Each is a short recipe in
 @sec:recipes, because the table is just data plus CSS:
 
--   `summary_rows()` and `grand_summary_rows()` are `lt_summary()` now
-    (@sec:summary); the recipe shows the gt call next to it (@sec:recipe-summary).
-
 -   `opt_row_striping()` and similar `opt_*()` themes: a few CSS rules
     (@sec:recipe-stripe).
 
@@ -412,35 +409,6 @@ d = data.frame(
   n    = c(10, 30, 20, 40),
   rate = c(0.12, 0.34, 0.56, 0.78)
 )
-```
-
-### Summary rows {#sec:recipe-summary}
-
-**gt** computes summaries with `summary_rows()` and `grand_summary_rows()`, from
-a menu of functions. In **lt** the same job is `lt_summary()`, described in
-@sec:summary: give it any function of a data frame, and it appends one row per
-group (`by`) and an optional grand row.
-
-```r
-# gt
-gt(d, groupname_col = "grp") |>
-  summary_rows(columns = n, fns = list(Subtotal = ~ sum(.))) |>
-  grand_summary_rows(columns = n, fns = list(Total = ~ sum(.)))
-```
-
-```{r recipe-summary}
-weighted = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
-lt(d) |>
-  lt_summary(data_fn = weighted, by = ~ grp) |>
-  lt_group(~ grp, sep = TRUE) |>
-  lt_format(~ rate, decimals = 1, percent = TRUE)
-```
-
-For one function over several columns, `fn` plus `cols` stands in for **gt**'s
-`fns =` plus `columns =`:
-
-```{r recipe-summary-cols}
-lt(d) |> lt_summary("mean", cols = ~ n + rate)
 ```
 
 ### Row striping and other themes {#sec:recipe-stripe}
