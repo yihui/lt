@@ -350,7 +350,7 @@ assert("lt_wrap() appends class across repeated calls", {
 
 assert("lt_summary() appends group and grand summary rows and records them", {
   d2 = data.frame(g = c("A", "B", "A"), item = c("x", "y", "z"), n = c(1, 2, 3))
-  s = lt(d2) |> lt_summary(function(x) list(n = sum(x$n)), by = ~ g, label = "Sub", grand = "All")
+  s = lt(d2) |> lt_summary(data_fn = function(x) list(n = sum(x$n)), by = ~ g, label = "Sub", grand = "All")
   (s$data$item %==% c("x", "z", "Sub", "y", "Sub", "All"))
   (s$data$n %==% c(1, 3, 4, 2, 2, 6))
   (is.na(s$data$g[6]))
@@ -358,28 +358,38 @@ assert("lt_summary() appends group and grand summary rows and records them", {
   (op$rows %==% I(c(3L, 5L)))
   (op$grand %==% 6L)
   # no `by`: only the grand summary, labeled by `label` unless `grand` is given
-  g = lt(d2) |> lt_summary(function(x) list(n = sum(x$n)))
+  g = lt(d2) |> lt_summary(data_fn = function(x) list(n = sum(x$n)))
   (tail(g$data$g, 1) %==% "Total")
   (g$ops[[1]]$grand %==% 4L)
-  (has_error(lt_summary(s, function(x) list(n = 0), grand = "x")))
+  (has_error(lt_summary(s, data_fn = function(x) list(n = 0), grand = "x")))
+  # with `by`, labels default to the name of fn (else Subtotal) and All; FALSE drops the total
+  d = lt(d2) |> lt_summary("sum", by = ~ g)
+  (d$data$item[c(3, 5, 6)] %==% c("Sum", "Sum", "All"))
+  d = lt(d2) |> lt_summary(function(v) sum(v), by = ~ g)
+  (d$data$item[c(3, 5)] %==% c("Subtotal", "Subtotal"))
+  (nrow((lt(d2) |> lt_summary("sum", by = ~ g, grand = FALSE))$data) %==% 5L)
+  (tail((lt(d2) |> lt_summary("mean"))$data$g, 1) %==% "Mean")
 })
 
 assert("lt_summary() keeps NA groups and implies lt_group() on `by`", {
   f = data.frame(g = factor(c("B", "A", NA), levels = c("B", "A")), item = c("x", "y", "z"), n = 1:3)
-  s2 = lt(f) |> lt_summary(function(x) list(n = sum(x$n)), by = ~ g)
-  (nrow(s2$data) %==% 6L)
-  (s2$data$n %==% c(1L, 1L, 2L, 2L, 3L, 3L))
-  (s2$data$item[c(2, 4, 6)] %==% rep("Total", 3))
+  s2 = lt(f) |> lt_summary(data_fn = function(x) list(n = sum(x$n)), by = ~ g)
+  (nrow(s2$data) %==% 7L)
+  (s2$data$n %==% c(1L, 1L, 2L, 2L, 3L, 3L, 6L))
+  (s2$data$item[c(2, 4, 6)] %==% rep("Subtotal", 3))
   (s2$row_group %==% I("g"))
 })
 
-assert("lt_summary() accepts a function name for the numeric columns, dropping NA", {
+assert("lt_summary(fn) summarizes each column, with na.rm for functions that take it", {
   f = data.frame(g = c("A", "A", "B"), item = c("x", "y", "z"), n = c(1, NA, 3), m = c(2, 4, 6))
-  s = lt(f) |> lt_summary("sum", by = ~ g)
-  (s$data$n %==% c(1, NA, 1, 3, 3))
-  (s$data$m %==% c(2, 4, 6, 6, 6))
-  (is.na(s$data$item[3]) %==% FALSE)
-  (lt(f) |> lt_summary("mean", grand = "Avg"))$data$m[4] %==% 4
-  # a function without na.rm is called plainly
-  (lt(f) |> lt_summary("length", grand = "N"))$data$n[4] %==% 3L
+  s = lt(f) |> lt_summary(fn = "sum", by = ~ g)
+  (s$data$n %==% c(1, NA, 1, 3, 3, 4))
+  (s$data$m %==% c(2, 4, 6, 6, 6, 12))
+  (s$data$item[3] %==% "Sum")
+  (lt(f) |> lt_summary(fn = "mean", cols = ~ m, grand = "Avg"))$data$m[4] %==% 4
+  (lt(f) |> lt_summary(fn = "max", cols = "item", grand = "Max"))$data$item[4] %==% "z"
+  (lt(f) |> lt_summary(fn = list(n = "sum", m = "mean"), grand = "All"))$data[4, c("n", "m")] %==% data.frame(n = 4, m = 4)
+  (lt(f) |> lt_summary(function(v) max(v), cols = "m", grand = "M"))$data$m[4] %==% 6
+  (has_error(lt(f) |> lt_summary("sum", data_fn = function(x) list())))
+  (has_error(lt(f) |> lt_summary(fn = list(q = "sum"))))
 })

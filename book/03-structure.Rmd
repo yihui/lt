@@ -101,19 +101,36 @@ The same trick reorders groups. Pass the group labels, unnamed, to a later
 ## Summary rows {#sec:summary}
 
 Totals and subtotals are rows like any other. `lt_summary()` computes them for
-you: give it a function that takes a data frame and returns the summary values,
-named by column. With `by`, it adds one summary row after each group; with
-`grand`, it adds a total at the bottom of the table. Columns the function does not
-return stay empty.
+you: give it a function of one column, or its name, such as `"sum"`, and it is
+applied to every numeric column (or to the `cols` you choose). With `by`, it adds
+one summary row after each group, and a total at the bottom of the table.
+Without `by`, it adds just the total. Other columns stay empty.
 
 ```{r}
 d = data.frame(
   grp = c("A", "A", "B", "B"), item = c("x", "y", "x", "y"),
   n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
 )
+lt(d) |> lt_summary("sum", by = ~ grp)
+```
+
+With `by`, the group rows are labeled with the function's name ("Sum") and a total
+labeled "All" closes the table; change them with `label` and `grand`, or drop the
+total with `grand = FALSE`. Give a named list to use a different function per
+column.
+
+```{r}
+lt(d) |> lt_summary(list(n = "sum", rate = "mean"), by = ~ grp, grand = FALSE)
+```
+
+When a summary needs several columns at once, such as a weighted mean, give
+`data_fn` a function of the data frame instead. It returns the summary values,
+named by column.
+
+```{r}
 weighted = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 lt(d) |>
-  lt_summary(weighted, by = ~ grp, label = "Subtotal", grand = "All") |>
+  lt_summary(data_fn = weighted, by = ~ grp) |>
   lt_group(~ grp, sep = TRUE) |>
   lt_format("rate", percent = TRUE, decimals = 1)
 ```

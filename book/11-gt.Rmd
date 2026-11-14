@@ -127,7 +127,7 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `opt_css(css=)` | `lt_css(...)` |
 | `opt_row_striping()` | `lt_css(...)` (@sec:recipe-stripe) |
 | `data_color()` | `lt_color(columns, palette, domain)` (@sec:style-color) |
-| `summary_rows()` / `grand_summary_rows()` | `lt_summary(fn, by, grand)` (@sec:summary) |
+| `summary_rows()` / `grand_summary_rows()` | `lt_summary(fn, cols, by, grand)` (@sec:summary) |
 ::::
 
 ### Interactivity
@@ -431,17 +431,16 @@ gt(d, groupname_col = "grp") |>
 ```{r recipe-summary}
 weighted = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 lt(d) |>
-  lt_summary(weighted, by = ~ grp, label = "Subtotal", grand = "All") |>
+  lt_summary(data_fn = weighted, by = ~ grp) |>
   lt_group(~ grp, sep = TRUE) |>
   lt_format("rate", decimals = 1, percent = TRUE)
 ```
 
-For one function over several columns, `by_col()` is a small builder that
-stands in for **gt**'s `columns =` plus `fns =`:
+For one function over several columns, `fn` plus `cols` stands in for **gt**'s
+`fns =` plus `columns =`:
 
 ```{r recipe-summary-cols}
-by_col = function(cols, f) function(x) lapply(x[cols], f)
-lt(d) |> lt_summary(by_col(c("n", "rate"), mean), label = "Mean")
+lt(d) |> lt_summary("mean", cols = ~ n + rate)
 ```
 
 ### Row striping and other themes {#sec:recipe-stripe}

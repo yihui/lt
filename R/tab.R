@@ -560,19 +560,26 @@ lt_color = function(
 #' so that each group's rows stay together.
 #'
 #' @inheritParams lt_align
-#' @param fn A function that takes a data frame (the rows of one group, or of the
-#'   whole table) and returns the summary values as a named list or data frame
-#'   of one row. Columns it does not return are left empty. Or the name of a
-#'   function, such as `"sum"` or `"mean"`, to apply to every numeric column
-#'   (other columns are left empty); it is called with `na.rm = TRUE` when it
-#'   accepts that argument.
+#' @param fn A function (or its name, such as `"sum"` or `"max"`) of one column
+#'   that returns its summary, applied to each column in `cols`; or a named list
+#'   of such functions, one per column. It is called with `na.rm = TRUE` when it
+#'   accepts that argument. Give exactly one of `fn` and `data_fn`.
+#' @param cols The columns that `fn` summarizes, when it is a single function.
+#'   Numeric columns by default.
 #' @param by A column name or one-sided formula (e.g., `~grp`) to summarize
 #'   each group of. Leave it `NULL` for a grand summary only.
-#' @param label The text of a group summary row, shown in `label_col`.
-#' @param grand The text of the grand summary row; `NULL` for none. Without
-#'   `by`, it defaults to `label`.
+#' @param label The text of a group summary row, shown in `label_col`. By
+#'   default, the capitalized name of `fn` if it is a name (e.g., `"Sum"`), else
+#'   `"Subtotal"` (`"Total"` without `by`).
+#' @param grand The text of the grand summary row at the bottom; `FALSE` for
+#'   none. With `by`, `"All"` by default. Without `by`, the one summary row is
+#'   the grand row, labeled `label`.
 #' @param label_col The column that shows `label` and `grand`; the first
 #'   column other than `by` by default.
+#' @param data_fn A function that takes a data frame (the rows of one group, or
+#'   of the whole table) and returns the summary values as a named list or data
+#'   frame of one row. Columns it does not return are left empty. Use this to
+#'   combine several columns, e.g., a weighted mean.
 #' @return `x` with the summary rows added.
 #' @export
 #' @examples
@@ -580,29 +587,37 @@ lt_color = function(
 #'   grp = c("A", "A", "B", "B"), item = c("x", "y", "x", "y"),
 #'   n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
 #' )
+#' # a function (or its name) of a column, for every numeric column
+#' lt(d) |> lt_summary("sum", by = ~ grp)
+#' # a grand summary only, with a different function per column
+#' lt(d) |> lt_summary(list(n = sum, rate = "mean"))
+#' # a function of the whole data frame, for a weighted mean
 #' total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 #' lt(d) |>
-#'   lt_summary(total, by = ~ grp, label = "Subtotal", grand = "All") |>
+#'   lt_summary(data_fn = total, by = ~ grp) |>
 #'   lt_group(~ grp, sep = TRUE) |>
 #'   lt_format("rate", percent = TRUE, decimals = 1)
-#' # a grand summary only
-#' lt(d) |> lt_summary(function(x) list(n = sum(x$n)), grand = "Total")
-#' # a function name sums every numeric column
-#' lt(d) |> lt_summary("sum", by = ~ grp, label = "Subtotal")
-lt_summary = function(x, fn, by = NULL, label = 'Total', grand = NULL, label_col = NULL) {
+lt_summary = function(
+  x, fn = NULL, cols = NULL, by = NULL,
+  label = NULL, grand = NULL, label_col = NULL, data_fn = NULL
+) {
   d = x$data
   by = f_cols(by, d)
+  if (is.null(fn) == is.null(data_fn)) stop("Give exactly one of 'fn' and 'data_fn'")
   if (length(by) > 1) stop("'by' must be a single column")
   if (any(vapply(x$ops, function(op) identical(op$type, 'summary'), NA)))
     stop('lt_summary() can be called only once per table')
-  if (is.null(by)) grand = grand %||% label
+  # defaults: the capitalized name of fn, else Subtotal (Total without `by`)
+  name = if (is.character(fn)) sub('^(.)', '\\U\\1', fn, perl = TRUE)
+  label = label %||% name %||% if (is.null(by)) 'Total' else 'Subtotal'
+  grand = if (!isFALSE(grand)) grand %||% if (is.null(by)) label else 'All'
   label_col = label_col %||% setdiff(names(d), by)[1]
-  if (is.character(fn)) fn = summary_fn(fn)
+  if (!is.null(fn)) data_fn = col_summary_fn(d, fn, cols)
   # one all-NA row of d's types, holding fn(part)'s values, the label, and group g
   row = function(part, lab, g = NA) {
     r = d[NA_integer_, , drop = FALSE]
     r[[label_col]] = lab
-    v = fn(part)
+    v = data_fn(part)
     r[names(v)] = v  # fn's values win if they name label_col
     if (!is.null(by)) r[[by]] = g
     r
@@ -624,14 +639,26 @@ lt_summary = function(x, fn, by = NULL, label = 'Total', grand = NULL, label_col
     grand = if (!is.null(grand)) nrow(out))
 }
 
-# A function name -> summary function over the numeric columns, with na.rm = TRUE
-# if f accepts it (probed by a call: formals() misses generics like mean())
-summary_fn = function(name) {
-  f = match.fun(name)
-  narm = !inherits(try(f(1, na.rm = TRUE), silent = TRUE), 'try-error')
-  function(x) lapply(Filter(is.numeric, x), function(v) {
-    if (narm) f(v, na.rm = TRUE) else f(v)
-  })
+# A function or its name -> function of a column, with na.rm = TRUE if it
+# accepts it
+column_fn = function(f) {
+  f = match.fun(f)
+  # generics such as mean() only list `...`, which passes na.rm on
+  narm = any(c('na.rm', '...') %in% names(formals(args(f))))
+  function(v) if (narm) f(v, na.rm = TRUE) else f(v)
+}
+
+# fn (one function, or a named list per column) -> data-level function of a part
+col_summary_fn = function(d, fn, cols = NULL) {
+  if (is.list(fn)) {
+    if (!is.null(cols)) stop("'cols' is only for a single 'fn'")
+  } else {
+    cols = f_cols(cols, d) %||% names(Filter(is.numeric, d))
+    fn = setNames(rep(list(fn), length(cols)), cols)
+  }
+  if (!all(names(fn) %in% names(d))) stop("'fn' names must be column names")
+  fns = lapply(fn, column_fn)
+  function(part) Map(function(f, nm) f(part[[nm]]), fns, names(fns))
 }
 
 #' Set column and table widths

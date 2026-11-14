@@ -4,28 +4,46 @@
 \alias{lt_summary}
 \title{Add summary rows}
 \usage{
-lt_summary(x, fn, by = NULL, label = "Total", grand = NULL, label_col = NULL)
+lt_summary(
+  x,
+  fn = NULL,
+  cols = NULL,
+  by = NULL,
+  label = NULL,
+  grand = NULL,
+  label_col = NULL,
+  data_fn = NULL
+)
 }
 \arguments{
 \item{x}{An \code{\link[=lt]{lt()}} object.}
 
-\item{fn}{A function that takes a data frame (the rows of one group, or of the
-whole table) and returns the summary values as a named list or data frame
-of one row. Columns it does not return are left empty. Or the name of a
-function, such as \code{"sum"} or \code{"mean"}, to apply to every numeric column
-(other columns are left empty); it is called with \code{na.rm = TRUE} when it
-accepts that argument.}
+\item{fn}{A function (or its name, such as \code{"sum"} or \code{"max"}) of one column
+that returns its summary, applied to each column in \code{cols}; or a named list
+of such functions, one per column. It is called with \code{na.rm = TRUE} when it
+accepts that argument. Give exactly one of \code{fn} and \code{data_fn}.}
+
+\item{cols}{The columns that \code{fn} summarizes, when it is a single function.
+Numeric columns by default.}
 
 \item{by}{A column name or one-sided formula (e.g., \code{~grp}) to summarize
 each group of. Leave it \code{NULL} for a grand summary only.}
 
-\item{label}{The text of a group summary row, shown in \code{label_col}.}
+\item{label}{The text of a group summary row, shown in \code{label_col}. By
+default, the capitalized name of \code{fn} if it is a name (e.g., \code{"Sum"}), else
+\code{"Subtotal"} (\code{"Total"} without \code{by}).}
 
-\item{grand}{The text of the grand summary row; \code{NULL} for none. Without
-\code{by}, it defaults to \code{label}.}
+\item{grand}{The text of the grand summary row at the bottom; \code{FALSE} for
+none. With \code{by}, \code{"All"} by default. Without \code{by}, the one summary row is
+the grand row, labeled \code{label}.}
 
 \item{label_col}{The column that shows \code{label} and \code{grand}; the first
 column other than \code{by} by default.}
+
+\item{data_fn}{A function that takes a data frame (the rows of one group, or
+of the whole table) and returns the summary values as a named list or data
+frame of one row. Columns it does not return are left empty. Use this to
+combine several columns, e.g., a weighted mean.}
 }
 \value{
 \code{x} with the summary rows added.
@@ -54,13 +72,14 @@ d = data.frame(
   grp = c("A", "A", "B", "B"), item = c("x", "y", "x", "y"),
   n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
 )
+# a function (or its name) of a column, for every numeric column
+lt(d) |> lt_summary("sum", by = ~ grp)
+# a grand summary only, with a different function per column
+lt(d) |> lt_summary(list(n = sum, rate = "mean"))
+# a function of the whole data frame, for a weighted mean
 total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 lt(d) |>
-  lt_summary(total, by = ~ grp, label = "Subtotal", grand = "All") |>
+  lt_summary(data_fn = total, by = ~ grp) |>
   lt_group(~ grp, sep = TRUE) |>
   lt_format("rate", percent = TRUE, decimals = 1)
-# a grand summary only
-lt(d) |> lt_summary(function(x) list(n = sum(x$n)), grand = "Total")
-# a function name sums every numeric column
-lt(d) |> lt_summary("sum", by = ~ grp, label = "Subtotal")
 }
