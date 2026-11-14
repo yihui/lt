@@ -11,7 +11,10 @@ lt_summary(x, fn, by = NULL, label = "Total", grand = NULL, label_col = NULL)
 
 \item{fn}{A function that takes a data frame (the rows of one group, or of the
 whole table) and returns the summary values as a named list or data frame
-of one row. Columns it does not return are left empty.}
+of one row. Columns it does not return are left empty. Or the name of a
+function, such as \code{"sum"} or \code{"mean"}, to apply to every numeric column
+(other columns are left empty); it is called with \code{na.rm = TRUE} when it
+accepts that argument.}
 
 \item{by}{A column name or one-sided formula (e.g., \code{~grp}) to summarize
 each group of. Leave it \code{NULL} for a grand summary only.}
@@ -58,4 +61,6 @@ lt(d) |>
   lt_format("rate", percent = TRUE, decimals = 1)
 # a grand summary only
 lt(d) |> lt_summary(function(x) list(n = sum(x$n)), grand = "Total")
+# a function name sums every numeric column
+lt(d) |> lt_summary("sum", by = ~ grp, label = "Subtotal")
 }

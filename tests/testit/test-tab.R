@@ -372,3 +372,14 @@ assert("lt_summary() keeps NA groups and implies lt_group() on `by`", {
   (s2$data$item[c(2, 4, 6)] %==% rep("Total", 3))
   (s2$row_group %==% I("g"))
 })
+
+assert("lt_summary() accepts a function name for the numeric columns, dropping NA", {
+  f = data.frame(g = c("A", "A", "B"), item = c("x", "y", "z"), n = c(1, NA, 3), m = c(2, 4, 6))
+  s = lt(f) |> lt_summary("sum", by = ~ g)
+  (s$data$n %==% c(1, NA, 1, 3, 3))
+  (s$data$m %==% c(2, 4, 6, 6, 6))
+  (is.na(s$data$item[3]) %==% FALSE)
+  (lt(f) |> lt_summary("mean", grand = "Avg"))$data$m[4] %==% 4
+  # a function without na.rm is called plainly
+  (lt(f) |> lt_summary("length", grand = "N"))$data$n[4] %==% 3L
+})

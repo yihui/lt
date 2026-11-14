@@ -562,7 +562,10 @@ lt_color = function(
 #' @inheritParams lt_align
 #' @param fn A function that takes a data frame (the rows of one group, or of the
 #'   whole table) and returns the summary values as a named list or data frame
-#'   of one row. Columns it does not return are left empty.
+#'   of one row. Columns it does not return are left empty. Or the name of a
+#'   function, such as `"sum"` or `"mean"`, to apply to every numeric column
+#'   (other columns are left empty); it is called with `na.rm = TRUE` when it
+#'   accepts that argument.
 #' @param by A column name or one-sided formula (e.g., `~grp`) to summarize
 #'   each group of. Leave it `NULL` for a grand summary only.
 #' @param label The text of a group summary row, shown in `label_col`.
@@ -584,6 +587,8 @@ lt_color = function(
 #'   lt_format("rate", percent = TRUE, decimals = 1)
 #' # a grand summary only
 #' lt(d) |> lt_summary(function(x) list(n = sum(x$n)), grand = "Total")
+#' # a function name sums every numeric column
+#' lt(d) |> lt_summary("sum", by = ~ grp, label = "Subtotal")
 lt_summary = function(x, fn, by = NULL, label = 'Total', grand = NULL, label_col = NULL) {
   d = x$data
   by = f_cols(by, d)
@@ -592,10 +597,11 @@ lt_summary = function(x, fn, by = NULL, label = 'Total', grand = NULL, label_col
     stop('lt_summary() can be called only once per table')
   if (is.null(by)) grand = grand %||% label
   label_col = label_col %||% setdiff(names(d), by)[1]
+  if (is.character(fn)) fn = summary_fn(fn)
   # one all-NA row of d's types, holding fn(part)'s values, the label, and group g
   row = function(part, lab, g = NA) {
     r = d[NA_integer_, , drop = FALSE]
-    r[[label_col]] = as.character(lab)
+    r[[label_col]] = lab
     v = fn(part)
     r[names(v)] = v  # fn's values win if they name label_col
     if (!is.null(by)) r[[by]] = g
@@ -616,6 +622,16 @@ lt_summary = function(x, fn, by = NULL, label = 'Total', grand = NULL, label_col
   if (!is.null(by) && !grouped) x = lt_group(x, by)
   add_op(x, 'summary', by = by, rows = if (length(idx)) I(unname(idx)),
     grand = if (!is.null(grand)) nrow(out))
+}
+
+# A function name -> summary function over the numeric columns, with na.rm = TRUE
+# if f accepts it (probed by a call: formals() misses generics like mean())
+summary_fn = function(name) {
+  f = match.fun(name)
+  narm = !inherits(try(f(1, na.rm = TRUE), silent = TRUE), 'try-error')
+  function(x) lapply(Filter(is.numeric, x), function(v) {
+    if (narm) f(v, na.rm = TRUE) else f(v)
+  })
 }
 
 #' Set column and table widths
