@@ -42,6 +42,8 @@
 
 - In `litedown::fuse()` documents, tables built from the same data frame now write the data to the output only once and refer to it from the other tables, which makes the output file smaller. This also works across child documents. Set the `lt.share_size` global option (in bytes) to share only data frames above that size.
 
+- `lt_format(percent = TRUE)` without `decimals` no longer shows floating-point noise (e.g., `56.00000000000001%` for 0.56).
+
 # CHANGES IN lt VERSION 0.5
 
 - Added `lt_interactive()` to make a table interactive in the browser: click-to-sort headers, a search box, per-column filters (plain, or typed dropdown/range/checklist widgets), pagination, column resizing, a column-visibility menu, expandable row detail, and a CSV download of the current view. Everything runs client-side via an extension loaded only for opted-in tables, and sorting and filtering stay within each row group or subtree.

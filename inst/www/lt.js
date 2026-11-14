@@ -200,7 +200,8 @@
         case "fmt_number":
           eachCell(cols, (c, i, raw) => {
             if (!isNumInf(raw)) return;
-            const v = op.percent === true ? raw * 100 : raw,
+            // toPrecision drops floating-point noise (0.56 * 100 = 56.00000000000001)
+            const v = op.percent === true ? +(raw * 100).toPrecision(15) : raw,
                   psfx = op.percent ? "%" : "",
                   f = fmtNumber(v, op.decimals, op.big_mark ?? "", op.sig_digits),
                   pfx = op.prefix || "", sfx = (op.suffix || "") + psfx;

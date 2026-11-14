@@ -45,6 +45,15 @@ assert("auto_format = FALSE leaves numbers untouched", {
   (has_match(html, ">1\\.23456</td>.*>2\\.34567</td>"))
 })
 
+assert("fmt_number percent without decimals has no floating-point noise", {
+  html = build(list(
+    data = list(x = c(0.56, 0.07)),
+    ops = list(list(type = "fmt_number", columns = list("x"), percent = TRUE))
+  ))
+  (has_match(html, I(">56%</td>")))
+  (has_match(html, I(">7%</td>")))
+})
+
 assert("fmt_number with percent, big_mark, and minus sign", {
   html = build(list(
     data = list(x = c(0.1234, 12345.678)),
