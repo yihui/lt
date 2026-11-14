@@ -413,32 +413,32 @@ d = data.frame(
 
 ### Row striping and other themes {#sec:recipe-stripe}
 
-**gt**'s `opt_row_striping()` is one CSS rule. Rules given to `lt_css()` are
-relative to the table, so `th` styles every header cell. A one-line
-helper makes it reusable:
+**gt**'s `opt_row_striping()` is one CSS rule. In **lt**, write that rule once in
+your page's CSS, so it applies to every table:
 
 ```r
 # gt
 gt(d) |> opt_row_striping()
 ```
 
-```{r recipe-stripe}
-lt_stripe = function(x, color = "#f6f6f6")
-  lt_css(x, `tbody tr:nth-child(even)` = list(background = color))
-lt(d) |> lt_stripe()
+```css
+/* lt */
+.lt-wrap tbody tr:nth-child(even) { background: #f6f6f6; }
 ```
 
-Table-level settings from `tab_options()` go on the container:
-`lt_wrap(style = "font-family: Georgia")` sets the font, and
-`lt_wrap(style = "width: 60%")` sets the width.
+The `.lt-wrap` prefix limits the rule to **lt** tables; drop it to style all tables on
+the page. The same goes for other `opt_*()` themes: write the rules as global CSS.
+Use `lt_css()` only for a rule that should apply to one table, and
+`lt_wrap(style = ...)` for a setting on the container, such as the font or width
+that `tab_options()` sets in **gt**.
 
 ### Other formats: transform in R {#sec:recipe-transform}
 
 **gt** has a `fmt_*()` function for every format imaginable. **lt** only formats
 numbers (`lt_format()`) and dates (`lt_date()`); for anything else, turn the
-column into the text you want with base R. `transform_cols()` applies any
-function to chosen columns, and the formatters are ordinary functions you can
-name and reuse. A transformed column is a character column, so it is
+column into the text you want with base R or a helper such as
+`xfun::format_bytes()`. `transform_cols()` applies any function to chosen
+columns, and the formatters are ordinary functions you can name and reuse. A transformed column is a character column, so it is
 left-aligned unless you say otherwise with `lt_align()`.
 
 ```r
@@ -453,8 +453,6 @@ transform_cols = function(d, columns, fn) {
 }
 # formatters: numeric vector -> character vector
 fmt_sci = function(digits = 3) function(x) format(x, scientific = TRUE, digits = digits)
-fmt_bytes = function(x) vapply(x, function(b)
-  format(structure(b, class = "object_size"), units = "auto"), "")
 sub_values = function(map) function(x) ifelse(x %in% names(map), map[x], x)  # gt: sub_values()
 ```
 
@@ -465,7 +463,7 @@ d3 = data.frame(
 )
 d3 |>
   transform_cols("n", fmt_sci()) |>
-  transform_cols("size", fmt_bytes) |>
+  transform_cols("size", xfun::format_bytes) |>
   transform_cols("tag", sub_values(c(fail = "FAILED"))) |>
   lt() |>
   lt_align(~ n + size, "right")
