@@ -127,7 +127,7 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `opt_css(css=)` | `lt_css(...)` |
 | `opt_row_striping()` | `lt_css(...)` (@sec:recipe-stripe) |
 | `data_color()` | `lt_color(columns, palette, domain)` (@sec:style-color) |
-| `summary_rows()` / `grand_summary_rows()` | append rows in R + `lt_style()` (@sec:recipe-summary) |
+| `summary_rows()` / `grand_summary_rows()` | `lt_summary(fn, by, grand)` (@sec:summary) |
 ::::
 
 ### Interactivity
@@ -389,8 +389,8 @@ document, e.g.:
 A few **gt** features have no **lt** function. Each is a short recipe in
 @sec:recipes, because the table is just data plus CSS:
 
--   `summary_rows()` and `grand_summary_rows()`: compute the summary in R and
-    append it as ordinary rows (@sec:recipe-summary).
+-   `summary_rows()` and `grand_summary_rows()` are `lt_summary()` now
+    (@sec:summary); the recipe shows the gt call next to it (@sec:recipe-summary).
 
 -   `opt_row_striping()` and similar `opt_*()` themes: a few CSS rules
     (@sec:recipe-stripe).
@@ -417,13 +417,9 @@ d = data.frame(
 ### Summary rows {#sec:recipe-summary}
 
 **gt** computes summaries with `summary_rows()` and `grand_summary_rows()`, from
-a menu of functions. In **lt**, a summary row is an ordinary row, so the one
-thing to abstract is *what a summary is*: any function that takes a data frame
-(all rows, or one group's rows) and returns the values of the summary row, by
-column name. `add_summary()` below calls it on each group and on the whole
-table, appends the results, and records which rows are summaries so that
-`lt_style()` can set them apart. Columns the function does not return are left
-empty.
+a menu of functions. In **lt** the same job is `lt_summary()`, described in
+@sec:summary: give it any function of a data frame, and it appends one row per
+group (`by`) and an optional grand row.
 
 ```r
 # gt
@@ -432,59 +428,20 @@ gt(d, groupname_col = "grp") |>
   grand_summary_rows(columns = n, fns = list(Total = ~ sum(.)))
 ```
 
-```{r recipe-summary-fn}
-# fn(x): data frame -> list/data frame of summary values, named by column.
-# by: grouping column (a subtotal after each group); label: text of the summary
-# row in `label_col`; grand: label of an extra row summarizing the whole table.
-# Returns d with the summary rows appended; attr(, "summary") has their indices.
-add_summary = function(
-  d, fn, by = NULL, label = "Total", grand = NULL,
-  label_col = setdiff(names(d), by)[1]
-) {
-  d[[label_col]] = as.character(d[[label_col]])
-  row = function(x, g, lab) {
-    out = d[NA_integer_, , drop = FALSE]  # an all-NA row of the same types
-    v = fn(x)
-    out[names(v)] = v
-    out[[label_col]] = lab
-    if (!is.null(by)) out[[by]] = g
-    out
-  }
-  parts = if (is.null(by)) list(all = d) else split(d, factor(d[[by]], unique(d[[by]])))
-  blocks = Map(function(x, g) rbind(x, row(x, g, label)), parts, names(parts))
-  out = Reduce(rbind, blocks)
-  idx = cumsum(vapply(blocks, nrow, 1L))  # the summary row ends each block
-  if (!is.null(grand)) {
-    out = rbind(out, row(d, grand, grand))
-    idx = c(idx, nrow(out))
-  }
-  rownames(out) = NULL
-  attr(out, "summary") = unname(idx)
-  out
-}
-# fn builder: apply one function to several columns (gt: summary_rows(columns, fns))
-by_col = function(cols, f) function(x) lapply(x[cols], f)
-```
-
-The summary is whatever you write, so a weighted mean is as easy as a sum:
-
 ```{r recipe-summary}
-d2 = add_summary(
-  d, by = "grp", label = "Subtotal", grand = "All",
-  fn = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
-)
-lt(d2) |>
-  lt_group(~ grp, sep = TRUE, sort = FALSE) |>
-  lt_format("rate", decimals = 1, percent = TRUE) |>
-  lt_style(rows = attr(d2, "summary"), bold = TRUE, borderTop = "1px solid")
+weighted = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
+lt(d) |>
+  lt_summary(weighted, by = ~ grp, label = "Subtotal", grand = "All") |>
+  lt_group(~ grp, sep = TRUE) |>
+  lt_format("rate", decimals = 1, percent = TRUE)
 ```
 
-And for one function over many columns, `by_col()` stands in for **gt**'s
-`columns =` plus `fns =`:
+For one function over several columns, `by_col()` is a small builder that
+stands in for **gt**'s `columns =` plus `fns =`:
 
 ```{r recipe-summary-cols}
-d2 = add_summary(d, fn = by_col(c("n", "rate"), mean), label = "Mean")
-lt(d2) |> lt_style(rows = attr(d2, "summary"), italic = TRUE)
+by_col = function(cols, f) function(x) lapply(x[cols], f)
+lt(d) |> lt_summary(by_col(c("n", "rate"), mean), label = "Mean")
 ```
 
 ### Row striping and other themes {#sec:recipe-stripe}
