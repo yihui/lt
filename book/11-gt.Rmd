@@ -70,6 +70,8 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `tab_header(title=, subtitle=)` | `lt_header(title=, subtitle=)` |
 | `tab_spanner(label=, columns=)` | `lt_spanner(label=, columns=)` |
 | `cols_label(a = "A")` | `lt_label(a = "A")` |
+| `cols_label_with(fn = toupper)` | `lt_label(list(names(x), toupper(names(x))))` |
+| `tab_stubhead(label)` | `lt_label(<first column> = label)` |
 | `tab_footnote(footnote, cells_title("title"))` | `lt_footnote(text, "title")` |
 | `tab_footnote(footnote, cells_title("subtitle"))` | `lt_footnote(text, "subtitle")` |
 | `tab_footnote(footnote, cells_column_labels(col))` | `lt_footnote(text, "column", columns)` |
@@ -95,7 +97,8 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `fmt_percent(columns=)` | `lt_format(columns, percent = TRUE)` |
 | `fmt_currency(columns=, currency = "USD")` | `lt_format(columns, prefix = "$")` |
 | `fmt_number(sep_mark = ",")` | `lt_format(columns, big_mark = ",")` |
-| `fmt_date(columns=)` | `lt_date(columns)` |
+| `fmt_integer(columns=)` | `lt_format(columns, decimals = 0)` |
+| `fmt_date()` / `fmt_time()` / `fmt_datetime()` | `lt_date(columns, method=, locale=, options=)` |
 | `sub_missing()` / `sub_zero()` / `sub_small_vals()` | `lt_sub(missing=, zero=, small=)` |
 | `html(value)` (mark a value as raw HTML) | `I(value)` (title/labels/footnotes); `lt_html(columns)` for body cells |
 | `fmt_*()` applied to everything, by hand | automatic: `lt(auto_format = TRUE)` (@sec:auto) |
@@ -122,6 +125,9 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `tab_style(style=, locations=)` | `lt_style(columns=, rows=, ...)` |
 | `tab_options(table.width=)` and other table-level settings | `lt_wrap(style = "width: ...")`, `lt_css(...)` |
 | `opt_css(css=)` | `lt_css(...)` |
+| `opt_row_striping()` | `lt_css(...)` (@sec:recipe-stripe) |
+| `data_color()` | `lt_color(columns, palette, domain)` |
+| `summary_rows()` / `grand_summary_rows()` | append rows in R + `lt_style()` (@sec:recipe-summary) |
 ::::
 
 ### Interactivity
@@ -380,15 +386,200 @@ document, e.g.:
 
 ### What lt does not have {#sec:missing}
 
-A few **gt** features have no **lt** counterpart:
+A few **gt** features have no **lt** function. Each is a short recipe in
+@sec:recipes, because the table is just data plus CSS:
 
 -   `summary_rows()` and `grand_summary_rows()`: compute the summary in R and
-    append it as ordinary rows (`lt_indent()` and `lt_style()` can set them apart).
--   `data_color()`: use `lt_style(test = , class = )` with a rule from `lt_css()`
-    for conditional colors, or `lt_errorbar()`/`lt_dotplot()` for visual encoding.
--   `opt_row_striping()` and similar `opt_*()` themes: a few CSS rules, scoped to
-    one table with `lt_wrap(class = )`.
--   `tab_stubhead()`: relabel the first column with `lt_label()`.
+    append it as ordinary rows (@sec:recipe-summary).
+
+-   `opt_row_striping()` and similar `opt_*()` themes: a few CSS rules
+    (@sec:recipe-stripe).
+
+-   `fmt_scientific()`, `fmt_bytes()`, `fmt_markdown()`, `text_transform()`,
+    and `sub_values()`: transform the column in R before calling `lt()`
+    (@sec:recipe-transform).
+
+## Recipes for what lt does not have {#sec:recipes}
+
+Each recipe is a small helper function, not a one-off snippet, so you can paste
+it into your own package and apply it to any table. The helpers use only base R
+and the **lt** functions in the phrasebook. They share this data frame:
+
+```{r recipe-data}
+d = data.frame(
+  grp  = c("A", "A", "B", "B"),
+  item = c("x", "y", "x", "y"),
+  n    = c(10, 30, 20, 40),
+  rate = c(0.12, 0.34, 0.56, 0.78)
+)
+```
+
+### Summary rows {#sec:recipe-summary}
+
+**gt** computes summaries with `summary_rows()` and `grand_summary_rows()`, from
+a menu of functions. In **lt**, a summary row is an ordinary row, so the one
+thing to abstract is *what a summary is*: any function that takes a data frame
+(all rows, or one group's rows) and returns the values of the summary row, by
+column name. `add_summary()` below calls it on each group and on the whole
+table, appends the results, and records which rows are summaries so that
+`lt_style()` can set them apart. Columns the function does not return are left
+empty.
+
+```r
+# gt
+gt(d, groupname_col = "grp") |>
+  summary_rows(columns = n, fns = list(Subtotal = ~ sum(.))) |>
+  grand_summary_rows(columns = n, fns = list(Total = ~ sum(.)))
+```
+
+```{r recipe-summary-fn}
+# fn(x): data frame -> list/data frame of summary values, named by column.
+# by: grouping column (a subtotal after each group); label: text of the summary
+# row in `label_col`; grand: label of an extra row summarizing the whole table.
+# Returns d with the summary rows appended; attr(, "summary") has their indices.
+add_summary = function(
+  d, fn, by = NULL, label = "Total", grand = NULL,
+  label_col = setdiff(names(d), by)[1]
+) {
+  d[[label_col]] = as.character(d[[label_col]])
+  row = function(x, g, lab) {
+    out = d[NA_integer_, , drop = FALSE]  # an all-NA row of the same types
+    v = fn(x)
+    out[names(v)] = v
+    out[[label_col]] = lab
+    if (!is.null(by)) out[[by]] = g
+    out
+  }
+  parts = if (is.null(by)) list(all = d) else split(d, factor(d[[by]], unique(d[[by]])))
+  blocks = Map(function(x, g) rbind(x, row(x, g, label)), parts, names(parts))
+  out = Reduce(rbind, blocks)
+  idx = cumsum(vapply(blocks, nrow, 1L))  # the summary row ends each block
+  if (!is.null(grand)) {
+    out = rbind(out, row(d, grand, grand))
+    idx = c(idx, nrow(out))
+  }
+  rownames(out) = NULL
+  attr(out, "summary") = unname(idx)
+  out
+}
+# fn builder: apply one function to several columns (gt: summary_rows(columns, fns))
+by_col = function(cols, f) function(x) lapply(x[cols], f)
+```
+
+The summary is whatever you write, so a weighted mean is as easy as a sum:
+
+```{r recipe-summary}
+d2 = add_summary(
+  d, by = "grp", label = "Subtotal", grand = "All",
+  fn = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
+)
+lt(d2) |>
+  lt_group(~ grp, sep = TRUE, sort = FALSE) |>
+  lt_format("rate", decimals = 1, percent = TRUE) |>
+  lt_style(rows = attr(d2, "summary"), bold = TRUE, borderTop = "1px solid")
+```
+
+And for one function over many columns, `by_col()` stands in for **gt**'s
+`columns =` plus `fns =`:
+
+```{r recipe-summary-cols}
+d2 = add_summary(d, fn = by_col(c("n", "rate"), mean), label = "Mean")
+lt(d2) |> lt_style(rows = attr(d2, "summary"), italic = TRUE)
+```
+
+### Conditional colors {#sec:recipe-color}
+
+**gt**'s `data_color()` maps a continuous scale to colors. In **lt** this is
+the verb `lt_color()`: give a palette, and each numeric value gets a color
+interpolated along it, over the column's own range or a shared `domain`.
+
+```r
+# gt
+data_color(columns = rate, palette = c("white", "orange"))
+```
+
+```{r recipe-color}
+lt(d) |>
+  lt_format("rate", decimals = 2) |>
+  lt_color("rate", c("white", "#fc8d59"))
+```
+
+The text color is set automatically to black or white, whichever is more
+legible on each cell, so a palette that ends in a dark color just works: the
+high values below get white text (`contrast = FALSE` leaves the text alone).
+
+```{r recipe-color-dark}
+lt(d) |>
+  lt_format("rate", decimals = 2) |>
+  lt_color("rate", c("white", "navy"))
+```
+
+A diverging palette on a shared scale, for several columns:
+
+```{r recipe-color-cols}
+m = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3))
+lt(m) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
+```
+
+### Row striping and other themes {#sec:recipe-stripe}
+
+**gt**'s `opt_row_striping()` is one CSS rule. Rules given to `lt_css()` are
+relative to the table, so `th` styles every header cell. A one-line
+helper makes it reusable:
+
+```r
+# gt
+gt(d) |> opt_row_striping()
+```
+
+```{r recipe-stripe}
+lt_stripe = function(x, color = "#f6f6f6")
+  lt_css(x, `tbody tr:nth-child(even)` = list(background = color))
+lt(d) |> lt_stripe()
+```
+
+Table-level settings from `tab_options()` go on the container:
+`lt_wrap(style = "font-family: Georgia")` sets the font, and
+`lt_wrap(style = "width: 60%")` sets the width.
+
+### Other formats: transform in R {#sec:recipe-transform}
+
+**gt** has a `fmt_*()` function for every format imaginable. **lt** only formats
+numbers (`lt_format()`) and dates (`lt_date()`); for anything else, turn the
+column into the text you want with base R. `transform_cols()` applies any
+function to chosen columns, and the formatters are ordinary functions you can
+name and reuse. A transformed column is a character column, so it is
+left-aligned unless you say otherwise with `lt_align()`.
+
+```r
+# gt
+fmt_scientific(columns = n) |> fmt_bytes(columns = size)
+```
+
+```{r recipe-transform-fn}
+transform_cols = function(d, columns, fn) {
+  d[columns] = lapply(d[columns], fn)
+  d
+}
+# formatters: numeric vector -> character vector
+fmt_sci = function(digits = 3) function(x) format(x, scientific = TRUE, digits = digits)
+fmt_bytes = function(x) vapply(x, function(b)
+  format(structure(b, class = "object_size"), units = "auto"), "")
+sub_values = function(map) function(x) ifelse(x %in% names(map), map[x], x)  # gt: sub_values()
+```
+
+```{r recipe-transform}
+d3 = data.frame(
+  n = c(12345, 0.00123, 6.02e23), size = c(1024, 5e6, 3e9),
+  tag = c("ok", "fail", "ok")
+)
+d3 |>
+  transform_cols("n", fmt_sci()) |>
+  transform_cols("size", fmt_bytes) |>
+  transform_cols("tag", sub_values(c(fail = "FAILED"))) |>
+  lt() |>
+  lt_align(~ n + size, "right")
+```
 
 ## Generating a static HTML table {#sec:gt-static}
 
