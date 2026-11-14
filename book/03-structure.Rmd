@@ -102,8 +102,8 @@ The same trick reorders groups. Pass the group labels, unnamed, to a later
 
 Totals and subtotals are rows like any other. `lt_summary()` computes them for
 you: give it a function of one column, or its name, such as `"sum"`, and it is
-applied to every numeric column (or to the `cols` you choose). With `by`, it adds
-one summary row after each group, and a total at the bottom of the table.
+applied to every numeric column (or to the `cols` you choose). With `by`, it
+adds one summary row after each group, and a total at the bottom of the table.
 Without `by`, it adds just the total. Other columns stay empty.
 
 ```{r}
@@ -114,10 +114,10 @@ d = data.frame(
 lt(d) |> lt_summary("sum", by = ~ grp)
 ```
 
-With `by`, the group rows are labeled with the function's name ("Sum") and a total
-labeled "All" closes the table; change them with `label` and `grand`, or drop the
-total with `grand = FALSE`. Give a named list to use a different function per
-column.
+With `by`, the group rows are labeled with the function's name ("Sum") and a
+total labeled "All" closes the table; change them with `label` and `grand`, or
+drop the total with `grand = FALSE`. Give a named list to use a different
+function per column.
 
 ```{r}
 lt(d) |> lt_summary(list(n = "sum", rate = "mean"), by = ~ grp, grand = FALSE)

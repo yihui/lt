@@ -603,7 +603,8 @@ lt_summary = function(
 ) {
   d = x$data
   by = f_cols(by, d)
-  if (is.null(fn) == is.null(data_fn)) stop("Give exactly one of 'fn' and 'data_fn'")
+  if (is.null(fn) == is.null(data_fn))
+    stop("Give exactly one of 'fn' and 'data_fn'")
   if (length(by) > 1) stop("'by' must be a single column")
   if (any(vapply(x$ops, function(op) identical(op$type, 'summary'), NA)))
     stop('lt_summary() can be called only once per table')
@@ -613,7 +614,7 @@ lt_summary = function(
   grand = if (!isFALSE(grand)) grand %||% if (is.null(by)) label else 'All'
   label_col = label_col %||% setdiff(names(d), by)[1]
   if (!is.null(fn)) data_fn = col_summary_fn(d, fn, cols)
-  # one all-NA row of d's types, holding fn(part)'s values, the label, and group g
+  # one all-NA row of d's types, holding the summary values, label, and group g
   row = function(part, lab, g = NA) {
     r = d[NA_integer_, , drop = FALSE]
     r[[label_col]] = lab
@@ -627,13 +628,16 @@ lt_summary = function(
   out = if (is.null(by)) d else do.call(rbind, lapply(parts, function(p) {
     rbind(p, row(p, label, p[[by]][1]))
   }))
-  idx = if (!is.null(by)) cumsum(vapply(parts, nrow, 1L) + 1L)  # each block ends with its summary
+  # each block ends with its summary row
+  idx = if (!is.null(by)) cumsum(vapply(parts, nrow, 1L) + 1L)
   if (!is.null(grand)) out = rbind(out, row(d, grand))
   rownames(out) = NULL
   x$data = out
-  # summary rows are most useful as subtotals, so group by `by` unless already grouped
+  # summary rows work best as subtotals: group by `by` unless already grouped
   grouped = !is.null(x$row_group) ||
-    any(vapply(x$ops, function(op) op$type %in% c('row_group', 'group_order'), NA))
+    any(vapply(
+      x$ops, function(op) op$type %in% c('row_group', 'group_order'), NA
+    ))
   if (!is.null(by) && !grouped) x = lt_group(x, by)
   add_op(x, 'summary', by = by, rows = if (length(idx)) I(unname(idx)),
     grand = if (!is.null(grand)) nrow(out))

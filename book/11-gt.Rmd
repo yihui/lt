@@ -413,8 +413,8 @@ d = data.frame(
 
 ### Row striping and other themes {#sec:recipe-stripe}
 
-**gt**'s `opt_row_striping()` is one CSS rule. In **lt**, write that rule once in
-your page's CSS, so it applies to every table:
+**gt**'s `opt_row_striping()` is one CSS rule. In **lt**, write that rule once
+in your page's CSS, so it applies to every table:
 
 ```r
 # gt
@@ -426,9 +426,9 @@ gt(d) |> opt_row_striping()
 .lt-wrap tbody tr:nth-child(even) { background: #f6f6f6; }
 ```
 
-The `.lt-wrap` prefix limits the rule to **lt** tables; drop it to style all tables on
-the page. The same goes for other `opt_*()` themes: write the rules as global CSS.
-Use `lt_css()` only for a rule that should apply to one table, and
+The `.lt-wrap` prefix limits the rule to **lt** tables; drop it to style all
+tables on the page. The same goes for other `opt_*()` themes: write the rules as
+global CSS. Use `lt_css()` only for a rule that should apply to one table, and
 `lt_wrap(style = ...)` for a setting on the container, such as the font or width
 that `tab_options()` sets in **gt**.
 
@@ -438,8 +438,9 @@ that `tab_options()` sets in **gt**.
 numbers (`lt_format()`) and dates (`lt_date()`); for anything else, turn the
 column into the text you want with base R or a helper such as
 `xfun::format_bytes()`. `transform_cols()` applies any function to chosen
-columns, and the formatters are ordinary functions you can name and reuse. A transformed column is a character column, so it is
-left-aligned unless you say otherwise with `lt_align()`.
+columns, and the formatters are ordinary functions you can name and reuse. A
+transformed column is a character column, so it is left-aligned unless you say
+otherwise with `lt_align()`.
 
 ```r
 # gt
