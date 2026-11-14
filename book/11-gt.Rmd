@@ -201,11 +201,11 @@ spelling out, drawn from porting **gsDesign2**, **gsDesign**, and **gsDesignNB**
 None of them is hard, but each is the kind of thing you only learn by tripping
 over it once, so consider this the cheaper way.
 
-### Column selection: strings or positions, not tidy-select {#sec:selection}
+### Column selection: formulas, strings, or positions, not tidy-select {#sec:selection}
 
 **gt** uses tidy-select, so unquoted column names and `tidyselect` helpers work.
-**lt** deliberately does not: it takes column names as *character strings* (or
-integer positions, or a one-sided formula). Tidy-select's ergonomic win is
+**lt** deliberately does not: it takes column names as a one-sided *formula*,
+*character strings*, or integer positions. Tidy-select's ergonomic win is
 mostly at the console. The cost is a large conceptual surface (data masking,
 quosures, injection) and painful programmatic use: the moment a column name comes
 from a variable, you are into `{{ }}` and `all_of()` machinery. For a package
@@ -216,9 +216,9 @@ whose calls are often generated from code, plain strings win, so that is what
 # gt
 tab_spanner(label = "Bounds", columns = c(alt, null))
 # lt
-lt_spanner(label = "Bounds", columns = c("alt", "null"))   # quote them
+lt_spanner(Bounds ~ alt + null)                            # a (compact) formula
+lt_spanner(label = "Bounds", columns = c("alt", "null"))   # or quote them
 lt_spanner(label = "Bounds", columns = c(4, 5))            # or use positions
-lt_spanner(Bounds ~ alt + null)                            # or a (compact) formula
 ```
 
 If you dislike quoting names, the formula interface keeps them bare:
