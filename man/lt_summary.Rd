@@ -81,5 +81,5 @@ total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 lt(d) |>
   lt_summary(data_fn = total, by = ~ grp) |>
   lt_group(~ grp, sep = TRUE) |>
-  lt_format("rate", percent = TRUE, decimals = 1)
+  lt_format(~ rate, percent = TRUE, decimals = 1)
 }

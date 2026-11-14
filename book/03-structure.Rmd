@@ -132,7 +132,7 @@ weighted = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 lt(d) |>
   lt_summary(data_fn = weighted, by = ~ grp) |>
   lt_group(~ grp, sep = TRUE) |>
-  lt_format("rate", percent = TRUE, decimals = 1)
+  lt_format(~ rate, percent = TRUE, decimals = 1)
 ```
 
 Summary rows are shown in bold. The grand row stays at the bottom of the table

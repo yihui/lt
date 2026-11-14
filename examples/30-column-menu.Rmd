@@ -8,6 +8,6 @@ title: Column visibility menu
 library(lt)
 d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
 lt(d) |>
-  lt_interactive(hide = list(label = "Columns", columns = c("hp", "wt")),
+  lt_interactive(hide = list(label = "Columns", columns = ~ hp + wt),
     pager = 5, filter = FALSE)
 ```

@@ -76,8 +76,8 @@ default. The colors are interpolated, so any number of steps works.
 ```{r}
 d = data.frame(site = c("A", "B", "C", "D"), rate = c(0.12, 0.34, 0.56, 0.78))
 lt(d) |>
-  lt_format("rate", decimals = 2) |>
-  lt_color("rate", c("white", "#fc8d59"))
+  lt_format(~ rate, decimals = 2) |>
+  lt_color(~ rate, c("white", "#fc8d59"))
 ```
 
 Use `domain` to fix the scale instead, for example to compare several columns on
@@ -96,8 +96,8 @@ no extra work, and the high values below get white text:
 
 ```{r}
 lt(d) |>
-  lt_format("rate", decimals = 2) |>
-  lt_color("rate", c("white", "navy"))
+  lt_format(~ rate, decimals = 2) |>
+  lt_color(~ rate, c("white", "navy"))
 ```
 
 Set `contrast = FALSE` to leave the text color alone and style it yourself with

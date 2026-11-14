@@ -34,6 +34,6 @@ the table; stylesheets are page-wide, as usual.
 \examples{
 tbl = lt(head(mtcars))
 tbl |>
-  lt_style("mpg", test = "v => v > 20", class = "high") |>
+  lt_style(~ mpg, test = "v => v > 20", class = "high") |>
   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
 }

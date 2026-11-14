@@ -160,6 +160,14 @@ that only a maintainer would care about. Don't frame behavior against a past or
 alternative implementation the user never saw — state it directly ("the header
 joins all names", not "… rather than just the first").
 
+In examples (roxygen, book, `examples/`), select columns with the formula
+interface (`~ rate`, `~ hp + wt`) rather than character vectors, wherever the
+lt function accepts a formula. Keep character names where a formula doesn't
+fit: arguments that take a single name (`after =`), `-` prefixes in `sort`,
+non-syntactic column names, and demos that compare the alternatives. Helpers
+defined outside lt (e.g., recipe functions in the gt chapter) keep their own
+plain interface: don't change them to take formulas.
+
 Write lists loose: put a blank line between items (and between a list and the
 text around it), in roxygen, Rmd, and Markdown alike. Tight lists render as one
 run-on block in some outputs.

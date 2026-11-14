@@ -150,10 +150,10 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
 #'   lt_spanner(Summary ~ Value + SE) |>
 #'   lt_footnote("Source: simulated trial data.", "title") |>
 #'   lt_footnote("Intention-to-treat population.", "subtitle") |>
-#'   lt_footnote("Standard error of the mean.", "column", "SE") |>
-#'   lt_footnote("Per-arm summary statistics.", "spanner", "Summary") |>
-#'   lt_footnote("Received active drug.", "group", "Treatment") |>
-#'   lt_footnote("SE undefined for counts.", "body", "SE", rows = c(1, 3))
+#'   lt_footnote("Standard error of the mean.", "column", ~ SE) |>
+#'   lt_footnote("Per-arm summary statistics.", "spanner", ~ Summary) |>
+#'   lt_footnote("Received active drug.", "group", ~ Treatment) |>
+#'   lt_footnote("SE undefined for counts.", "body", ~ SE, rows = c(1, 3))
 lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL) {
   columns = f_cols(columns, x$data)
   loc = switch(where,
@@ -473,9 +473,9 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @examples
 #' tbl = lt(head(mtcars))
 #' tbl |>
-#'   lt_style("mpg", rows = 1L, bold = TRUE, borderBottom = "2px solid red")
+#'   lt_style(~ mpg, rows = 1L, bold = TRUE, borderBottom = "2px solid red")
 #' tbl |>
-#'   lt_style("mpg", test = "v => v > 20", class = "high") |>
+#'   lt_style(~ mpg, test = "v => v > 20", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc"))
 lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
                     bold = NULL, italic = NULL, color = NULL, bg = NULL, ...) {
@@ -596,7 +596,7 @@ lt_color = function(
 #' lt(d) |>
 #'   lt_summary(data_fn = total, by = ~ grp) |>
 #'   lt_group(~ grp, sep = TRUE) |>
-#'   lt_format("rate", percent = TRUE, decimals = 1)
+#'   lt_format(~ rate, percent = TRUE, decimals = 1)
 lt_summary = function(
   x, fn = NULL, cols = NULL, by = NULL,
   label = NULL, grand = NULL, label_col = NULL, data_fn = NULL
@@ -1048,7 +1048,7 @@ lt_dotplot = function(
 #' @examples
 #' tbl = lt(head(mtcars))
 #' tbl |>
-#'   lt_style("mpg", test = "v => v > 20", class = "high") |>
+#'   lt_style(~ mpg, test = "v => v > 20", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
 lt_css = function(x, ...) {
   args = name_value_args(...)

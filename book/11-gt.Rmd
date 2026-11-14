@@ -433,7 +433,7 @@ weighted = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 lt(d) |>
   lt_summary(data_fn = weighted, by = ~ grp) |>
   lt_group(~ grp, sep = TRUE) |>
-  lt_format("rate", decimals = 1, percent = TRUE)
+  lt_format(~ rate, decimals = 1, percent = TRUE)
 ```
 
 For one function over several columns, `fn` plus `cols` stands in for **gt**'s
@@ -581,7 +581,7 @@ lt(df) |>
   lt_spanner(Probability ~ lo + hi) |>                 # gt: tab_spanner
   lt_format(~ lo + hi, decimals = 2) |>                # gt: fmt_number
   lt_header(title = "Demo", subtitle = "gt -> lt") |>  # gt: tab_header
-  lt_footnote("Interval bounds.", "spanner", "Probability") |>  # tab_footnote
+  lt_footnote("Interval bounds.", "spanner", ~ Probability) |>  # tab_footnote
   lt_note("Source: synthetic data.")                   # gt: tab_source_note
 ```
 

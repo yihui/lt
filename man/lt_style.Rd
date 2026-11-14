@@ -56,8 +56,8 @@ values (evaluated in JavaScript).
 \examples{
 tbl = lt(head(mtcars))
 tbl |>
-  lt_style("mpg", rows = 1L, bold = TRUE, borderBottom = "2px solid red")
+  lt_style(~ mpg, rows = 1L, bold = TRUE, borderBottom = "2px solid red")
 tbl |>
-  lt_style("mpg", test = "v => v > 20", class = "high") |>
+  lt_style(~ mpg, test = "v => v > 20", class = "high") |>
   lt_css(.high = list(background = "#cfc"))
 }
