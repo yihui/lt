@@ -3,25 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.14">
+<meta name="generator" content="litedown 1.0.19">
 <title>lt: Tables That Travel Light</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/book.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/book-litedown.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/key-buttons.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/callout.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/book.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/book-litedown.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/key-buttons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/callout.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/prism-xcode.min.css">
+<meta name="function-index" content="../function-index.json">
 </head>
 <body>
 <header class="frontmatter">
 <div class="title"><h1>lt: Tables That Travel Light</h1></div>
 <div class="subtitle"><h2>A grammar of lightweight static and interactive tables for R and beyond</h2></div>
 <div class="author"><h2>Yihui Xie</h2></div>
-<div class="date"><h3>2026-11-11</h3></div>
+<div class="date"><h3>2026-11-14</h3></div>
 </header>
 <main>
 <div class="">
@@ -69,7 +70,8 @@
 <li><a href="#sec:group-manual"><span class="section-number">3.4.1</span> Manual groups and their order</a></li>
 </ul>
 </li>
-<li><a href="#sec:indent"><span class="section-number">3.5</span> Indentation</a></li>
+<li><a href="#sec:summary"><span class="section-number">3.5</span> Summary rows</a></li>
+<li><a href="#sec:indent"><span class="section-number">3.6</span> Indentation</a></li>
 </ul>
 </li>
 <li><a href="#chp:notes"><span class="section-number main-number">4</span> Footnotes, Notes, and HTML</a>
@@ -100,13 +102,14 @@
 <ul>
 <li><a href="#sec:style-cells"><span class="section-number">6.1</span> Paint a few cells</a></li>
 <li><a href="#sec:style-test"><span class="section-number">6.2</span> Let the data pick the cells</a></li>
-<li><a href="#sec:style-css"><span class="section-number">6.3</span> Rules for the whole table</a>
+<li><a href="#sec:style-color"><span class="section-number">6.3</span> Color by value</a></li>
+<li><a href="#sec:style-css"><span class="section-number">6.4</span> Rules for the whole table</a>
 <ul>
-<li><a href="#sec:style-selectors"><span class="section-number">6.3.1</span> The selectors worth knowing</a></li>
+<li><a href="#sec:style-selectors"><span class="section-number">6.4.1</span> The selectors worth knowing</a></li>
 </ul>
 </li>
-<li><a href="#sec:wrap"><span class="section-number">6.4</span> Keep it on one table</a></li>
-<li><a href="#sec:style-raw"><span class="section-number">6.5</span> Peek behind the format</a></li>
+<li><a href="#sec:wrap"><span class="section-number">6.5</span> Keep it on one table</a></li>
+<li><a href="#sec:style-raw"><span class="section-number">6.6</span> Peek behind the format</a></li>
 </ul>
 </li>
 <li><a href="#chp:interactive"><span class="section-number main-number">7</span> Interactive Tables</a>
@@ -257,7 +260,7 @@
 </li>
 <li><a href="#sec:differences"><span class="section-number">11.2</span> Notable differences</a>
 <ul>
-<li><a href="#sec:selection"><span class="section-number">11.2.1</span> Column selection: strings or positions, not tidy-select</a></li>
+<li><a href="#sec:selection"><span class="section-number">11.2.1</span> Column selection: formulas, strings, or positions, not tidy-select</a></li>
 <li><a href="#sec:one-interactive"><span class="section-number">11.2.2</span> Interactivity is one function, not a separate step</a></li>
 <li><a href="#sec:footnotes-vs-notes"><span class="section-number">11.2.3</span> Footnotes and source notes are two different functions</a></li>
 <li><a href="#sec:groups"><span class="section-number">11.2.4</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</a></li>
@@ -267,8 +270,14 @@
 <li><a href="#sec:missing"><span class="section-number">11.2.8</span> What lt does not have</a></li>
 </ul>
 </li>
-<li><a href="#sec:gt-static"><span class="section-number">11.3</span> Generating a static HTML table</a></li>
-<li><a href="#sec:demo"><span class="section-number">11.4</span> A runnable example</a></li>
+<li><a href="#sec:recipes"><span class="section-number">11.3</span> Recipes for what lt does not have</a>
+<ul>
+<li><a href="#sec:recipe-stripe"><span class="section-number">11.3.1</span> Row striping and other themes</a></li>
+<li><a href="#sec:recipe-transform"><span class="section-number">11.3.2</span> Other formats: transform in R</a></li>
+</ul>
+</li>
+<li><a href="#sec:gt-static"><span class="section-number">11.4</span> Generating a static HTML table</a></li>
+<li><a href="#sec:demo"><span class="section-number">11.5</span> A runnable example</a></li>
 </ul>
 </li>
 <li><a href="#chp:extend"><span class="section-number main-number">12</span> Building on lt</a>
@@ -315,7 +324,7 @@ lt(d) |&gt;
   lt_sub(~ P_Value, missing = &quot;n/a&quot;) |&gt;
   lt_footnote(&quot;Two-sided p-value from log-rank test.&quot;, &quot;column&quot;, ~ P_Value)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/lt.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["dc25b969"]=
 {
   "Group": ["Treatment", "Treatment", "Control", "Control"],
@@ -363,7 +372,7 @@ lt(d) |&gt;
   "data_key": "dc25b969"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt.min.js" defer></script>
 <p>That is the whole idea. The rest of this book is about the details, and there
 are more of them than the pitch suggests: <strong>lt</strong> can also draw forest plots
 and sparklines inside cells, turn a table into an interactive explorer with
@@ -653,9 +662,6 @@ tbl_static = lt(d, auto_format = FALSE) |&gt;
   lt_note(&quot;lt_note() — and lt_export() saves this table to HTML/PDF/PNG/RTF.&quot;)
 tbl_static
 </code></pre>
-<style>.lt-table {
-  .highlight { font-weight: bold; color: orange; }
-}</style>
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["62be29ef"]=
 {
   "Grp": ["Group A", "Group A", "Group B", "Group B"],
@@ -749,6 +755,7 @@ tbl_static
     }
   ],
   "html_cols": ["Label"],
+  "rules": "  .highlight { font-weight: bold; color: orange; }",
   "footnotes": [
     {
       "text": "lt_footnote() can add a footnote anywhere.",
@@ -809,7 +816,7 @@ tbl_interactive = lt(d) |&gt;
   lt_note(&quot;lt_viewer() and lt_serve() view and serve big data.&quot;)
 tbl_interactive
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/lt-interactive.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["025aa0f9"]=
 {
   "Argument": ["sort", "search", "filter", "pager", "resize", "hide", "detail", "profile", "download"],
@@ -845,9 +852,9 @@ tbl_interactive
   "data_key": "025aa0f9"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt-query.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt-export.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt-interactive.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt-query.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt-export.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt-interactive.min.js" defer></script>
 <h3 id="sec:cheat-plots"><span class="section-number">1.2.3</span> Inline plots</h3>
 <p>Each plotting function draws in the cell of the column that carries its name.</p>
 <pre><code class="language-r">d = data.frame(
@@ -870,7 +877,7 @@ tbl_plots = lt(d) |&gt;
   )
 tbl_plots
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/lt-plot.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["beb9e5fd"]=
 {
   "Study": ["A", "B", "C"],
@@ -967,7 +974,7 @@ tbl_plots
   "data_key": "beb9e5fd"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/lt-plot.min.js" defer></script>
 <h2 id="sec:labels"><span class="section-number">1.3</span> Titles and labels</h2>
 <p><code>lt_header()</code> puts a title, and optionally a subtitle, above the table:</p>
 <pre><code class="language-r">lt(head(iris)) |&gt;
@@ -1634,8 +1641,10 @@ rows already come in the order you want, <code>sort = FALSE</code> keeps them as
 <h3 id="sec:group-manual"><span class="section-number">3.4.1</span> Manual groups and their order</h3>
 <p>Sometimes no column tells the story. Maybe the first three rows are the
 treatment arm because you know it from the study design, not because a column
-says so. In that case, name the row ranges yourself: <code>&quot;Label&quot; = rows</code> makes a
-group from a set of row numbers.</p>
+says so. In that case, name the rows yourself: <code>&quot;Label&quot; = rows</code> makes a group
+from row numbers, a logical vector, or a one-sided formula evaluated in the data,
+such as <code>~ mpg &gt; 20</code>. Groups appear in the order you give them, and rows that
+match none stay at the end.</p>
 <p>The same trick reorders groups. Pass the group labels, unnamed, to a later
 <code>lt_group()</code> call, and those groups move to the front in the order you list them.</p>
 <pre><code class="language-r">tbl = lt(head(mtcars[, 1:4], 6))
@@ -1661,6 +1670,26 @@ tbl |&gt; lt_group(&quot;First three&quot; = 1:3, &quot;Last three&quot; = 4:6)
       "type": "row_group",
       "label": "Last three",
       "rows": [4, 5, 6]
+    }
+  ],
+  "data_key": "baabce7b"
+}
+})</script>
+<pre><code class="language-r"># a one-sided formula is evaluated in the data
+tbl |&gt; lt_group(Efficient = ~ mpg &gt; 20, Thirsty = ~ mpg &lt;= 20)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "ops": [
+    {
+      "type": "row_group",
+      "label": "Efficient",
+      "rows": [1, 2, 3, 4]
+    },
+    {
+      "type": "row_group",
+      "label": "Thirsty",
+      "rows": [5, 6]
     }
   ],
   "data_key": "baabce7b"
@@ -1694,7 +1723,110 @@ lt(d) |&gt;
   "data_key": "6eb51568"
 }
 })</script>
-<h2 id="sec:indent"><span class="section-number">3.5</span> Indentation</h2>
+<h2 id="sec:summary"><span class="section-number">3.5</span> Summary rows</h2>
+<p>Totals and subtotals are rows like any other. <code>lt_summary()</code> computes them for
+you: give it a function of one column, or its name, such as <code>&quot;sum&quot;</code>, and it is
+applied to every numeric column (or to the <code>cols</code> you choose). With <code>by</code>, it
+adds one summary row after each group, and a total at the bottom of the table.
+Without <code>by</code>, it adds just the total. Other columns stay empty.</p>
+<pre><code class="language-r">d = data.frame(
+  grp = c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;), item = c(&quot;x&quot;, &quot;y&quot;, &quot;x&quot;, &quot;y&quot;),
+  n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
+)
+lt(d) |&gt; lt_summary(&quot;sum&quot;, by = ~ grp)
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["086d9618"]=
+{
+  "grp": ["A", "A", "A", "B", "B", "B", null],
+  "item": ["x", "y", "Sum", "x", "y", "Sum", "All"],
+  "n": [10, 30, 40, 20, 40, 60, 100],
+  "rate": [0.12, 0.34, 0.46, 0.56, 0.78, 1.34, 1.8]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "ops": [
+    {
+      "type": "summary",
+      "by": "grp",
+      "rows": [3, 6],
+      "grand": 7
+    }
+  ],
+  "row_group": ["grp"],
+  "data_key": "086d9618"
+}
+})</script>
+<p>With <code>by</code>, the group rows are labeled with the function’s name (“Sum”) and a
+total labeled “All” closes the table; change them with <code>label</code> and <code>grand</code>, or
+drop the total with <code>grand = FALSE</code>. Give a named list to use a different
+function per column.</p>
+<pre><code class="language-r">lt(d) |&gt; lt_summary(list(n = &quot;sum&quot;, rate = &quot;mean&quot;), by = ~ grp, grand = FALSE)
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["141a0e7f"]=
+{
+  "grp": ["A", "A", "A", "B", "B", "B"],
+  "item": ["x", "y", "Subtotal", "x", "y", "Subtotal"],
+  "n": [10, 30, 40, 20, 40, 60],
+  "rate": [0.12, 0.34, 0.23, 0.56, 0.78, 0.67]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "ops": [
+    {
+      "type": "summary",
+      "by": "grp",
+      "rows": [3, 6]
+    }
+  ],
+  "row_group": ["grp"],
+  "data_key": "141a0e7f"
+}
+})</script>
+<p>When a summary needs several columns at once, such as a weighted mean, give
+<code>data_fn</code> a function of the data frame instead. It returns the summary values,
+named by column.</p>
+<pre><code class="language-r">weighted = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
+lt(d) |&gt;
+  lt_summary(data_fn = weighted, by = ~ grp) |&gt;
+  lt_group(~ grp, sep = TRUE) |&gt;
+  lt_format(~ rate, percent = TRUE, decimals = 1)
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["31d012c6"]=
+{
+  "grp": ["A", "A", "A", "B", "B", "B", null],
+  "item": ["x", "y", "Subtotal", "x", "y", "Subtotal", "All"],
+  "n": [10, 30, 40, 20, 40, 60, 100],
+  "rate": [0.12, 0.34, 0.285, 0.56, 0.78, 0.706666666666667, 0.538]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "ops": [
+    {
+      "type": "summary",
+      "by": "grp",
+      "rows": [3, 6],
+      "grand": 7
+    },
+    {
+      "type": "fmt_number",
+      "columns": ["rate"],
+      "decimals": 1,
+      "percent": true
+    }
+  ],
+  "row_group": "grp",
+  "data_key": "31d012c6"
+}
+})</script>
+<p>Summary rows are shown in bold. The grand row stays at the bottom of the table
+even in an interactive table, where it is not sorted, filtered, or paged. A
+group’s summary moves with its group when you sort, and it disappears when a
+filter removes all of the group’s rows. Summary values are computed once, from
+all the rows, so they do not change as you filter.</p>
+<h2 id="sec:indent"><span class="section-number">3.6</span> Indentation</h2>
 <p>Hierarchies such as adverse events, where “Cardiac” contains “Tachycardia”, read
 best when the children are indented under their parent. <code>lt_indent()</code> nudges the
 first column of the chosen rows to the right, one <code>level</code> per step. Call it once
@@ -1816,8 +1948,8 @@ lt(d) |&gt;
   lt_footnote(&quot;Source: simulated trial data.&quot;, &quot;title&quot;) |&gt;
   lt_footnote(&quot;Intention-to-treat population.&quot;, &quot;subtitle&quot;) |&gt;
   lt_footnote(&quot;Standard error of the mean.&quot;, &quot;column&quot;, ~ SE) |&gt;
-  lt_footnote(&quot;Per-arm summary statistics.&quot;, &quot;spanner&quot;, &quot;Summary&quot;) |&gt;
-  lt_footnote(&quot;Received active drug.&quot;, &quot;group&quot;, &quot;Treatment&quot;) |&gt;
+  lt_footnote(&quot;Per-arm summary statistics.&quot;, &quot;spanner&quot;, ~ Summary) |&gt;
+  lt_footnote(&quot;Received active drug.&quot;, &quot;group&quot;, ~ Treatment) |&gt;
   lt_footnote(&quot;SE is undefined for counts.&quot;, &quot;body&quot;, ~ SE, rows = c(1, 3))
 </code></pre>
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["0fa627b2"]=
@@ -2318,10 +2450,10 @@ tables that use one. A plain table does not pay for it. <code>lt_dependency(plot
 <h1 id="chp:style"><span class="section-number main-number">6</span> Styling</h1>
 <p>The default look of an <strong>lt</strong> table is deliberately plain: a rule on top, a rule
 below the header, a rule at the bottom, and nothing else. It is a good canvas.
-This chapter is about the three functions that let you paint on it:
-<code>lt_style()</code> for individual cells, <code>lt_css()</code> for rules that apply to the whole
-table, and <code>lt_wrap()</code> for keeping those rules from leaking into other tables on
-the same page.</p>
+This chapter is about the functions that let you paint on it: <code>lt_style()</code> for
+individual cells, <code>lt_color()</code> for color scales driven by values, <code>lt_css()</code> for
+rules that apply to the whole table, and <code>lt_wrap()</code> for keeping those rules from
+leaking into other tables on the same page.</p>
 <h2 id="sec:style-cells"><span class="section-number">6.1</span> Paint a few cells</h2>
 <p>Start with the shortcuts. <code>lt_style()</code> takes the columns and rows to hit, and
 then a handful of arguments you would otherwise have to spell in CSS: <code>bold</code>,
@@ -2406,10 +2538,6 @@ lt(d) |&gt;
   lt_style(~ P, test = &quot;v =&gt; v &lt; 0.05&quot;, class = &quot;sig&quot;) |&gt;
   lt_css(.good = list(color = &quot;green&quot;), .sig = list(fontWeight = &quot;bold&quot;))
 </code></pre>
-<style>.lt-table {
-  .good { color: green; }
-  .sig { font-weight: bold; }
-}</style>
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["40857e65"]=
 {
   "Endpoint": ["Primary", "Secondary", "Exploratory"],
@@ -2444,6 +2572,7 @@ lt(d) |&gt;
       "class": "sig"
     }
   ],
+  "rules": ["  .good { color: green; }", "  .sig { font-weight: bold; }"],
   "data_key": "40857e65"
 }
 })</script>
@@ -2488,7 +2617,92 @@ lt(d) |&gt;
 })</script>
 <p>By default <code>NA</code> cells show an em dash (<a class="cross-ref-sec" href="#sec:printing">1.6</a> explains how to change the
 text), so a pink background plus the dash is hard to miss.</p>
-<h2 id="sec:style-css"><span class="section-number">6.3</span> Rules for the whole table</h2>
+<h2 id="sec:style-color"><span class="section-number">6.3</span> Color by value</h2>
+<p><code>lt_color()</code> shades numeric cells along a palette, so the eye can compare values
+down a column without reading every number. Give it the columns and a palette
+(a vector of colors from low to high). Each column is scaled to its own range by
+default. The colors are interpolated, so any number of steps works.</p>
+<pre><code class="language-r">d = data.frame(site = c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;), rate = c(0.12, 0.34, 0.56, 0.78))
+lt(d) |&gt;
+  lt_format(~ rate, decimals = 2) |&gt;
+  lt_color(~ rate, c(&quot;white&quot;, &quot;#fc8d59&quot;))
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["9dd0c754"]=
+{
+  "site": ["A", "B", "C", "D"],
+  "rate": [0.12, 0.34, 0.56, 0.78]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "ops": [
+    {
+      "type": "fmt_number",
+      "columns": ["rate"],
+      "decimals": 2
+    },
+    {
+      "type": "color",
+      "columns": ["rate"],
+      "palette": ["#FFFFFF", "#FC8D59"]
+    }
+  ],
+  "data_key": "9dd0c754"
+}
+})</script>
+<p>Use <code>domain</code> to fix the scale instead, for example to compare several columns on
+one shared scale, or to keep the colors stable when the data change. Values
+outside the domain get the end colors. A diverging palette with a midpoint
+usually suits values that have a meaningful zero:</p>
+<pre><code class="language-r">m = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3))
+lt(m) |&gt; lt_color(~ a + b, c(&quot;steelblue&quot;, &quot;white&quot;, &quot;tomato&quot;), domain = c(-3, 3))
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["c8d4414b"]=
+{
+  "a": [-2, 0, 2],
+  "b": [-1, 1, 3]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "ops": [
+    {
+      "type": "color",
+      "columns": ["a", "b"],
+      "palette": ["#4682B4", "#FFFFFF", "#FF6347"],
+      "domain": [-3, 3]
+    }
+  ],
+  "data_key": "c8d4414b"
+}
+})</script>
+<p>The text color is picked automatically, black or white, whichever has more
+contrast with the cell background. So a palette that ends in a dark color needs
+no extra work, and the high values below get white text:</p>
+<pre><code class="language-r">lt(d) |&gt;
+  lt_format(~ rate, decimals = 2) |&gt;
+  lt_color(~ rate, c(&quot;white&quot;, &quot;navy&quot;))
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "ops": [
+    {
+      "type": "fmt_number",
+      "columns": ["rate"],
+      "decimals": 2
+    },
+    {
+      "type": "color",
+      "columns": ["rate"],
+      "palette": ["#FFFFFF", "#000080"]
+    }
+  ],
+  "data_key": "9dd0c754"
+}
+})</script>
+<p>Set <code>contrast = FALSE</code> to leave the text color alone and style it yourself with
+<code>lt_style()</code>. Missing values are not colored.</p>
+<h2 id="sec:style-css"><span class="section-number">6.4</span> Rules for the whole table</h2>
 <p><code>lt_css()</code> is the home for everything that is not a one-off. It attaches CSS that
 is emitted after the built-in stylesheet, so your rules win ties.</p>
 <p>A <strong>named</strong> argument is an inline rule: the name is a selector, the value is
@@ -2503,11 +2717,6 @@ in camelCase as in <code>lt_style()</code>.</p>
     &quot;th&quot; = &quot;text-transform: uppercase; font-size: .8em&quot;
   )
 </code></pre>
-<style>.lt-table {
-  .good { color: darkgreen; font-weight: bold; }
-  tbody tr:hover { background: #f4f8ff }
-  th { text-transform: uppercase; font-size: .8em }
-}</style>
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["feb87adf"]=
 {
   "mpg": [21, 21, 22.8, 21.4, 18.7],
@@ -2525,6 +2734,7 @@ in camelCase as in <code>lt_style()</code>.</p>
       "class": "good"
     }
   ],
+  "rules": ["  .good { color: darkgreen; font-weight: bold; }", "  tbody tr:hover { background: #f4f8ff }", "  th { text-transform: uppercase; font-size: .8em }"],
   "data_key": "feb87adf"
 }
 })</script>
@@ -2535,7 +2745,7 @@ report. Paths stay as written, so a relative one remains portable.</p>
 </code></pre>
 <p>If a page holds many tables with the same <code>lt_css()</code>, the stylesheet is emitted
 once, not once per table.</p>
-<h3 id="sec:style-selectors"><span class="section-number">6.3.1</span> The selectors worth knowing</h3>
+<h3 id="sec:style-selectors"><span class="section-number">6.4.1</span> The selectors worth knowing</h3>
 <p>Every part of a table has a class, so you can restyle anything without guessing
 at the structure. <a class="cross-ref-tab" href="#tab:style-selectors">3</a> lists the ones you will reach for most.</p>
 <div class="table" id="tab:style-selectors">
@@ -2591,7 +2801,7 @@ at the structure. <a class="cross-ref-tab" href="#tab:style-selectors">3</a> lis
 </div>
 <p>The table is an ordinary HTML table, so <code>thead th</code>, <code>tbody td</code>, and
 <code>tr:nth-child(odd)</code> all work too.</p>
-<h2 id="sec:wrap"><span class="section-number">6.4</span> Keep it on one table</h2>
+<h2 id="sec:wrap"><span class="section-number">6.5</span> Keep it on one table</h2>
 <p>Page-wide CSS is great until the page has two tables. <code>lt_wrap()</code> solves that by
 putting attributes on the <code>&lt;div&gt;</code> that wraps the table. Give it a <code>class</code>, and a
 stylesheet rule that begins with that class touches this table only.</p>
@@ -2643,7 +2853,7 @@ stylesheet rule that begins with that class touches this table only.</p>
 })</script>
 <p>Repeated calls accumulate classes instead of replacing them, so a helper
 function can add its own class without wiping the caller’s.</p>
-<h2 id="sec:style-raw"><span class="section-number">6.5</span> Peek behind the format</h2>
+<h2 id="sec:style-raw"><span class="section-number">6.6</span> Peek behind the format</h2>
 <p>One last trick needs no code. <strong>Alt-click</strong> on a table to reveal the <em>raw</em> value
 behind every cell that was formatted: <code>0.0012</code> appears next to <code>0.001</code>, and an
 ISO timestamp next to its friendly date. <strong>Alt-double-click</strong> does the same for
@@ -3155,7 +3365,7 @@ button at the start of the search row, and it lists every column by its label.
 Uncheck one to hide its header and its cells; check it again to bring it back.</p>
 <pre><code class="language-r">d = mtcars[, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;wt&quot;, &quot;gear&quot;)]
 lt(d) |&gt;
-  lt_interactive(hide = list(label = &quot;Columns&quot;, columns = c(&quot;hp&quot;, &quot;wt&quot;)),
+  lt_interactive(hide = list(label = &quot;Columns&quot;, columns = ~ hp + wt),
     pager = 5, filter = FALSE)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
@@ -3509,7 +3719,7 @@ into editable cells, and the current data frame shows up as <code>input$m</code>
 <pre><code class="language-r">library(shiny)
 d = data.frame(Time = c(12, 24), Rate = c(0.8, 0.6), Note = c(&quot;a&quot;, &quot;b&quot;))
 ui = fluidPage(
-  lt_input(&quot;m&quot;, d, label = &quot;Edit the cells:&quot;, columns = c(&quot;Time&quot;, &quot;Rate&quot;)),
+  lt_input(&quot;m&quot;, d, label = &quot;Edit the cells:&quot;, columns = ~ Time + Rate),
   actionButton(&quot;add&quot;, &quot;Add row&quot;),
   verbatimTextOutput(&quot;out&quot;)
 )
@@ -5498,6 +5708,14 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 <td><code>lt_label(a = &quot;A&quot;)</code></td>
 </tr>
 <tr>
+<td><code>cols_label_with(fn = toupper)</code></td>
+<td><code>lt_label(list(names(x), toupper(names(x))))</code></td>
+</tr>
+<tr>
+<td><code>tab_stubhead(label)</code></td>
+<td><code>lt_label(&lt;first column&gt; = label)</code></td>
+</tr>
+<tr>
 <td><code>tab_footnote(footnote, cells_title(&quot;title&quot;))</code></td>
 <td><code>lt_footnote(text, &quot;title&quot;)</code></td>
 </tr>
@@ -5563,8 +5781,12 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 <td><code>lt_format(columns, big_mark = &quot;,&quot;)</code></td>
 </tr>
 <tr>
-<td><code>fmt_date(columns=)</code></td>
-<td><code>lt_date(columns)</code></td>
+<td><code>fmt_integer(columns=)</code></td>
+<td><code>lt_format(columns, decimals = 0)</code></td>
+</tr>
+<tr>
+<td><code>fmt_date()</code> / <code>fmt_time()</code> / <code>fmt_datetime()</code></td>
+<td><code>lt_date(columns, method=, locale=, options=)</code></td>
 </tr>
 <tr>
 <td><code>sub_missing()</code> / <code>sub_zero()</code> / <code>sub_small_vals()</code></td>
@@ -5634,6 +5856,18 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 <tr>
 <td><code>opt_css(css=)</code></td>
 <td><code>lt_css(...)</code></td>
+</tr>
+<tr>
+<td><code>opt_row_striping()</code></td>
+<td><code>lt_css(...)</code> (<a class="cross-ref-sec" href="#sec:recipe-stripe">11.3.1</a>)</td>
+</tr>
+<tr>
+<td><code>data_color()</code></td>
+<td><code>lt_color(columns, palette, domain)</code> (<a class="cross-ref-sec" href="#sec:style-color">6.3</a>)</td>
+</tr>
+<tr>
+<td><code>summary_rows()</code> / <code>grand_summary_rows()</code></td>
+<td><code>lt_summary(fn, cols, by, grand)</code> (<a class="cross-ref-sec" href="#sec:summary">3.5</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -5799,10 +6033,10 @@ have used <strong>DT</strong> or <strong>gtExtras</strong> for (<a class="cross-
 spelling out, drawn from porting <strong>gsDesign2</strong>, <strong>gsDesign</strong>, and <strong>gsDesignNB</strong>.
 None of them is hard, but each is the kind of thing you only learn by tripping
 over it once, so consider this the cheaper way.</p>
-<h3 id="sec:selection"><span class="section-number">11.2.1</span> Column selection: strings or positions, not tidy-select</h3>
+<h3 id="sec:selection"><span class="section-number">11.2.1</span> Column selection: formulas, strings, or positions, not tidy-select</h3>
 <p><strong>gt</strong> uses tidy-select, so unquoted column names and <code>tidyselect</code> helpers work.
-<strong>lt</strong> deliberately does not: it takes column names as <em>character strings</em> (or
-integer positions, or a one-sided formula). Tidy-select’s ergonomic win is
+<strong>lt</strong> deliberately does not: it takes column names as a one-sided <em>formula</em>,
+<em>character strings</em>, or integer positions. Tidy-select’s ergonomic win is
 mostly at the console. The cost is a large conceptual surface (data masking,
 quosures, injection) and painful programmatic use: the moment a column name comes
 from a variable, you are into <code>{{ }}</code> and <code>all_of()</code> machinery. For a package
@@ -5811,9 +6045,9 @@ whose calls are often generated from code, plain strings win, so that is what
 <pre><code class="language-r"># gt
 tab_spanner(label = &quot;Bounds&quot;, columns = c(alt, null))
 # lt
-lt_spanner(label = &quot;Bounds&quot;, columns = c(&quot;alt&quot;, &quot;null&quot;))   # quote them
+lt_spanner(Bounds ~ alt + null)                            # a (compact) formula
+lt_spanner(label = &quot;Bounds&quot;, columns = c(&quot;alt&quot;, &quot;null&quot;))   # or quote them
 lt_spanner(label = &quot;Bounds&quot;, columns = c(4, 5))            # or use positions
-lt_spanner(Bounds ~ alt + null)                            # or a (compact) formula
 </code></pre>
 <p>If you dislike quoting names, the formula interface keeps them bare:
 <code>Bounds ~ alt + null</code> puts the label on the left and the columns on the right,
@@ -5887,34 +6121,25 @@ column only, so multi-column grouping always renders as rowspan. This is a real
 difference from <strong>gt</strong>, which has only one level of row groups: <code>groupname_col</code>
 takes a single column, and multiple grouping variables are flattened into one
 combined label (joined by <code>row_group.sep</code>, default <code>&quot; - &quot;</code>) rather than nested.</p>
-<p><strong>Groups from row conditions, and controlling their order.</strong> <strong>gt</strong> can define
-groups on the fly from row predicates (a <code>tab_row_group(label=, rows=&lt;cond&gt;)</code> per
-group) and then set their order with <code>row_group_order()</code>. <strong>lt</strong> has no predicate
-form: it groups only by the value of an existing column. So the port is to
-<em>materialize that column first</em>. Build a factor whose levels are the group order
-you want (e.g., with <code>data.table::fcase()</code> or nested <code>ifelse()</code>), sort the data
-by it, and group on it with <code>sort = FALSE</code> so that <strong>lt</strong> keeps your row order
-instead of re-sorting the labels alphabetically:</p>
+<p><strong>Groups from row conditions, and controlling their order.</strong> <strong>gt</strong> defines
+groups from row predicates, <code>tab_row_group(label=, rows=&lt;cond&gt;)</code>, and sets their
+order with <code>row_group_order()</code>. <strong>lt</strong> does the same with a named argument per
+group, where the rows are a one-sided formula evaluated in the data. Groups
+appear in the order given, so there is no separate order step:</p>
 <pre><code class="language-r"># gt: groups defined by conditions, ordered explicitly
 tab_row_group(label = &quot;Power&quot;,  rows = Metric == &quot;Power&quot;) |&gt;
 tab_row_group(label = &quot;Events&quot;, rows = grepl(&quot;Events&quot;, Metric)) |&gt;
 row_group_order(groups = c(&quot;Events&quot;, &quot;Power&quot;))
 
-# lt: derive an ordered factor column, then group by it
-df$Group = factor(
-  ifelse(grepl(&quot;Events&quot;, df$Metric), &quot;Events&quot;, &quot;Power&quot;),
-  levels = c(&quot;Events&quot;, &quot;Power&quot;)          # desired group order
+# lt: groups from conditions, in the order given
+lt(df) |&gt; lt_group(
+  Events = ~ grepl(&quot;Events&quot;, Metric),
+  Power  = ~ Metric == &quot;Power&quot;
 )
-df = df[order(df$Group), ]
-lt(df) |&gt; lt_group(~ Group, sep = TRUE, sort = FALSE)
 </code></pre>
-<p><code>sort = FALSE</code> is the key. By default <code>lt_group()</code> sorts rows by the grouping
-value, which would discard the factor order you set. With it off, the groups
-appear in first-seen row order, i.e., the factor-level order you sorted into.</p>
-<p>If all you need is to reorder groups that already exist, you do not need a factor:
-a second <code>lt_group()</code> call with the labels in the order you want does it, and
-<code>lt_group(&quot;Label&quot; = rows)</code> defines groups by hand from row numbers
-(<a class="cross-ref-sec" href="#sec:group-manual">3.4.1</a>).</p>
+<p>Rows that match no group stay at the end, without a label.</p>
+<p>If all you need is to reorder groups that already exist, a second <code>lt_group()</code>
+call with the labels in the order you want does it (<a class="cross-ref-sec" href="#sec:group-manual">3.4.1</a>).</p>
 <h3 id="sec:raw-html"><span class="section-number">11.2.5</span> Raw HTML: <code>I()</code> is the new <code>html()</code> and <code>md()</code></h3>
 <p>To keep raw HTML (e.g., a line break) from being escaped in a title, column
 label, or footnote, wrap it in <code>I()</code>:</p>
@@ -5948,17 +6173,94 @@ document, e.g.:</p>
 <pre><code class="language-css">.lt-table { font-size: 0.9em; width: 100%; }
 </code></pre>
 <h3 id="sec:missing"><span class="section-number">11.2.8</span> What lt does not have</h3>
-<p>A few <strong>gt</strong> features have no <strong>lt</strong> counterpart:</p>
+<p>A few <strong>gt</strong> features have no <strong>lt</strong> function. Each is a short recipe in
+<a class="cross-ref-sec" href="#sec:recipes">11.3</a>, because the table is just data plus CSS:</p>
 <ul>
-<li><code>summary_rows()</code> and <code>grand_summary_rows()</code>: compute the summary in R and
-append it as ordinary rows (<code>lt_indent()</code> and <code>lt_style()</code> can set them apart).</li>
-<li><code>data_color()</code>: use <code>lt_style(test = , class = )</code> with a rule from <code>lt_css()</code>
-for conditional colors, or <code>lt_errorbar()</code>/<code>lt_dotplot()</code> for visual encoding.</li>
-<li><code>opt_row_striping()</code> and similar <code>opt_*()</code> themes: a few CSS rules, scoped to
-one table with <code>lt_wrap(class = )</code>.</li>
-<li><code>tab_stubhead()</code>: relabel the first column with <code>lt_label()</code>.</li>
+<li>
+<p><code>opt_row_striping()</code> and similar <code>opt_*()</code> themes: a few CSS rules
+(<a class="cross-ref-sec" href="#sec:recipe-stripe">11.3.1</a>).</p>
+</li>
+<li>
+<p><code>fmt_scientific()</code>, <code>fmt_bytes()</code>, <code>fmt_markdown()</code>, <code>text_transform()</code>,
+and <code>sub_values()</code>: transform the column in R before calling <code>lt()</code>
+(<a class="cross-ref-sec" href="#sec:recipe-transform">11.3.2</a>).</p>
+</li>
 </ul>
-<h2 id="sec:gt-static"><span class="section-number">11.3</span> Generating a static HTML table</h2>
+<h2 id="sec:recipes"><span class="section-number">11.3</span> Recipes for what lt does not have</h2>
+<p>Each recipe is a small helper function, not a one-off snippet, so you can paste
+it into your own package and apply it to any table. The helpers use only base R
+and the <strong>lt</strong> functions in the phrasebook. They share this data frame:</p>
+<pre><code class="language-r">d = data.frame(
+  grp  = c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;),
+  item = c(&quot;x&quot;, &quot;y&quot;, &quot;x&quot;, &quot;y&quot;),
+  n    = c(10, 30, 20, 40),
+  rate = c(0.12, 0.34, 0.56, 0.78)
+)
+</code></pre>
+<h3 id="sec:recipe-stripe"><span class="section-number">11.3.1</span> Row striping and other themes</h3>
+<p><strong>gt</strong>‘s <code>opt_row_striping()</code> is one CSS rule. In <strong>lt</strong>, write that rule once
+in your page’s CSS, so it applies to every table:</p>
+<pre><code class="language-r"># gt
+gt(d) |&gt; opt_row_striping()
+</code></pre>
+<pre><code class="language-css">/* lt */
+.lt-wrap tbody tr:nth-child(even) { background: #f6f6f6; }
+</code></pre>
+<p>The <code>.lt-wrap</code> prefix limits the rule to <strong>lt</strong> tables; drop it to style all
+tables on the page. The same goes for other <code>opt_*()</code> themes: write the rules as
+global CSS. Use <code>lt_css()</code> only for a rule that should apply to one table, and
+<code>lt_wrap(style = ...)</code> for a setting on the container, such as the font or width
+that <code>tab_options()</code> sets in <strong>gt</strong>.</p>
+<h3 id="sec:recipe-transform"><span class="section-number">11.3.2</span> Other formats: transform in R</h3>
+<p><strong>gt</strong> has a <code>fmt_*()</code> function for every format imaginable. <strong>lt</strong> only formats
+numbers (<code>lt_format()</code>) and dates (<code>lt_date()</code>); for anything else, turn the
+column into the text you want with base R or a helper such as
+<code>xfun::format_bytes()</code>. <code>transform_cols()</code> applies any function to chosen
+columns, and the formatters are ordinary functions you can name and reuse. A
+transformed column is a character column, so it is left-aligned unless you say
+otherwise with <code>lt_align()</code>.</p>
+<pre><code class="language-r"># gt
+fmt_scientific(columns = n) |&gt; fmt_bytes(columns = size)
+</code></pre>
+<pre><code class="language-r">transform_cols = function(d, columns, fn) {
+  d[columns] = lapply(d[columns], fn)
+  d
+}
+# formatters: numeric vector -&gt; character vector
+fmt_sci = function(digits = 3) function(x) format(x, scientific = TRUE, digits = digits)
+sub_values = function(map) function(x) ifelse(x %in% names(map), map[x], x)  # gt: sub_values()
+</code></pre>
+<pre><code class="language-r">d3 = data.frame(
+  n = c(12345, 0.00123, 6.02e23), size = c(1024, 5e6, 3e9),
+  tag = c(&quot;ok&quot;, &quot;fail&quot;, &quot;ok&quot;)
+)
+d3 |&gt;
+  transform_cols(&quot;n&quot;, fmt_sci()) |&gt;
+  transform_cols(&quot;size&quot;, xfun::format_bytes) |&gt;
+  transform_cols(&quot;tag&quot;, sub_values(c(fail = &quot;FAILED&quot;))) |&gt;
+  lt() |&gt;
+  lt_align(~ n + size, &quot;right&quot;)
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["33cb8d09"]=
+{
+  "n": ["1.23e+04", "1.23e-03", "6.02e+23"],
+  "size": ["1 Kb", "4.8 Mb", "2.8 Gb"],
+  "tag": ["ok", "FAILED", "ok"]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "ops": [
+    {
+      "type": "align",
+      "columns": ["n", "size"],
+      "align": "right"
+    }
+  ],
+  "data_key": "33cb8d09"
+}
+})</script>
+<h2 id="sec:gt-static"><span class="section-number">11.4</span> Generating a static HTML table</h2>
 <p>By default an <strong>lt</strong> table is built in the browser by the JavaScript runtime
 (<a class="cross-ref-chp" href="#chp:js">10</a>) at view time, which is perfect for HTML pages but useless for output
 that must already contain the finished <code>&lt;table&gt;</code>: a GitHub <code>README.md</code>, an email,
@@ -5992,7 +6294,7 @@ knit: |
 </code></pre>
 <p>With that header, each <code>lt(data)</code> chunk in the README emits a finished <code>&lt;table&gt;</code>
 straight into <code>README.md</code>, with no post-processing needed.</p>
-<h2 id="sec:demo"><span class="section-number">11.4</span> A runnable example</h2>
+<h2 id="sec:demo"><span class="section-number">11.5</span> A runnable example</h2>
 <p>Here is a small table that exercises most of the mappings above. Each comment
 names the <strong>gt</strong> function that would have done the job:</p>
 <pre><code class="language-r">df = data.frame(
@@ -6008,7 +6310,7 @@ lt(df) |&gt;
   lt_spanner(Probability ~ lo + hi) |&gt;                 # gt: tab_spanner
   lt_format(~ lo + hi, decimals = 2) |&gt;                # gt: fmt_number
   lt_header(title = &quot;Demo&quot;, subtitle = &quot;gt -&gt; lt&quot;) |&gt;  # gt: tab_header
-  lt_footnote(&quot;Interval bounds.&quot;, &quot;spanner&quot;, &quot;Probability&quot;) |&gt;  # tab_footnote
+  lt_footnote(&quot;Interval bounds.&quot;, &quot;spanner&quot;, ~ Probability) |&gt;  # tab_footnote
   lt_note(&quot;Source: synthetic data.&quot;)                   # gt: tab_source_note
 </code></pre>
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["111fa540"]=
@@ -6196,19 +6498,19 @@ stripped. It is the right tool there, just not a good default elsewhere.) <a hre
 </section>
 </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/chapter-toc.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/external-link.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/right-quote.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/key-buttons.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/callout.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/chapter-toc.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/external-link.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/right-quote.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/key-buttons.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/callout.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/prism-lite.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/pele@1.13.0/dist/pele.global.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.158/js/render-pele.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/render-pele.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/link-functions.min.js" defer></script>
 </body>
 </html>

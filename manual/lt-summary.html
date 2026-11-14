@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 1.0.19">
+<title>Add summary rows</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/prism-xcode.min.css">
+<meta name="function-index" content="../function-index.json">
+</head>
+<body>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.24</small>
+<a href="../examples.html">Examples</a>
+<a href="../manual.html">Manual</a>
+<a href="../news.html">News</a>
+<a href="../book/">Book</a>
+<a href="../playground/">Playground</a>
+<span class="pagesjs-toggle"></span>
+<a href="https://github.com/yihui/lt/" title="GitHub repository"><img src="https://cdn.jsdelivr.net/npm/@primer/octicons@19/build/svg/mark-github-24.svg" alt="GitHub" class="no-invert" /></a></p></nav>
+<header class="frontmatter">
+<div class="title"><h1>Add summary rows</h1></div>
+
+
+
+</header>
+<main>
+<article class="">
+<nav id="TOC" class="side side-left">
+<ul>
+<li><a href="#sec:description">Description</a></li>
+<li><a href="#sec:usage">Usage</a></li>
+<li><a href="#sec:arguments">Arguments</a></li>
+<li><a href="#sec:details">Details</a></li>
+<li><a href="#sec:value">Value</a></li>
+<li><a href="#sec:examples">Examples</a></li>
+</ul>
+</nav>
+<h2 id="sec:description" class="unnumbered">Description</h2>
+<p>Append rows that summarize the data: one after each group, a grand summary
+for the whole table, or both. A summary is whatever <code>fn</code> computes from a data
+frame, so a sum, a weighted mean, or a count are all the same call.
+</p>
+<h2 id="sec:usage" class="unnumbered">Usage</h2>
+<pre><code class="language-r">lt_summary(
+  x,
+  fn = NULL,
+  cols = NULL,
+  by = NULL,
+  label = NULL,
+  grand = NULL,
+  label_col = NULL,
+  data_fn = NULL
+)</code></pre>
+<h2 id="sec:arguments" class="unnumbered">Arguments</h2>
+<table class="desc-table" role = "presentation">
+<tr><td><code>x</code></td>
+<td>
+<p>An <code><a href="lt.html">lt()</a></code> object.</p>
+</td></tr>
+<tr><td><code>fn</code></td>
+<td>
+<p>A function (or its name, such as <code>"sum"</code> or <code>"max"</code>) of one column
+that returns its summary, applied to each column in <code>cols</code>; or a named list
+of such functions, one per column. It is called with <code>na.rm = TRUE</code> when it
+accepts that argument. Give exactly one of <code>fn</code> and <code>data_fn</code>.</p>
+</td></tr>
+<tr><td><code>cols</code></td>
+<td>
+<p>The columns that <code>fn</code> summarizes, when it is a single function.
+Numeric columns by default.</p>
+</td></tr>
+<tr><td><code>by</code></td>
+<td>
+<p>A column name or one-sided formula (e.g., <code>~grp</code>) to summarize
+each group of. Leave it <code>NULL</code> for a grand summary only.</p>
+</td></tr>
+<tr><td><code>label</code></td>
+<td>
+<p>The text of a group summary row, shown in <code>label_col</code>. By
+default, the capitalized name of <code>fn</code> if it is a name (e.g., <code>"Sum"</code>), else
+<code>"Subtotal"</code> (<code>"Total"</code> without <code>by</code>).</p>
+</td></tr>
+<tr><td><code>grand</code></td>
+<td>
+<p>The text of the grand summary row at the bottom; <code>FALSE</code> for
+none. With <code>by</code>, <code>"All"</code> by default. Without <code>by</code>, the one summary row is
+the grand row, labeled <code>label</code>.</p>
+</td></tr>
+<tr><td><code>label_col</code></td>
+<td>
+<p>The column that shows <code>label</code> and <code>grand</code>; the first
+column other than <code>by</code> by default.</p>
+</td></tr>
+<tr><td><code>data_fn</code></td>
+<td>
+<p>A function that takes a data frame (the rows of one group, or
+of the whole table) and returns the summary values as a named list or data
+frame of one row. Columns it does not return are left empty. Use this to
+combine several columns, e.g., a weighted mean.</p>
+</td></tr>
+</table>
+<h2 id="sec:details" class="unnumbered">Details</h2>
+<p>Summary rows are shown in bold. A group summary closes its group. The grand
+summary sits at the bottom of the table. In an interactive table (see
+<code><a href="lt-interactive.html">lt_interactive()</a></code>), summary rows are not sorted, filtered, or counted as
+matches: a group summary follows its group's rows through sorting and
+disappears with the group when a filter removes all of its rows, while the
+grand summary stays put. The values are computed once, from all rows, and do
+not change as the table is filtered.
+</p>
+<p>Call <code>lt_summary()</code> before functions that refer to rows by position
+(e.g., <code><a href="lt-style.html">lt_style()</a></code> with <code>rows</code>), because summary rows shift the positions of
+the rows after them. Combine it with <code><a href="lt-group.html">lt_group()</a></code> on the same column as <code>by</code>
+so that each group's rows stay together.
+</p>
+<h2 id="sec:value" class="unnumbered">Value</h2>
+<p><code>x</code> with the summary rows added.
+</p>
+<h2 id="sec:examples" class="unnumbered">Examples</h2>
+<pre><code class="language-r">d = data.frame(
+  grp = c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;), item = c(&quot;x&quot;, &quot;y&quot;, &quot;x&quot;, &quot;y&quot;),
+  n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
+)
+# a function (or its name) of a column, for every numeric column
+lt(d) |&gt; lt_summary(&quot;sum&quot;, by = ~ grp)
+# a grand summary only, with a different function per column
+lt(d) |&gt; lt_summary(list(n = sum, rate = &quot;mean&quot;))
+# a function of the whole data frame, for a weighted mean
+total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
+lt(d) |&gt;
+  lt_summary(data_fn = total, by = ~ grp) |&gt;
+  lt_group(~ grp, sep = TRUE) |&gt;
+  lt_format(~ rate, percent = TRUE, decimals = 1)
+</code></pre>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/css/manual.min.css">
+
+</article>
+</main>
+<footer><div class="flex-col">
+<p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.19</p>
+</div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.2/js/link-functions.min.js" defer></script>
+</body>
+</html>
