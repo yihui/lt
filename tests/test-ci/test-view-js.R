@@ -155,3 +155,19 @@ assert("paging slices the view and clamps the page into range", {
   (p$rows %==% 1:7)
   (p$page %==% 0L)
 })
+
+assert("summary rows follow their group and are not searched, sorted, or filtered", {
+  # rows 5-6 summarize groups A and B; row 7 is the grand summary (no body row)
+  d = list(g = c("A", "B", "A", "B", "A", "B", "All"), item = c("a", "b", "c", "d", "x", "y", "z"),
+           n = c(1, 2, 3, 4, 10, 20, 30))
+  spec = list(`_rowspan` = I("g"), `_sum` = list(by = "g", rows = I(c(5L, 6L)), grand = 7L))
+  (run_view(d, spec = spec) %==% c(1L, 3L, 5L, 2L, 4L, 6L))
+  # sorting reorders rows within a group; the summary stays at its end
+  (run_view(d, by(k('n', 'desc')), spec = spec) %==% c(3L, 1L, 5L, 4L, 2L, 6L))
+  # a group with no surviving rows drops its summary
+  (run_view(d, list(term = 'c'), spec = spec) %==% c(3L, 5L))
+  (run_view(d, list(term = 'd'), spec = spec) %==% c(4L, 6L))
+  # summary values (here 30 in the grand row, 10 in a group row) never match
+  (run_view(d, list(term = '30'), spec = spec) %==% integer(0))
+  (run_view(d, list(term = '10'), spec = spec) %==% integer(0))
+})

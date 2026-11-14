@@ -44,8 +44,10 @@
     .lt-spanner-empty { border-bottom: none; }
   }
 
+  .lt-summary td { font-weight: bold; }
   .lt-footer {
     font-size: 0.85em;
+    .lt-summary td { border-top: 1px solid #888; }
     .lt-footnote:first-child td { border-top: 1px solid #aaa; }
     .lt-source-note:first-child td { border-top: 1px dashed #aaa; }
     .lt-source-note td { font-style: italic; }

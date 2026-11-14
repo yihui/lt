@@ -347,3 +347,19 @@ assert("lt_wrap() appends class across repeated calls", {
   # class from a later call is appended to an earlier one (JS prepends lt-wrap)
   (lt_wrap(lt_wrap(x, class = "foo"), class = "bar")$wrap$class %==% "foo bar")
 })
+
+assert("lt_summary() appends group and grand summary rows and records them", {
+  d2 = data.frame(g = c("A", "B", "A"), item = c("x", "y", "z"), n = c(1, 2, 3))
+  s = lt(d2) |> lt_summary(function(x) list(n = sum(x$n)), by = ~ g, label = "Sub", grand = "All")
+  (s$data$item %==% c("x", "z", "Sub", "y", "Sub", "All"))
+  (s$data$n %==% c(1, 3, 4, 2, 2, 6))
+  (is.na(s$data$g[6]))
+  op = s$ops[[1]]
+  (op$rows %==% I(c(3L, 5L)))
+  (op$grand %==% 6L)
+  # no `by`: only the grand summary, labeled by `label` unless `grand` is given
+  g = lt(d2) |> lt_summary(function(x) list(n = sum(x$n)))
+  (tail(g$data$g, 1) %==% "Total")
+  (g$ops[[1]]$grand %==% 4L)
+  (has_error(lt_summary(s, function(x) list(n = 0), grand = "x")))
+})

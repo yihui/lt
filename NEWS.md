@@ -16,6 +16,8 @@
 
 - Added `lt_color()` to fill numeric cells with colors from a continuous scale, like `gt::data_color()`: give a `palette` (two or more colors) and optionally a shared `domain`; each value gets a color interpolated along the palette, and the text turns black or white for legibility (`contrast = FALSE` turns this off).
 
+- Added `lt_summary()` to append summary rows, like `gt::summary_rows()` and `grand_summary_rows()`: one row after each group (`by`), a grand summary at the bottom, or both, computed by any function of a data frame. Summary rows are bold. In an interactive table they are not sorted, filtered, or searched: a group summary follows its group and disappears with it when a filter removes all of its rows, and the grand summary stays pinned in the table footer.
+
 - With `auto_format = TRUE`, `lt()` shows date columns as `YYYY-MM-DD` and date-time columns as `YYYY-MM-DD HH:MM:SS` in the local time zone by default; use `lt_date()` to format them differently. In `lt_interactive()`, these columns sort chronologically and `filter = "auto"` gives them a range slider.
 
 - `lt_interactive(filter = "auto")` picks each column's filter from its data: a range slider for numbers, a checklist for text with few distinct values, and a plain box otherwise.

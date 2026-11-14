@@ -264,7 +264,9 @@
     const data = spec.data || {},
           ops = spec.ops || [],
           colNames = colOrder(spec),
-          nRow = colNames.length ? data[colNames[0]].length : 0,
+          // lt_summary(): the grand row (always last) is pinned in <tfoot>, not a body row
+          sm = ops.find(op => op.type === "summary"),
+          nRow = (colNames.length ? data[colNames[0]].length : 0) - (sm?.grand ? 1 : 0),
           // Run fn on each op of type, in document order.
           onOp = (t, fn) => { for (const op of ops) if (op.type === t) fn(op); };
 
@@ -424,6 +426,7 @@
     return {
       visible, align, colLabels, colWidths, tableWidth, indent,
       groups, rowSpans, styles, spanners, cellMap,
+      sum: sm && { by: sm.by, rows: sm.rows || [], grand: sm.grand },
       footnotes: spec.footnotes || [],
       notes: spec.notes || [],
       header: spec.header || {},
@@ -467,6 +470,11 @@
           nRow = colNames.length ? data[colNames[0]].length : 0;
     if (!nRow) return;
     const idx = Array.from({length: nRow}, (_, i) => i);
+    // Within a group, summary rows follow its members; the grand row goes last
+    const sm = (spec.ops || []).find(op => op.type === "summary"),
+          rank = new Array(nRow).fill(0);
+    for (const r of sm?.rows || []) rank[r - 1] = 1;
+    if (sm?.grand) rank[sm.grand - 1] = 2;
     idx.sort((a, b) => {
       for (const c of cols) {
         const va = data[c]?.[a], vb = data[c]?.[b];
@@ -476,7 +484,7 @@
         if (va < vb) return -1;
         if (va > vb) return 1;
       }
-      return 0;
+      return rank[a] - rank[b];
     });
     for (const c of colNames) data[c] = idx.map(i => data[c][i]);
     // Remap 1-based row indices in ops to new order
@@ -484,6 +492,7 @@
     for (let i = 0; i < nRow; i++) newPos[idx[i]] = i + 1;
     for (const op of (spec.ops || [])) {
       if (op.rows) op.rows = op.rows.map(r => newPos[r - 1]);
+      if (op.grand) op.grand = newPos[op.grand - 1];
     }
   }
 
@@ -508,7 +517,9 @@
     const data = spec.data || {},
           { display, nRow } = applyOps(spec),
           { visible: cols, align, colLabels, colWidths, tableWidth, indent,
-            groups, rowSpans, styles, spanners, cellMap, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+            groups, rowSpans, styles, spanners, cellMap, sum, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+          sumSet = new Set(sum ? [...sum.rows, sum.grand] : []),
+          nBody = nRow - (sum?.grand ? 1 : 0),
           // Core helpers for cell renderer (see LT.cells /
           // lt-plot.js).
           U = { esc, isNum, str },
@@ -567,11 +578,11 @@
           lum = rgb => 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
     for (const op of (spec.ops || []).filter(op => op.type === "color"))
       for (const c of [].concat(op.columns)) {
-        const nums = (data[c] || []).filter(isNum), P = op.palette,
+        const nums = (data[c] || []).filter((v, i) => isNum(v) && !sumSet.has(i + 1)), P = op.palette,
               [lo, hi] = op.domain || [nums.reduce((a, b) => Math.min(a, b), Infinity), nums.reduce((a, b) => Math.max(a, b), -Infinity)];
         eachLoc(null, [c], (key, c, r) => {
           const v = data[c][r - 1];
-          if (!isNum(v)) return;
+          if (!isNum(v) || sumSet.has(r)) return;
           const p = (P.length - 1) * (hi > lo ? Math.min(1, Math.max(0, (v - lo) / (hi - lo))) : 0),
                 i = Math.min(Math.floor(p), P.length - 2), f = p - i,
                 rgb = [1, 3, 5].map(j => Math.round(hex(P[i], j) * (1 - f) + hex(P[i + 1], j) * f)),
@@ -636,7 +647,7 @@
 
     // Row rendering
     const pushRow = (r, spanCells) => {
-      out.push(`<tr>`);
+      out.push(`<tr${attr("class", sumSet.has(r) && "lt-summary")}>`);
       // Row-group cells. Group spanning n > 1 rows: label in non-spanning
       // cell on first row (vertical-align centers within that row like
       // body cells, not across span), then empty filler spanning
@@ -731,10 +742,10 @@
         out.push(groupHeader(g.label, g.raw));
         for (const r of g.rows) { seen[r] = 1; pushRow(r); if (lim && ++n >= lim) break; }
       }
-      for (let r = 1; r <= nRow && (!lim || n < lim); r++)
+      for (let r = 1; r <= nBody && (!lim || n < lim); r++)
         if (!seen[r]) { pushRow(r); n++; }
     } else {
-      const end = lim ? Math.min(nRow, lim) : nRow;
+      const end = lim ? Math.min(nBody, lim) : nBody;
       for (let r = 1; r <= end; r++) pushRow(r);
     }
     out.push(`</tbody>`);
@@ -746,9 +757,11 @@
     const footCells = cols.map(c =>
       cellMap[c] ? (cellMap[c].rnd.foot?.(cellMap[c].cfg, U) || "") : "");
     const hasFoot = footCells.some(h => h);
-    if (reg.order.length || notes.length || hasFoot) {
+    if (reg.order.length || notes.length || hasFoot || sum?.grand) {
       const footRow = (cls, html) => `<tr class="${cls}"><td colspan="${nCol}">${html}</td></tr>`;
       out.push(`<tfoot class="lt-footer">`);
+      // grand summary: pinned, outside sort/filter/paging; group columns blank
+      if (sum?.grand) pushRow(sum.grand, rowSpans.map(() => ({ fill: 1 })));
       if (hasFoot) {
         out.push(`<tr class="lt-plot-foot">`);
         out.push(`<td></td>`.repeat(nGrp));
@@ -783,6 +796,7 @@
     // sorts/filters within each run and recomputes spans in view order (see
     // viewRowSpans).
     spec._groups = groups.length ? groups : null;
+    spec._sum = sum || null;
     spec._indent = indent.some(v => v) ? indent : null;
     spec._rowspan = rowSpans.length ? rowSpans.map(rs => rs.col) : null;
     // Wrap in div so wide tables scroll horizontally (`overflow-x`).

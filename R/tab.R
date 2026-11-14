@@ -540,6 +540,79 @@ lt_color = function(
     contrast = if (!isTRUE(contrast)) FALSE)
 }
 
+#' Add summary rows
+#'
+#' Append rows that summarize the data: one after each group, a grand summary
+#' for the whole table, or both. A summary is whatever `fn` computes from a data
+#' frame, so a sum, a weighted mean, or a count are all the same call.
+#'
+#' Summary rows are shown in bold. A group summary closes its group. The grand
+#' summary sits at the bottom of the table. In an interactive table (see
+#' [lt_interactive()]), summary rows are not sorted, filtered, or counted as
+#' matches: a group summary follows its group's rows through sorting and
+#' disappears with the group when a filter removes all of its rows, while the
+#' grand summary stays put. The values are computed once, from all rows, and do
+#' not change as the table is filtered.
+#'
+#' Call `lt_summary()` before functions that refer to rows by position
+#' (e.g., [lt_style()] with `rows`), because summary rows shift the positions of
+#' the rows after them. Combine it with [lt_group()] on the same column as `by`
+#' so that each group's rows stay together.
+#'
+#' @inheritParams lt_align
+#' @param fn A function that takes a data frame (the rows of one group, or of the
+#'   whole table) and returns the summary values as a named list or data frame
+#'   of one row. Columns it does not return are left empty.
+#' @param by A column name or one-sided formula (e.g., `~grp`) to summarize
+#'   each group of. Leave it `NULL` for a grand summary only.
+#' @param label The text of a group summary row, shown in `label_col`.
+#' @param grand The text of the grand summary row; `NULL` for none. Without
+#'   `by`, it defaults to `label`.
+#' @param label_col The column that shows `label` and `grand`; the first
+#'   column other than `by` by default.
+#' @return `x` with the summary rows added.
+#' @export
+#' @examples
+#' d = data.frame(
+#'   grp = c("A", "A", "B", "B"), item = c("x", "y", "x", "y"),
+#'   n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
+#' )
+#' total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
+#' lt(d) |>
+#'   lt_summary(total, by = ~ grp, label = "Subtotal", grand = "All") |>
+#'   lt_group(~ grp, sep = TRUE) |>
+#'   lt_format("rate", percent = TRUE, decimals = 1)
+#' # a grand summary only
+#' lt(d) |> lt_summary(function(x) list(n = sum(x$n)), grand = "Total")
+lt_summary = function(x, fn, by = NULL, label = 'Total', grand = NULL, label_col = NULL) {
+  d = x$data
+  by = f_cols(by, d)
+  if (length(by) > 1) stop("'by' must be a single column")
+  if (any(vapply(x$ops, function(op) identical(op$type, 'summary'), NA)))
+    stop('lt_summary() can be called only once per table')
+  if (is.null(by)) grand = grand %||% label
+  label_col = label_col %||% setdiff(names(d), by)[1]
+  d[[label_col]] = as.character(d[[label_col]])
+  # an all-NA row (types kept) holding fn(part)'s values and the label
+  row = function(part, lab, g = NA) {
+    r = d[NA_integer_, , drop = FALSE]
+    v = fn(part)
+    r[names(v)] = v
+    r[[label_col]] = lab
+    if (!is.null(by)) r[[by]][] = g
+    r
+  }
+  blocks = if (is.null(by)) list(d) else
+    Map(function(p, g) rbind(p, row(p, label, g)), split(d, factor(d[[by]], unique(d[[by]]))), unique(d[[by]]))
+  out = Reduce(rbind, blocks)
+  idx = if (!is.null(by)) cumsum(vapply(blocks, nrow, 1L))  # each block ends with its summary
+  if (!is.null(grand)) out = rbind(out, row(d, grand))
+  rownames(out) = NULL
+  x$data = out
+  add_op(x, 'summary', by = by, rows = if (length(idx)) I(unname(idx)),
+    grand = if (!is.null(grand)) nrow(out))
+}
+
 #' Set column and table widths
 #'
 #' @inheritParams lt_align

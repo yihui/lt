@@ -138,3 +138,15 @@ assert("lt_color() interpolates the palette; NA is unfilled and values are clamp
   (has_match(html, I('style="background:rgb(0,0,0)">1')))
   (has_match(html, !I("color:#")))
 })
+
+assert("lt_summary() renders group summaries in place and pins the grand summary in the footer", {
+  d = data.frame(g = c("A", "A", "B"), item = c("x", "y", "z"), n = c(1, 2, 3))
+  x = lt(d) |> lt_summary(function(x) list(n = sum(x$n)), by = ~ g, label = "Sub", grand = "All") |>
+    lt_group(~ g, sep = TRUE)
+  html = build(x)
+  (count_str(html, 'class="lt-summary"') %==% 3L)
+  # a group summary closes its group (the next group header follows it)
+  (has_match(html, I('>Sub</td><td class="al-r">3</td></tr><tr class="lt-row-group">')))
+  # the grand row is pinned in <tfoot>, after the body
+  (has_match(html, '</tbody><tfoot class="lt-footer"><tr class="lt-summary"><td[^>]*>All</td><td[^>]*>6</td>'))
+})
