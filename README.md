@@ -49,97 +49,10 @@ without installing it.
 ## Functions
 
 `lt()` creates a table object from a data frame. The `lt_*()` functions build
-on it via the pipe. See <https://pkg.yihui.org/lt/examples/01-lt#sec:cheatsheet>
-for "cheat tables" as an overview of these functions, or read the book at
-<https://pkg.yihui.org/lt/book/> for a guided tour.
-
-**Structure**
-
-- `lt_header()` — title and optional subtitle above the table.
-- `lt_spanner()` — column-spanner label spanning a group of columns; or
-  auto-infer spanners from column name prefixes.
-- `lt_group()` — partition rows into labeled groups (rowspan or full-width
-  separator style), either by column values or manual row indices.
-
-**Content & labels**
-
-- `lt_label()` — override column header labels.
-- `lt_footnote()` — attach a numbered footnote to any region (title, subtitle,
-  column, spanner, group, or body cells).
-- `lt_note()` — append a plain unnumbered note below the table.
-- `lt_html()` — render selected columns' cells as raw HTML instead of escaping
-  them. For raw HTML in text (title, labels, footnotes, ...), wrap the text in
-  `I()` in the corresponding function.
-
-**Formatting**
-
-- `lt_format()` — numeric formatting: decimal places, thousand separators,
-  prefix/suffix, percentage, scientific notation, etc.
-- `lt_date()` — date/datetime formatting using the browser locale.
-- `lt_sub()` — substitute specific values (e.g., replace `0` with `"—"` or
-  `NA` with `"n/a"`).
-- `lt_merge()` — merge several columns into one using a sprintf-style pattern.
-- `lt_indent()` — indent selected rows (useful for hierarchical row labels).
-
-**Inline plots**
-
-Drawn as SVG in the browser from the numbers alone — nothing but the data
-travels to the client, and an interactive table draws only the visible rows.
-
-- `lt_errorbar()` — a point estimate with lower/upper bounds on a scale shared
-  across rows (a forest plot of effect sizes); several series can stack in one
-  cell, with a colored legend and optional reference line and axis.
-- `lt_sparkline()` — a per-row line or bar chart, from a list-column or several
-  numeric columns read across the row.
-- `lt_dotplot()` — one dot per column on a shared scale, optionally colored with
-  a legend and staggered onto separate tracks so near-equal values do not
-  overlap.
-
-By default a plot draws into the first value column's cells; `lt_errorbar()` and
-`lt_dotplot()` also take `into=` to name a dedicated column to draw into
-(created when it does not exist), keeping the value columns visible as text.
-
-**Appearance**
-
-- `lt_align()` — set column alignment (left / center / right).
-- `lt_width()` — set column widths.
-- `lt_style()` — apply CSS classes or inline styles to cells, conditionally or
-  unconditionally.
-- `lt_css()` — attach an external CSS file or URL to the table.
-- `lt_wrap()` — set HTML attributes (`class`, `style`, `id`, ...) on the table's
-  container, e.g. to scope custom CSS to one table or give it a fixed width.
-
-**Column order & visibility**
-
-- `lt_move()` — reorder columns.
-- `lt_hide()` — hide columns from the rendered table (still shipped in the
-  data, so an interactive row detail can surface them).
-
-**Interactivity**
-
-- `lt_interactive()` — opt a table into client-side sorting, a search box,
-  per-column filters (text, dropdown, range slider, or checklist), pagination,
-  resizable columns, column hiding, expandable row detail (drill-down), and CSV/RTF
-  download of the current view. Features are handled by a small JavaScript
-  extension loaded only for interactive tables.
-
-**Export**
-
-- `lt_export()` — save a table to a file: `.html` (optionally baking a static
-  `<table>` that needs no JavaScript to view), `.pdf`, or `.png` (rendered via a
-  headless Chromium browser), or `.csv` / `.rtf` (the table's text).
-
-**Shiny**
-
-- `lt_output()` / `render_lt()` — Shiny UI and server bindings.
-- `lt_input()` / `lt_update()` — an editable table as a Shiny input.
-
-**Embedding**
-
-- `lt_spec()` — extract a table's render-ready spec (data plus ops), to ship to
-  the browser and render client-side with `LT.render()`.
-- `lt_dependency()` — the `htmlDependency` bundling lt's runtime assets, for
-  embedding lt tables in other HTML output (e.g. an htmlwidget).
+on it via the pipe. See the manual at <https://pkg.yihui.org/lt/manual.html>
+for all functions, grouped by task. The "cheat tables" at
+<https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheatsheet> give a visual
+overview, and the book at <https://pkg.yihui.org/lt/book/> is a guided tour.
 
 ## Examples
 
