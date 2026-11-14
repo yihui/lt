@@ -32,37 +32,37 @@ d = data.frame(
   Grp   = paste("Group", c("A", "A", "B", "B")),
   Label = c("<a href='#sec:cheatsheet'>lt(): make a table</a>",
             "lt_indent(): child A", "lt_indent(): child B", "lt_style() + lt_css()"),
-  Fmt   = c(1234567.89, -0.51234, Inf, -Inf),
+  Fmt   = c(1234567.89, -0.51234, Inf, 9876.54),
   Sub   = c(0, NA, 3.14, 0.0002),
-  Date  = as.Date(c("2024-01-15", "2024-02-20", "2024-03-25", "2024-04-30")),
-  Align = c(1, 22, 333, 4),
+  Align = c(1, 99, 333, 4),
   Est   = c("0.6", "0.8", "0.5", "0.9"),
   CI    = c("(0.4, 0.8)", "(0.6, 1.0)", "(0.2, 0.7)", "(0.7, 1.1)")
 )
 
 tbl_static = lt(d, auto_format = FALSE) |>
   lt_group(~ Grp) |>
+  lt_summary("sum", ~ Fmt + Align, by = ~ Grp, label = "lt_summary()") |>
   lt_header(title = "lt_header(title = ...)", subtitle = "lt_header(subtitle = ...)") |>
   lt_merge(~ Est + CI, pattern = "{1} {2}") |>
   lt_spanner(`lt_spanner()` ~ Fmt + Sub) |>
   lt_label(
-    Grp = "lt_group()", Label = "lt_label(old = new, ...)", Fmt = "lt_format()",
-    Sub = "lt_sub()", Date = "lt_date()", Align = "lt_align()", Est = "lt_merge()"
+    Grp = "lt_group()", Label = "lt_label()", Fmt = "lt_format()",
+    Sub = "lt_sub()", Align = "lt_align()", Est = "lt_merge()"
   ) |>
   lt_html(~ Label) |>
   lt_align(~ Align, "center") |>
-  lt_width(Align = "6em") |>
+  lt_width(Align = "4em") |>
+  lt_color(~ Align, c("yellow", "navy"), domain = c(0, 400)) |>
   lt_format(~ Fmt, decimals = 1, big_mark = ",") |>
-  lt_date(~ Date, options = list(month = "short", day = "numeric", timeZone = "UTC")) |>
   lt_sub(~ Sub, missing = "n/a", zero = "—", small = 0.01, small_text = "< 0.01") |>
-  lt_indent(c(2, 3), level = 1) |>
-  lt_style(~ Label, rows = 4L, class = "highlight") |>
+  lt_indent(c(2, 4), level = 1) |>
+  lt_style(~ Label, rows = 5L, class = "highlight") |>
   lt_css(.highlight = list(fontWeight = "bold", color = "orange")) |>
   lt_footnote("lt_footnote() can add a footnote anywhere.", "title") |>
   lt_footnote(I("Wrap text in <code>I()</code> for raw HTML."), "column", ~ Label) |>
-  lt_footnote("lt_width() sets column widths.", "column", ~ Align) |>
+  lt_footnote("lt_width() sets widths; lt_color() shades cells.", "column", ~ Align) |>
   lt_footnote("lt_move() can reorder columns as desired.", "column", ~ Est) |>
-  lt_note("lt_note() — and lt_export() saves this table to HTML/PDF/PNG/RTF.")
+  lt_note("lt_note() adds this note; lt_date() formats dates; lt_export() saves HTML/PDF/PNG/RTF.")
 tbl_static
 ```
 
