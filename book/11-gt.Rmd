@@ -126,7 +126,7 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `tab_options(table.width=)` and other table-level settings | `lt_wrap(style = "width: ...")`, `lt_css(...)` |
 | `opt_css(css=)` | `lt_css(...)` |
 | `opt_row_striping()` | `lt_css(...)` (@sec:recipe-stripe) |
-| `data_color()` | `lt_color(columns, palette, domain)` |
+| `data_color()` | `lt_color(columns, palette, domain)` (@sec:style-color) |
 | `summary_rows()` / `grand_summary_rows()` | append rows in R + `lt_style()` (@sec:recipe-summary) |
 ::::
 
@@ -485,40 +485,6 @@ And for one function over many columns, `by_col()` stands in for **gt**'s
 ```{r recipe-summary-cols}
 d2 = add_summary(d, fn = by_col(c("n", "rate"), mean), label = "Mean")
 lt(d2) |> lt_style(rows = attr(d2, "summary"), italic = TRUE)
-```
-
-### Conditional colors {#sec:recipe-color}
-
-**gt**'s `data_color()` maps a continuous scale to colors. In **lt** this is
-the verb `lt_color()`: give a palette, and each numeric value gets a color
-interpolated along it, over the column's own range or a shared `domain`.
-
-```r
-# gt
-data_color(columns = rate, palette = c("white", "orange"))
-```
-
-```{r recipe-color}
-lt(d) |>
-  lt_format("rate", decimals = 2) |>
-  lt_color("rate", c("white", "#fc8d59"))
-```
-
-The text color is set automatically to black or white, whichever is more
-legible on each cell, so a palette that ends in a dark color just works: the
-high values below get white text (`contrast = FALSE` leaves the text alone).
-
-```{r recipe-color-dark}
-lt(d) |>
-  lt_format("rate", decimals = 2) |>
-  lt_color("rate", c("white", "navy"))
-```
-
-A diverging palette on a shared scale, for several columns:
-
-```{r recipe-color-cols}
-m = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3))
-lt(m) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
 ```
 
 ### Row striping and other themes {#sec:recipe-stripe}
