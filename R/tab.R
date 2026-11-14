@@ -592,23 +592,28 @@ lt_summary = function(x, fn, by = NULL, label = 'Total', grand = NULL, label_col
     stop('lt_summary() can be called only once per table')
   if (is.null(by)) grand = grand %||% label
   label_col = label_col %||% setdiff(names(d), by)[1]
-  d[[label_col]] = as.character(d[[label_col]])
-  # an all-NA row (types kept) holding fn(part)'s values and the label
+  # one all-NA row of d's types, holding fn(part)'s values, the label, and group g
   row = function(part, lab, g = NA) {
     r = d[NA_integer_, , drop = FALSE]
+    r[[label_col]] = as.character(lab)
     v = fn(part)
-    r[names(v)] = v
-    r[[label_col]] = lab
-    if (!is.null(by)) r[[by]][] = g
+    r[names(v)] = v  # fn's values win if they name label_col
+    if (!is.null(by)) r[[by]] = g
     r
   }
-  blocks = if (is.null(by)) list(d) else
-    Map(function(p, g) rbind(p, row(p, label, g)), split(d, factor(d[[by]], unique(d[[by]]))), unique(d[[by]]))
-  out = Reduce(rbind, blocks)
-  idx = if (!is.null(by)) cumsum(vapply(blocks, nrow, 1L))  # each block ends with its summary
+  # addNA() keeps rows whose group is NA; empty parts (unused factor levels) go
+  parts = if (is.null(by)) list(d) else Filter(nrow, split(d, addNA(d[[by]])))
+  out = if (is.null(by)) d else do.call(rbind, lapply(parts, function(p) {
+    rbind(p, row(p, label, p[[by]][1]))
+  }))
+  idx = if (!is.null(by)) cumsum(vapply(parts, nrow, 1L) + 1L)  # each block ends with its summary
   if (!is.null(grand)) out = rbind(out, row(d, grand))
   rownames(out) = NULL
   x$data = out
+  # summary rows are most useful as subtotals, so group by `by` unless already grouped
+  grouped = !is.null(x$row_group) ||
+    any(vapply(x$ops, function(op) op$type %in% c('row_group', 'group_order'), NA))
+  if (!is.null(by) && !grouped) x = lt_group(x, by)
   add_op(x, 'summary', by = by, rows = if (length(idx)) I(unname(idx)),
     grand = if (!is.null(grand)) nrow(out))
 }

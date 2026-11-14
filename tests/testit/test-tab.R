@@ -363,3 +363,12 @@ assert("lt_summary() appends group and grand summary rows and records them", {
   (g$ops[[1]]$grand %==% 4L)
   (has_error(lt_summary(s, function(x) list(n = 0), grand = "x")))
 })
+
+assert("lt_summary() keeps NA groups and implies lt_group() on `by`", {
+  f = data.frame(g = factor(c("B", "A", NA), levels = c("B", "A")), item = c("x", "y", "z"), n = 1:3)
+  s2 = lt(f) |> lt_summary(function(x) list(n = sum(x$n)), by = ~ g)
+  (nrow(s2$data) %==% 6L)
+  (s2$data$n %==% c(1L, 1L, 2L, 2L, 3L, 3L))
+  (s2$data$item[c(2, 4, 6)] %==% rep("Total", 3))
+  (s2$row_group %==% I("g"))
+})
