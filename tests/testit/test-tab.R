@@ -375,9 +375,9 @@ assert("lt_summary() appends group and grand summary rows and records them", {
   (tail(g$data$g, 1) %==% "Total")
   (g$ops[[1]]$grand %==% 4L)
   (has_error(lt_summary(s, data_fn = function(x) list(n = 0), grand = "x")))
-  # with `by`, labels default to the name of fn (else Subtotal) and All; FALSE drops the total
+  # with `by`, labels default to the name of fn (else Subtotal) and Total; FALSE drops the total
   d = lt(d2) |> lt_summary("sum", by = ~ g)
-  (d$data$item[c(3, 5, 6)] %==% c("Sum", "Sum", "All"))
+  (d$data$item[c(3, 5, 6)] %==% c("Sum", "Sum", "Total"))
   d = lt(d2) |> lt_summary(function(v) sum(v), by = ~ g)
   (d$data$item[c(3, 5)] %==% c("Subtotal", "Subtotal"))
   (nrow((lt(d2) |> lt_summary("sum", by = ~ g, grand = FALSE))$data) %==% 5L)

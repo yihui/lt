@@ -34,7 +34,7 @@ default, the capitalized name of \code{fn} if it is a name (e.g., \code{"Sum"}),
 \code{"Subtotal"} (\code{"Total"} without \code{by}).}
 
 \item{grand}{The text of the grand summary row at the bottom; \code{FALSE} for
-none. With \code{by}, \code{"All"} by default. Without \code{by}, the one summary row is
+none. With \code{by}, \code{"Total"} by default. Without \code{by}, the one summary row is
 the grand row, labeled \code{label}.}
 
 \item{label_col}{The column that shows \code{label} and \code{grand}; the first

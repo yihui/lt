@@ -117,7 +117,7 @@ lt(d) |> lt_summary("sum", by = ~ grp)
 ```
 
 With `by`, the group rows are labeled with the function's name ("Sum") and a
-total labeled "All" closes the table; change them with `label` and `grand`, or
+total labeled "Total" closes the table; change them with `label` and `grand`, or
 drop the total with `grand = FALSE`. Give a named list to use a different
 function per column.
 

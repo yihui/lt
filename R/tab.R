@@ -588,7 +588,7 @@ lt_color = function(
 #'   default, the capitalized name of `fn` if it is a name (e.g., `"Sum"`), else
 #'   `"Subtotal"` (`"Total"` without `by`).
 #' @param grand The text of the grand summary row at the bottom; `FALSE` for
-#'   none. With `by`, `"All"` by default. Without `by`, the one summary row is
+#'   none. With `by`, `"Total"` by default. Without `by`, the one summary row is
 #'   the grand row, labeled `label`.
 #' @param label_col The column that shows `label` and `grand`; the first
 #'   column other than `by` by default.
@@ -627,7 +627,7 @@ lt_summary = function(
   # defaults: the capitalized name of fn, else Subtotal (Total without `by`)
   name = if (is.character(fn)) sub('^(.)', '\\U\\1', fn, perl = TRUE)
   label = label %||% name %||% if (is.null(by)) 'Total' else 'Subtotal'
-  grand = if (!isFALSE(grand)) grand %||% if (is.null(by)) label else 'All'
+  grand = if (!isFALSE(grand)) grand %||% if (is.null(by)) label else 'Total'
   label_col = label_col %||% setdiff(names(d), by)[1]
   if (!is.null(fn)) data_fn = col_summary_fn(d, fn, cols)
   # one all-NA row of d's types, holding the summary values, label, and group g
