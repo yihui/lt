@@ -68,7 +68,7 @@ assert("relabeled column header shows original name as title", {
     ops = list(list(type = "label", labels = list(a_b = "Alpha")))
   ))
   (has_match(html, '<th scope="col" class="al-r" title="a_b">Alpha</th>'))
-  (!has_match(html, 'title="c"'))
+  (has_match(html, !I('title="c"')))
 })
 
 assert("html_cols makes separator-row group labels raw HTML", {
@@ -104,4 +104,49 @@ assert("auto_label replaces separators with spaces in column headers", {
 assert("auto_label = FALSE preserves raw column names", {
   html = build(list(data = list(Sepal.Length = c(5.1), Petal_Width = c(0.2)), auto_label = FALSE))
   (has_match(html, '>Sepal\\.Length</th>.*>Petal_Width</th>'))
+})
+
+assert("lt_css() rules are scoped inside the table wrapper", {
+  html = build(list(data = list(x = 1), rules = ".hi { color: red }"))
+  (has_match(html, I("</table><style>@scope{:scope{.hi { color: red }}}</style></div>")))
+  (has_match(html, !I("<style>.lt-table")))
+})
+
+assert("lt_color() interpolates the palette; NA is unfilled and values are clamped", {
+  html = build(list(
+    data = list(x = c(0, 5, 10, NA, 20)),
+    ops = list(list(type = "color", columns = list("x"),
+      palette = list("#000000", "#ffffff"), domain = list(0, 10)))
+  ))
+  (has_match(html, I('style="background:rgb(0,0,0);color:#fff">0')))
+  (has_match(html, I('style="background:rgb(128,128,128);color:#000">5')))
+  (has_match(html, I('style="background:rgb(255,255,255);color:#000">20')))
+  (has_match(html, !I('background:rgb(255,255,255);color:#000">—')))
+  # without a domain, the column's own range is used
+  html = build(list(
+    data = list(x = c(1, 3)),
+    ops = list(list(type = "color", columns = list("x"),
+      palette = list("#000000", "#ffffff")))
+  ))
+  (has_match(html, I('background:rgb(255,255,255);color:#000">3')))
+  # contrast = FALSE leaves the text color alone
+  html = build(list(
+    data = list(x = c(1, 3)),
+    ops = list(list(type = "color", columns = list("x"),
+      palette = list("#000000", "#ffffff"), contrast = FALSE))
+  ))
+  (has_match(html, I('style="background:rgb(0,0,0)">1')))
+  (has_match(html, !I("color:#")))
+})
+
+assert("lt_summary() renders group summaries in place and pins the grand summary in the footer", {
+  d = data.frame(g = c("A", "A", "B"), item = c("x", "y", "z"), n = c(1, 2, 3))
+  x = lt(d) |> lt_summary(data_fn = function(x) list(n = sum(x$n)), by = ~ g, label = "Sub", grand = "All") |>
+    lt_group(~ g, sep = TRUE)
+  html = build(x)
+  (count_str(html, 'class="lt-summary"') %==% 3L)
+  # a group summary closes its group (the next group header follows it)
+  (has_match(html, I('>Sub</td><td class="al-r">3</td></tr><tr class="lt-row-group">')))
+  # the grand row is pinned in <tfoot>, after the body
+  (has_match(html, '</tbody><tfoot class="lt-footer"><tr class="lt-summary"><td[^>]*>All</td><td[^>]*>6</td>'))
 })

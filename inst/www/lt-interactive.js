@@ -48,6 +48,12 @@
     }
     return spec._txt.t;
   };
+  // Column values without lt_summary() rows, so profiles and filter widgets
+  // describe the data, not the totals
+  const bodyCol = (spec, col) => {
+    const s = spec._sum, skip = new Set(s ? [...s.rows, s.grand] : []);
+    return skip.size ? Object.assign(col.filter((_, i) => !skip.has(i + 1)), { date: col.date }) : col;
+  };
   // A row's data cells in column order: children minus leading rowspan group
   // cells (`lt-row-group`), which aren't in `spec._cols` and are missing on a
   // run's later rows. Class-based, not positional, so index code stays correct.
@@ -117,9 +123,13 @@
   // `spec._viewRows`. `disp[col][i]` = displayed text (what substring search
   // matches). `state`: `filters[col]` terms, `term` search, `predicates` by id
   // (see el._lt.filter), `sort` = ordered `{col, dir}` keys.
-  function computeView(spec, disp, state) {
+  // Kept rows in view order. Summary rows (lt_summary()) are not sorted or
+  // filtered: computeView attaches group summaries afterwards.
+  function keptRows(spec, disp, state) {
     const cols = spec._cols || [], data = spec.data || {}, vals = textual(spec),
-          nRow = (data[cols[0]] || []).length,
+          sum = spec._sum, sumRows = new Set(sum?.rows || []),
+          body = rows => rows.filter(r => !sumRows.has(r)),
+          nRow = (data[cols[0]] || []).length - (sum?.grand ? 1 : 0),
           cell = (c, r) => ({
             raw: vals[c]?.[r - 1] ?? null, disp: disp[c]?.[r - 1] ?? ""
           });
@@ -181,6 +191,7 @@
     // stays in context); sort reorders siblings, subtrees move with their parent.
     const indent = spec._indent;
     const reduce = (rows, cmp) => {
+      rows = body(rows);
       if (!indent) {
         const out = rows.filter(keep);
         return cmp ? out.sort(cmp) : out;
@@ -206,7 +217,7 @@
       return flat;
     };
 
-    const all = () => Array.from({ length: nRow }, (_, i) => i + 1);
+    const all = () => body(Array.from({ length: nRow }, (_, i) => i + 1));
 
     // Rowspan groups nest (outermost first), so data sorting may only reorder
     // within the innermost group, or a spanning cell would split. Partition by
@@ -253,6 +264,21 @@
     return [...out, ...reduce(rest, cmp)];
   }
 
+  // Kept rows plus each group's summary row, placed after the group's last
+  // surviving member. A group with no surviving rows drops its summary.
+  function computeView(spec, disp, state) {
+    const view = keptRows(spec, disp, state), sum = spec._sum;
+    if (!sum?.rows.length) return view;
+    const key = r => String(spec.data[sum.by][r - 1]),
+          summaryOf = new Map(sum.rows.map(s => [key(s), s])),
+          last = new Map();
+    view.forEach((r, i) => last.set(key(r), i));
+    return view.flatMap((r, i) => {
+      const k = key(r);
+      return last.get(k) === i && summaryOf.has(k) ? [r, summaryOf.get(k)] : [r];
+    });
+  }
+
   // Rows of `view` on the current page. Clamps `state.page` in place (row count
   // shrinks as filters are typed; pager reads it back). `pageSize` 0 = one page.
   function pageSlice(view, state) {
@@ -287,9 +313,9 @@
           // server mode (lt-server.js): rows live on a server (`data_url`), and
           // `spec.data` holds just the current page, `data_n` is the row count
           srv = opts.data_url && LT.plugins.server?.(opts, spec),
-          nRow = srv ? opts.data_n || 0 : (data[cols[0]] || []).length,
+          nRow = srv ? opts.data_n || 0 : (data[cols[0]] || []).length - (spec._sum?.grand ? 1 : 0),
           // per-column summaries for profiles and filter widgets
-          sums = {}, sum = srv ? srv.sum : c => sums[c] ||= summary(textual(spec)[c] || [], true),
+          sums = {}, sum = srv ? srv.sum : c => sums[c] ||= summary(bodyCol(spec, textual(spec)[c] || []), true),
           groups = spec._groups,
           // row -> group (to re-emit headers), and body render order (groups,
           // then ungrouped rows) so out-of-order manual groups map display text

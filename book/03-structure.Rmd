@@ -89,14 +89,59 @@ rows already come in the order you want, `sort = FALSE` keeps them as they are.
 
 Sometimes no column tells the story. Maybe the first three rows are the
 treatment arm because you know it from the study design, not because a column
-says so. In that case, name the row ranges yourself: `"Label" = rows` makes a
-group from a set of row numbers.
+says so. In that case, name the rows yourself: `"Label" = rows` makes a group
+from row numbers, a logical vector, or a one-sided formula evaluated in the data,
+such as `~ mpg > 20`. Groups appear in the order you give them, and rows that
+match none stay at the end.
 
 The same trick reorders groups. Pass the group labels, unnamed, to a later
 `lt_group()` call, and those groups move to the front in the order you list them.
 
 ```{r, child = ex('group-manual')}
 ```
+
+## Summary rows {#sec:summary}
+
+Totals and subtotals are rows like any other. `lt_summary()` computes them for
+you: give it a function of one column, or its name, such as `"sum"`, and it is
+applied to every numeric column (or to the `cols` you choose). With `by`, it
+adds one summary row after each group, and a total at the bottom of the table.
+Without `by`, it adds just the total. Other columns stay empty.
+
+```{r}
+d = data.frame(
+  grp = c("A", "A", "B", "B"), item = c("x", "y", "x", "y"),
+  n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
+)
+lt(d) |> lt_summary("sum", by = ~ grp)
+```
+
+With `by`, the group rows are labeled with the function's name ("Sum") and a
+total labeled "All" closes the table; change them with `label` and `grand`, or
+drop the total with `grand = FALSE`. Give a named list to use a different
+function per column.
+
+```{r}
+lt(d) |> lt_summary(list(n = "sum", rate = "mean"), by = ~ grp, grand = FALSE)
+```
+
+When a summary needs several columns at once, such as a weighted mean, give
+`data_fn` a function of the data frame instead. It returns the summary values,
+named by column.
+
+```{r}
+weighted = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
+lt(d) |>
+  lt_summary(data_fn = weighted, by = ~ grp) |>
+  lt_group(~ grp, sep = TRUE) |>
+  lt_format(~ rate, percent = TRUE, decimals = 1)
+```
+
+Summary rows are shown in bold. The grand row stays at the bottom of the table
+even in an interactive table, where it is not sorted, filtered, or paged. A
+group's summary moves with its group when you sort, and it disappears when a
+filter removes all of the group's rows. Summary values are computed once, from
+all the rows, so they do not change as you filter.
 
 ## Indentation {#sec:indent}
 

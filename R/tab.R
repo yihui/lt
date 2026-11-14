@@ -66,8 +66,11 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' @inheritParams lt_align
 #' @param ... A column name, integer position, or formula (e.g., `~col` or
 #'   `~col1 + col2`) to group by column values, or named arguments of the form
-#'   `"Label" = rows` (integer vector of 1-based row indices) for manual
-#'   groups. Unnamed character strings reorder previously defined groups.
+#'   `"Label" = rows` for manual groups. The rows are integer indices
+#'   (1-based), a logical vector, or a one-sided formula evaluated in the data
+#'   (e.g., `~ mpg > 20`) that gives one. Groups appear in the order given, and
+#'   rows in no group stay at the end. Unnamed character strings reorder
+#'   previously defined groups.
 #' @param sep If `TRUE`, render groups as full-width separator rows instead
 #'   of the default rowspan style. Only supports a single grouping column. The
 #'   default `'auto'` uses separator rows when there is a single character
@@ -90,6 +93,10 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' # Manual groups (always separator rows)
 #' lt(head(mtcars)) |>
 #'   lt_group("First three" = 1:3, "Last three" = 4:6)
+#'
+#' # Manual groups from conditions on the data
+#' lt(head(mtcars[, 1:3])) |>
+#'   lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
 lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
   args = list(...)
   nms = names(args)
@@ -106,9 +113,18 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
     add_op(x, 'group_order', order = I(as.character(unlist(args))))
   } else {
     for (i in seq_along(args))
-      x = add_op(x, 'row_group', label = nms[i], rows = I(as.integer(args[[i]])))
+      x = add_op(x, 'row_group', label = nms[i],
+        rows = I(group_rows(args[[i]], x$data)))
     x
   }
+}
+
+# Rows of a manual group: indices, a logical vector, or a one-sided formula
+# evaluated in the data (NA counts as no match)
+group_rows = function(rows, data) {
+  if (inherits(rows, 'formula'))
+    rows = eval(rows[[length(rows)]], data, environment(rows))
+  as.integer(if (is.logical(rows)) which(rows) else rows)
 }
 
 #' Add a footnote
@@ -150,10 +166,10 @@ lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
 #'   lt_spanner(Summary ~ Value + SE) |>
 #'   lt_footnote("Source: simulated trial data.", "title") |>
 #'   lt_footnote("Intention-to-treat population.", "subtitle") |>
-#'   lt_footnote("Standard error of the mean.", "column", "SE") |>
-#'   lt_footnote("Per-arm summary statistics.", "spanner", "Summary") |>
-#'   lt_footnote("Received active drug.", "group", "Treatment") |>
-#'   lt_footnote("SE undefined for counts.", "body", "SE", rows = c(1, 3))
+#'   lt_footnote("Standard error of the mean.", "column", ~ SE) |>
+#'   lt_footnote("Per-arm summary statistics.", "spanner", ~ Summary) |>
+#'   lt_footnote("Received active drug.", "group", ~ Treatment) |>
+#'   lt_footnote("SE undefined for counts.", "body", ~ SE, rows = c(1, 3))
 lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL) {
   columns = f_cols(columns, x$data)
   loc = switch(where,
@@ -473,9 +489,9 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @examples
 #' tbl = lt(head(mtcars))
 #' tbl |>
-#'   lt_style("mpg", rows = 1L, bold = TRUE, borderBottom = "2px solid red")
+#'   lt_style(~ mpg, rows = 1L, bold = TRUE, borderBottom = "2px solid red")
 #' tbl |>
-#'   lt_style("mpg", test = "v => v > 20", class = "high") |>
+#'   lt_style(~ mpg, test = "v => v > 20", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc"))
 lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
                     bold = NULL, italic = NULL, color = NULL, bg = NULL, ...) {
@@ -496,6 +512,173 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
     rows = if (!is.null(rows)) I(as.integer(rows)),
     test = if (!is.null(test)) xfun::js(test),
     class = class, css = css)
+}
+
+#' Color cells by value
+#'
+#' Fill the background of numeric cells with a color from a continuous scale,
+#' like `gt::data_color()`. Each value is mapped to a position between the low
+#' and high end of the domain, and its color is interpolated between the
+#' palette colors. Cells that are not finite numbers (such as `NA`) are left
+#' unfilled.
+#'
+#' @inheritParams lt_align
+#' @param columns Character names, integer positions, or a one-sided formula
+#'   (see [lt_align()]) of the numeric columns to color.
+#' @param palette Two or more colors (names or hex codes) spread evenly over the
+#'   domain, from low to high. A single color is used as the high end, with
+#'   white as the low end.
+#' @param domain A numeric vector `c(low, high)`: the values that get the first
+#'   and last palette colors (values outside are clamped). If `NULL` (the
+#'   default), each column uses its own range; give a domain to share one scale
+#'   across columns.
+#' @param contrast If `TRUE` (the default), set the text color of each filled
+#'   cell to black or white, whichever is more legible on its background. Use
+#'   `FALSE` to leave the text color alone and set it yourself with [lt_style()]
+#'   or [lt_css()].
+#' @return `x` with the coloring recorded.
+#' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_color(~ mpg + hp)
+#' # a dark end of the palette gets white text automatically
+#' lt(head(mtcars)) |> lt_color(~ mpg + hp, c("white", "navy"))
+#' # one shared diverging scale
+#' d = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3))
+#' lt(d) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
+lt_color = function(
+  x, columns, palette = c('white', '#fc8d59'), domain = NULL, contrast = TRUE
+) {
+  columns = f_cols(columns, x$data)
+  if (length(palette) == 1) palette = c('white', palette)
+  pal = grDevices::rgb(t(grDevices::col2rgb(palette)), maxColorValue = 255)
+  add_op(x, 'color', columns = I(as.character(columns)), palette = I(pal),
+    domain = if (!is.null(domain)) I(as.numeric(domain)),
+    contrast = if (!isTRUE(contrast)) FALSE)
+}
+
+#' Add summary rows
+#'
+#' Append rows that summarize the data: one after each group, a grand summary
+#' for the whole table, or both. A summary is whatever `fn` computes from a data
+#' frame, so a sum, a weighted mean, or a count are all the same call.
+#'
+#' Summary rows are shown in bold. A group summary closes its group. The grand
+#' summary sits at the bottom of the table. In an interactive table (see
+#' [lt_interactive()]), summary rows are not sorted, filtered, or counted as
+#' matches: a group summary follows its group's rows through sorting and
+#' disappears with the group when a filter removes all of its rows, while the
+#' grand summary stays put. The values are computed once, from all rows, and do
+#' not change as the table is filtered.
+#'
+#' Call `lt_summary()` before functions that refer to rows by position
+#' (e.g., [lt_style()] with `rows`), because summary rows shift the positions of
+#' the rows after them. Combine it with [lt_group()] on the same column as `by`
+#' so that each group's rows stay together.
+#'
+#' @inheritParams lt_align
+#' @param fn A function (or its name, such as `"sum"` or `"max"`) of one column
+#'   that returns its summary, applied to each column in `cols`; or a named list
+#'   of such functions, one per column. It is called with `na.rm = TRUE` when it
+#'   accepts that argument. Give exactly one of `fn` and `data_fn`.
+#' @param cols The columns that `fn` summarizes, when it is a single function.
+#'   Numeric columns by default.
+#' @param by A column name or one-sided formula (e.g., `~grp`) to summarize
+#'   each group of. Leave it `NULL` for a grand summary only.
+#' @param label The text of a group summary row, shown in `label_col`. By
+#'   default, the capitalized name of `fn` if it is a name (e.g., `"Sum"`), else
+#'   `"Subtotal"` (`"Total"` without `by`).
+#' @param grand The text of the grand summary row at the bottom; `FALSE` for
+#'   none. With `by`, `"All"` by default. Without `by`, the one summary row is
+#'   the grand row, labeled `label`.
+#' @param label_col The column that shows `label` and `grand`; the first
+#'   column other than `by` by default.
+#' @param data_fn A function that takes a data frame (the rows of one group, or
+#'   of the whole table) and returns the summary values as a named list or data
+#'   frame of one row. Columns it does not return are left empty. Use this to
+#'   combine several columns, e.g., a weighted mean.
+#' @return `x` with the summary rows added.
+#' @export
+#' @examples
+#' d = data.frame(
+#'   grp = c("A", "A", "B", "B"), item = c("x", "y", "x", "y"),
+#'   n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
+#' )
+#' # a function (or its name) of a column, for every numeric column
+#' lt(d) |> lt_summary("sum", by = ~ grp)
+#' # a grand summary only, with a different function per column
+#' lt(d) |> lt_summary(list(n = sum, rate = "mean"))
+#' # a function of the whole data frame, for a weighted mean
+#' total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
+#' lt(d) |>
+#'   lt_summary(data_fn = total, by = ~ grp) |>
+#'   lt_group(~ grp, sep = TRUE) |>
+#'   lt_format(~ rate, percent = TRUE, decimals = 1)
+lt_summary = function(
+  x, fn = NULL, cols = NULL, by = NULL,
+  label = NULL, grand = NULL, label_col = NULL, data_fn = NULL
+) {
+  d = x$data
+  by = f_cols(by, d)
+  if (is.null(fn) == is.null(data_fn))
+    stop("Give exactly one of 'fn' and 'data_fn'")
+  if (length(by) > 1) stop("'by' must be a single column")
+  if (any(vapply(x$ops, function(op) identical(op$type, 'summary'), NA)))
+    stop('lt_summary() can be called only once per table')
+  # defaults: the capitalized name of fn, else Subtotal (Total without `by`)
+  name = if (is.character(fn)) sub('^(.)', '\\U\\1', fn, perl = TRUE)
+  label = label %||% name %||% if (is.null(by)) 'Total' else 'Subtotal'
+  grand = if (!isFALSE(grand)) grand %||% if (is.null(by)) label else 'All'
+  label_col = label_col %||% setdiff(names(d), by)[1]
+  if (!is.null(fn)) data_fn = col_summary_fn(d, fn, cols)
+  # one all-NA row of d's types, holding the summary values, label, and group g
+  row = function(part, lab, g = NA) {
+    r = d[NA_integer_, , drop = FALSE]
+    r[[label_col]] = lab
+    v = data_fn(part)
+    r[names(v)] = v  # fn's values win if they name label_col
+    if (!is.null(by)) r[[by]] = g
+    r
+  }
+  # addNA() keeps rows whose group is NA; empty parts (unused factor levels) go
+  parts = if (is.null(by)) list(d) else Filter(nrow, split(d, addNA(d[[by]])))
+  out = if (is.null(by)) d else do.call(rbind, lapply(parts, function(p) {
+    rbind(p, row(p, label, p[[by]][1]))
+  }))
+  # each block ends with its summary row
+  idx = if (!is.null(by)) cumsum(vapply(parts, nrow, 1L) + 1L)
+  if (!is.null(grand)) out = rbind(out, row(d, grand))
+  rownames(out) = NULL
+  x$data = out
+  # summary rows work best as subtotals: group by `by` unless already grouped
+  grouped = !is.null(x$row_group) ||
+    any(vapply(
+      x$ops, function(op) op$type %in% c('row_group', 'group_order'), NA
+    ))
+  if (!is.null(by) && !grouped) x = lt_group(x, by)
+  add_op(x, 'summary', by = by, rows = if (length(idx)) I(unname(idx)),
+    grand = if (!is.null(grand)) nrow(out))
+}
+
+# A function or its name -> function of a column, with na.rm = TRUE if it
+# accepts it
+column_fn = function(f) {
+  f = match.fun(f)
+  # generics such as mean() only list `...`, which passes na.rm on
+  narm = any(c('na.rm', '...') %in% names(formals(args(f))))
+  function(v) if (narm) f(v, na.rm = TRUE) else f(v)
+}
+
+# fn (one function, or a named list per column) -> data-level function of a part
+col_summary_fn = function(d, fn, cols = NULL) {
+  if (is.list(fn)) {
+    if (!is.null(cols)) stop("'cols' is only for a single 'fn'")
+  } else {
+    cols = f_cols(cols, d) %||% names(Filter(is.numeric, d))
+    fn = setNames(rep(list(fn), length(cols)), cols)
+  }
+  if (!all(names(fn) %in% names(d))) stop("'fn' names must be column names")
+  fns = lapply(fn, column_fn)
+  function(part) Map(function(f, nm) f(part[[nm]]), fns, names(fns))
 }
 
 #' Set column and table widths
@@ -863,7 +1046,8 @@ lt_dotplot = function(
 #' Attach custom CSS
 #'
 #' Add user-supplied stylesheets or inline rules that render after the
-#' built-in CSS, so rules can override the defaults.
+#' built-in CSS, so rules can override the defaults. Inline rules are scoped to
+#' the table; stylesheets are page-wide, as usual.
 #'
 #' @inheritParams lt_align
 #' @param ... Unnamed arguments are stylesheet paths or URLs. A bare
@@ -871,7 +1055,8 @@ lt_dotplot = function(
 #'   directory is resolved against the stylesheets shipped with lt, so
 #'   e.g. `lt_css(x, "lt-plot.css")` adds the stylesheet for inline plots.
 #'
-#'   Named arguments define inline CSS rules scoped to `.lt-table`. Names
+#'   Named arguments define inline CSS rules that apply to this table only (other
+#'   tables on the page are unaffected). Names
 #'   are selectors (e.g., `.high`, `td.highlight`) and values are either a
 #'   CSS string or a named list of properties:
 #'   `lt_css(x, .high = "background: #eee")` or
@@ -883,7 +1068,7 @@ lt_dotplot = function(
 #' @examples
 #' tbl = lt(head(mtcars))
 #' tbl |>
-#'   lt_style("mpg", test = "v => v > 20", class = "high") |>
+#'   lt_style(~ mpg, test = "v => v > 20", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
 lt_css = function(x, ...) {
   args = name_value_args(...)

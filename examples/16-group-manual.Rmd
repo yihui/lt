@@ -2,12 +2,15 @@
 title: Manual groups and group order
 ---
 
-Groups need not come from a column: name row ranges yourself. Pass group labels to a second `lt_group()` call to put the groups in the order you like.
+Groups need not come from a column: name the rows yourself, by row numbers or by a condition on the data. Pass group labels to a second `lt_group()` call to put the groups in the order you like.
 
 ```{r}
 library(lt)
 tbl = lt(head(mtcars[, 1:4], 6))
 tbl |> lt_group("First three" = 1:3, "Last three" = 4:6)
+
+# a one-sided formula is evaluated in the data
+tbl |> lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
 
 d = data.frame(
   arm = c("Placebo", "Placebo", "Treatment", "Treatment"),

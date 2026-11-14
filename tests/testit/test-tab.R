@@ -7,6 +7,19 @@ assert("lt_group(~ col, sep = TRUE) sets scalar row_group", {
   (g$row_group %==% "g")
 })
 
+assert("lt_group() takes rows as indices, a logical vector, or a formula", {
+  d2 = data.frame(g = c("A", "B", "A", "C"), v = c(1, NA, 3, 4))
+  rows = function(x) unlist(lapply(x$ops, `[[`, 'rows'))
+  by_idx = lt(d2) |> lt_group(A = c(1L, 3L), B = 2L)
+  by_lgl = lt(d2) |> lt_group(A = d2$g == "A", B = d2$g == "B")
+  by_fml = lt(d2) |> lt_group(A = ~ g == "A", B = ~ g == "B")
+  (rows(by_lgl) %==% rows(by_idx))
+  (rows(by_fml) %==% rows(by_idx))
+  # groups follow the argument order; NA in the condition is no match
+  (lt(d2) |> lt_group(Hi = ~ v > 2, Lo = ~ v <= 2) |> rows()) %==% c(3L, 4L, 1L)
+  (vapply(by_fml$ops, `[[`, '', 'label') %==% c("A", "B"))
+})
+
 assert("lt_footnote() builds correct location", {
   f = lt_footnote(x, "note", "column", ~ a)
   (f$footnotes %==% list(list(
@@ -102,6 +115,20 @@ assert("lt_style() builds CSS from arguments", {
   s = lt_style(x, "a", bold = TRUE, italic = TRUE, color = "red", bg = "#fff")
   css = s$ops[[1]]$css
   (has_match(css, "font-weight:bold.*font-style:italic.*color:red.*background:#fff"))
+})
+
+assert("lt_color() normalizes the palette to hex codes", {
+  o = lt_color(x, "a", c("white", "red"), domain = c(0, 10))$ops[[1]]
+  (o$type %==% "color")
+  (as.vector(o$palette) %==% c("#FFFFFF", "#FF0000"))
+  (as.vector(o$domain) %==% c(0, 10))
+  # one color: white is the low end; no domain is recorded unless given
+  o = lt_color(x, "a", "blue")$ops[[1]]
+  (as.vector(o$palette) %==% c("#FFFFFF", "#0000FF"))
+  (is.null(o$domain))
+  # contrast is recorded only when turned off
+  (is.null(o$contrast))
+  (lt_color(x, "a", contrast = FALSE)$ops[[1]]$contrast %==% FALSE)
 })
 
 assert("lt_style() with extra CSS properties", {
@@ -332,4 +359,50 @@ assert("lt_css() handles absolute, relative, and URL paths", {
 assert("lt_wrap() appends class across repeated calls", {
   # class from a later call is appended to an earlier one (JS prepends lt-wrap)
   (lt_wrap(lt_wrap(x, class = "foo"), class = "bar")$wrap$class %==% "foo bar")
+})
+
+assert("lt_summary() appends group and grand summary rows and records them", {
+  d2 = data.frame(g = c("A", "B", "A"), item = c("x", "y", "z"), n = c(1, 2, 3))
+  s = lt(d2) |> lt_summary(data_fn = function(x) list(n = sum(x$n)), by = ~ g, label = "Sub", grand = "All")
+  (s$data$item %==% c("x", "z", "Sub", "y", "Sub", "All"))
+  (s$data$n %==% c(1, 3, 4, 2, 2, 6))
+  (is.na(s$data$g[6]))
+  op = s$ops[[1]]
+  (op$rows %==% I(c(3L, 5L)))
+  (op$grand %==% 6L)
+  # no `by`: only the grand summary, labeled by `label` unless `grand` is given
+  g = lt(d2) |> lt_summary(data_fn = function(x) list(n = sum(x$n)))
+  (tail(g$data$g, 1) %==% "Total")
+  (g$ops[[1]]$grand %==% 4L)
+  (has_error(lt_summary(s, data_fn = function(x) list(n = 0), grand = "x")))
+  # with `by`, labels default to the name of fn (else Subtotal) and All; FALSE drops the total
+  d = lt(d2) |> lt_summary("sum", by = ~ g)
+  (d$data$item[c(3, 5, 6)] %==% c("Sum", "Sum", "All"))
+  d = lt(d2) |> lt_summary(function(v) sum(v), by = ~ g)
+  (d$data$item[c(3, 5)] %==% c("Subtotal", "Subtotal"))
+  (nrow((lt(d2) |> lt_summary("sum", by = ~ g, grand = FALSE))$data) %==% 5L)
+  (tail((lt(d2) |> lt_summary("mean"))$data$g, 1) %==% "Mean")
+})
+
+assert("lt_summary() keeps NA groups and implies lt_group() on `by`", {
+  f = data.frame(g = factor(c("B", "A", NA), levels = c("B", "A")), item = c("x", "y", "z"), n = 1:3)
+  s2 = lt(f) |> lt_summary(data_fn = function(x) list(n = sum(x$n)), by = ~ g)
+  (nrow(s2$data) %==% 7L)
+  (s2$data$n %==% c(1L, 1L, 2L, 2L, 3L, 3L, 6L))
+  (s2$data$item[c(2, 4, 6)] %==% rep("Subtotal", 3))
+  (s2$row_group %==% I("g"))
+})
+
+assert("lt_summary(fn) summarizes each column, with na.rm for functions that take it", {
+  f = data.frame(g = c("A", "A", "B"), item = c("x", "y", "z"), n = c(1, NA, 3), m = c(2, 4, 6))
+  s = lt(f) |> lt_summary(fn = "sum", by = ~ g)
+  (s$data$n %==% c(1, NA, 1, 3, 3, 4))
+  (s$data$m %==% c(2, 4, 6, 6, 6, 12))
+  (s$data$item[3] %==% "Sum")
+  (lt(f) |> lt_summary(fn = "mean", cols = ~ m, grand = "Avg"))$data$m[4] %==% 4
+  (lt(f) |> lt_summary(fn = "max", cols = "item", grand = "Max"))$data$item[4] %==% "z"
+  (lt(f) |> lt_summary(fn = list(n = "sum", m = "mean"), grand = "All"))$data[4, c("n", "m")] %==% data.frame(n = 4, m = 4)
+  (lt(f) |> lt_summary(function(v) max(v), cols = "m", grand = "M"))$data$m[4] %==% 6
+  (has_error(lt(f) |> lt_summary("sum", data_fn = function(x) list())))
+  (has_error(lt(f) |> lt_summary(fn = list(q = "sum"))))
 })

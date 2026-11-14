@@ -9,7 +9,7 @@ library(shiny)
 library(lt)
 d = data.frame(Time = c(12, 24), Rate = c(0.8, 0.6), Note = c("a", "b"))
 ui = fluidPage(
-  lt_input("m", d, label = "Edit the cells:", columns = c("Time", "Rate")),
+  lt_input("m", d, label = "Edit the cells:", columns = ~ Time + Rate),
   actionButton("add", "Add row"),
   verbatimTextOutput("out")
 )

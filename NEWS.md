@@ -14,6 +14,12 @@
 
 - Added `lt_input()` and `lt_update()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
 
+- Added `lt_color()` to fill numeric cells with colors from a continuous scale, like `gt::data_color()`: give a `palette` (two or more colors) and optionally a shared `domain`; each value gets a color interpolated along the palette, and the text turns black or white for legibility (`contrast = FALSE` turns this off).
+
+- `lt_group()` defines manual groups from conditions on the data: `lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)`, or from a logical vector, besides row numbers.
+
+- Added `lt_summary()` to append summary rows, like `gt::summary_rows()` and `grand_summary_rows()`: one row after each group (`by`), a grand summary at the bottom, or both, computed by a function of each column (`fn`, which also takes a function name such as `"sum"`) or of the whole data frame (`data_fn`). Summary rows are bold. In an interactive table they are not sorted, filtered, or searched: a group summary follows its group and disappears with it when a filter removes all of its rows, and the grand summary stays pinned in the table footer.
+
 - With `auto_format = TRUE`, `lt()` shows date columns as `YYYY-MM-DD` and date-time columns as `YYYY-MM-DD HH:MM:SS` in the local time zone by default; use `lt_date()` to format them differently. In `lt_interactive()`, these columns sort chronologically and `filter = "auto"` gives them a range slider.
 
 - `lt_interactive(filter = "auto")` picks each column's filter from its data: a range slider for numbers, a checklist for text with few distinct values, and a plain box otherwise.
@@ -36,11 +42,15 @@
 
 - The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, download), and the column menu button's tooltip reads "Show/Hide columns".
 
+- The inline rules of `lt_css(.class = ...)` now apply to their own table only; they used to leak to every other table on the page. This needs a browser with CSS `@scope` support (Chrome 118+, Safari 17.4+, Firefox 128+). `lt_spec()` now keeps the rules.
+
 - Printing an `lt_tbl` in the viewer or browser fits the table to the window: a table too tall to fit scrolls inside its container (with the header kept in view) instead of adding a page scrollbar.
 
 - Tables in a scrolling `lt_wrap()` box keep the whole header (spanners, labels, and interactive controls) in view while scrolling.
 
 - In `litedown::fuse()` documents, tables built from the same data frame now write the data to the output only once and refer to it from the other tables, which makes the output file smaller. This also works across child documents. Set the `lt.share_size` global option (in bytes) to share only data frames above that size.
+
+- `lt_format(percent = TRUE)` without `decimals` no longer shows floating-point noise (e.g., `56.00000000000001%` for 0.56).
 
 # CHANGES IN lt VERSION 0.5
 

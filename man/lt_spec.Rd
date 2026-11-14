@@ -19,8 +19,8 @@ declarative ops (and any \code{\link[=lt_interactive]{lt_interactive()}} options
 JavaScript runtime expects. This is the payload the runtime consumes, so
 another widget can embed an lt table by shipping this spec (e.g.
 \code{xfun::tojson(lt_spec(x))}) and rendering it client-side on demand with
-\code{LT.render(container, spec)} (or \code{LT.buildHtml(spec)}). Styling from
-\code{\link[=lt_css]{lt_css()}} and CSS rules is dropped; attach the runtime assets separately
+\code{LT.render(container, spec)} (or \code{LT.buildHtml(spec)}). Stylesheets
+added by \code{\link[=lt_css]{lt_css()}} are dropped; attach the runtime assets separately
 (see \code{\link[=lt_dependency]{lt_dependency()}}).
 }
 \examples{

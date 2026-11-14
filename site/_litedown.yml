@@ -2,13 +2,13 @@ site:
   manual:
     Build tables:
       desc: Create a table and add titles, spanners, row groups, notes, and layout.
-      contents: [lt, lt_header, lt_spanner, lt_group, lt_footnote, lt_note, lt_indent, lt_merge, lt_move, lt_hide]
+      contents: [lt, lt_header, lt_spanner, lt_group, lt_footnote, lt_note, lt_indent, lt_merge, lt_move, lt_hide, lt_summary]
     Format cells:
       desc: Format values, dates, and labels, and align and size columns.
       contents: [lt_format, lt_date, lt_label, lt_html, lt_sub, lt_align, lt_width]
     Style tables:
       desc: Style cells and wrap or theme the table with CSS.
-      contents: [lt_style, lt_css, lt_wrap]
+      contents: [lt_style, lt_color, lt_css, lt_wrap]
     Inline graphics:
       desc: Draw error bars, sparklines, and dot plots inside cells.
       contents: [lt_errorbar, lt_sparkline, lt_dotplot]

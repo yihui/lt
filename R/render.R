@@ -77,10 +77,6 @@ user_css_block = function(paths, local = FALSE) {
   unlist(lapply(paths, user_css_tag, local = local))
 }
 
-rules_block = function(rules) {
-  if (length(rules)) c('<style>.lt-table {', rules, '}</style>')
-}
-
 # One <script> per asset: separate top-level programs. `defer` keeps linked
 # ones in document order (core before plugins).
 js_block = function(files, inline = TRUE) {
@@ -97,8 +93,8 @@ js_block = function(files, inline = TRUE) {
 #' JavaScript runtime expects. This is the payload the runtime consumes, so
 #' another widget can embed an lt table by shipping this spec (e.g.
 #' `xfun::tojson(lt_spec(x))`) and rendering it client-side on demand with
-#' `LT.render(container, spec)` (or `LT.buildHtml(spec)`). Styling from
-#' [lt_css()] and CSS rules is dropped; attach the runtime assets separately
+#' `LT.render(container, spec)` (or `LT.buildHtml(spec)`). Stylesheets
+#' added by [lt_css()] are dropped; attach the runtime assets separately
 #' (see [lt_dependency()]).
 #'
 #' @param x An `lt_tbl` object.
@@ -110,9 +106,9 @@ js_block = function(files, inline = TRUE) {
 #' str(spec, max.level = 1)
 #' xfun::tojson(spec)  # ship this, then LT.render(container, spec) in the browser
 lt_spec = function(x) {
-  # Drop css/rules (emitted separately as <link>/<style> or via
-  # lt_dependency()); prep as the render/queue paths expect.
-  x$css = x$rules = NULL
+  # Drop css (emitted separately as <link> or via lt_dependency()); prep as
+  # the render/queue paths expect.
+  x$css = NULL
   x = with_missing(with_col_order(x))
   x[lengths(x) > 0L]
 }
@@ -240,7 +236,6 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
       c('lt.css', if (plot) 'lt-plot.css', if (int) 'lt-interactive.css'),
       inline_assets),
     user_css_block(x$css),
-    rules_block(x$rules),
     spec_block(x),
     js_block(if ('js' %in% assets)
       c(if (plot) 'lt-plot.js', 'lt.js', int_js(x)),
@@ -351,7 +346,7 @@ record_print.lt_tbl = function(x, ...) {
     css_block(c('lt.css', if (plot) 'lt-plot.css', if (int) 'lt-interactive.css'),
       inline = FALSE),
     user_css_block(x$css, local = TRUE),
-    rules_block(x$rules), spec_block(x, share = TRUE),
+    spec_block(x, share = TRUE),
     js_block(c(if (plot) 'lt-plot.js', 'lt.js', int_js(x)),
       inline = FALSE), ''
   ), 'asis')
@@ -440,7 +435,7 @@ lt_static_browser = function(x, css = TRUE) {
 lt_static_node = function(x, css = TRUE) {
   c(
     css_block(c(if (css) 'lt.css', if (css && has_plot(x)) 'lt-plot.css')),
-    user_css_block(x$css), rules_block(x$rules), node_lt(x)
+    user_css_block(x$css), node_lt(x)
   )
 }
 
@@ -450,7 +445,7 @@ node_lt = function(x, scripts = NULL, args = NULL) {
   runner = pkg_file('js', 'run-lt.js')
   # lt-plot.js before lt.js: its renderer must be registered when core builds.
   js = pkg_file('www', c(if (has_plot(x)) 'lt-plot.js', 'lt.js', scripts))
-  spec = x; spec$css = spec$rules = NULL
+  spec = x; spec$css = NULL
   if (!length(spec$ops)) spec$ops = NULL
   spec = with_missing(with_col_order(spec))
   json = xfun::tojson(spec)

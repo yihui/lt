@@ -11,8 +11,11 @@ lt_group(x, ..., sep = "auto", sort = TRUE)
 
 \item{...}{A column name, integer position, or formula (e.g., \code{~col} or
 \code{~col1 + col2}) to group by column values, or named arguments of the form
-\code{"Label" = rows} (integer vector of 1-based row indices) for manual
-groups. Unnamed character strings reorder previously defined groups.}
+\code{"Label" = rows} for manual groups. The rows are integer indices
+(1-based), a logical vector, or a one-sided formula evaluated in the data
+(e.g., \code{~ mpg > 20}) that gives one. Groups appear in the order given, and
+rows in no group stay at the end. Unnamed character strings reorder
+previously defined groups.}
 
 \item{sep}{If \code{TRUE}, render groups as full-width separator rows instead
 of the default rowspan style. Only supports a single grouping column. The
@@ -45,4 +48,8 @@ lt(d) |> lt_group(~ arm, sep = TRUE)
 # Manual groups (always separator rows)
 lt(head(mtcars)) |>
   lt_group("First three" = 1:3, "Last three" = 4:6)
+
+# Manual groups from conditions on the data
+lt(head(mtcars[, 1:3])) |>
+  lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
 }

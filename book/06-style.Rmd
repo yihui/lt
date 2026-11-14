@@ -2,10 +2,10 @@
 
 The default look of an **lt** table is deliberately plain: a rule on top, a rule
 below the header, a rule at the bottom, and nothing else. It is a good canvas.
-This chapter is about the three functions that let you paint on it:
-`lt_style()` for individual cells, `lt_css()` for rules that apply to the whole
-table, and `lt_wrap()` for keeping those rules from leaking into other tables on
-the same page.
+This chapter is about the functions that let you paint on it: `lt_style()` for
+individual cells, `lt_color()` for color scales driven by values, `lt_css()` for
+rules that apply to the whole table, and `lt_wrap()` for keeping those rules from
+leaking into other tables on the same page.
 
 ## Paint a few cells {#sec:style-cells}
 
@@ -65,6 +65,43 @@ lt(d) |>
 
 By default `NA` cells show an em dash (@sec:printing explains how to change the
 text), so a pink background plus the dash is hard to miss.
+
+## Color by value {#sec:style-color}
+
+`lt_color()` shades numeric cells along a palette, so the eye can compare values
+down a column without reading every number. Give it the columns and a palette
+(a vector of colors from low to high). Each column is scaled to its own range by
+default. The colors are interpolated, so any number of steps works.
+
+```{r}
+d = data.frame(site = c("A", "B", "C", "D"), rate = c(0.12, 0.34, 0.56, 0.78))
+lt(d) |>
+  lt_format(~ rate, decimals = 2) |>
+  lt_color(~ rate, c("white", "#fc8d59"))
+```
+
+Use `domain` to fix the scale instead, for example to compare several columns on
+one shared scale, or to keep the colors stable when the data change. Values
+outside the domain get the end colors. A diverging palette with a midpoint
+usually suits values that have a meaningful zero:
+
+```{r}
+m = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3))
+lt(m) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
+```
+
+The text color is picked automatically, black or white, whichever has more
+contrast with the cell background. So a palette that ends in a dark color needs
+no extra work, and the high values below get white text:
+
+```{r}
+lt(d) |>
+  lt_format(~ rate, decimals = 2) |>
+  lt_color(~ rate, c("white", "navy"))
+```
+
+Set `contrast = FALSE` to leave the text color alone and style it yourself with
+`lt_style()`. Missing values are not colored.
 
 ## Rules for the whole table {#sec:style-css}
 

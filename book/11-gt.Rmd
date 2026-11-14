@@ -70,6 +70,8 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `tab_header(title=, subtitle=)` | `lt_header(title=, subtitle=)` |
 | `tab_spanner(label=, columns=)` | `lt_spanner(label=, columns=)` |
 | `cols_label(a = "A")` | `lt_label(a = "A")` |
+| `cols_label_with(fn = toupper)` | `lt_label(list(names(x), toupper(names(x))))` |
+| `tab_stubhead(label)` | `lt_label(<first column> = label)` |
 | `tab_footnote(footnote, cells_title("title"))` | `lt_footnote(text, "title")` |
 | `tab_footnote(footnote, cells_title("subtitle"))` | `lt_footnote(text, "subtitle")` |
 | `tab_footnote(footnote, cells_column_labels(col))` | `lt_footnote(text, "column", columns)` |
@@ -95,7 +97,8 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `fmt_percent(columns=)` | `lt_format(columns, percent = TRUE)` |
 | `fmt_currency(columns=, currency = "USD")` | `lt_format(columns, prefix = "$")` |
 | `fmt_number(sep_mark = ",")` | `lt_format(columns, big_mark = ",")` |
-| `fmt_date(columns=)` | `lt_date(columns)` |
+| `fmt_integer(columns=)` | `lt_format(columns, decimals = 0)` |
+| `fmt_date()` / `fmt_time()` / `fmt_datetime()` | `lt_date(columns, method=, locale=, options=)` |
 | `sub_missing()` / `sub_zero()` / `sub_small_vals()` | `lt_sub(missing=, zero=, small=)` |
 | `html(value)` (mark a value as raw HTML) | `I(value)` (title/labels/footnotes); `lt_html(columns)` for body cells |
 | `fmt_*()` applied to everything, by hand | automatic: `lt(auto_format = TRUE)` (@sec:auto) |
@@ -122,6 +125,9 @@ Titles, labels, and every flavor of footnote are in @tab:gt-labels.
 | `tab_style(style=, locations=)` | `lt_style(columns=, rows=, ...)` |
 | `tab_options(table.width=)` and other table-level settings | `lt_wrap(style = "width: ...")`, `lt_css(...)` |
 | `opt_css(css=)` | `lt_css(...)` |
+| `opt_row_striping()` | `lt_css(...)` (@sec:recipe-stripe) |
+| `data_color()` | `lt_color(columns, palette, domain)` (@sec:style-color) |
+| `summary_rows()` / `grand_summary_rows()` | `lt_summary(fn, cols, by, grand)` (@sec:summary) |
 ::::
 
 ### Interactivity
@@ -195,11 +201,11 @@ spelling out, drawn from porting **gsDesign2**, **gsDesign**, and **gsDesignNB**
 None of them is hard, but each is the kind of thing you only learn by tripping
 over it once, so consider this the cheaper way.
 
-### Column selection: strings or positions, not tidy-select {#sec:selection}
+### Column selection: formulas, strings, or positions, not tidy-select {#sec:selection}
 
 **gt** uses tidy-select, so unquoted column names and `tidyselect` helpers work.
-**lt** deliberately does not: it takes column names as *character strings* (or
-integer positions, or a one-sided formula). Tidy-select's ergonomic win is
+**lt** deliberately does not: it takes column names as a one-sided *formula*,
+*character strings*, or integer positions. Tidy-select's ergonomic win is
 mostly at the console. The cost is a large conceptual surface (data masking,
 quosures, injection) and painful programmatic use: the moment a column name comes
 from a variable, you are into `{{ }}` and `all_of()` machinery. For a package
@@ -210,9 +216,9 @@ whose calls are often generated from code, plain strings win, so that is what
 # gt
 tab_spanner(label = "Bounds", columns = c(alt, null))
 # lt
-lt_spanner(label = "Bounds", columns = c("alt", "null"))   # quote them
+lt_spanner(Bounds ~ alt + null)                            # a (compact) formula
+lt_spanner(label = "Bounds", columns = c("alt", "null"))   # or quote them
 lt_spanner(label = "Bounds", columns = c(4, 5))            # or use positions
-lt_spanner(Bounds ~ alt + null)                            # or a (compact) formula
 ```
 
 If you dislike quoting names, the formula interface keeps them bare:
@@ -301,14 +307,11 @@ difference from **gt**, which has only one level of row groups: `groupname_col`
 takes a single column, and multiple grouping variables are flattened into one
 combined label (joined by `row_group.sep`, default `" - "`) rather than nested.
 
-**Groups from row conditions, and controlling their order.** **gt** can define
-groups on the fly from row predicates (a `tab_row_group(label=, rows=<cond>)` per
-group) and then set their order with `row_group_order()`. **lt** has no predicate
-form: it groups only by the value of an existing column. So the port is to
-*materialize that column first*. Build a factor whose levels are the group order
-you want (e.g., with `data.table::fcase()` or nested `ifelse()`), sort the data
-by it, and group on it with `sort = FALSE` so that **lt** keeps your row order
-instead of re-sorting the labels alphabetically:
+**Groups from row conditions, and controlling their order.** **gt** defines
+groups from row predicates, `tab_row_group(label=, rows=<cond>)`, and sets their
+order with `row_group_order()`. **lt** does the same with a named argument per
+group, where the rows are a one-sided formula evaluated in the data. Groups
+appear in the order given, so there is no separate order step:
 
 ```r
 # gt: groups defined by conditions, ordered explicitly
@@ -316,23 +319,17 @@ tab_row_group(label = "Power",  rows = Metric == "Power") |>
 tab_row_group(label = "Events", rows = grepl("Events", Metric)) |>
 row_group_order(groups = c("Events", "Power"))
 
-# lt: derive an ordered factor column, then group by it
-df$Group = factor(
-  ifelse(grepl("Events", df$Metric), "Events", "Power"),
-  levels = c("Events", "Power")          # desired group order
+# lt: groups from conditions, in the order given
+lt(df) |> lt_group(
+  Events = ~ grepl("Events", Metric),
+  Power  = ~ Metric == "Power"
 )
-df = df[order(df$Group), ]
-lt(df) |> lt_group(~ Group, sep = TRUE, sort = FALSE)
 ```
 
-`sort = FALSE` is the key. By default `lt_group()` sorts rows by the grouping
-value, which would discard the factor order you set. With it off, the groups
-appear in first-seen row order, i.e., the factor-level order you sorted into.
+Rows that match no group stay at the end, without a label.
 
-If all you need is to reorder groups that already exist, you do not need a factor:
-a second `lt_group()` call with the labels in the order you want does it, and
-`lt_group("Label" = rows)` defines groups by hand from row numbers
-(@sec:group-manual).
+If all you need is to reorder groups that already exist, a second `lt_group()`
+call with the labels in the order you want does it (@sec:group-manual).
 
 ### Raw HTML: `I()` is the new `html()` and `md()` {#sec:raw-html}
 
@@ -380,15 +377,89 @@ document, e.g.:
 
 ### What lt does not have {#sec:missing}
 
-A few **gt** features have no **lt** counterpart:
+A few **gt** features have no **lt** function. Each is a short recipe in
+@sec:recipes, because the table is just data plus CSS:
 
--   `summary_rows()` and `grand_summary_rows()`: compute the summary in R and
-    append it as ordinary rows (`lt_indent()` and `lt_style()` can set them apart).
--   `data_color()`: use `lt_style(test = , class = )` with a rule from `lt_css()`
-    for conditional colors, or `lt_errorbar()`/`lt_dotplot()` for visual encoding.
--   `opt_row_striping()` and similar `opt_*()` themes: a few CSS rules, scoped to
-    one table with `lt_wrap(class = )`.
--   `tab_stubhead()`: relabel the first column with `lt_label()`.
+-   `opt_row_striping()` and similar `opt_*()` themes: a few CSS rules
+    (@sec:recipe-stripe).
+
+-   `fmt_scientific()`, `fmt_bytes()`, `fmt_markdown()`, `text_transform()`,
+    and `sub_values()`: transform the column in R before calling `lt()`
+    (@sec:recipe-transform).
+
+## Recipes for what lt does not have {#sec:recipes}
+
+Each recipe is a small helper function, not a one-off snippet, so you can paste
+it into your own package and apply it to any table. The helpers use only base R
+and the **lt** functions in the phrasebook. They share this data frame:
+
+```{r recipe-data}
+d = data.frame(
+  grp  = c("A", "A", "B", "B"),
+  item = c("x", "y", "x", "y"),
+  n    = c(10, 30, 20, 40),
+  rate = c(0.12, 0.34, 0.56, 0.78)
+)
+```
+
+### Row striping and other themes {#sec:recipe-stripe}
+
+**gt**'s `opt_row_striping()` is one CSS rule. In **lt**, write that rule once
+in your page's CSS, so it applies to every table:
+
+```r
+# gt
+gt(d) |> opt_row_striping()
+```
+
+```css
+/* lt */
+.lt-wrap tbody tr:nth-child(even) { background: #f6f6f6; }
+```
+
+The `.lt-wrap` prefix limits the rule to **lt** tables; drop it to style all
+tables on the page. The same goes for other `opt_*()` themes: write the rules as
+global CSS. Use `lt_css()` only for a rule that should apply to one table, and
+`lt_wrap(style = ...)` for a setting on the container, such as the font or width
+that `tab_options()` sets in **gt**.
+
+### Other formats: transform in R {#sec:recipe-transform}
+
+**gt** has a `fmt_*()` function for every format imaginable. **lt** only formats
+numbers (`lt_format()`) and dates (`lt_date()`); for anything else, turn the
+column into the text you want with base R or a helper such as
+`xfun::format_bytes()`. `transform_cols()` applies any function to chosen
+columns, and the formatters are ordinary functions you can name and reuse. A
+transformed column is a character column, so it is left-aligned unless you say
+otherwise with `lt_align()`.
+
+```r
+# gt
+fmt_scientific(columns = n) |> fmt_bytes(columns = size)
+```
+
+```{r recipe-transform-fn}
+transform_cols = function(d, columns, fn) {
+  d[columns] = lapply(d[columns], fn)
+  d
+}
+# formatters: numeric vector -> character vector
+fmt_sci = function(digits = 3) function(x) format(x, scientific = TRUE, digits = digits)
+sub_values = function(map) function(x) ifelse(x %in% names(map), map[x], x)  # gt: sub_values()
+```
+
+```{r recipe-transform}
+d3 = data.frame(
+  n = c(12345, 0.00123, 6.02e23), size = c(1024, 5e6, 3e9),
+  tag = c("ok", "fail", "ok")
+)
+d3 |>
+  transform_cols("n", fmt_sci()) |>
+  transform_cols("size", xfun::format_bytes) |>
+  transform_cols("tag", sub_values(c(fail = "FAILED"))) |>
+  lt() |>
+  lt_align(~ n + size, "right")
+```
 
 ## Generating a static HTML table {#sec:gt-static}
 
@@ -468,7 +539,7 @@ lt(df) |>
   lt_spanner(Probability ~ lo + hi) |>                 # gt: tab_spanner
   lt_format(~ lo + hi, decimals = 2) |>                # gt: fmt_number
   lt_header(title = "Demo", subtitle = "gt -> lt") |>  # gt: tab_header
-  lt_footnote("Interval bounds.", "spanner", "Probability") |>  # tab_footnote
+  lt_footnote("Interval bounds.", "spanner", ~ Probability) |>  # tab_footnote
   lt_note("Source: synthetic data.")                   # gt: tab_source_note
 ```
 
