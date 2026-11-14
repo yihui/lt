@@ -25,6 +25,8 @@
       text-align: left;
       &.lt-row-open { border-bottom-color: transparent; }
     }
+    /* the last group's cell ends the body: no separator above the footer */
+    tr:not(:has(~ tr th.lt-row-group)) th.lt-row-group { border-bottom: none; }
   }
   thead th {
     border-bottom: 1px solid #888;
@@ -44,14 +46,14 @@
     .lt-spanner-empty { border-bottom: none; }
   }
 
-  .lt-summary td { font-weight: bold; }
+  .lt-summary { font-weight: bold; }
   .lt-footer {
-    font-size: 0.85em;
-    .lt-summary td { border-top: 1px solid #888; }
-    .lt-footnote:first-child td { border-top: 1px solid #aaa; }
+    .lt-summary :is(td, th) { border-top: 1px solid #888; }
+    .lt-footnote:not(.lt-footnote + *) td { border-top: 1px solid #aaa; }
     .lt-source-note:first-child td { border-top: 1px dashed #aaa; }
-    .lt-source-note td { font-style: italic; }
+    .lt-source-note { font-style: italic; }
   }
+  .lt-footnote, .lt-source-note { font-size: 0.85em; }
 
   .al-r { text-align: right; }
   .al-c { text-align: center; }
