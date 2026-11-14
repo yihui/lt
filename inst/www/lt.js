@@ -558,6 +558,29 @@
         if (s.class) addTo(classMap, key, s.class, " ");
       });
 
+    // lt_color(): fill numeric cells with a palette color interpolated between
+    // the stops, over the shared domain or each column's own range, and (unless
+    // `contrast` is off) set the text to black or white for legibility.
+    const hex = (c, i) => parseInt(c.slice(i, i + 2), 16),
+          // WCAG relative luminance of an [r, g, b] triple (0-255)
+          lin = u => (u /= 255) <= 0.04045 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4,
+          lum = rgb => 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+    for (const op of (spec.ops || []).filter(op => op.type === "color"))
+      for (const c of [].concat(op.columns)) {
+        const nums = (data[c] || []).filter(isNum), P = op.palette,
+              [lo, hi] = op.domain || [nums.reduce((a, b) => Math.min(a, b), Infinity), nums.reduce((a, b) => Math.max(a, b), -Infinity)];
+        eachLoc(null, [c], (key, c, r) => {
+          const v = data[c][r - 1];
+          if (!isNum(v)) return;
+          const p = (P.length - 1) * (hi > lo ? Math.min(1, Math.max(0, (v - lo) / (hi - lo))) : 0),
+                i = Math.min(Math.floor(p), P.length - 2), f = p - i,
+                rgb = [1, 3, 5].map(j => Math.round(hex(P[i], j) * (1 - f) + hex(P[i + 1], j) * f)),
+                // white text wins once it out-contrasts black (luminance 0.179)
+                text = op.contrast === false ? "" : `;color:${lum(rgb) < 0.179 ? "#fff" : "#000"}`;
+          addTo(styleMap, key, `background:rgb(${rgb})${text}`, ";");
+        });
+      }
+
     // <colgroup>: leading empty <col>s for rowspan group columns, aligning
     // widths with body columns (offset nGrp).
     if (colWidths && colWidths.some(w => w)) {

@@ -20,6 +20,7 @@ BugReports: https://github.com/yihui/lt/issues
 Depends: R (>= 4.1.0)
 Encoding: UTF-8
 Imports:
+    grDevices,
     xfun (>= 0.62)
 Suggests:
     chromote,

@@ -14,6 +14,8 @@
 
 - Added `lt_input()` and `lt_update()`: an editable table as a Shiny input. Body cells of the chosen columns can be edited in the browser, and `input[[id]]` is the edited data frame.
 
+- Added `lt_color()` to fill numeric cells with colors from a continuous scale, like `gt::data_color()`: give a `palette` (two or more colors) and optionally a shared `domain`; each value gets a color interpolated along the palette, and the text turns black or white for legibility (`contrast = FALSE` turns this off).
+
 - With `auto_format = TRUE`, `lt()` shows date columns as `YYYY-MM-DD` and date-time columns as `YYYY-MM-DD HH:MM:SS` in the local time zone by default; use `lt_date()` to format them differently. In `lt_interactive()`, these columns sort chronologically and `filter = "auto"` gives them a range slider.
 
 - `lt_interactive(filter = "auto")` picks each column's filter from its data: a range slider for numbers, a checklist for text with few distinct values, and a plain box otherwise.

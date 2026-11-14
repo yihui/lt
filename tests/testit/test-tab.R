@@ -104,6 +104,20 @@ assert("lt_style() builds CSS from arguments", {
   (has_match(css, "font-weight:bold.*font-style:italic.*color:red.*background:#fff"))
 })
 
+assert("lt_color() normalizes the palette to hex codes", {
+  o = lt_color(x, "a", c("white", "red"), domain = c(0, 10))$ops[[1]]
+  (o$type %==% "color")
+  (as.vector(o$palette) %==% c("#FFFFFF", "#FF0000"))
+  (as.vector(o$domain) %==% c(0, 10))
+  # one color: white is the low end; no domain is recorded unless given
+  o = lt_color(x, "a", "blue")$ops[[1]]
+  (as.vector(o$palette) %==% c("#FFFFFF", "#0000FF"))
+  (is.null(o$domain))
+  # contrast is recorded only when turned off
+  (is.null(o$contrast))
+  (lt_color(x, "a", contrast = FALSE)$ops[[1]]$contrast %==% FALSE)
+})
+
 assert("lt_style() with extra CSS properties", {
   s = lt_style(x, "a", borderLeft = "1px solid")
   (has_match(s$ops[[1]]$css, "border-left:1px solid"))

@@ -8,7 +8,7 @@ site:
       contents: [lt_format, lt_date, lt_label, lt_html, lt_sub, lt_align, lt_width]
     Style tables:
       desc: Style cells and wrap or theme the table with CSS.
-      contents: [lt_style, lt_css, lt_wrap]
+      contents: [lt_style, lt_color, lt_css, lt_wrap]
     Inline graphics:
       desc: Draw error bars, sparklines, and dot plots inside cells.
       contents: [lt_errorbar, lt_sparkline, lt_dotplot]

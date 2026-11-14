@@ -498,6 +498,48 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
     class = class, css = css)
 }
 
+#' Color cells by value
+#'
+#' Fill the background of numeric cells with a color from a continuous scale,
+#' like `gt::data_color()`. Each value is mapped to a position between the low
+#' and high end of the domain, and its color is interpolated between the
+#' palette colors. Cells that are not finite numbers (such as `NA`) are left
+#' unfilled.
+#'
+#' @inheritParams lt_align
+#' @param columns Character names, integer positions, or a one-sided formula
+#'   (see [lt_align()]) of the numeric columns to color.
+#' @param palette Two or more colors (names or hex codes) spread evenly over the
+#'   domain, from low to high. A single color is used as the high end, with
+#'   white as the low end.
+#' @param domain A numeric vector `c(low, high)`: the values that get the first
+#'   and last palette colors (values outside are clamped). If `NULL` (the
+#'   default), each column uses its own range; give a domain to share one scale
+#'   across columns.
+#' @param contrast If `TRUE` (the default), set the text color of each filled
+#'   cell to black or white, whichever is more legible on its background. Use
+#'   `FALSE` to leave the text color alone and set it yourself with [lt_style()]
+#'   or [lt_css()].
+#' @return `x` with the coloring recorded.
+#' @export
+#' @examples
+#' lt(head(mtcars)) |> lt_color(~ mpg + hp)
+#' # a dark end of the palette gets white text automatically
+#' lt(head(mtcars)) |> lt_color(~ mpg + hp, c("white", "navy"))
+#' # one shared diverging scale
+#' d = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3))
+#' lt(d) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
+lt_color = function(
+  x, columns, palette = c('white', '#fc8d59'), domain = NULL, contrast = TRUE
+) {
+  columns = f_cols(columns, x$data)
+  if (length(palette) == 1) palette = c('white', palette)
+  pal = grDevices::rgb(t(grDevices::col2rgb(palette)), maxColorValue = 255)
+  add_op(x, 'color', columns = I(as.character(columns)), palette = I(pal),
+    domain = if (!is.null(domain)) I(as.numeric(domain)),
+    contrast = if (!isTRUE(contrast)) FALSE)
+}
+
 #' Set column and table widths
 #'
 #' @inheritParams lt_align

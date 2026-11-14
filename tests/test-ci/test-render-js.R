@@ -111,3 +111,30 @@ assert("lt_css() rules are scoped inside the table wrapper", {
   (has_match(html, I("</table><style>@scope{:scope{.hi { color: red }}}</style></div>")))
   (has_match(html, !I("<style>.lt-table")))
 })
+
+assert("lt_color() interpolates the palette; NA is unfilled and values are clamped", {
+  html = build(list(
+    data = list(x = c(0, 5, 10, NA, 20)),
+    ops = list(list(type = "color", columns = list("x"),
+      palette = list("#000000", "#ffffff"), domain = list(0, 10)))
+  ))
+  (has_match(html, I('style="background:rgb(0,0,0);color:#fff">0')))
+  (has_match(html, I('style="background:rgb(128,128,128);color:#000">5')))
+  (has_match(html, I('style="background:rgb(255,255,255);color:#000">20')))
+  (has_match(html, !I('background:rgb(255,255,255);color:#000">—')))
+  # without a domain, the column's own range is used
+  html = build(list(
+    data = list(x = c(1, 3)),
+    ops = list(list(type = "color", columns = list("x"),
+      palette = list("#000000", "#ffffff")))
+  ))
+  (has_match(html, I('background:rgb(255,255,255);color:#000">3')))
+  # contrast = FALSE leaves the text color alone
+  html = build(list(
+    data = list(x = c(1, 3)),
+    ops = list(list(type = "color", columns = list("x"),
+      palette = list("#000000", "#ffffff"), contrast = FALSE))
+  ))
+  (has_match(html, I('style="background:rgb(0,0,0)">1')))
+  (has_match(html, !I("color:#")))
+})
