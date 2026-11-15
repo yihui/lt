@@ -1,6 +1,6 @@
 # CHANGES IN lt VERSION 0.6
 
-- New book at <https://pkg.yihui.org/lt/book/> covering every feature, from the first table to Shiny, export, and the JavaScript runtime. The long examples `01-lt`, `02-lt-js`, and `03-gt` are now short overviews that point to it, and 36 new one-feature examples (`04-*` to `39-*`) cover the functions one at a time.
+- New book at <https://pkg.yihui.org/lt/book/> covering every feature, from the first table to Shiny, export, and the JavaScript runtime. The long examples `01-lt`, `02-lt-js`, and `03-gt` are now short overviews that point to it, and new one-feature examples cover the functions one at a time.
 
 - Added `lt_viewer()`, a data viewer for exploring a data frame: an interactive table with the data expression as the title, each column's type and profile, filters, and a column-visibility menu (thanks, @keaven, #56).
 
