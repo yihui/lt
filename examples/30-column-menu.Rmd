@@ -6,8 +6,8 @@ title: Column visibility menu
 
 ```{r}
 library(lt)
-d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
+d = penguins[, c("species", "island", "bill_len", "body_mass", "sex")]
 lt(d) |>
-  lt_interactive(hide = list(label = "Columns", columns = ~ hp + wt),
+  lt_interactive(hide = list(label = "Columns", columns = ~ island + sex),
     pager = 5, filter = FALSE)
 ```

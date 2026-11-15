@@ -96,5 +96,15 @@ table. Use \code{options(lt.share_size = Inf)} to turn sharing off.
 }
 
 \examples{
-lt(head(mtcars[, 1:4]))
+d = data.frame(
+  total_sales = c(1234567.891, 98765.4321),
+  growth_pct = c(0.1234, 0.0567),
+  start = as.Date(c("2024-01-15", "2024-06-30"))
+)
+# numbers, percentages, and column names are cleaned up for display
+lt(d)
+# raw column names and values
+lt(d, auto_label = FALSE, auto_format = FALSE)
+# a type tag under each column label
+lt(d, show_types = TRUE)
 }

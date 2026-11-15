@@ -38,6 +38,13 @@ replaced by \code{small_text}.}
 Replace \code{NA}, zero, or small values with display text.
 }
 \examples{
-d = data.frame(x = c(1, 0, NA, 0.001))
-lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.01, small_text = "<0.01")
+d = data.frame(
+  metric = c("HR", "p-value", "Events", "Rate"),
+  value = c(0.62, 0.0003, 0, NA),
+  other = c(NA, 0, 5, 1)
+)
+# all columns: custom text for NA, zero, and tiny values
+lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.001, small_text = "<0.001")
+# only chosen columns
+lt(d) |> lt_sub(~ value, missing = "n/a")
 }

@@ -57,8 +57,14 @@ the local timezone. For example, \code{2024-01-15} will display as
 \examples{
 d = data.frame(
   event = c("Launch", "Update"),
-  date = as.Date(c("2024-01-15", "2024-06-30"))
+  date = as.Date(c("2024-01-15", "2024-06-30")),
+  time = as.POSIXct(c("2024-01-15 09:30:00", "2024-06-30 17:45:00"), tz = "UTC")
 )
-lt(d) |> lt_date(~ date)
-lt(d) |> lt_date(~ date, options = list(year = "numeric", month = "short"))
+# locale and Intl.DateTimeFormat options (timeZone = "UTC" keeps the date as
+# is), or call a JavaScript Date method
+lt(d) |>
+  lt_date(~ date, locale = "fr-FR", options = list(
+    weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
+  )) |>
+  lt_date(~ time, method = "toISOString")
 }

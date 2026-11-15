@@ -20,7 +20,8 @@ lt_header(x, title = NULL, subtitle = NULL)
 Add a title and subtitle
 }
 \examples{
-lt(head(mtcars)) |> lt_header("Motor Trend Cars", "First 6 rows")
-# raw HTML title
-lt(head(mtcars)) |> lt_header(I("<em>Motor Trend</em> Cars"))
+d = mtcars[1:3, 1:3]
+lt(d) |> lt_header("Motor Trend Cars", "First 3 rows")
+# a title only; raw HTML (wrap in I())
+lt(d) |> lt_header(I("<em>Motor Trend</em> Cars"))
 }

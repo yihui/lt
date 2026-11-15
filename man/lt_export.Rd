@@ -97,26 +97,29 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 }
 
 \examples{
-tbl = lt(head(mtcars))
+tbl = lt(mtcars[1:3, 1:3]) |> lt_header("Cars")
 
 # HTML with the JavaScript spec (table built by lt.js when viewed)
-f1 = tempfile(fileext = '.html')
-lt_export(tbl, f1, method = 'raw')  # file output
+f1 = tempfile(fileext = ".html")
+lt_export(tbl, f1, method = "raw")
 
-# Bake a static <table> (needs Node.js or a headless browser).
+# a static <table> (needs Node.js or a headless browser), returned as a
+# string: just the fragment, without the lt.css stylesheet, pretty-printed
 if (lt:::can_bake())
-  lt_export(tbl, NA, method = 'auto', fragment = TRUE, css = FALSE, tidy = TRUE)
+  lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 
-# PDF / PNG are rendered in a headless browser and cropped to the table.
-f2 = tempfile(fileext = '.pdf')
-f3 = tempfile(fileext = '.png')
+# PDF and PNG are rendered in a headless browser and cropped to the table
+f2 = tempfile(fileext = ".pdf")
+f3 = tempfile(fileext = ".png")
 if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f2)
-  lt_export(tbl, f3, width = 400)
+  # the table's width in pixels, more padding, no cropping
+  lt_export(tbl, f3, width = 400, padding = c(16, 24))
+  lt_export(tbl, f3, crop = FALSE)
 }
 
-# The table's text as CSV or RTF.
-f4 = tempfile(fileext = '.rtf')
+# the table's text as CSV or RTF
+f4 = tempfile(fileext = ".rtf")
 if (lt:::has_node()) lt_export(tbl, f4)
 
 unlink(c(f1, f2, f3, f4))

@@ -2,10 +2,11 @@
 title: Title and subtitle
 ---
 
-`lt_header()` puts a title, and optionally a subtitle, above the table.
+`lt_header()` puts a title, and optionally a subtitle, above the table. Wrap text in `I()` for raw HTML.
 
 ```{r}
 library(lt)
-lt(head(iris)) |>
-  lt_header("Iris Measurements", "First six observations")
+d = penguins[1:3, c(1, 3, 6)]
+lt(d) |> lt_header("Palmer Penguins", "First three observations")
+lt(d) |> lt_header(I("<em>Palmer</em> Penguins"))
 ```

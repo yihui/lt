@@ -2,10 +2,11 @@
 title: Source notes
 ---
 
-`lt_note()` adds an unnumbered note to the footer, below any footnotes. It is the place for sources and caveats.
+`lt_note()` adds an unnumbered note to the footer, below any footnotes. It is the place for sources and caveats; add as many as you like, and wrap text in `I()` for raw HTML.
 
 ```{r}
 library(lt)
-lt(head(mtcars[, 1:5])) |>
-  lt_note("Data from the 1974 Motor Trend US magazine.")
+lt(penguins[1:3, 1:5]) |>
+  lt_note("Data collected at Palmer Station, Antarctica.") |>
+  lt_note(I("<em>bill_len</em>: bill length in mm."))
 ```

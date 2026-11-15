@@ -1,0 +1,13 @@
+---
+title: Coloring cells by value
+---
+
+`lt_color()` fills numeric cells from a color scale. Each column uses its own range unless you give a shared `domain`; text turns white on dark fills (`contrast = FALSE` turns that off).
+
+```{r}
+library(lt)
+d = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3), c = c(10, 20, NA))
+lt(d) |> lt_color(~ a + c)
+lt(d) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
+lt(d) |> lt_color(~ a, c("white", "navy"), contrast = FALSE)
+```

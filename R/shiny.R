@@ -24,8 +24,12 @@
 #' @return An `html_dependency` object.
 #' @export
 #' @examples
-#' if (requireNamespace('htmltools', quietly = TRUE))
-#'   lt_dependency(interactive = TRUE)
+#' if (requireNamespace("htmltools", quietly = TRUE)) {
+#'   # the core runtime only
+#'   lt_dependency()
+#'   # with interactivity and inline plots
+#'   lt_dependency(interactive = TRUE, plot = TRUE)
+#' }
 lt_dependency = function(
   interactive = FALSE, plot = FALSE, shiny = FALSE, input = FALSE
 )
@@ -83,17 +87,21 @@ lt_dependency = function(
 #' @export
 #' @examples
 #' if (interactive()) {
-#' library(shiny)
-#' ui = fluidPage(
-#'   lt_output("tbl"),
-#'   lt_input("m", head(mtcars[, 1:3]), "Edit the cells:"),
-#'   verbatimTextOutput("out")
-#' )
-#' server = function(input, output) {
-#'   output$tbl = render_lt(lt(head(mtcars)) |> lt_header("Motor Trend"))
-#'   output$out = renderPrint(input$m)
-#' }
-#' shinyApp(ui, server)
+#'   library(shiny)
+#'   d = mtcars[1:6, 1:3]
+#'   ui = fluidPage(
+#'     lt_output("tbl"),
+#'     # an editable table; only some columns can be edited
+#'     lt_input("m", d, "Edit the cells:", columns = ~ mpg + cyl),
+#'     actionButton("reset", "Reset"),
+#'     verbatimTextOutput("out")
+#'   )
+#'   server = function(input, output, session) {
+#'     output$tbl = render_lt(lt(d) |> lt_header("Motor Trend"))
+#'     output$out = renderPrint(input$m)  # the edited data frame
+#'     observeEvent(input$reset, lt_update(session, "m", d))
+#'   }
+#'   shinyApp(ui, server)
 #' }
 # Ship the graphics and interactivity modules too: render_lt()'s spec is built
 # at render time, so the UI can't know whether it has a plot cell or

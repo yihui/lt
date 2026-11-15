@@ -23,11 +23,12 @@ convenient when the labels are computed programmatically, e.g.
 Override column headers without modifying the underlying data frame.
 }
 \examples{
-lt(head(mtcars)) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
-# raw HTML label (wrap in I())
-lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
-# a single named list or vector of labels
-lt(head(mtcars)) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
-# a single list(names, labels) of two parallel vectors
-lt(head(mtcars)) |> lt_label(list(c("mpg", "cyl"), c("Miles/Gallon", "Cylinders")))
+d = mtcars[1:3, 1:3]
+lt(d) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
+# raw HTML (wrap in I())
+lt(d) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
+# a named vector or list, handy when labels are computed
+lt(d) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
+# a list of two parallel vectors: names and labels
+lt(d) |> lt_label(list(c("mpg", "cyl"), c("Miles/Gallon", "Cylinders")))
 }

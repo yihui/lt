@@ -6,9 +6,10 @@
 #' @return `x` with the header recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_header("Motor Trend Cars", "First 6 rows")
-#' # raw HTML title
-#' lt(head(mtcars)) |> lt_header(I("<em>Motor Trend</em> Cars"))
+#' d = mtcars[1:3, 1:3]
+#' lt(d) |> lt_header("Motor Trend Cars", "First 3 rows")
+#' # a title only; raw HTML (wrap in I())
+#' lt(d) |> lt_header(I("<em>Motor Trend</em> Cars"))
 lt_header = function(x, title = NULL, subtitle = NULL) {
   x$header = drop_null(list(title = title, subtitle = subtitle))
   x
@@ -35,13 +36,16 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
 #' @return `x` with the spanner recorded.
 #' @export
 #' @examples
-#' tbl = lt(head(iris))
-#' # Explicit spanner
+#' tbl = lt(iris[1:3, ])
+#' # a formula gives the label (LHS) and the columns (RHS)
 #' tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
-#' # Auto-infer from column names
+#' # or the label and the columns separately; raw HTML label (wrap in I())
+#' tbl |> lt_spanner(I("<em>Petal</em>"), ~ Petal.Length + Petal.Width)
+#' # infer spanners from shared prefixes
 #' tbl |> lt_spanner()
-#' # raw HTML label (wrap in I())
-#' tbl |> lt_spanner(I("<em>Sepal</em>"), ~ Sepal.Length + Sepal.Width)
+#' # ... split at another separator
+#' d = data.frame(`Sales:Q1` = 1:2, `Sales:Q2` = 3:4, `Cost:Q1` = 5:6, check.names = FALSE)
+#' lt(d) |> lt_spanner(sep = ":")
 lt_spanner = function(x, label, columns, sep = '[._]') {
   if (missing(label) && missing(columns)) {
     x$auto_span = if (identical(sep, '[._]')) TRUE else sep
@@ -82,21 +86,24 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' @return `x` with the row groups recorded.
 #' @export
 #' @examples
-#' # Group by a column (rowspan, default)
-#' d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
-#'                stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
+#' d = data.frame(
+#'   arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+#'   stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8)
+#' )
+#' # group by a column: spanning cells on the left
 #' lt(d) |> lt_group(~ arm)
-#'
-#' # Separator-row style
+#' # full-width separator rows instead
 #' lt(d) |> lt_group(~ arm, sep = TRUE)
+#' # keep the original row order rather than sorting by group
+#' lt(d[c(3, 1, 4, 2), ]) |> lt_group(~ arm, sort = FALSE)
 #'
-#' # Manual groups (always separator rows)
-#' lt(head(mtcars)) |>
-#'   lt_group("First three" = 1:3, "Last three" = 4:6)
-#'
-#' # Manual groups from conditions on the data
-#' lt(head(mtcars[, 1:3])) |>
-#'   lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
+#' # manual groups: name the rows (always separator rows)
+#' tbl = lt(mtcars[1:6, 1:3])
+#' tbl |> lt_group("First three" = 1:3, "Last three" = 4:6)
+#' # ... or give a condition on the data
+#' tbl |> lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
+#' # unnamed labels reorder the groups
+#' lt(d) |> lt_group(~ arm, sep = TRUE) |> lt_group("Treatment", "Placebo")
 lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
   args = list(...)
   nms = names(args)
@@ -147,29 +154,28 @@ group_rows = function(rows, data) {
 #' @return `x` with the footnote recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |>
-#'   lt_footnote("Source: 1974 Motor Trend US magazine.", "title")
-#' # raw HTML footnote (wrap in I())
-#' lt(head(mtcars)) |>
-#'   lt_footnote(I("See <a href='#'>docs</a>."), "title")
-#'
-#' # a footnote for each of the six locations
 #' d = data.frame(
 #'   Arm   = c("Treatment", "Treatment", "Control", "Control"),
 #'   Stat  = c("n", "Mean", "n", "Mean"),
 #'   Value = c(31, 6.8, 30, 4.2),
 #'   SE    = c(NA, 0.42, NA, 0.38)
 #' )
-#' lt(d) |>
+#' tbl = lt(d) |>
 #'   lt_group(~ Arm) |>
-#'   lt_header(title = "Study Results", subtitle = "Two arms") |>
-#'   lt_spanner(Summary ~ Value + SE) |>
+#'   lt_header("Study Results", "Two arms") |>
+#'   lt_spanner(Summary ~ Value + SE)
+#' # one footnote for each of the six locations
+#' tbl |>
 #'   lt_footnote("Source: simulated trial data.", "title") |>
 #'   lt_footnote("Intention-to-treat population.", "subtitle") |>
 #'   lt_footnote("Standard error of the mean.", "column", ~ SE) |>
 #'   lt_footnote("Per-arm summary statistics.", "spanner", ~ Summary) |>
 #'   lt_footnote("Received active drug.", "group", ~ Treatment) |>
-#'   lt_footnote("SE undefined for counts.", "body", ~ SE, rows = c(1, 3))
+#'   lt_footnote("SE is undefined for counts.", "body", ~ SE, rows = c(1, 3))
+#' # match groups by prefix, or all of them; raw HTML text (wrap in I())
+#' tbl |>
+#'   lt_footnote("Starts with T.", "group", "T", match = "starts_with") |>
+#'   lt_footnote(I("See <a href='#'>docs</a>."), "group", match = "all")
 lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL) {
   columns = f_cols(columns, x$data)
   loc = switch(where,
@@ -204,9 +210,11 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
 #' @return `x` with the note recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_note("CI = confidence interval.")
-#' # raw HTML note (wrap in I())
-#' lt(head(mtcars)) |> lt_note(I("CI = <em>confidence interval</em>."))
+#' d = mtcars[1:3, 1:4]
+#' # several notes; raw HTML (wrap in I())
+#' lt(d) |>
+#'   lt_note("Data from the 1974 Motor Trend US magazine.") |>
+#'   lt_note(I("<em>mpg</em>: miles per gallon."))
 lt_note = function(x, text) {
   x$notes = c(x$notes, list(text))
   x
@@ -228,7 +236,11 @@ lt_note = function(x, text) {
 #' @return `x` with the alignment recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_align(~ cyl + gear, "center")
+#' d = mtcars[1:3, 1:4]
+#' # numbers align right by default; select columns by name or by a predicate
+#' lt(d) |>
+#'   lt_align(~ cyl, "center") |>
+#'   lt_align(~ startsWith(., "d"), "left")
 lt_align = function(x, columns, align = c('left', 'center', 'right')) {
   columns = f_cols(columns, x$data)
   align = match.arg(align)
@@ -260,10 +272,23 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #' @return `x` with the formatting recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_format(~ mpg + wt, decimals = 1, big_mark = ",")
-#' d = data.frame(Item = c("A", "B"), Price = c(1234.5, 678.9))
-#' lt(d) |> lt_format(~ Price, decimals = 2, big_mark = ",", prefix = "$")
-#' lt(d) |> lt_format(~ Price, sig_digits = 3)
+#' d = data.frame(
+#'   item = c("A", "B", "C"),
+#'   price = c(1234567.891, 98765.432, 4321.0987),
+#'   share = c(0.1234, 0.0567, 0.8199),
+#'   rate = c(12.34, 5.67, 81.99),
+#'   mass = c(123456.7, 98765.43, 1234.567),
+#'   weight = c(1250, 340.5, 89.12)
+#' )
+#' lt(d) |>
+#'   # decimals, a thousands mark, and a prefix
+#'   lt_format(~ price, decimals = 2, big_mark = ",", prefix = "$") |>
+#'   # percent: values are multiplied by 100; "%" only appends the sign
+#'   lt_format(~ share, decimals = 1, percent = TRUE) |>
+#'   lt_format(~ rate, decimals = 1, percent = "%") |>
+#'   # significant digits: 123456.7 becomes 123000
+#'   lt_format(~ mass, sig_digits = 3) |>
+#'   lt_format(~ weight, decimals = 1, suffix = " kg")
 # TODO: potential future params:
 #   decimal_mark - swap "." for "," (European locales, pairs with big_mark = ".")
 #   scale - multiply by a factor before display (e.g., 1e-6 for millions)
@@ -320,10 +345,16 @@ lt_format = function(
 #' @examples
 #' d = data.frame(
 #'   event = c("Launch", "Update"),
-#'   date = as.Date(c("2024-01-15", "2024-06-30"))
+#'   date = as.Date(c("2024-01-15", "2024-06-30")),
+#'   time = as.POSIXct(c("2024-01-15 09:30:00", "2024-06-30 17:45:00"), tz = "UTC")
 #' )
-#' lt(d) |> lt_date(~ date)
-#' lt(d) |> lt_date(~ date, options = list(year = "numeric", month = "short"))
+#' # locale and Intl.DateTimeFormat options (timeZone = "UTC" keeps the date as
+#' # is), or call a JavaScript Date method
+#' lt(d) |>
+#'   lt_date(~ date, locale = "fr-FR", options = list(
+#'     weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
+#'   )) |>
+#'   lt_date(~ time, method = "toISOString")
 lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
   cols = as.character(f_cols(columns, x$data))
   add_op(
@@ -346,13 +377,14 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #' @return `x` with the column label overrides recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
-#' # raw HTML label (wrap in I())
-#' lt(head(mtcars)) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
-#' # a single named list or vector of labels
-#' lt(head(mtcars)) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
-#' # a single list(names, labels) of two parallel vectors
-#' lt(head(mtcars)) |> lt_label(list(c("mpg", "cyl"), c("Miles/Gallon", "Cylinders")))
+#' d = mtcars[1:3, 1:3]
+#' lt(d) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
+#' # raw HTML (wrap in I())
+#' lt(d) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
+#' # a named vector or list, handy when labels are computed
+#' lt(d) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
+#' # a list of two parallel vectors: names and labels
+#' lt(d) |> lt_label(list(c("mpg", "cyl"), c("Miles/Gallon", "Cylinders")))
 lt_label = function(x, ...) {
   add_op(x, 'label', labels = name_value_args(...))
 }
@@ -377,9 +409,15 @@ lt_label = function(x, ...) {
 #' @export
 #' @examples
 #' d = data.frame(
-#'   name = c("<a href='#a'>A</a>", "<a href='#b'>B</a>"), n = 1:2
+#'   name = c("<a href='#a'>A</a>", "<a href='#b'>B</a>"),
+#'   note = c("<b>bold</b>", "<i>italic</i>")
 #' )
+#' # escaped by default
+#' lt(d)
+#' # one column as raw HTML
 #' lt(d) |> lt_html(~ name)
+#' # all columns as raw HTML
+#' lt(d) |> lt_html()
 lt_html = function(x, columns) {
   x$html_cols = if (missing(columns)) TRUE else
     I(as.character(f_cols(columns, x$data)))
@@ -405,8 +443,15 @@ lt_html = function(x, columns) {
 #' @return `x` with the substitution recorded.
 #' @export
 #' @examples
-#' d = data.frame(x = c(1, 0, NA, 0.001))
-#' lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.01, small_text = "<0.01")
+#' d = data.frame(
+#'   metric = c("HR", "p-value", "Events", "Rate"),
+#'   value = c(0.62, 0.0003, 0, NA),
+#'   other = c(NA, 0, 5, 1)
+#' )
+#' # all columns: custom text for NA, zero, and tiny values
+#' lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.001, small_text = "<0.001")
+#' # only chosen columns
+#' lt(d) |> lt_sub(~ value, missing = "n/a")
 lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
                   small = NULL, small_text = NULL) {
   columns = f_cols(columns, x$data)
@@ -426,8 +471,14 @@ lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
 #' @return `x` with the indentation recorded.
 #' @export
 #' @examples
-#' d = data.frame(label = c("Overall", "Male", "Female"), n = c(100, 55, 45))
-#' lt(d) |> lt_indent(2:3)
+#' d = data.frame(
+#'   label = c("Any AE", "Cardiac", "Tachycardia", "GI", "Nausea"),
+#'   n = c(45, 30, 15, 20, 12)
+#' )
+#' # one level
+#' lt(d) |> lt_indent(c(2, 4))
+#' # nested: rows by position, each with its level
+#' lt(d) |> lt_indent(c(2, 4), level = 1) |> lt_indent(c(3, 5), level = 2)
 lt_indent = function(x, rows, level = 1) {
   add_op(x, 'indent', rows = I(as.integer(rows)), level = as.integer(level))
 }
@@ -453,8 +504,17 @@ lt_indent = function(x, rows, level = 1) {
 #' @return `x` with the merge recorded.
 #' @export
 #' @examples
-#' d = data.frame(stat = c("Mean", "SD"), value = c(4.2, 1.1), ci = c("(2.0, 6.4)", "(0.5, 1.7)"))
-#' lt(d) |> lt_merge(~ value + ci, pattern = "{1} {2}")
+#' d = data.frame(
+#'   stat = c("Mean", "SD", "Median"),
+#'   value = c(4.2, 1.1, 3.9),
+#'   lo = c(2.0, 0.5, NA),
+#'   hi = c(6.4, 1.7, NA)
+#' )
+#' # drop the parenthesized part when a value is missing; the source columns
+#' # (all but the first) are hidden
+#' lt(d) |> lt_merge(~ value + lo + hi, pattern = "{1}<< ({2}, {3})>>")
+#' # keep the source columns visible
+#' lt(d) |> lt_merge(~ value + lo, hide = FALSE)
 lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
   columns = as.character(f_cols(columns, x$data))
   if (length(columns) < 2) stop('lt_merge() requires at least 2 columns')
@@ -487,11 +547,16 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @return `x` with the style recorded.
 #' @export
 #' @examples
-#' tbl = lt(head(mtcars))
-#' tbl |>
-#'   lt_style(~ mpg, rows = 1L, bold = TRUE, borderBottom = "2px solid red")
-#' tbl |>
-#'   lt_style(~ mpg, test = "v => v > 20", class = "high") |>
+#' d = mtcars[1:4, 1:3]
+#' # inline styles on chosen rows and columns, plus any CSS property
+#' lt(d) |>
+#'   lt_style(~ mpg, rows = 1, bold = TRUE, italic = TRUE, color = "#06c") |>
+#'   lt_style(~ cyl, bg = "#ffd", borderBottom = "2px solid red")
+#' # all cells, when columns is omitted
+#' lt(d) |> lt_style(color = "gray")
+#' # a JavaScript test picks the cells; a class keeps the rules in lt_css()
+#' lt(d) |>
+#'   lt_style(~ mpg, test = "v => v > 21", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc"))
 lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
                     bold = NULL, italic = NULL, color = NULL, bg = NULL, ...) {
@@ -539,12 +604,14 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
 #' @return `x` with the coloring recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_color(~ mpg + hp)
-#' # a dark end of the palette gets white text automatically
-#' lt(head(mtcars)) |> lt_color(~ mpg + hp, c("white", "navy"))
-#' # one shared diverging scale
-#' d = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3))
-#' lt(d) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
+#' d = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3), c = c(10, 20, NA))
+#' # one shared diverging scale for a and b; c has its own range (NA stays
+#' # unfilled), and a single color is the high end
+#' lt(d) |>
+#'   lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3)) |>
+#'   lt_color(~ c, "navy")
+#' # dark fills get white text automatically; contrast = FALSE turns that off
+#' lt(d) |> lt_color(~ a, c("white", "navy"), contrast = FALSE)
 lt_color = function(
   x, columns, palette = c('white', '#fc8d59'), domain = NULL, contrast = TRUE
 ) {
@@ -603,14 +670,18 @@ lt_color = function(
 #'   grp = c("A", "A", "B", "B"), item = c("x", "y", "x", "y"),
 #'   n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
 #' )
-#' # a function (or its name) of a column, for every numeric column
-#' lt(d) |> lt_summary("sum", by = ~ grp)
+#' # a function (or its name) for every numeric column, after each group + total
+#' lt(d) |> lt_group(~ grp, sep = TRUE) |> lt_summary("sum", by = ~ grp)
 #' # a grand summary only, with a different function per column
 #' lt(d) |> lt_summary(list(n = sum, rate = "mean"))
+#' # chosen columns, custom labels, shown in a chosen column; no grand row
+#' lt(d) |> lt_summary(
+#'   "max", ~ n, by = ~ grp, label = "Peak", grand = FALSE, label_col = "item"
+#' )
 #' # a function of the whole data frame, for a weighted mean
 #' total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 #' lt(d) |>
-#'   lt_summary(data_fn = total, by = ~ grp) |>
+#'   lt_summary(data_fn = total, by = ~ grp, grand = "All") |>
 #'   lt_group(~ grp, sep = TRUE) |>
 #'   lt_format(~ rate, percent = TRUE, decimals = 1)
 lt_summary = function(
@@ -692,11 +763,12 @@ col_summary_fn = function(d, fn, cols = NULL) {
 #' @return `x` with the widths recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
-#' # set the whole-table width, optionally with column widths
-#' lt(head(mtcars)) |> lt_width("80%", mpg = "100px")
-#' # a single list(names, widths) of two parallel vectors
-#' lt(head(mtcars)) |> lt_width(list(c("mpg", "cyl"), c("100px", "50px")))
+#' d = mtcars[1:3, 1:3]
+#' # an unnamed value sets the whole table's width; named ones set columns (any
+#' # CSS unit)
+#' lt(d) |> lt_width("60%", mpg = "40%", cyl = "5em")
+#' # a list of two parallel vectors: names and widths
+#' lt(d) |> lt_width(list(c("mpg", "cyl"), c("8em", "50px")))
 lt_width = function(x, ...) {
   args = name_value_args(...)
   nms = names(args)
@@ -720,7 +792,11 @@ lt_width = function(x, ...) {
 #' @return `x` with the column move recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_move(~ gear + carb, after = "mpg")
+#' tbl = lt(mtcars[1:3, 1:5])
+#' # after a column (by name or position)
+#' tbl |> lt_move(~ drat + disp, after = "mpg")
+#' # to the front
+#' tbl |> lt_move(~ disp, after = NULL)
 lt_move = function(x, columns, after = NULL) {
   columns = f_cols(columns, x$data)
   if (is.numeric(after)) after = names(x$data)[after]
@@ -739,7 +815,10 @@ lt_move = function(x, columns, after = NULL) {
 #' @return `x` with the hidden columns recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_hide(~ gear + carb)
+#' tbl = lt(mtcars[1:3, 1:5])
+#' tbl |> lt_hide(~ drat + disp)
+#' # the hidden data still reaches the row detail
+#' tbl |> lt_hide(~ drat + disp) |> lt_interactive(detail = ~ drat + disp)
 lt_hide = function(x, columns) {
   columns = f_cols(columns, x$data)
   add_op(x, 'hide', columns = I(as.character(columns)))
@@ -873,15 +952,16 @@ plot_setup = function(x, into, src, shown, hide) {
 #'   term = c("A", "B", "C"), est = c(0.2, -0.1, 0.4),
 #'   lo = c(0.0, -0.3, 0.1), hi = c(0.4, 0.1, 0.7)
 #' )
-#' # a two-sided formula names the estimate (LHS) and the bounds (RHS)
-#' lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
-#' # keep the bounds columns visible and add a labeled axis
-#' lt(d) |> lt_errorbar(est ~ lo + hi, hide = FALSE, axis = "Effect")
-#' # draw into a dedicated column, keeping every value column visible as text
+#' # estimate (LHS) and bounds (RHS) draw into the estimate column, with a
+#' # reference line, a captioned axis, a fixed scale, and a taller plot
+#' lt(d) |> lt_errorbar(
+#'   est ~ lo + hi, ref = 0, axis = "Effect", limits = c(-0.5, 1), height = 24
+#' )
+#' # a dedicated column, keeping the value columns visible as text
 #' lt(d) |> lt_errorbar(est ~ lo + hi, into = "forest", hide = FALSE)
-#' # auto-fit the plot to its column (grows/shrinks as the column is resized)
+#' # fit the plot to its column (resizes with it)
 #' lt(d) |> lt_errorbar(est ~ lo + hi, into = "forest", width = "100%")
-#' # several series stacked in each cell, colored with a footer legend
+#' # several series per cell, colored, with a legend
 #' d2 = data.frame(
 #'   term = c("A", "B"), e1 = c(0.2, 0.4), l1 = c(0, 0.2), u1 = c(0.4, 0.6),
 #'   e2 = c(-0.1, 0.1), l2 = c(-0.3, -0.1), u2 = c(0.1, 0.3)
@@ -889,6 +969,10 @@ plot_setup = function(x, into, src, shown, hide) {
 #' lt(d2) |> lt_errorbar(
 #'   e1 ~ l1 + u1, e2 ~ l2 + u2, ref = 0, color = TRUE,
 #'   labels = c("Drug A", "Drug B")
+#' )
+#' # explicit colors
+#' lt(d2) |> lt_errorbar(
+#'   e1 ~ l1 + u1, e2 ~ l2 + u2, color = c("#d7191c", "#2c7bb6")
 #' )
 lt_errorbar = function(
   x, ..., limits = NULL, ref = NULL, into = NULL, width = 160, height = NULL,
@@ -959,10 +1043,15 @@ lt_errorbar = function(
 #' d = data.frame(city = c("A", "B", "C"))
 #' d$temp = list(c(3, 5, 8, 6, 9), c(1, 2, 2, 4, 3), c(7, 6, 5, 6, 8))
 #' lt(d) |> lt_sparkline(~ temp)
-#' # several columns read across the row, as bars on a shared scale
-#' m = data.frame(name = c("X", "Y"), q1 = c(2, 5), q2 = c(4, 3),
-#'   q3 = c(6, 7), q4 = c(5, 2))
-#' lt(m) |> lt_sparkline(~ q1 + q2 + q3 + q4, type = "bar", limits = c(0, 8))
+#' # bars, a color, a shared vertical scale (so rows are comparable), and a size
+#' lt(d) |> lt_sparkline(
+#'   ~ temp, type = "bar", color = "#4caf50", limits = c(0, 10),
+#'   width = 200, height = 30
+#' )
+#' # several columns read across the row (later ones hidden, or kept visible)
+#' m = data.frame(name = c("X", "Y"), q1 = c(2, 5), q2 = c(4, 3), q3 = c(6, 7))
+#' lt(m) |> lt_sparkline(~ q1 + q2 + q3)
+#' lt(m) |> lt_sparkline(~ q1 + q2 + q3, hide = FALSE)
 lt_sparkline = function(
   x, columns, type = c('line', 'bar'), limits = NULL, color = NULL,
   width = 120, height = 20, hide = TRUE
@@ -1008,16 +1097,18 @@ lt_sparkline = function(
 #' @export
 #' @examples
 #' d = data.frame(
-#'   group = c("A", "B", "C"), before = c(3, 5, 4), after = c(6, 7, 5)
+#'   group = c("A", "B", "C"), before = c(3, 5, 4), after = c(6, 7, 4.1)
 #' )
-#' # one dot per column, colored and keyed by a footer legend, with an axis
-#' lt(d) |> lt_dotplot(~ before + after, color = TRUE)
-#' # custom colors and labels
+#' # one dot per column, colored with a legend, a captioned axis, and separate
+#' # tracks so near-equal values (group C) do not overlap
+#' lt(d) |> lt_dotplot(~ before + after, color = TRUE, axis = "Score", stagger = TRUE)
+#' # custom colors and labels, a fixed scale with no axis, a custom size
 #' lt(d) |> lt_dotplot(
 #'   ~ before + after, color = c("#999", "#1a9641"),
-#'   labels = c("Baseline", "Follow-up")
+#'   labels = c("Baseline", "Follow-up"), limits = c(0, 10), axis = FALSE,
+#'   width = 200, height = 20
 #' )
-#' # draw into a dedicated column, keeping the value columns visible as text
+#' # a dedicated column, keeping the value columns visible as text
 #' lt(d) |> lt_dotplot(~ before + after, into = "plot", hide = FALSE)
 lt_dotplot = function(
   x, columns, limits = NULL, color = FALSE, labels = NULL, stagger = FALSE,
@@ -1066,10 +1157,13 @@ lt_dotplot = function(
 #' @return `x` with the stylesheets recorded.
 #' @export
 #' @examples
-#' tbl = lt(head(mtcars))
-#' tbl |>
-#'   lt_style(~ mpg, test = "v => v > 20", class = "high") |>
-#'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
+#' d = mtcars[1:4, 1:3]
+#' # rules for this table only: a selector and a CSS string or list
+#' lt(d) |>
+#'   lt_style(~ mpg, test = "v => v > 21", class = "high") |>
+#'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"), td = "color: #06c")
+#' # a stylesheet (here one shipped with lt)
+#' lt(d) |> lt_css("lt-plot.css")
 lt_css = function(x, ...) {
   args = name_value_args(...)
   nms = names(args)
@@ -1109,7 +1203,10 @@ lt_css = function(x, ...) {
 #' @return `x` with the container attributes recorded.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_wrap(class = "my-table", style = "width:400px")
+#' tbl = lt(mtcars[1:3, 1:3])
+#' tbl |> lt_wrap(style = "width:300px")
+#' # a class to scope custom CSS to this table
+#' tbl |> lt_wrap(class = "my-table") |> lt_css(`.my-table th` = "color: #06c")
 lt_wrap = function(x, ...) {
   attrs = name_value_args(...)
   if (length(attrs) == 0) return(x)

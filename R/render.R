@@ -102,9 +102,10 @@ js_block = function(files, inline = TRUE) {
 #'   table), ready to serialize to JSON.
 #' @export
 #' @examples
-#' spec = lt_spec(lt(head(mtcars)) |> lt_interactive())
+#' spec = lt_spec(lt(mtcars[1:3, 1:3]) |> lt_header("Cars"))
 #' str(spec, max.level = 1)
-#' xfun::tojson(spec)  # ship this, then LT.render(container, spec) in the browser
+#' # ship this, then LT.render(container, spec) in the browser
+#' xfun::tojson(spec)
 lt_spec = function(x) {
   # Drop css (emitted separately as <link> or via lt_dependency()); prep as
   # the render/queue paths expect.
@@ -222,9 +223,13 @@ html_doc = function(body) c(
 #' @return A character scalar containing HTML.
 #' @export
 #' @examples
-#' tbl = lt(head(mtcars))
+#' tbl = lt(mtcars[1:3, 1:3])
+#' # an HTML fragment with the assets inlined
 #' html = format(tbl)
+#' # a full page, linking the assets instead of inlining them
 #' format(tbl, fragment = FALSE, inline_assets = FALSE)
+#' # without the CSS (or both: assets = FALSE)
+#' format(tbl, assets = "js")
 format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
   if (isTRUE(assets)) assets = c('css', 'js')
   if (isFALSE(assets)) assets = character()
@@ -252,7 +257,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
 #' @return `x`, invisibly.
 #' @export
 #' @examples
-#' print(lt(head(mtcars)))
+#' print(lt(mtcars[1:3, 1:3]))
 print.lt_tbl = function(x, ...) {
   # assets live under the reserved `_lt/` path (other paths are left for the
   # working dir) and are read from disk per request: edits show on refresh
@@ -595,26 +600,29 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 #' @export
 #' @examples
-#' tbl = lt(head(mtcars))
+#' tbl = lt(mtcars[1:3, 1:3]) |> lt_header("Cars")
 #'
 #' # HTML with the JavaScript spec (table built by lt.js when viewed)
-#' f1 = tempfile(fileext = '.html')
-#' lt_export(tbl, f1, method = 'raw')  # file output
+#' f1 = tempfile(fileext = ".html")
+#' lt_export(tbl, f1, method = "raw")
 #'
-#' # Bake a static <table> (needs Node.js or a headless browser).
+#' # a static <table> (needs Node.js or a headless browser), returned as a
+#' # string: just the fragment, without the lt.css stylesheet, pretty-printed
 #' if (lt:::can_bake())
-#'   lt_export(tbl, NA, method = 'auto', fragment = TRUE, css = FALSE, tidy = TRUE)
+#'   lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 #'
-#' # PDF / PNG are rendered in a headless browser and cropped to the table.
-#' f2 = tempfile(fileext = '.pdf')
-#' f3 = tempfile(fileext = '.png')
+#' # PDF and PNG are rendered in a headless browser and cropped to the table
+#' f2 = tempfile(fileext = ".pdf")
+#' f3 = tempfile(fileext = ".png")
 #' if (lt:::has_browser(pdf = TRUE)) {
 #'   lt_export(tbl, f2)
-#'   lt_export(tbl, f3, width = 400)
+#'   # the table's width in pixels, more padding, no cropping
+#'   lt_export(tbl, f3, width = 400, padding = c(16, 24))
+#'   lt_export(tbl, f3, crop = FALSE)
 #' }
 #'
-#' # The table's text as CSV or RTF.
-#' f4 = tempfile(fileext = '.rtf')
+#' # the table's text as CSV or RTF
+#' f4 = tempfile(fileext = ".rtf")
 #' if (lt:::has_node()) lt_export(tbl, f4)
 #'
 #' unlink(c(f1, f2, f3, f4))

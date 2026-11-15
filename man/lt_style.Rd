@@ -54,10 +54,15 @@ When \code{test} is provided, styles are applied conditionally based on cell
 values (evaluated in JavaScript).
 }
 \examples{
-tbl = lt(head(mtcars))
-tbl |>
-  lt_style(~ mpg, rows = 1L, bold = TRUE, borderBottom = "2px solid red")
-tbl |>
-  lt_style(~ mpg, test = "v => v > 20", class = "high") |>
+d = mtcars[1:4, 1:3]
+# inline styles on chosen rows and columns, plus any CSS property
+lt(d) |>
+  lt_style(~ mpg, rows = 1, bold = TRUE, italic = TRUE, color = "#06c") |>
+  lt_style(~ cyl, bg = "#ffd", borderBottom = "2px solid red")
+# all cells, when columns is omitted
+lt(d) |> lt_style(color = "gray")
+# a JavaScript test picks the cells; a class keeps the rules in lt_css()
+lt(d) |>
+  lt_style(~ mpg, test = "v => v > 21", class = "high") |>
   lt_css(.high = list(background = "#cfc"))
 }

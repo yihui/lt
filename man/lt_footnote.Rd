@@ -33,27 +33,26 @@ Attaches a footnote \code{text} to a table region. Footnotes are numbered
 automatically in the order they are added (de-duplicated by text).
 }
 \examples{
-lt(head(mtcars)) |>
-  lt_footnote("Source: 1974 Motor Trend US magazine.", "title")
-# raw HTML footnote (wrap in I())
-lt(head(mtcars)) |>
-  lt_footnote(I("See <a href='#'>docs</a>."), "title")
-
-# a footnote for each of the six locations
 d = data.frame(
   Arm   = c("Treatment", "Treatment", "Control", "Control"),
   Stat  = c("n", "Mean", "n", "Mean"),
   Value = c(31, 6.8, 30, 4.2),
   SE    = c(NA, 0.42, NA, 0.38)
 )
-lt(d) |>
+tbl = lt(d) |>
   lt_group(~ Arm) |>
-  lt_header(title = "Study Results", subtitle = "Two arms") |>
-  lt_spanner(Summary ~ Value + SE) |>
+  lt_header("Study Results", "Two arms") |>
+  lt_spanner(Summary ~ Value + SE)
+# one footnote for each of the six locations
+tbl |>
   lt_footnote("Source: simulated trial data.", "title") |>
   lt_footnote("Intention-to-treat population.", "subtitle") |>
   lt_footnote("Standard error of the mean.", "column", ~ SE) |>
   lt_footnote("Per-arm summary statistics.", "spanner", ~ Summary) |>
   lt_footnote("Received active drug.", "group", ~ Treatment) |>
-  lt_footnote("SE undefined for counts.", "body", ~ SE, rows = c(1, 3))
+  lt_footnote("SE is undefined for counts.", "body", ~ SE, rows = c(1, 3))
+# match groups by prefix, or all of them; raw HTML text (wrap in I())
+tbl |>
+  lt_footnote("Starts with T.", "group", "T", match = "starts_with") |>
+  lt_footnote(I("See <a href='#'>docs</a>."), "group", match = "all")
 }

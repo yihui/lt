@@ -63,16 +63,20 @@ shown as spanning cells, nor with \code{\link[=lt_interactive]{lt_interactive()}
 }
 \examples{
 if (interactive()) {
-library(shiny)
-ui = fluidPage(
-  lt_output("tbl"),
-  lt_input("m", head(mtcars[, 1:3]), "Edit the cells:"),
-  verbatimTextOutput("out")
-)
-server = function(input, output) {
-  output$tbl = render_lt(lt(head(mtcars)) |> lt_header("Motor Trend"))
-  output$out = renderPrint(input$m)
-}
-shinyApp(ui, server)
+  library(shiny)
+  d = mtcars[1:6, 1:3]
+  ui = fluidPage(
+    lt_output("tbl"),
+    # an editable table; only some columns can be edited
+    lt_input("m", d, "Edit the cells:", columns = ~ mpg + cyl),
+    actionButton("reset", "Reset"),
+    verbatimTextOutput("out")
+  )
+  server = function(input, output, session) {
+    output$tbl = render_lt(lt(d) |> lt_header("Motor Trend"))
+    output$out = renderPrint(input$m)  # the edited data frame
+    observeEvent(input$reset, lt_update(session, "m", d))
+  }
+  shinyApp(ui, server)
 }
 }

@@ -1,0 +1,21 @@
+---
+title: Summary rows
+---
+
+`lt_summary()` adds a total after each group (`by`), a grand row, or both. Give a function, a function per column, or `data_fn` for a summary of the whole data frame, such as a weighted mean.
+
+```{r}
+library(lt)
+d = data.frame(
+  grp = c("A", "A", "B", "B"), item = c("x", "y", "x", "y"),
+  n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
+)
+lt(d) |> lt_group(~ grp, sep = TRUE) |> lt_summary("sum", by = ~ grp)
+lt(d) |> lt_summary(list(n = sum, rate = "mean"), label = "Overall")
+
+total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
+lt(d) |>
+  lt_summary(data_fn = total, by = ~ grp, grand = "All") |>
+  lt_group(~ grp, sep = TRUE) |>
+  lt_format(~ rate, percent = TRUE, decimals = 1)
+```

@@ -21,6 +21,12 @@ left padding.}
 Add hierarchical indentation to the first column of specified rows.
 }
 \examples{
-d = data.frame(label = c("Overall", "Male", "Female"), n = c(100, 55, 45))
-lt(d) |> lt_indent(2:3)
+d = data.frame(
+  label = c("Any AE", "Cardiac", "Tachycardia", "GI", "Nausea"),
+  n = c(45, 30, 15, 20, 12)
+)
+# one level
+lt(d) |> lt_indent(c(2, 4))
+# nested: rows by position, each with its level
+lt(d) |> lt_indent(c(2, 4), level = 1) |> lt_indent(c(3, 5), level = 2)
 }

@@ -26,5 +26,9 @@ Override the auto-detected alignment for specific columns. By default,
 numeric columns are right-aligned and character columns are left-aligned.
 }
 \examples{
-lt(head(mtcars)) |> lt_align(~ cyl + gear, "center")
+d = mtcars[1:3, 1:4]
+# numbers align right by default; select columns by name or by a predicate
+lt(d) |>
+  lt_align(~ cyl, "center") |>
+  lt_align(~ startsWith(., "d"), "left")
 }

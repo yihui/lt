@@ -72,14 +72,18 @@ d = data.frame(
   grp = c("A", "A", "B", "B"), item = c("x", "y", "x", "y"),
   n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
 )
-# a function (or its name) of a column, for every numeric column
-lt(d) |> lt_summary("sum", by = ~ grp)
+# a function (or its name) for every numeric column, after each group + total
+lt(d) |> lt_group(~ grp, sep = TRUE) |> lt_summary("sum", by = ~ grp)
 # a grand summary only, with a different function per column
 lt(d) |> lt_summary(list(n = sum, rate = "mean"))
+# chosen columns, custom labels, shown in a chosen column; no grand row
+lt(d) |> lt_summary(
+  "max", ~ n, by = ~ grp, label = "Peak", grand = FALSE, label_col = "item"
+)
 # a function of the whole data frame, for a weighted mean
 total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 lt(d) |>
-  lt_summary(data_fn = total, by = ~ grp) |>
+  lt_summary(data_fn = total, by = ~ grp, grand = "All") |>
   lt_group(~ grp, sep = TRUE) |>
   lt_format(~ rate, percent = TRUE, decimals = 1)
 }

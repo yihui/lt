@@ -14,23 +14,23 @@ cat(
 `LT.render(element, spec)` builds a table whenever you like, and returns it. Every interactive table carries a controller at `el._lt`, so outside widgets can filter it: here a `<select>` keeps one species.
 
 ```{r, echo = FALSE}
-iris5 = iris[c(1, 2, 51, 52, 101, 102), ]
+pen = penguins[c(1, 2, 153, 154, 277, 278), c(1, 3, 6)]
 ```
 
 ```{js, fill = xfun::tojson}
-const iris = `{ iris5 }`;
+const pen = `{ pen }`;
 ```
 
 ```{js}
 const host = document.createElement("div");
 document.currentScript.after(host);
 addEventListener("load", () => {
-  const t = LT.render(host, { data: iris, interactive: { search: false, pager: [5] } });
+  const t = LT.render(host, { data: pen, interactive: { search: false, pager: [5] } });
   const sel = document.createElement("select");
   sel.innerHTML = '<option value="">All species</option>' +
-    [...new Set(t._lt.spec.data.Species)].map(s => `<option>${s}</option>`).join("");
+    [...new Set(t._lt.spec.data.species)].map(s => `<option>${s}</option>`).join("");
   sel.onchange = () => t._lt.filter(
-    "species", sel.value ? row => row.Species === sel.value : null
+    "species", sel.value ? row => row.species === sel.value : null
   );
   t.before(sel);
 });

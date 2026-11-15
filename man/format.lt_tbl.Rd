@@ -32,7 +32,11 @@ Emits the CSS+JS runtime and a script block carrying the table's JSON spec.
 Multiple tables on the same page only need the runtime once.
 }
 \examples{
-tbl = lt(head(mtcars))
+tbl = lt(mtcars[1:3, 1:3])
+# an HTML fragment with the assets inlined
 html = format(tbl)
+# a full page, linking the assets instead of inlining them
 format(tbl, fragment = FALSE, inline_assets = FALSE)
+# without the CSS (or both: assets = FALSE)
+format(tbl, assets = "js")
 }

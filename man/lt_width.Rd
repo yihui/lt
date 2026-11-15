@@ -22,9 +22,10 @@ of the whole table. Widths can be any CSS value (e.g., \code{"100px"},
 Set column and table widths
 }
 \examples{
-lt(head(mtcars)) |> lt_width(mpg = "100px", cyl = "50px")
-# set the whole-table width, optionally with column widths
-lt(head(mtcars)) |> lt_width("80\%", mpg = "100px")
-# a single list(names, widths) of two parallel vectors
-lt(head(mtcars)) |> lt_width(list(c("mpg", "cyl"), c("100px", "50px")))
+d = mtcars[1:3, 1:3]
+# an unnamed value sets the whole table's width; named ones set columns (any
+# CSS unit)
+lt(d) |> lt_width("60\%", mpg = "40\%", cyl = "5em")
+# a list of two parallel vectors: names and widths
+lt(d) |> lt_width(list(c("mpg", "cyl"), c("8em", "50px")))
 }

@@ -18,7 +18,9 @@ lt_note(x, text)
 Notes are rendered in the table footer below numbered footnotes.
 }
 \examples{
-lt(head(mtcars)) |> lt_note("CI = confidence interval.")
-# raw HTML note (wrap in I())
-lt(head(mtcars)) |> lt_note(I("CI = <em>confidence interval</em>."))
+d = mtcars[1:3, 1:4]
+# several notes; raw HTML (wrap in I())
+lt(d) |>
+  lt_note("Data from the 1974 Motor Trend US magazine.") |>
+  lt_note(I("<em>mpg</em>: miles per gallon."))
 }
