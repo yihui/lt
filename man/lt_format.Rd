@@ -58,16 +58,17 @@ d = data.frame(
   item = c("A", "B", "C"),
   price = c(1234567.891, 98765.432, 4321.0987),
   share = c(0.1234, 0.0567, 0.8199),
+  rate = c(12.34, 5.67, 81.99),
   mass = c(123456.7, 98765.43, 1234.567),
   weight = c(1250, 340.5, 89.12)
 )
-# decimals and a thousands mark, with a prefix
-lt(d) |> lt_format(~ price, decimals = 2, big_mark = ",", prefix = "$")
-# percent (values are multiplied by 100)
-lt(d) |> lt_format(~ share, decimals = 1, percent = TRUE)
-# significant digits: 123456.7 becomes 123000
-lt(d) |> lt_format(~ mass, sig_digits = 3)
-# a suffix; percent = "\%" only appends the sign
-lt(d) |> lt_format(~ weight, decimals = 1, suffix = " kg")
-lt(d) |> lt_format(~ weight, percent = "\%")
+lt(d) |>
+  # decimals, a thousands mark, and a prefix
+  lt_format(~ price, decimals = 2, big_mark = ",", prefix = "$") |>
+  # percent: values are multiplied by 100; "\%" only appends the sign
+  lt_format(~ share, decimals = 1, percent = TRUE) |>
+  lt_format(~ rate, decimals = 1, percent = "\%") |>
+  # significant digits: 123456.7 becomes 123000
+  lt_format(~ mass, sig_digits = 3) |>
+  lt_format(~ weight, decimals = 1, suffix = " kg")
 }

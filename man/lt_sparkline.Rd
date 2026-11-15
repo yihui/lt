@@ -57,13 +57,13 @@ client and the SVG is drawn in the browser, so an interactive table
 d = data.frame(city = c("A", "B", "C"))
 d$temp = list(c(3, 5, 8, 6, 9), c(1, 2, 2, 4, 3), c(7, 6, 5, 6, 8))
 lt(d) |> lt_sparkline(~ temp)
-# bars, a color, and a shared vertical scale, so rows are comparable
-lt(d) |> lt_sparkline(~ temp, type = "bar", color = "#4caf50", limits = c(0, 10))
-# a custom size
-lt(d) |> lt_sparkline(~ temp, width = 200, height = 30)
-# several columns read across the row (later ones hidden)
+# bars, a color, a shared vertical scale (so rows are comparable), and a size
+lt(d) |> lt_sparkline(
+  ~ temp, type = "bar", color = "#4caf50", limits = c(0, 10),
+  width = 200, height = 30
+)
+# several columns read across the row (later ones hidden, or kept visible)
 m = data.frame(name = c("X", "Y"), q1 = c(2, 5), q2 = c(4, 3), q3 = c(6, 7))
 lt(m) |> lt_sparkline(~ q1 + q2 + q3)
-# ... or kept visible
 lt(m) |> lt_sparkline(~ q1 + q2 + q3, hide = FALSE)
 }

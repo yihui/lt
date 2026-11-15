@@ -133,22 +133,18 @@
 #' d = mtcars[, c("mpg", "cyl", "hp", "wt")]
 #' # click-to-sort headers, a search box, column filters, and paging
 #' lt(d) |> lt_interactive()
-#' # turn features off, e.g., keep only the search box
-#' lt(d) |> lt_interactive(sort = FALSE, filter = FALSE, pager = FALSE)
-#' # page sizes (the first is used initially; Inf shows all rows)
-#' lt(d) |> lt_interactive(pager = c(5, 10, Inf))
-#' # an initial sort: cyl, then mpg descending
-#' lt(d) |> lt_interactive(sort = ~ cyl + -mpg)
-#' # filters: only some columns, or a widget per column
-#' lt(d) |> lt_interactive(filter = c("cyl", "hp"))
+#' # an initial sort (cyl, then mpg descending), page sizes (the first is used
+#' # initially; Inf shows all rows), a widget per filter (FALSE for none), and
+#' # fixed (non-resizable) columns
 #' lt(d) |> lt_interactive(
+#'   sort = ~ cyl + -mpg, pager = c(5, 10, Inf), resize = FALSE,
 #'   filter = list("auto", mpg = "range", cyl = "select", wt = FALSE)
 #' )
-#' # fixed (non-resizable) columns
-#' lt(d) |> lt_interactive(resize = FALSE)
-#' # a column-visibility menu: all shown, some hidden to start, or a labeled button
-#' lt(d) |> lt_interactive(hide = NA)
-#' lt(d) |> lt_interactive(hide = ~ hp + wt)
+#' # keep only the search box, or filter only some columns
+#' lt(d) |> lt_interactive(sort = FALSE, filter = FALSE, pager = FALSE)
+#' lt(d) |> lt_interactive(filter = c("cyl", "hp"))
+#' # a column-visibility menu with a label and some columns hidden to start
+#' # (hide = NA shows all columns; a bare formula hides those columns)
 #' lt(d) |> lt_interactive(hide = list(label = "Columns", columns = ~ wt))
 #' # row detail: hidden columns revealed when a row is expanded
 #' lt(d) |> lt_hide(~ hp + wt) |> lt_interactive(detail = ~ hp + wt)
@@ -160,12 +156,11 @@
 #' # a distribution plot in each column header, or in the filter popover
 #' lt(iris) |> lt_interactive(profile = TRUE)
 #' lt(iris) |> lt_interactive(profile = "filter")
-#' # a button to download the current view (CSV and RTF), with a file name
+#' # a button to download the current view (CSV and RTF; a string sets the file
+#' # name), the raw unformatted values, or only RTF
 #' lt(d) |> lt_interactive(download = TRUE)
-#' lt(d) |> lt_interactive(download = "cars")
-#' # only RTF, or the raw unformatted values
-#' lt(d) |> lt_interactive(download = list(formats = "rtf"))
 #' lt(d) |> lt_interactive(download = list(file = "cars.csv", mode = "raw"))
+#' lt(d) |> lt_interactive(download = list(formats = "rtf"))
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = 'auto', pager = c(10, 25, 50, Inf),
   resize = TRUE, hide = NULL, detail = NULL, profile = FALSE, download = FALSE

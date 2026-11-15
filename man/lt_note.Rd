@@ -18,8 +18,9 @@ lt_note(x, text)
 Notes are rendered in the table footer below numbered footnotes.
 }
 \examples{
-tbl = lt(head(mtcars[, 1:4], 3))
-tbl |> lt_note("Data from the 1974 Motor Trend US magazine.")
-# several notes, one may be raw HTML (wrap in I())
-tbl |> lt_note("mpg: miles per gallon.") |> lt_note(I("<em>cyl</em>: cylinders."))
+d = mtcars[1:3, 1:4]
+# several notes; raw HTML (wrap in I())
+lt(d) |>
+  lt_note("Data from the 1974 Motor Trend US magazine.") |>
+  lt_note(I("<em>mpg</em>: miles per gallon."))
 }

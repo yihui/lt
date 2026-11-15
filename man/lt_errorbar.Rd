@@ -98,11 +98,9 @@ d = data.frame(
   lo = c(0.0, -0.3, 0.1), hi = c(0.4, 0.1, 0.7)
 )
 # estimate (LHS) and bounds (RHS) draw into the estimate column, with a
-# reference line
-lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
-# a captioned axis, a fixed scale, a taller plot
+# reference line, a captioned axis, a fixed scale, and a taller plot
 lt(d) |> lt_errorbar(
-  est ~ lo + hi, axis = "Effect", limits = c(-0.5, 1), height = 24
+  est ~ lo + hi, ref = 0, axis = "Effect", limits = c(-0.5, 1), height = 24
 )
 # a dedicated column, keeping the value columns visible as text
 lt(d) |> lt_errorbar(est ~ lo + hi, into = "forest", hide = FALSE)

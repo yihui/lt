@@ -2,7 +2,7 @@
 title: Number formatting
 ---
 
-`lt_format()` controls decimals (`decimals`) or significant digits (`sig_digits`), the thousands mark (`big_mark`), percent, and a `prefix` or `suffix`.
+`lt_format()` controls decimals (`decimals`) or significant digits (`sig_digits`), the thousands mark (`big_mark`), percent (`percent = TRUE` multiplies by 100; `"%"` only appends the sign), and a `prefix` or `suffix`.
 
 ```{r}
 library(lt)
@@ -10,11 +10,14 @@ d = data.frame(
   Item = c("Widget", "Gadget", "Doohickey"),
   Revenue = c(1234567.891, 987654.321, 246913.57),
   Margin = c(0.1234, 0.0567, 0.2345),
+  Rate = c(12.34, 5.67, 23.45),
   Mass = c(123456.7, 98765.43, 1234.567),
   Weight = c(1250, 340.5, 89.12)
 )
-lt(d) |> lt_format(~ Revenue, decimals = 0, big_mark = ",", prefix = "$")
-lt(d) |> lt_format(~ Margin, decimals = 1, percent = TRUE)
-lt(d) |> lt_format(~ Mass, sig_digits = 3)
-lt(d) |> lt_format(~ Weight, decimals = 1, suffix = " kg")
+lt(d) |>
+  lt_format(~ Revenue, decimals = 0, big_mark = ",", prefix = "$") |>
+  lt_format(~ Margin, decimals = 1, percent = TRUE) |>
+  lt_format(~ Rate, decimals = 1, percent = "%") |>
+  lt_format(~ Mass, sig_digits = 3) |>
+  lt_format(~ Weight, decimals = 1, suffix = " kg")
 ```

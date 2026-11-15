@@ -35,7 +35,7 @@ shortened to the suffix.
 The columns must be contiguous in the body of the table.
 }
 \examples{
-tbl = lt(head(iris, 3))
+tbl = lt(iris[1:3, ])
 # a formula gives the label (LHS) and the columns (RHS)
 tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
 # or the label and the columns separately; raw HTML label (wrap in I())

@@ -26,9 +26,9 @@ Override the auto-detected alignment for specific columns. By default,
 numeric columns are right-aligned and character columns are left-aligned.
 }
 \examples{
-d = head(mtcars[, 1:4], 3)
-# numbers align right by default
-lt(d) |> lt_align(~ cyl + disp, "center")
-# select columns by a predicate on their names
-lt(d) |> lt_align(~ startsWith(., "d"), "left")
+d = mtcars[1:3, 1:4]
+# numbers align right by default; select columns by name or by a predicate
+lt(d) |>
+  lt_align(~ cyl, "center") |>
+  lt_align(~ startsWith(., "d"), "left")
 }

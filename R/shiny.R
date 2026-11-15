@@ -88,7 +88,7 @@ lt_dependency = function(
 #' @examples
 #' if (interactive()) {
 #'   library(shiny)
-#'   d = head(mtcars[, 1:3])
+#'   d = mtcars[1:6, 1:3]
 #'   ui = fluidPage(
 #'     lt_output("tbl"),
 #'     # an editable table; only some columns can be edited

@@ -6,12 +6,10 @@
 #' @return `x` with the header recorded.
 #' @export
 #' @examples
-#' d = head(mtcars[, 1:3], 3)
-#' lt(d) |> lt_header("Motor Trend Cars")
-#' # add a subtitle
+#' d = mtcars[1:3, 1:3]
 #' lt(d) |> lt_header("Motor Trend Cars", "First 3 rows")
-#' # raw HTML (wrap in I())
-#' lt(d) |> lt_header(I("<em>Motor Trend</em> Cars"), I("<b>1974</b>"))
+#' # a title only; raw HTML (wrap in I())
+#' lt(d) |> lt_header(I("<em>Motor Trend</em> Cars"))
 lt_header = function(x, title = NULL, subtitle = NULL) {
   x$header = drop_null(list(title = title, subtitle = subtitle))
   x
@@ -38,7 +36,7 @@ lt_header = function(x, title = NULL, subtitle = NULL) {
 #' @return `x` with the spanner recorded.
 #' @export
 #' @examples
-#' tbl = lt(head(iris, 3))
+#' tbl = lt(iris[1:3, ])
 #' # a formula gives the label (LHS) and the columns (RHS)
 #' tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
 #' # or the label and the columns separately; raw HTML label (wrap in I())
@@ -100,7 +98,7 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' lt(d[c(3, 1, 4, 2), ]) |> lt_group(~ arm, sort = FALSE)
 #'
 #' # manual groups: name the rows (always separator rows)
-#' tbl = lt(head(mtcars[, 1:3], 6))
+#' tbl = lt(mtcars[1:6, 1:3])
 #' tbl |> lt_group("First three" = 1:3, "Last three" = 4:6)
 #' # ... or give a condition on the data
 #' tbl |> lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
@@ -212,10 +210,11 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
 #' @return `x` with the note recorded.
 #' @export
 #' @examples
-#' tbl = lt(head(mtcars[, 1:4], 3))
-#' tbl |> lt_note("Data from the 1974 Motor Trend US magazine.")
-#' # several notes, one may be raw HTML (wrap in I())
-#' tbl |> lt_note("mpg: miles per gallon.") |> lt_note(I("<em>cyl</em>: cylinders."))
+#' d = mtcars[1:3, 1:4]
+#' # several notes; raw HTML (wrap in I())
+#' lt(d) |>
+#'   lt_note("Data from the 1974 Motor Trend US magazine.") |>
+#'   lt_note(I("<em>mpg</em>: miles per gallon."))
 lt_note = function(x, text) {
   x$notes = c(x$notes, list(text))
   x
@@ -237,11 +236,11 @@ lt_note = function(x, text) {
 #' @return `x` with the alignment recorded.
 #' @export
 #' @examples
-#' d = head(mtcars[, 1:4], 3)
-#' # numbers align right by default
-#' lt(d) |> lt_align(~ cyl + disp, "center")
-#' # select columns by a predicate on their names
-#' lt(d) |> lt_align(~ startsWith(., "d"), "left")
+#' d = mtcars[1:3, 1:4]
+#' # numbers align right by default; select columns by name or by a predicate
+#' lt(d) |>
+#'   lt_align(~ cyl, "center") |>
+#'   lt_align(~ startsWith(., "d"), "left")
 lt_align = function(x, columns, align = c('left', 'center', 'right')) {
   columns = f_cols(columns, x$data)
   align = match.arg(align)
@@ -277,18 +276,19 @@ lt_align = function(x, columns, align = c('left', 'center', 'right')) {
 #'   item = c("A", "B", "C"),
 #'   price = c(1234567.891, 98765.432, 4321.0987),
 #'   share = c(0.1234, 0.0567, 0.8199),
+#'   rate = c(12.34, 5.67, 81.99),
 #'   mass = c(123456.7, 98765.43, 1234.567),
 #'   weight = c(1250, 340.5, 89.12)
 #' )
-#' # decimals and a thousands mark, with a prefix
-#' lt(d) |> lt_format(~ price, decimals = 2, big_mark = ",", prefix = "$")
-#' # percent (values are multiplied by 100)
-#' lt(d) |> lt_format(~ share, decimals = 1, percent = TRUE)
-#' # significant digits: 123456.7 becomes 123000
-#' lt(d) |> lt_format(~ mass, sig_digits = 3)
-#' # a suffix; percent = "%" only appends the sign
-#' lt(d) |> lt_format(~ weight, decimals = 1, suffix = " kg")
-#' lt(d) |> lt_format(~ weight, percent = "%")
+#' lt(d) |>
+#'   # decimals, a thousands mark, and a prefix
+#'   lt_format(~ price, decimals = 2, big_mark = ",", prefix = "$") |>
+#'   # percent: values are multiplied by 100; "%" only appends the sign
+#'   lt_format(~ share, decimals = 1, percent = TRUE) |>
+#'   lt_format(~ rate, decimals = 1, percent = "%") |>
+#'   # significant digits: 123456.7 becomes 123000
+#'   lt_format(~ mass, sig_digits = 3) |>
+#'   lt_format(~ weight, decimals = 1, suffix = " kg")
 # TODO: potential future params:
 #   decimal_mark - swap "." for "," (European locales, pairs with big_mark = ".")
 #   scale - multiply by a factor before display (e.g., 1e-6 for millions)
@@ -348,14 +348,13 @@ lt_format = function(
 #'   date = as.Date(c("2024-01-15", "2024-06-30")),
 #'   time = as.POSIXct(c("2024-01-15 09:30:00", "2024-06-30 17:45:00"), tz = "UTC")
 #' )
-#' # locale and Intl.DateTimeFormat options; timeZone = "UTC" keeps the date as is
-#' lt(d) |> lt_date(~ date, locale = "fr-FR", options = list(
-#'   weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
-#' ))
-#' lt(d) |> lt_date(~ date, options = list(year = "numeric", month = "short", timeZone = "UTC"))
-#' # or call a JavaScript Date method
-#' lt(d) |> lt_date(~ date, method = "toDateString")
-#' lt(d) |> lt_date(~ time, method = "toISOString")
+#' # locale and Intl.DateTimeFormat options (timeZone = "UTC" keeps the date as
+#' # is), or call a JavaScript Date method
+#' lt(d) |>
+#'   lt_date(~ date, locale = "fr-FR", options = list(
+#'     weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
+#'   )) |>
+#'   lt_date(~ time, method = "toISOString")
 lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
   cols = as.character(f_cols(columns, x$data))
   add_op(
@@ -378,7 +377,7 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #' @return `x` with the column label overrides recorded.
 #' @export
 #' @examples
-#' d = head(mtcars[, 1:3], 3)
+#' d = mtcars[1:3, 1:3]
 #' lt(d) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
 #' # raw HTML (wrap in I())
 #' lt(d) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
@@ -511,9 +510,8 @@ lt_indent = function(x, rows, level = 1) {
 #'   lo = c(2.0, 0.5, NA),
 #'   hi = c(6.4, 1.7, NA)
 #' )
-#' # concatenate with a pattern; the other columns are hidden
-#' lt(d) |> lt_merge(~ value + lo + hi, pattern = "{1} ({2}, {3})")
-#' # drop the parenthesized part when a value is missing
+#' # drop the parenthesized part when a value is missing; the source columns
+#' # (all but the first) are hidden
 #' lt(d) |> lt_merge(~ value + lo + hi, pattern = "{1}<< ({2}, {3})>>")
 #' # keep the source columns visible
 #' lt(d) |> lt_merge(~ value + lo, hide = FALSE)
@@ -549,10 +547,11 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @return `x` with the style recorded.
 #' @export
 #' @examples
-#' d = head(mtcars[, 1:3], 4)
+#' d = mtcars[1:4, 1:3]
 #' # inline styles on chosen rows and columns, plus any CSS property
-#' lt(d) |> lt_style(~ mpg, rows = 1, bold = TRUE, italic = TRUE, color = "#06c")
-#' lt(d) |> lt_style(~ cyl, bg = "#ffd", borderBottom = "2px solid red")
+#' lt(d) |>
+#'   lt_style(~ mpg, rows = 1, bold = TRUE, italic = TRUE, color = "#06c") |>
+#'   lt_style(~ cyl, bg = "#ffd", borderBottom = "2px solid red")
 #' # all cells, when columns is omitted
 #' lt(d) |> lt_style(color = "gray")
 #' # a JavaScript test picks the cells; a class keeps the rules in lt_css()
@@ -606,16 +605,13 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
 #' @export
 #' @examples
 #' d = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3), c = c(10, 20, NA))
-#' # each column uses its own range (NA stays unfilled)
-#' lt(d) |> lt_color(~ a + c)
-#' # a single color is the high end
-#' lt(d) |> lt_color(~ a, "steelblue")
-#' # a dark end of the palette gets white text automatically; contrast = FALSE
-#' # leaves the text color alone
-#' lt(d) |> lt_color(~ a, c("white", "navy"))
+#' # one shared diverging scale for a and b; c has its own range (NA stays
+#' # unfilled), and a single color is the high end
+#' lt(d) |>
+#'   lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3)) |>
+#'   lt_color(~ c, "navy")
+#' # dark fills get white text automatically; contrast = FALSE turns that off
 #' lt(d) |> lt_color(~ a, c("white", "navy"), contrast = FALSE)
-#' # one shared diverging scale
-#' lt(d) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
 lt_color = function(
   x, columns, palette = c('white', '#fc8d59'), domain = NULL, contrast = TRUE
 ) {
@@ -767,11 +763,10 @@ col_summary_fn = function(d, fn, cols = NULL) {
 #' @return `x` with the widths recorded.
 #' @export
 #' @examples
-#' d = head(mtcars[, 1:3], 3)
-#' # column widths in any CSS unit
-#' lt(d) |> lt_width(mpg = "8em", cyl = "50px")
-#' # an unnamed value sets the whole table's width
-#' lt(d) |> lt_width("60%", mpg = "40%")
+#' d = mtcars[1:3, 1:3]
+#' # an unnamed value sets the whole table's width; named ones set columns (any
+#' # CSS unit)
+#' lt(d) |> lt_width("60%", mpg = "40%", cyl = "5em")
 #' # a list of two parallel vectors: names and widths
 #' lt(d) |> lt_width(list(c("mpg", "cyl"), c("8em", "50px")))
 lt_width = function(x, ...) {
@@ -797,7 +792,7 @@ lt_width = function(x, ...) {
 #' @return `x` with the column move recorded.
 #' @export
 #' @examples
-#' tbl = lt(head(mtcars[, 1:5], 3))
+#' tbl = lt(mtcars[1:3, 1:5])
 #' # after a column (by name or position)
 #' tbl |> lt_move(~ drat + disp, after = "mpg")
 #' # to the front
@@ -820,7 +815,7 @@ lt_move = function(x, columns, after = NULL) {
 #' @return `x` with the hidden columns recorded.
 #' @export
 #' @examples
-#' tbl = lt(head(mtcars[, 1:5], 3))
+#' tbl = lt(mtcars[1:3, 1:5])
 #' tbl |> lt_hide(~ drat + disp)
 #' # the hidden data still reaches the row detail
 #' tbl |> lt_hide(~ drat + disp) |> lt_interactive(detail = ~ drat + disp)
@@ -958,11 +953,9 @@ plot_setup = function(x, into, src, shown, hide) {
 #'   lo = c(0.0, -0.3, 0.1), hi = c(0.4, 0.1, 0.7)
 #' )
 #' # estimate (LHS) and bounds (RHS) draw into the estimate column, with a
-#' # reference line
-#' lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
-#' # a captioned axis, a fixed scale, a taller plot
+#' # reference line, a captioned axis, a fixed scale, and a taller plot
 #' lt(d) |> lt_errorbar(
-#'   est ~ lo + hi, axis = "Effect", limits = c(-0.5, 1), height = 24
+#'   est ~ lo + hi, ref = 0, axis = "Effect", limits = c(-0.5, 1), height = 24
 #' )
 #' # a dedicated column, keeping the value columns visible as text
 #' lt(d) |> lt_errorbar(est ~ lo + hi, into = "forest", hide = FALSE)
@@ -1050,14 +1043,14 @@ lt_errorbar = function(
 #' d = data.frame(city = c("A", "B", "C"))
 #' d$temp = list(c(3, 5, 8, 6, 9), c(1, 2, 2, 4, 3), c(7, 6, 5, 6, 8))
 #' lt(d) |> lt_sparkline(~ temp)
-#' # bars, a color, and a shared vertical scale, so rows are comparable
-#' lt(d) |> lt_sparkline(~ temp, type = "bar", color = "#4caf50", limits = c(0, 10))
-#' # a custom size
-#' lt(d) |> lt_sparkline(~ temp, width = 200, height = 30)
-#' # several columns read across the row (later ones hidden)
+#' # bars, a color, a shared vertical scale (so rows are comparable), and a size
+#' lt(d) |> lt_sparkline(
+#'   ~ temp, type = "bar", color = "#4caf50", limits = c(0, 10),
+#'   width = 200, height = 30
+#' )
+#' # several columns read across the row (later ones hidden, or kept visible)
 #' m = data.frame(name = c("X", "Y"), q1 = c(2, 5), q2 = c(4, 3), q3 = c(6, 7))
 #' lt(m) |> lt_sparkline(~ q1 + q2 + q3)
-#' # ... or kept visible
 #' lt(m) |> lt_sparkline(~ q1 + q2 + q3, hide = FALSE)
 lt_sparkline = function(
   x, columns, type = c('line', 'bar'), limits = NULL, color = NULL,
@@ -1106,19 +1099,15 @@ lt_sparkline = function(
 #' d = data.frame(
 #'   group = c("A", "B", "C"), before = c(3, 5, 4), after = c(6, 7, 4.1)
 #' )
-#' # one dot per column, with an axis (the default) and a colored legend
-#' lt(d) |> lt_dotplot(~ before + after, color = TRUE)
-#' # custom colors and labels, a captioned axis
+#' # one dot per column, colored with a legend, a captioned axis, and separate
+#' # tracks so near-equal values (group C) do not overlap
+#' lt(d) |> lt_dotplot(~ before + after, color = TRUE, axis = "Score", stagger = TRUE)
+#' # custom colors and labels, a fixed scale with no axis, a custom size
 #' lt(d) |> lt_dotplot(
 #'   ~ before + after, color = c("#999", "#1a9641"),
-#'   labels = c("Baseline", "Follow-up"), axis = "Score"
+#'   labels = c("Baseline", "Follow-up"), limits = c(0, 10), axis = FALSE,
+#'   width = 200, height = 20
 #' )
-#' # no axis, a fixed scale, a custom size
-#' lt(d) |> lt_dotplot(
-#'   ~ before + after, axis = FALSE, limits = c(0, 10), width = 200, height = 20
-#' )
-#' # separate tracks so near-equal values (group C) do not overlap
-#' lt(d) |> lt_dotplot(~ before + after, stagger = TRUE)
 #' # a dedicated column, keeping the value columns visible as text
 #' lt(d) |> lt_dotplot(~ before + after, into = "plot", hide = FALSE)
 lt_dotplot = function(
@@ -1168,14 +1157,13 @@ lt_dotplot = function(
 #' @return `x` with the stylesheets recorded.
 #' @export
 #' @examples
-#' tbl = lt(head(mtcars[, 1:3], 4))
+#' d = mtcars[1:4, 1:3]
 #' # rules for this table only: a selector and a CSS string or list
-#' tbl |>
+#' lt(d) |>
 #'   lt_style(~ mpg, test = "v => v > 21", class = "high") |>
-#'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"))
-#' tbl |> lt_css(td = "color: #06c")
+#'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"), td = "color: #06c")
 #' # a stylesheet (here one shipped with lt)
-#' tbl |> lt_css("lt-plot.css")
+#' lt(d) |> lt_css("lt-plot.css")
 lt_css = function(x, ...) {
   args = name_value_args(...)
   nms = names(args)
@@ -1215,7 +1203,7 @@ lt_css = function(x, ...) {
 #' @return `x` with the container attributes recorded.
 #' @export
 #' @examples
-#' tbl = lt(head(mtcars[, 1:3], 3))
+#' tbl = lt(mtcars[1:3, 1:3])
 #' tbl |> lt_wrap(style = "width:300px")
 #' # a class to scope custom CSS to this table
 #' tbl |> lt_wrap(class = "my-table") |> lt_css(`.my-table th` = "color: #06c")

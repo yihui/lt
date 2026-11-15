@@ -6,7 +6,7 @@ title: Source notes
 
 ```{r}
 library(lt)
-lt(head(mtcars[, 1:4], 3)) |>
+lt(mtcars[1:3, 1:4]) |>
   lt_note("Data from the 1974 Motor Trend US magazine.") |>
   lt_note(I("<em>mpg</em>: miles per gallon."))
 ```

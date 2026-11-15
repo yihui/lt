@@ -89,19 +89,15 @@ later \code{\link[=lt_label]{lt_label()}} on that column.
 d = data.frame(
   group = c("A", "B", "C"), before = c(3, 5, 4), after = c(6, 7, 4.1)
 )
-# one dot per column, with an axis (the default) and a colored legend
-lt(d) |> lt_dotplot(~ before + after, color = TRUE)
-# custom colors and labels, a captioned axis
+# one dot per column, colored with a legend, a captioned axis, and separate
+# tracks so near-equal values (group C) do not overlap
+lt(d) |> lt_dotplot(~ before + after, color = TRUE, axis = "Score", stagger = TRUE)
+# custom colors and labels, a fixed scale with no axis, a custom size
 lt(d) |> lt_dotplot(
   ~ before + after, color = c("#999", "#1a9641"),
-  labels = c("Baseline", "Follow-up"), axis = "Score"
+  labels = c("Baseline", "Follow-up"), limits = c(0, 10), axis = FALSE,
+  width = 200, height = 20
 )
-# no axis, a fixed scale, a custom size
-lt(d) |> lt_dotplot(
-  ~ before + after, axis = FALSE, limits = c(0, 10), width = 200, height = 20
-)
-# separate tracks so near-equal values (group C) do not overlap
-lt(d) |> lt_dotplot(~ before + after, stagger = TRUE)
 # a dedicated column, keeping the value columns visible as text
 lt(d) |> lt_dotplot(~ before + after, into = "plot", hide = FALSE)
 }

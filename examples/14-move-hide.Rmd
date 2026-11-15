@@ -6,7 +6,7 @@ title: Moving and hiding columns
 
 ```{r}
 library(lt)
-tbl = lt(head(iris, 3))
+tbl = lt(iris[1:3, ])
 tbl |> lt_move(~ Species, after = NULL)
 tbl |> lt_hide(~ Petal.Length + Petal.Width)
 ```

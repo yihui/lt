@@ -23,7 +23,7 @@ convenient when the labels are computed programmatically, e.g.
 Override column headers without modifying the underlying data frame.
 }
 \examples{
-d = head(mtcars[, 1:3], 3)
+d = mtcars[1:3, 1:3]
 lt(d) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
 # raw HTML (wrap in I())
 lt(d) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))

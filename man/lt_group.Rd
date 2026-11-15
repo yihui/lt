@@ -49,7 +49,7 @@ lt(d) |> lt_group(~ arm, sep = TRUE)
 lt(d[c(3, 1, 4, 2), ]) |> lt_group(~ arm, sort = FALSE)
 
 # manual groups: name the rows (always separator rows)
-tbl = lt(head(mtcars[, 1:3], 6))
+tbl = lt(mtcars[1:6, 1:3])
 tbl |> lt_group("First three" = 1:3, "Last three" = 4:6)
 # ... or give a condition on the data
 tbl |> lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)

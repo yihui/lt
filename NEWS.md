@@ -1,6 +1,6 @@
 # CHANGES IN lt VERSION 0.6
 
-- New book at <https://pkg.yihui.org/lt/book/> covering every feature, from the first table to Shiny, export, and the JavaScript runtime. The long examples `01-lt`, `02-lt-js`, and `03-gt` are now short overviews that point to it, and 38 new one-feature examples (`04-*` to `41-*`) cover the functions one at a time.
+- New book at <https://pkg.yihui.org/lt/book/> covering every feature, from the first table to Shiny, export, and the JavaScript runtime. The long examples `01-lt`, `02-lt-js`, and `03-gt` are now short overviews that point to it, and 36 new one-feature examples (`04-*` to `39-*`) cover the functions one at a time.
 
 - Added `lt_viewer()`, a data viewer for exploring a data frame: an interactive table with the data expression as the title, each column's type and profile, filters, and a column-visibility menu (thanks, @keaven, #56).
 
@@ -51,8 +51,6 @@
 - In `litedown::fuse()` documents, tables built from the same data frame now write the data to the output only once and refer to it from the other tables, which makes the output file smaller. This also works across child documents. Set the `lt.share_size` global option (in bytes) to share only data frames above that size.
 
 - `lt_format(percent = TRUE)` without `decimals` no longer shows floating-point noise (e.g., `56.00000000000001%` for 0.56).
-
-- The examples in the help pages and `examples/` are rewritten with small, purpose-built data, and together cover nearly every argument. New examples show `lt_color()` and `lt_summary()`.
 
 # CHANGES IN lt VERSION 0.5
 

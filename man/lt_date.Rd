@@ -60,12 +60,11 @@ d = data.frame(
   date = as.Date(c("2024-01-15", "2024-06-30")),
   time = as.POSIXct(c("2024-01-15 09:30:00", "2024-06-30 17:45:00"), tz = "UTC")
 )
-# locale and Intl.DateTimeFormat options; timeZone = "UTC" keeps the date as is
-lt(d) |> lt_date(~ date, locale = "fr-FR", options = list(
-  weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
-))
-lt(d) |> lt_date(~ date, options = list(year = "numeric", month = "short", timeZone = "UTC"))
-# or call a JavaScript Date method
-lt(d) |> lt_date(~ date, method = "toDateString")
-lt(d) |> lt_date(~ time, method = "toISOString")
+# locale and Intl.DateTimeFormat options (timeZone = "UTC" keeps the date as
+# is), or call a JavaScript Date method
+lt(d) |>
+  lt_date(~ date, locale = "fr-FR", options = list(
+    weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
+  )) |>
+  lt_date(~ time, method = "toISOString")
 }

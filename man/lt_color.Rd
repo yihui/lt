@@ -44,14 +44,11 @@ unfilled.
 }
 \examples{
 d = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3), c = c(10, 20, NA))
-# each column uses its own range (NA stays unfilled)
-lt(d) |> lt_color(~ a + c)
-# a single color is the high end
-lt(d) |> lt_color(~ a, "steelblue")
-# a dark end of the palette gets white text automatically; contrast = FALSE
-# leaves the text color alone
-lt(d) |> lt_color(~ a, c("white", "navy"))
+# one shared diverging scale for a and b; c has its own range (NA stays
+# unfilled), and a single color is the high end
+lt(d) |>
+  lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3)) |>
+  lt_color(~ c, "navy")
+# dark fills get white text automatically; contrast = FALSE turns that off
 lt(d) |> lt_color(~ a, c("white", "navy"), contrast = FALSE)
-# one shared diverging scale
-lt(d) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
 }
