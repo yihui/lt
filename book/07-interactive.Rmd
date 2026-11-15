@@ -70,15 +70,16 @@ lt(mtcars[, 1:5]) |> lt_interactive(search = TRUE, pager = 5, filter = FALSE)
 
 | You type | It keeps the rows where |
 |:---------------------------------|:------------------------------------------|
-| `mpg over 25` | `mpg` is greater than 25 (also `above`, `more than`) |
-| `hp under 100` | `hp` is less than 100 (also `below`, `less than`) |
-| `wt at least 3` | `wt` is 3 or more (`at most` is the other way round) |
+| `mpg over 25` | `mpg` is greater than 25 (also `above`, `more than`, `greater than`, `bigger than`, `larger than`, `>`) |
+| `hp under 100` | `hp` is less than 100 (also `below`, `less than`, `smaller than`, `fewer than`, `<`) |
+| `wt at least 3` | `wt` is 3 or more (also `greater than or equal to`, `>=`) |
+| `wt at most 3` | `wt` is 3 or less (also `no more than`, `up to`, `less than or equal to`, `<=`) |
 | `mpg between 15 and 20` | `mpg` is from 15 to 20, inclusive |
-| `cyl is 4` | `cyl` equals 4 (also `equals`) |
-| `cyl is not 4` | `cyl` is anything but 4 |
+| `cyl is 4` | `cyl` equals 4 (also `equals`, `equal to`, `=`, `==`) |
+| `cyl is not 4` | `cyl` is anything but 4 (also `not`, `isn't`, `other than`, `!=`) |
 | `cyl 6` | `cyl` contains `6`, in short form |
-| `cyl contains 6` | the same, spelled out |
-| `does not contain merc` | no cell mentions `merc` (also `excludes`) |
+| `cyl contains 6` | the same, spelled out (also `has`, `:`) |
+| `does not contain merc` | no cell mentions `merc` (also `doesn't contain`, `excludes`) |
 | `cyl is 4, mpg over 25` | both conditions hold (`,`, `;`, or `and` all work) |
 | `cyl is 4 or cyl is 6` | either one holds (`or` gives alternatives) |
 | `cyl is 4 or cyl is 6, mpg over 20` | `cyl` is 4, or `cyl` is 6 *and* `mpg` is over 20 |
