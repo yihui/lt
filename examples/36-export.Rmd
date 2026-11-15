@@ -16,7 +16,7 @@ lt_export(tbl, "cars.pdf")
 ```
 
 :::: {#fig:export-png .figure}
-![table in png](cars.png)
+![lt table exported to png](cars.png)
 
 ::: caption
 [ ](#@fig:export-png) A table exported to PNG.
@@ -24,7 +24,7 @@ lt_export(tbl, "cars.pdf")
 ::::
 
 :::: {#fig:export-pdf .figure}
-<embed src="cars.pdf" type="application/pdf" width="100%" height="300">
+![lt table exported to pdf](cars.pdf){width="100%" height="300"}
 
 ::: caption
 [ ](#@fig:export-pdf) A table exported to PDF.
