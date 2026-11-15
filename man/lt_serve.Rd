@@ -47,5 +47,9 @@ started). See the examples in the package site for
 details and the request/response format a custom server implements.
 }
 \examples{
-if (interactive()) lt_serve(lt_viewer(iris))
+# rows stay in R; the browser fetches one page at a time (needs a live session)
+if (interactive()) {
+  big = data.frame(id = 1:1e6, x = rnorm(1e6), g = sample(letters, 1e6, TRUE))
+  lt_viewer(big) |> lt_serve()
+}
 }
