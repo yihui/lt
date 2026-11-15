@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.20">
+<meta name="generator" content="litedown 1.0.21">
 <title>Column spanners</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/prism-xcode.min.css">
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.25</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -32,30 +32,29 @@
 </header>
 <main>
 <article class="">
-<p>A spanner is a label over a run of columns. Name it with a formula, or call <code>lt_spanner()</code> with no arguments to infer spanners from shared prefixes such as <code>Sepal.</code> and <code>Petal.</code>.</p>
+<p>A spanner is a label over a run of columns. Name it with a formula, or call <code>lt_spanner()</code> with no arguments to infer spanners from shared prefixes such as <code>bill_len</code> and <code>bill_dep</code>. Use <code>sep</code> for other separators.</p>
 <pre><code class="language-r">library(lt)
-tbl = lt(head(iris))
-tbl |&gt; lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
+tbl = lt(penguins[1:3, 3:6])
+tbl |&gt; lt_spanner(Bill ~ bill_len + bill_dep)
 </code></pre>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt.min.css">
-<script>((window.LT=window.LT||{}).d=window.LT.d||{})["e81b2918"]=
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["b89d90cb"]=
 {
-  "Sepal.Length": [5.1, 4.9, 4.7, 4.6, 5, 5.4],
-  "Sepal.Width": [3.5, 3, 3.2, 3.1, 3.6, 3.9],
-  "Petal.Length": [1.4, 1.4, 1.3, 1.5, 1.4, 1.7],
-  "Petal.Width": [0.2, 0.2, 0.2, 0.2, 0.2, 0.4],
-  "Species": ["setosa", "setosa", "setosa", "setosa", "setosa", "setosa"]
+  "bill_len": [39.1, 39.5, 40.3],
+  "bill_dep": [18.7, 17.4, 18],
+  "flipper_len": [181, 186, 195],
+  "body_mass": [3750, 3800, 3250]
 }
 </script>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "spanners": [
     {
-      "label": "Sepal",
-      "columns": ["Sepal.Length", "Sepal.Width"]
+      "label": "Bill",
+      "columns": ["bill_len", "bill_dep"]
     }
   ],
-  "data_key": "e81b2918"
+  "data_key": "b89d90cb"
 }
 })</script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
@@ -64,7 +63,23 @@ tbl |&gt; lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "auto_span": true,
-  "data_key": "e81b2918"
+  "data_key": "b89d90cb"
+}
+})</script>
+<pre><code class="language-r">d = data.frame(`Sales:Q1` = 1:2, `Sales:Q2` = 3:4, `Cost:Q1` = 5:6, check.names = FALSE)
+lt(d) |&gt; lt_spanner(sep = &quot;:&quot;)
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["05344ff0"]=
+{
+  "Sales:Q1": [1, 2],
+  "Sales:Q2": [3, 4],
+  "Cost:Q1": [5, 6]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "auto_span": ":",
+  "data_key": "05344ff0"
 }
 })</script>
 
@@ -72,15 +87,15 @@ tbl |&gt; lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.20</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.21</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/nav-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/prism-lite.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/link-functions.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/link-functions.min.js" defer></script>
 </body>
 </html>

@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.20">
+<meta name="generator" content="litedown 1.0.21">
 <title>Add summary rows</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/prism-xcode.min.css">
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.25</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -127,32 +127,119 @@ so that each group's rows stay together.
   grp = c(&quot;A&quot;, &quot;A&quot;, &quot;B&quot;, &quot;B&quot;), item = c(&quot;x&quot;, &quot;y&quot;, &quot;x&quot;, &quot;y&quot;),
   n = c(10, 30, 20, 40), rate = c(0.12, 0.34, 0.56, 0.78)
 )
-# a function (or its name) of a column, for every numeric column
-lt(d) |&gt; lt_summary(&quot;sum&quot;, by = ~ grp)
-# a grand summary only, with a different function per column
+# a function (or its name) for every numeric column, after each group + total
+lt(d) |&gt; lt_group(~ grp, sep = TRUE) |&gt; lt_summary(&quot;sum&quot;, by = ~ grp)
+</code></pre>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt.min.css">
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "grp": ["A", "A", "A", "B", "B", "B", null],
+    "item": ["x", "y", "Sum", "x", "y", "Sum", "Total"],
+    "n": [10, 30, 40, 20, 40, 60, 100],
+    "rate": [0.12, 0.34, 0.46, 0.56, 0.78, 1.34, 1.8]
+  },
+  "ops": [
+    {
+      "type": "summary",
+      "by": "grp",
+      "rows": [3, 6],
+      "grand": 7
+    }
+  ],
+  "row_group": "grp"
+}
+})</script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
+<pre><code class="language-r"># a grand summary only, with a different function per column
 lt(d) |&gt; lt_summary(list(n = sum, rate = &quot;mean&quot;))
-# a function of the whole data frame, for a weighted mean
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "grp": ["A", "A", "B", "B", "Total"],
+    "item": ["x", "y", "x", "y", null],
+    "n": [10, 30, 20, 40, 100],
+    "rate": [0.12, 0.34, 0.56, 0.78, 0.45]
+  },
+  "ops": [
+    {
+      "type": "summary",
+      "grand": 5
+    }
+  ]
+}
+})</script>
+<pre><code class="language-r"># chosen columns, custom labels, shown in a chosen column; no grand row
+lt(d) |&gt; lt_summary(
+  &quot;max&quot;, ~ n, by = ~ grp, label = &quot;Peak&quot;, grand = FALSE, label_col = &quot;item&quot;
+)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "grp": ["A", "A", "A", "B", "B", "B"],
+    "item": ["x", "y", "Peak", "x", "y", "Peak"],
+    "n": [10, 30, 30, 20, 40, 40],
+    "rate": [0.12, 0.34, null, 0.56, 0.78, null]
+  },
+  "ops": [
+    {
+      "type": "summary",
+      "by": "grp",
+      "rows": [3, 6]
+    }
+  ],
+  "row_group": ["grp"]
+}
+})</script>
+<pre><code class="language-r"># a function of the whole data frame, for a weighted mean
 total = function(x) list(n = sum(x$n), rate = weighted.mean(x$rate, x$n))
 lt(d) |&gt;
-  lt_summary(data_fn = total, by = ~ grp) |&gt;
+  lt_summary(data_fn = total, by = ~ grp, grand = &quot;All&quot;) |&gt;
   lt_group(~ grp, sep = TRUE) |&gt;
   lt_format(~ rate, percent = TRUE, decimals = 1)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/manual.min.css">
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "grp": ["A", "A", "A", "B", "B", "B", null],
+    "item": ["x", "y", "Subtotal", "x", "y", "Subtotal", "All"],
+    "n": [10, 30, 40, 20, 40, 60, 100],
+    "rate": [0.12, 0.34, 0.285, 0.56, 0.78, 0.706666666666667, 0.538]
+  },
+  "ops": [
+    {
+      "type": "summary",
+      "by": "grp",
+      "rows": [3, 6],
+      "grand": 7
+    },
+    {
+      "type": "fmt_number",
+      "columns": ["rate"],
+      "decimals": 1,
+      "percent": true
+    }
+  ],
+  "row_group": "grp"
+}
+})</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/manual.min.css">
 
 </article>
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.20</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.21</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/nav-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/prism-lite.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/link-functions.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/link-functions.min.js" defer></script>
 </body>
 </html>

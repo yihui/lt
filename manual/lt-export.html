@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.20">
+<meta name="generator" content="litedown 1.0.21">
 <title>Export an lt table to a file</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/prism-xcode.min.css">
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.25</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -157,33 +157,30 @@ JavaScript-based spec. This is useful for output formats that support raw
 HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 </p>
 <h2 id="sec:examples" class="unnumbered">Examples</h2>
-<pre><code class="language-r">tbl = lt(head(mtcars))
+<pre><code class="language-r">tbl = lt(mtcars[1:3, 1:3]) |&gt; lt_header(&quot;Cars&quot;)
 
 # HTML with the JavaScript spec (table built by lt.js when viewed)
-f1 = tempfile(fileext = '.html')
-lt_export(tbl, f1, method = 'raw')  # file output
+f1 = tempfile(fileext = &quot;.html&quot;)
+lt_export(tbl, f1, method = &quot;raw&quot;)
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp4ksEZT/file94278e2ea96.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmpVIrLNO/file28405d66ca54.html&quot;
 </code></pre>
-<pre><code class="language-r"># Bake a static &lt;table class=&quot;desc-table&quot;&gt; (needs Node.js or a headless browser).
+<pre><code class="language-r"># a static &lt;table class=&quot;desc-table&quot;&gt; (needs Node.js or a headless browser), returned as a
+# string: just the fragment, without the lt.css stylesheet, pretty-printed
 if (lt:::can_bake())
-  lt_export(tbl, NA, method = 'auto', fragment = TRUE, css = FALSE, tidy = TRUE)
+  lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 </code></pre>
 <pre><code>&lt;div class=&quot;lt-wrap&quot;&gt;
   &lt;table class=&quot;desc-table lt-table&quot;&gt;
+    &lt;caption class=&quot;lt-caption&quot;&gt;
+      &lt;div class=&quot;lt-title&quot;&gt;Cars
+      &lt;/div&gt;
+    &lt;/caption&gt;
     &lt;thead&gt;
       &lt;tr&gt;
         &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;mpg&lt;/th&gt;
         &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;cyl&lt;/th&gt;
         &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;disp&lt;/th&gt;
-        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;hp&lt;/th&gt;
-        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;drat&lt;/th&gt;
-        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;wt&lt;/th&gt;
-        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;qsec&lt;/th&gt;
-        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;vs&lt;/th&gt;
-        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;am&lt;/th&gt;
-        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;gear&lt;/th&gt;
-        &lt;th scope=&quot;col&quot; class=&quot;al-r&quot;&gt;carb&lt;/th&gt;
       &lt;/tr&gt;
     &lt;/thead&gt;
     &lt;tbody&gt;
@@ -191,117 +188,56 @@ if (lt:::can_bake())
         &lt;td class=&quot;al-r&quot; title=&quot;21&quot;&gt;21.0&lt;/td&gt;
         &lt;td class=&quot;al-r&quot;&gt;6&lt;/td&gt;
         &lt;td class=&quot;al-r&quot;&gt;160&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;110&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot; title=&quot;3.9&quot;&gt;3.90&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot; title=&quot;2.62&quot;&gt;2.620&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;16.46&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;0&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;1&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;4&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;4&lt;/td&gt;
       &lt;/tr&gt;
       &lt;tr&gt;
         &lt;td class=&quot;al-r&quot; title=&quot;21&quot;&gt;21.0&lt;/td&gt;
         &lt;td class=&quot;al-r&quot;&gt;6&lt;/td&gt;
         &lt;td class=&quot;al-r&quot;&gt;160&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;110&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot; title=&quot;3.9&quot;&gt;3.90&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;2.875&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;17.02&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;0&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;1&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;4&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;4&lt;/td&gt;
       &lt;/tr&gt;
       &lt;tr&gt;
         &lt;td class=&quot;al-r&quot;&gt;22.8&lt;/td&gt;
         &lt;td class=&quot;al-r&quot;&gt;4&lt;/td&gt;
         &lt;td class=&quot;al-r&quot;&gt;108&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;93&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;3.85&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot; title=&quot;2.32&quot;&gt;2.320&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;18.61&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;1&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;1&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;4&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;1&lt;/td&gt;
-      &lt;/tr&gt;
-      &lt;tr&gt;
-        &lt;td class=&quot;al-r&quot;&gt;21.4&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;6&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;258&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;110&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;3.08&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;3.215&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;19.44&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;1&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;0&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;3&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;1&lt;/td&gt;
-      &lt;/tr&gt;
-      &lt;tr&gt;
-        &lt;td class=&quot;al-r&quot;&gt;18.7&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;8&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;360&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;175&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;3.15&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot; title=&quot;3.44&quot;&gt;3.440&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;17.02&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;0&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;0&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;3&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;2&lt;/td&gt;
-      &lt;/tr&gt;
-      &lt;tr&gt;
-        &lt;td class=&quot;al-r&quot;&gt;18.1&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;6&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;225&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;105&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;2.76&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot; title=&quot;3.46&quot;&gt;3.460&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;20.22&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;1&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;0&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;3&lt;/td&gt;
-        &lt;td class=&quot;al-r&quot;&gt;1&lt;/td&gt;
       &lt;/tr&gt;
     &lt;/tbody&gt;
   &lt;/table&gt;
 &lt;/div&gt;
 </code></pre>
-<pre><code class="language-r"># PDF / PNG are rendered in a headless browser and cropped to the table.
-f2 = tempfile(fileext = '.pdf')
-f3 = tempfile(fileext = '.png')
+<pre><code class="language-r"># PDF and PNG are rendered in a headless browser and cropped to the table
+f2 = tempfile(fileext = &quot;.pdf&quot;)
+f3 = tempfile(fileext = &quot;.png&quot;)
 if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f2)
-  lt_export(tbl, f3, width = 400)
+  # the table's width in pixels, more padding, no cropping
+  lt_export(tbl, f3, width = 400, padding = c(16, 24))
+  lt_export(tbl, f3, crop = FALSE)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp4ksEZT/file9423a8748c0.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmpVIrLNO/file284024b11009.png&quot;
 </code></pre>
-<pre><code class="language-r"># The table's text as CSV or RTF.
-f4 = tempfile(fileext = '.rtf')
+<pre><code class="language-r"># the table's text as CSV or RTF
+f4 = tempfile(fileext = &quot;.rtf&quot;)
 if (lt:::has_node()) lt_export(tbl, f4)
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp4ksEZT/file94259e7ecd7.rtf&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmpVIrLNO/file28407da50875.rtf&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3, f4))
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/manual.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/manual.min.css">
 
 </article>
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.20</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.21</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/nav-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/prism-lite.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/link-functions.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/link-functions.min.js" defer></script>
 </body>
 </html>

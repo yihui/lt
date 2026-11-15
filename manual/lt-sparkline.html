@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.20">
+<meta name="generator" content="litedown 1.0.21">
 <title>Draw an inline sparkline in a column</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/prism-xcode.min.css">
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.25</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -109,26 +109,125 @@ list-column.</p>
 d = data.frame(city = c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;))
 d$temp = list(c(3, 5, 8, 6, 9), c(1, 2, 2, 4, 3), c(7, 6, 5, 6, 8))
 lt(d) |&gt; lt_sparkline(~ temp)
-# several columns read across the row, as bars on a shared scale
-m = data.frame(name = c(&quot;X&quot;, &quot;Y&quot;), q1 = c(2, 5), q2 = c(4, 3),
-  q3 = c(6, 7), q4 = c(5, 2))
-lt(m) |&gt; lt_sparkline(~ q1 + q2 + q3 + q4, type = &quot;bar&quot;, limits = c(0, 8))
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/manual.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt-plot.min.css">
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "city": ["A", "B", "C"],
+    "temp": [
+      [3, 5, 8, 6, 9],
+      [1, 2, 2, 4, 3],
+      [7, 6, 5, 6, 8]
+    ]
+  },
+  "ops": [
+    {
+      "type": "sparkline",
+      "columns": ["temp"],
+      "kind": "line",
+      "width": 120,
+      "height": 20
+    }
+  ]
+}
+})</script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
+<pre><code class="language-r"># bars, a color, a shared vertical scale (so rows are comparable), and a size
+lt(d) |&gt; lt_sparkline(
+  ~ temp, type = &quot;bar&quot;, color = &quot;#4caf50&quot;, limits = c(0, 10),
+  width = 200, height = 30
+)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "city": ["A", "B", "C"],
+    "temp": [
+      [3, 5, 8, 6, 9],
+      [1, 2, 2, 4, 3],
+      [7, 6, 5, 6, 8]
+    ]
+  },
+  "ops": [
+    {
+      "type": "sparkline",
+      "columns": ["temp"],
+      "kind": "bar",
+      "color": "#4caf50",
+      "min": 0,
+      "max": 10,
+      "width": 200,
+      "height": 30
+    }
+  ]
+}
+})</script>
+<pre><code class="language-r"># several columns read across the row (later ones hidden, or kept visible)
+m = data.frame(name = c(&quot;X&quot;, &quot;Y&quot;), q1 = c(2, 5), q2 = c(4, 3), q3 = c(6, 7))
+lt(m) |&gt; lt_sparkline(~ q1 + q2 + q3)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "name": ["X", "Y"],
+    "q1": [2, 5],
+    "q2": [4, 3],
+    "q3": [6, 7]
+  },
+  "ops": [
+    {
+      "type": "hide",
+      "columns": ["q2", "q3"]
+    },
+    {
+      "type": "sparkline",
+      "columns": ["q1", "q2", "q3"],
+      "kind": "line",
+      "width": 120,
+      "height": 20
+    }
+  ]
+}
+})</script>
+<pre><code class="language-r">lt(m) |&gt; lt_sparkline(~ q1 + q2 + q3, hide = FALSE)
+</code></pre>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data": {
+    "name": ["X", "Y"],
+    "q1": [2, 5],
+    "q2": [4, 3],
+    "q3": [6, 7]
+  },
+  "ops": [
+    {
+      "type": "sparkline",
+      "columns": ["q1", "q2", "q3"],
+      "kind": "line",
+      "width": 120,
+      "height": 20
+    }
+  ]
+}
+})</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/manual.min.css">
 
 </article>
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.20</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.21</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/nav-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/prism-lite.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/link-functions.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/link-functions.min.js" defer></script>
 </body>
 </html>

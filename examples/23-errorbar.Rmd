@@ -16,3 +16,16 @@ lt(d) |>
   lt_errorbar(Est ~ Lo + Hi, ref = 0, into = "Forest", hide = FALSE,
     axis = "Effect (95% CI)")
 ```
+
+Several series can share a cell, colored with a legend, on a scale you set with `limits`.
+
+```{r}
+d2 = data.frame(
+  Term = c("A", "B"), E1 = c(0.2, 0.4), L1 = c(0, 0.2), U1 = c(0.4, 0.6),
+  E2 = c(-0.1, 0.1), L2 = c(-0.3, -0.1), U2 = c(0.1, 0.3)
+)
+lt(d2) |> lt_errorbar(
+  E1 ~ L1 + U1, E2 ~ L2 + U2, ref = 0, color = TRUE,
+  labels = c("Drug A", "Drug B"), limits = c(-0.5, 1)
+)
+```

@@ -12,4 +12,7 @@ d = data.frame(
 )
 lt(d) |>
   lt_dotplot(~ Before + After, color = TRUE, stagger = TRUE, axis = "Score")
+lt(d) |>
+  lt_dotplot(~ Before + After, color = c("#999", "#1a9641"),
+    labels = c("Baseline", "Follow-up"), limits = c(0, 6), axis = FALSE)
 ```

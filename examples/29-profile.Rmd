@@ -6,5 +6,5 @@ title: Column profiles
 
 ```{r}
 library(lt)
-lt(iris) |> lt_interactive(profile = TRUE, pager = 5)
+lt(penguins) |> lt_interactive(profile = TRUE, pager = 5)
 ```

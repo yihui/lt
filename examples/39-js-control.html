@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.20">
+<meta name="generator" content="litedown 1.0.21">
 <title>Driving a table from outside</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/prism-xcode.min.css">
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.25</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -39,30 +39,26 @@
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt-interactive.min.js" defer></script>
 <p><code>LT.render(element, spec)</code> builds a table whenever you like, and returns it. Every interactive table carries a controller at <code>el._lt</code>, so outside widgets can filter it: here a <code>&lt;select&gt;</code> keeps one species.</p>
-<pre><code class="language-js">const iris = {
-  &quot;Sepal.Length&quot;: [5.1, 4.9, 7, 6.4, 6.3, 5.8],
-  &quot;Sepal.Width&quot;: [3.5, 3, 3.2, 3.2, 3.3, 2.7],
-  &quot;Petal.Length&quot;: [1.4, 1.4, 4.7, 4.5, 6, 5.1],
-  &quot;Petal.Width&quot;: [0.2, 0.2, 1.4, 1.5, 2.5, 1.9],
-  &quot;Species&quot;: [&quot;setosa&quot;, &quot;setosa&quot;, &quot;versicolor&quot;, &quot;versicolor&quot;, &quot;virginica&quot;, &quot;virginica&quot;]
+<pre><code class="language-js">const pen = {
+  &quot;species&quot;: [&quot;Adelie&quot;, &quot;Adelie&quot;, &quot;Gentoo&quot;, &quot;Gentoo&quot;, &quot;Chinstrap&quot;, &quot;Chinstrap&quot;],
+  &quot;bill_len&quot;: [39.1, 39.5, 46.1, 50, 46.5, 50],
+  &quot;body_mass&quot;: [3750, 3800, 4500, 5700, 3500, 3900]
 };
 </code></pre>
-<script>const iris = {
-  "Sepal.Length": [5.1, 4.9, 7, 6.4, 6.3, 5.8],
-  "Sepal.Width": [3.5, 3, 3.2, 3.2, 3.3, 2.7],
-  "Petal.Length": [1.4, 1.4, 4.7, 4.5, 6, 5.1],
-  "Petal.Width": [0.2, 0.2, 1.4, 1.5, 2.5, 1.9],
-  "Species": ["setosa", "setosa", "versicolor", "versicolor", "virginica", "virginica"]
+<script>const pen = {
+  "species": ["Adelie", "Adelie", "Gentoo", "Gentoo", "Chinstrap", "Chinstrap"],
+  "bill_len": [39.1, 39.5, 46.1, 50, 46.5, 50],
+  "body_mass": [3750, 3800, 4500, 5700, 3500, 3900]
 };</script>
 <pre><code class="language-js">const host = document.createElement(&quot;div&quot;);
 document.currentScript.after(host);
 addEventListener(&quot;load&quot;, () =&gt; {
-  const t = LT.render(host, { data: iris, interactive: { search: false, pager: [5] } });
+  const t = LT.render(host, { data: pen, interactive: { search: false, pager: [5] } });
   const sel = document.createElement(&quot;select&quot;);
   sel.innerHTML = '&lt;option value=&quot;&quot;&gt;All species&lt;/option&gt;' +
-    [...new Set(t._lt.spec.data.Species)].map(s =&gt; `&lt;option&gt;${s}&lt;/option&gt;`).join(&quot;&quot;);
+    [...new Set(t._lt.spec.data.species)].map(s =&gt; `&lt;option&gt;${s}&lt;/option&gt;`).join(&quot;&quot;);
   sel.onchange = () =&gt; t._lt.filter(
-    &quot;species&quot;, sel.value ? row =&gt; row.Species === sel.value : null
+    &quot;species&quot;, sel.value ? row =&gt; row.species === sel.value : null
   );
   t.before(sel);
 });
@@ -70,12 +66,12 @@ addEventListener(&quot;load&quot;, () =&gt; {
 <script>const host = document.createElement("div");
 document.currentScript.after(host);
 addEventListener("load", () => {
-  const t = LT.render(host, { data: iris, interactive: { search: false, pager: [5] } });
+  const t = LT.render(host, { data: pen, interactive: { search: false, pager: [5] } });
   const sel = document.createElement("select");
   sel.innerHTML = '<option value="">All species</option>' +
-    [...new Set(t._lt.spec.data.Species)].map(s => `<option>${s}</option>`).join("");
+    [...new Set(t._lt.spec.data.species)].map(s => `<option>${s}</option>`).join("");
   sel.onchange = () => t._lt.filter(
-    "species", sel.value ? row => row.Species === sel.value : null
+    "species", sel.value ? row => row.species === sel.value : null
   );
   t.before(sel);
 });</script>
@@ -84,15 +80,15 @@ addEventListener("load", () => {
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.20</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.21</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/nav-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/prism-lite.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/link-functions.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/link-functions.min.js" defer></script>
 </body>
 </html>

@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.20">
+<meta name="generator" content="litedown 1.0.21">
 <title>Render an lt_tbl to HTML</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/prism-xcode.min.css">
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.25</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -81,8 +81,10 @@ enabled also gets the interactivity extension: its stylesheet with
 <p>A character scalar containing HTML.
 </p>
 <h2 id="sec:examples" class="unnumbered">Examples</h2>
-<pre><code class="language-r">tbl = lt(head(mtcars))
+<pre><code class="language-r">tbl = lt(mtcars[1:3, 1:3])
+# an HTML fragment with the assets inlined
 html = format(tbl)
+# a full page, linking the assets instead of inlining them
 format(tbl, fragment = FALSE, inline_assets = FALSE)
 </code></pre>
 <pre><code>&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;lt&lt;/title&gt;
@@ -92,38 +94,933 @@ format(tbl, fragment = FALSE, inline_assets = FALSE)
 &lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   &quot;data&quot;: {
-    &quot;mpg&quot;: [21, 21, 22.8, 21.4, 18.7, 18.1],
-    &quot;cyl&quot;: [6, 6, 4, 6, 8, 6],
-    &quot;disp&quot;: [160, 160, 108, 258, 360, 225],
-    &quot;hp&quot;: [110, 110, 93, 110, 175, 105],
-    &quot;drat&quot;: [3.9, 3.9, 3.85, 3.08, 3.15, 2.76],
-    &quot;wt&quot;: [2.62, 2.875, 2.32, 3.215, 3.44, 3.46],
-    &quot;qsec&quot;: [16.46, 17.02, 18.61, 19.44, 17.02, 20.22],
-    &quot;vs&quot;: [0, 0, 1, 1, 0, 1],
-    &quot;am&quot;: [1, 1, 1, 0, 0, 0],
-    &quot;gear&quot;: [4, 4, 4, 3, 3, 3],
-    &quot;carb&quot;: [4, 4, 1, 1, 2, 1]
+    &quot;mpg&quot;: [21, 21, 22.8],
+    &quot;cyl&quot;: [6, 6, 4],
+    &quot;disp&quot;: [160, 160, 108]
   }
 }
 })&lt;/script&gt;
 &lt;script src=&quot;https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js&quot; defer&gt;&lt;/script&gt;
 &lt;/body&gt;&lt;/html&gt;
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/manual.min.css">
+<pre><code class="language-r"># without the CSS (or both: assets = FALSE)
+format(tbl, assets = &quot;js&quot;)
+</code></pre>
+<pre><code>&lt;script&gt;((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  &quot;data&quot;: {
+    &quot;mpg&quot;: [21, 21, 22.8],
+    &quot;cyl&quot;: [6, 6, 4],
+    &quot;disp&quot;: [160, 160, 108]
+  }
+}
+})&lt;/script&gt;
+&lt;script&gt;
+/* lt.js — build semantic &lt;table class=&quot;desc-table&quot;&gt; from JSON spec.
+ * LT.build(spec) from inline &lt;script&gt; renders in place; LT.render(el, spec)
+ * renders into container anytime. One runtime per page serves all tables.
+ */
+(root =&gt; {
+  &quot;use strict&quot;;
+  if (root.LT?.buildHtml) return;  // duplicate include: no-op
+
+  // DOM helpers, shared with the extensions via LT.
+  const $ = (el, sel) =&gt; el.querySelector(sel),
+        $$ = (el, sel) =&gt; el.querySelectorAll(sel),
+        on = (t, type, fn, opts) =&gt; t.addEventListener(type, fn, opts),
+        off = (t, type, fn) =&gt; t.removeEventListener(type, fn);
+
+  // Inline-graphics cell renderers keyed by op type, registered by lt-plot.js
+  // (loaded before core). Live reference re-exposed on root.LT, so plot
+  // module loaded before or after core registers into same object. Empty
+  // without plot module; core has no plot code (see LT.cells docs).
+  const cellRenderers = root.LT?.cells || {};
+
+  // `[&lt;]` not `&lt;` avoids `&lt;/…`, so file is safe to inline in &lt;script&gt;.
+  const esc = s =&gt; String(s)
+    .replace(/&amp;/g, &quot;&amp;amp;&quot;).replace(/[&lt;]/g, &quot;&amp;lt;&quot;)
+    .replace(/&gt;/g, &quot;&amp;gt;&quot;).replace(/&quot;/g, &quot;&amp;quot;&quot;);
+  // Text fields arrive as plain string (escape) or, if wrapped in I() in R,
+  // one-element array (verbatim raw HTML). `txt` handles both.
+  const txt = v =&gt; Array.isArray(v) ? String(v[0] ?? &quot;&quot;) : esc(v);
+  // Raw if `raw`, else escaped; for already-stringified values (e.g. cells of
+  // columns in spec.html_cols).
+  const escIf = (raw, s) =&gt; raw ? String(s ?? &quot;&quot;) : esc(s);
+  // Column `c` raw HTML? `hc` = spec.html_cols: true (all) or column names.
+  const rawCol = (hc, c) =&gt; hc === true || (Array.isArray(hc) &amp;&amp; hc.includes(c));
+  const sup = i =&gt; `&lt;sup class=&quot;lt-fnref&quot;&gt;${[].concat(i)}&lt;/sup&gt;`;  // i: number or array (joined by &quot;,&quot;)
+  // Stringify; null/undefined -&gt; &quot;&quot;. ±Infinity -&gt; ∞/-∞ (ASCII minus, raw
+  // values); formatted columns get typographic minus via fmtNumber.
+  const str = v =&gt; v === Infinity ? &quot;∞&quot; : v === -Infinity ? &quot;-∞&quot; : String(v ?? &quot;&quot;);
+
+  // --- Number formatting ---
+  const isNum = v =&gt; typeof v === &quot;number&quot; &amp;&amp; isFinite(v);
+  // Like isNum, plus ±Infinity (fmtNumber renders ∞/−∞).
+  const isNumInf = v =&gt; isNum(v) || Math.abs(v) === Infinity;
+  // Numeric column: first non-null value is a number.
+  const numCol = col =&gt; col?.length &amp;&amp; typeof col.find(v =&gt; v != null) === &quot;number&quot;;
+
+  // Column order: prefer spec.columns from R; JSON objects put integer-like
+  // keys (&quot;1&quot;, &quot;2&quot;) first, so Object.keys(data) would scramble numeric names.
+  const colOrder = spec =&gt; (spec.columns || Object.keys(spec.data || {}))
+    .filter(c =&gt; c in (spec.data || {}));
+
+  // Column label: last &quot;label&quot; op naming it, else `c`.
+  const colLabel = (ops, c) =&gt; {
+    let lbl = c;
+    for (const op of ops) if (op.type === &quot;label&quot; &amp;&amp; op.labels?.[c] != null) lbl = op.labels[c];
+    return lbl;
+  };
+
+  // Expand exponential notation (&quot;4.2e+3&quot;) to plain decimal, keeping
+  // toPrecision digits.
+  function expandExp(s) {
+    if (!/e/i.test(s)) return s;
+    const [, sign, int, frac = &quot;&quot;, expStr] =
+      s.match(/^(-?)(\d+)(?:\.(\d+))?e([+-]?\d+)$/i);
+    const exp = +expStr, digits = int + frac, point = int.length + exp;
+    let out;
+    if (point &lt;= 0) out = `0.${&quot;0&quot;.repeat(-point)}${digits}`;
+    else if (point &gt;= digits.length) out = digits + &quot;0&quot;.repeat(point - digits.length);
+    else out = `${digits.slice(0, point)}.${digits.slice(point)}`;
+    return sign + out;
+  }
+
+  function fmtNumber(v, decimals, bigMark, sigDigits) {
+    if (v === Infinity) return &quot;∞&quot;;
+    if (v === -Infinity) return &quot;−∞&quot;;
+    if (!isNum(v)) return null;
+    let s = sigDigits != null ? expandExp(v.toPrecision(sigDigits)) :
+            decimals != null ? v.toFixed(decimals) : String(v);
+    if (/^-0(\.0+)?$/.test(s)) s = s.slice(1);
+    if (bigMark) {
+      const parts = s.split(&quot;.&quot;);
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, bigMark);
+      s = parts.join(&quot;.&quot;);
+    }
+    if (s[0] === &quot;-&quot;) s = `−${s.slice(1)}`;
+    return decimals != null || bigMark || sigDigits != null ? s : null;
+  }
+
+  // --- Pattern merge ---
+  function mergeVals(vals, pattern) {
+    if (!pattern) return vals.filter(v =&gt; v !== &quot;&quot;).join(&quot; &quot;);
+    let remaining = pattern, result = &quot;&quot;;
+    while (remaining) {
+      const m = remaining.match(/&lt;&lt;(.*?)&gt;&gt;/);
+      if (!m) { result += subRefs(remaining, vals); break; }
+      if (m.index &gt; 0) result += subRefs(remaining.slice(0, m.index), vals);
+      const block = m[1],
+            refs = [...block.matchAll(/\{(\d+)\}/g)].map(x =&gt; +x[1]);
+      if (!refs.length || refs.every(i =&gt; vals[i - 1] !== &quot;&quot;))
+        result += subRefs(block, vals);
+      remaining = remaining.slice(m.index + m[0].length);
+    }
+    return result;
+  }
+  function subRefs(s, vals) {
+    vals.forEach((v, i) =&gt; s = s.split(`{${i + 1}}`).join(v));
+    return s;
+  }
+
+  // Default text formatter for a column of date-times (JS `Date`s, i.e. instants),
+  // or null if it isn't one: local time as &quot;YYYY-MM-DD HH:MM:SS&quot; (the Swedish
+  // locale's format). Sorts as text, so it also serves filter expressions
+  // (`x &gt;= &quot;2024-01-05&quot;`). R dates (`spec.dates`) arrive as &quot;YYYY-MM-DD&quot; strings,
+  // which need no formatting.
+  const dateFmt = col =&gt; {
+    const vs = col?.filter(v =&gt; v != null &amp;&amp; !isNaN(v));
+    return vs?.length &amp;&amp; vs.every(v =&gt; v instanceof Date) ?
+      d =&gt; isNaN(d) ? &quot;&quot; : d.toLocaleString(&quot;sv&quot;) : null;
+  };
+
+  // --- Auto-format date and numeric columns ---
+  function autoFmt(spec, display, nRow) {
+    if (spec.auto_format === false) return;
+    const data = spec.data || {}, ops = spec.ops || [],
+          colNames = colOrder(spec);
+
+    for (const c of colNames) {
+      const f = dateFmt(data[c]);
+      if (f) data[c].forEach((v, i) =&gt; { if (v != null) display[c][i] = f(v); });
+    }
+
+    const fmtCols = new Set();
+    for (const op of ops) {
+      if (op.type === &quot;fmt_number&quot;) for (const c of (op.columns || colNames)) fmtCols.add(c);
+    }
+
+    for (const c of colNames) {
+      if (fmtCols.has(c)) continue;
+      const col = data[c];
+      if (!numCol(col)) continue;
+
+      const lbl = colLabel(ops, c),
+            pct = /%|[ _](pct|percent)$/i.test(lbl);
+
+      if (/year/i.test(lbl) &amp;&amp; col.every(v =&gt; v == null || /^\d{4}$/.test(String(v)))) continue;
+
+      // Decimals: max significant decimals across column, capped by
+      // largest integer-part width (~4 significant digits): &lt;1 up to 4,
+      // 10-99 2, &gt;=1000 0.
+      let maxInt = 0, n = 0;
+      for (const v of col) {
+        if (!isNum(v)) continue;
+        // Integer digits
+        const a = Math.abs(pct ? v * 100 : v),
+              intW = a &lt; 1 ? 0 : Math.floor(Math.log10(a)) + 1;
+        if (intW &gt; maxInt) maxInt = intW;
+        // Significant decimals (trailing zeros stripped; pct adjusts
+        // *100)
+        const m = String(v).match(/\.(\d+)/);
+        if (!m) continue;
+        const d = m[1].replace(/0+$/, &quot;&quot;).length - (pct ? 2 : 0);
+        if (d &gt; n) n = d;
+      }
+      // Cap 4 decimals minus integer width; n &gt;= 0, so only upper cap.
+      n = Math.min(n, Math.max(4 - maxInt, 0));
+
+      for (let i = 0; i &lt; nRow; i++) {
+        const v = col[i];
+        if (!isNumInf(v)) continue;
+        const s = fmtNumber(pct ? v * 100 : v, n, &quot; &quot;);
+        if (s != null) display[c][i] = s + (pct ? &quot;%&quot; : &quot;&quot;);
+      }
+    }
+  }
+
+  // --- Apply ops to data columns, return display strings per column ---
+  function applyOps(spec) {
+    const data = spec.data || {},
+          ops = spec.ops || [],
+          colNames = colOrder(spec),
+          nRow = colNames.length ? data[colNames[0]].length : 0;
+
+    // display[col][row] = string
+    const display = {};
+    for (const c of colNames) {
+      display[c] = data[c].map(str);
+    }
+
+    autoFmt(spec, display, nRow);
+
+    // Run fn(col, row, raw) over existing cells of columns.
+    const eachCell = (cols, fn) =&gt; {
+      for (const c of cols) {
+        if (!data[c]) continue;
+        for (let i = 0; i &lt; nRow; i++) fn(c, i, data[c][i]);
+      }
+    };
+
+    for (const op of ops) {
+      const cols = op.columns || colNames;
+      switch (op.type) {
+        case &quot;fmt_number&quot;:
+          eachCell(cols, (c, i, raw) =&gt; {
+            if (!isNumInf(raw)) return;
+            // toPrecision drops floating-point noise (0.56 * 100 = 56.00000000000001)
+            const v = op.percent === true ? +(raw * 100).toPrecision(15) : raw,
+                  psfx = op.percent ? &quot;%&quot; : &quot;&quot;,
+                  f = fmtNumber(v, op.decimals, op.big_mark ?? &quot;&quot;, op.sig_digits),
+                  pfx = op.prefix || &quot;&quot;, sfx = (op.suffix || &quot;&quot;) + psfx;
+            if (f != null) display[c][i] = pfx + f + sfx;
+            else if (pfx || sfx) display[c][i] = pfx + String(v) + sfx;
+          });
+          break;
+        case &quot;fmt_date&quot;:
+          eachCell(cols, (c, i, raw) =&gt; {
+            if (raw == null) return;
+            // a &quot;YYYY-MM-DD&quot; date is a calendar day: parse as local, not UTC
+            const d = raw instanceof Date ? raw :
+              new Date(/^\d{4}-\d\d-\d\d$/.test(raw) ? raw + &quot;T00:00&quot; : raw);
+            if (isNaN(d)) return;
+            display[c][i] = op.method ? d[op.method]() :
+              op.options ? d.toLocaleDateString(op.locale, op.options) :
+              d.toLocaleDateString(op.locale);
+          });
+          break;
+        case &quot;sub&quot;:
+          eachCell(cols, (c, i, raw) =&gt; {
+            if (op.small != null &amp;&amp; isNum(raw) &amp;&amp; raw !== 0 &amp;&amp;
+                Math.abs(raw) &lt; op.small) {
+              display[c][i] = op.small_text ?? `&lt;${op.small}`;
+            } else if (op.zero != null &amp;&amp; raw === 0) {
+              display[c][i] = op.zero;
+            } else if (op.missing != null &amp;&amp; raw == null) {
+              display[c][i] = op.missing;
+            }
+          });
+          break;
+        case &quot;merge&quot;: {
+          const mCols = op.columns;
+          if (!mCols || mCols.length &lt; 2) break;
+          const target = mCols[0];
+          for (let i = 0; i &lt; nRow; i++) {
+            const vals = mCols.map(c =&gt; display[c]?.[i] ?? &quot;&quot;);
+            display[target][i] = mergeVals(vals, op.pattern);
+          }
+          break;
+        }
+      }
+    }
+
+    // Missing (null/NA) default: em dash unless spec.missing overrides (&quot;&quot;
+    // = blank). Per-column lt_sub(missing=) already filled above, so only
+    // still-empty null cells get default; empty strings stay.
+    const miss = spec.missing === undefined ? &quot;—&quot; : spec.missing;
+    if (miss) {
+      for (const c of colNames)
+        for (let i = 0; i &lt; nRow; i++)
+          if (data[c][i] == null &amp;&amp; display[c][i] === &quot;&quot;) display[c][i] = miss;
+    }
+
+    return { display, nRow };
+  }
+
+  // --- Resolve structural spec fields from ops + data ---
+  function resolveSpec(spec) {
+    const data = spec.data || {},
+          ops = spec.ops || [],
+          colNames = colOrder(spec),
+          // lt_summary(): the grand row (always last) is pinned in &lt;tfoot&gt;, not a body row
+          sm = ops.find(op =&gt; op.type === &quot;summary&quot;),
+          nRow = (colNames.length ? data[colNames[0]].length : 0) - (sm?.grand ? 1 : 0),
+          // Run fn on each op of type, in document order.
+          onOp = (t, fn) =&gt; { for (const op of ops) if (op.type === t) fn(op); };
+
+    // row_group: array = rowspan mode; string = separator-row mode
+    let rowGroupSep = typeof spec.row_group === &quot;string&quot;;
+    const rowGroupCols = Array.isArray(spec.row_group) ? spec.row_group
+          : (spec.row_group ? [spec.row_group] : []);
+    if (!rowGroupSep &amp;&amp; rowGroupCols.length === 1 &amp;&amp; spec.auto_sep !== false &amp;&amp;
+        !numCol(data[rowGroupCols[0]]) &amp;&amp;
+        data[rowGroupCols[0]]?.some(v =&gt; (v + &quot;&quot;).length &gt; 20)) rowGroupSep = true;
+
+    // Hidden columns: row_group, merge sources, explicit hide op
+    const hidden = new Set();
+    for (const g of rowGroupCols) hidden.add(g);
+    onOp(&quot;merge&quot;, op =&gt; {
+      if (op.hide !== false &amp;&amp; op.columns)
+        op.columns.slice(1).forEach(c =&gt; hidden.add(c));
+    });
+    onOp(&quot;hide&quot;, op =&gt; (op.columns || []).forEach(c =&gt; hidden.add(c)));
+
+    // Visible columns after hiding
+    let visible = colNames.filter(c =&gt; !hidden.has(c));
+
+    // Apply move
+    onOp(&quot;move&quot;, op =&gt; {
+      const toMove = (op.columns || []).filter(c =&gt; visible.includes(c));
+      if (!toMove.length) return;
+      const rest = visible.filter(c =&gt; !toMove.includes(c));
+      if (op.after == null) {
+        visible = [...toMove, ...rest];
+      } else {
+        const pos = rest.indexOf(op.after);
+        if (pos &gt;= 0) visible = [...rest.slice(0, pos + 1), ...toMove, ...rest.slice(pos + 1)];
+      }
+    });
+
+    // arr[i] = val, i = position of c in `visible`.
+    const setByCol = (arr, c, val) =&gt; { const i = visible.indexOf(c); if (i &gt;= 0) arr[i] = val; };
+
+    // Alignment: default from data type (number→right, else left), then overrides
+    const align = visible.map(c =&gt; numCol(data[c]) ? &quot;right&quot; : &quot;left&quot;);
+    onOp(&quot;align&quot;, op =&gt; { for (const c of (op.columns || [])) setByCol(align, c, op.align); });
+
+    // Column labels
+    const autoLbl = s =&gt; spec.auto_label === false ? s : s.replace(/[._]/g, &quot; &quot;),
+          colLabels = visible.map(autoLbl);
+    onOp(&quot;label&quot;, op =&gt; {
+      for (const [c, lbl] of Object.entries(op.labels || {})) setByCol(colLabels, c, lbl);
+    });
+
+    // Column widths + whole-table width
+    let colWidths, tableWidth;
+    onOp(&quot;width&quot;, op =&gt; {
+      if (op.table) tableWidth = op.table;
+      if (!op.widths) return;
+      if (!colWidths) colWidths = visible.map(() =&gt; &quot;&quot;);
+      for (const [c, w] of Object.entries(op.widths)) setByCol(colWidths, c, w);
+    });
+
+    // Indent
+    const indent = new Array(nRow).fill(0);
+    onOp(&quot;indent&quot;, op =&gt; {
+      if (op.rows) for (const r of op.rows) indent[r - 1] = op.level ?? 1;
+    });
+
+    // Runs of equal consecutive values in col -&gt; [{label, rows (1-based)}];
+    // for separator groups and rowspans.
+    const runs = col =&gt; {
+      const out = [];
+      for (let i = 0; i &lt; nRow;) {
+        const label = str(col[i]), rows = [i + 1];
+        while (++i &lt; nRow &amp;&amp; str(col[i]) === label) rows.push(i + 1);
+        out.push({ label, rows });
+      }
+      return out;
+    };
+
+    // Row groups from data column (separator mode); label raw if source
+    // column in html_cols.
+    let groups = [];
+    if (rowGroupSep &amp;&amp; rowGroupCols.length &amp;&amp; data[rowGroupCols[0]]) {
+      const raw = rawCol(spec.html_cols, rowGroupCols[0]);
+      groups.push(...runs(data[rowGroupCols[0]]).map(g =&gt; ({ ...g, raw })));
+    }
+    // Manual groups (label always escaped: comes from R arg name, cannot
+    // carry I())
+    onOp(&quot;row_group&quot;, op =&gt; groups.push({ label: op.label, rows: op.rows }));
+    // Group ordering
+    onOp(&quot;group_order&quot;, op =&gt; {
+      if (!groups.length) return;
+      const ordered = [], rest = [];
+      for (const lbl of (op.order || [])) {
+        const g = groups.find(x =&gt; x.label === lbl);
+        if (g) ordered.push(g);
+      }
+      for (const g of groups) if (!ordered.includes(g)) rest.push(g);
+      groups = [...ordered, ...rest];
+    });
+
+    // Rowspan groups: compute span sizes for each group column
+    const rowSpans = [];
+    if (!rowGroupSep &amp;&amp; rowGroupCols.length) {
+      for (const gc of rowGroupCols) {
+        const spans = new Array(nRow).fill(0);
+        for (const r of runs(data[gc] || [])) spans[r.rows[0] - 1] = r.rows.length;
+        rowSpans.push({ col: gc, label: colLabel(ops, gc), spans });
+      }
+    }
+
+    // Styles: the style ops are consumed directly (css/class/columns/rows/test).
+    const styles = ops.filter(op =&gt; op.type === &quot;style&quot;);
+
+    // Explicit spanners: reorder columns to final (post-move) body order.
+    // Spanner matches visual position of first column, then spans next
+    // columns.length cells, so a non-leftmost first column would misalign
+    // header.
+    let spanners = (spec.spanners || []).map(sp =&gt; {
+      const cols = sp.columns.slice().sort((a, b) =&gt; visible.indexOf(a) - visible.indexOf(b));
+      return { ...sp, columns: cols };
+    });
+    if (spec.auto_span) {
+      const sep = typeof spec.auto_span === &quot;string&quot; ? new RegExp(spec.auto_span) : /[._]/;
+      spanners = [...spanners];
+      for (let i = 0; i &lt; visible.length;) {
+        const m = visible[i].match(sep);
+        if (!m) { i++; continue; }
+        const prefix = visible[i].slice(0, m.index);
+        let j = i + 1;
+        while (j &lt; visible.length) {
+          const m2 = visible[j].match(sep);
+          if (!m2 || visible[j].slice(0, m2.index) !== prefix) break;
+          j++;
+        }
+        if (j - i &gt;= 2) {
+          spanners.push({ label: prefix, columns: visible.slice(i, j) });
+          for (let k = i; k &lt; j; k++) {
+            const mk = visible[k].match(sep);
+            if (mk) colLabels[k] = autoLbl(visible[k].slice(mk.index + mk[0].length));
+          }
+        }
+        i = j;
+      }
+    }
+
+    // Inline-graphics cells: op type with renderer on LT.cells (from
+    // lt-plot.js) draws its value column as inline SVG. Renderer maps op to
+    // per-column config; pushRow and footer consult cellMap[col] = { rnd,
+    // cfg }.
+    const cellMap = {};
+    for (const op of ops) {
+      const rnd = cellRenderers[op.type];
+      if (!rnd) continue;
+      const cfgs = rnd.resolve(op) || {};
+      for (const c of Object.keys(cfgs)) cellMap[c] = { rnd, cfg: cfgs[c] };
+    }
+
+    return {
+      visible, align, colLabels, colWidths, tableWidth, indent,
+      groups, rowSpans, styles, spanners, cellMap,
+      sum: sm &amp;&amp; { by: sm.by, rows: sm.rows || [], grand: sm.grand },
+      footnotes: spec.footnotes || [],
+      notes: spec.notes || [],
+      header: spec.header || {},
+      nRow
+    };
+  }
+
+  // Footnotes: dedup by text, number 1..N by first appearance.
+  function indexFootnotes(fns) {
+    const order = [], idx = {};
+    fns.forEach(f =&gt; {
+      if (idx[f.text] == null) { idx[f.text] = order.length + 1; order.push(f.text); }
+    });
+    return { order, idx };
+  }
+
+  // Footnote indices (sorted, deduped) for (type, value) location; [] if none.
+  // `val` scalar: title group, column, spanner label, or row-group label, per
+  // `type`.
+  const matcher = (fns, idx) =&gt; (type, val) =&gt; {
+    const hits = new Set();
+    for (const f of fns) {
+      const loc = f.location;
+      if (loc.type !== type) continue;
+      if (type === &quot;title&quot; ? loc.group === val
+        : type === &quot;column_labels&quot; ? loc.columns.includes(val)
+        : type === &quot;column_spanners&quot; ? loc.spanners.includes(val)
+        : type === &quot;row_groups&quot; &amp;&amp; (loc.match === &quot;all&quot; ||
+          (loc.match === &quot;exact&quot; &amp;&amp; loc.values.includes(val)) ||
+          (loc.match === &quot;starts_with&quot; &amp;&amp; val.startsWith(loc.value))))
+        hits.add(idx[f.text]);
+    }
+    return [...hits].sort((a, b) =&gt; a - b);
+  };
+
+  function sortByGroups(spec) {
+    if (spec.sort === false || !spec.row_group) return;
+    const data = spec.data || {},
+          cols = [].concat(spec.row_group),
+          colNames = colOrder(spec),
+          nRow = colNames.length ? data[colNames[0]].length : 0;
+    if (!nRow) return;
+    const idx = Array.from({length: nRow}, (_, i) =&gt; i);
+    // Within a group, summary rows follow its members; the grand row goes last
+    const sm = (spec.ops || []).find(op =&gt; op.type === &quot;summary&quot;),
+          rank = new Array(nRow).fill(0);
+    for (const r of sm?.rows || []) rank[r - 1] = 1;
+    if (sm?.grand) rank[sm.grand - 1] = 2;
+    idx.sort((a, b) =&gt; {
+      for (const c of cols) {
+        const va = data[c]?.[a], vb = data[c]?.[b];
+        if (va == vb) continue;
+        if (va == null) return 1;
+        if (vb == null) return -1;
+        if (va &lt; vb) return -1;
+        if (va &gt; vb) return 1;
+      }
+      return rank[a] - rank[b];
+    });
+    for (const c of colNames) data[c] = idx.map(i =&gt; data[c][i]);
+    // Remap 1-based row indices in ops to new order
+    const newPos = new Array(nRow);
+    for (let i = 0; i &lt; nRow; i++) newPos[idx[i]] = i + 1;
+    for (const op of (spec.ops || [])) {
+      if (op.rows) op.rows = op.rows.map(r =&gt; newPos[r - 1]);
+      if (op.grand) op.grand = newPos[op.grand - 1];
+    }
+  }
+
+  // Materialize `add_col` ops: empty column (op.value ?? &quot;&quot;) from shipped
+  // name, so runtime treats it as ordinary. Appended last (lt_move()
+  // positions it).
+  function addColumns(spec) {
+    const data = spec.data || (spec.data = {}),
+          nRow = data[colOrder(spec)[0]]?.length || 0;
+    for (const op of (spec.ops || []))
+      if (op.type === &quot;add_col&quot; &amp;&amp; op.column &amp;&amp; !(op.column in data)) {
+        data[op.column] = new Array(nRow).fill(op.value ?? &quot;&quot;);
+        // keep new column in explicit column order, if shipped
+        if (spec.columns &amp;&amp; !spec.columns.includes(op.column))
+          spec.columns = [...spec.columns, op.column];
+      }
+  }
+
+  function buildHtml(spec) {
+    sortByGroups(spec);
+    addColumns(spec);
+    const data = spec.data || {},
+          { display, nRow } = applyOps(spec),
+          { visible: cols, align, colLabels, colWidths, tableWidth, indent,
+            groups, rowSpans, styles, spanners, cellMap, sum, footnotes: fns, notes, header: hdr } = resolveSpec(spec),
+          sumSet = new Set(sum ? [...sum.rows, sum.grand] : []),
+          nBody = nRow - (sum?.grand ? 1 : 0),
+          // Core helpers for cell renderer (see LT.cells /
+          // lt-plot.js).
+          U = { esc, isNum, str },
+          reg = indexFootnotes(fns),
+          fIdx = matcher(fns, reg.idx),
+          nGrp = rowSpans.length,
+          nCol = cols.length + nGrp,
+          // Column `c` body cells raw HTML? (see lt_html() in R);
+          // spec.html_cols true or names.
+          isRaw = c =&gt; rawCol(spec.html_cols, c),
+          out = [`&lt;table class=&quot;desc-table lt-table&quot;${tableWidth ? ` style=&quot;width:${tableWidth}&quot;` : &quot;&quot;}&gt;`],
+          // Cap initial render to first page (pager[0], 0 = all) so
+          // huge tables don't build whole row string before plugin
+          // pages. Only when plugin loaded to page rest in; static
+          // bake renders all. `_viewRows` overrides.
+          pg = root.LT?.plugins?.interactive &amp;&amp; spec.interactive?.pager,
+          lim = (!spec._viewRows &amp;&amp; Array.isArray(pg) &amp;&amp; pg[0]) ? pg[0] : 0;
+    const mark = (type, val) =&gt; { const i = fIdx(type, val); return i.length ? sup(i) : &quot;&quot;; },
+          cell = (c, r) =&gt; display[c]?.[r - 1] ?? &quot;&quot;;
+    // ` name=&quot;val&quot;` if val truthy, else &quot;&quot; (optional attrs).
+    const attr = (n, v) =&gt; v ? ` ${n}=&quot;${v}&quot;` : &quot;&quot;;
+    // Plain class names per column (alignment + indent), &quot;&quot; if none.
+    const colCls = cols.map((_, i) =&gt; (
+      (i === 0 &amp;&amp; groups.length ? &quot;lt-indent &quot; : &quot;&quot;) +
+      ({right: &quot;al-r&quot;, center: &quot;al-c&quot;}[align[i]] || &quot;&quot;)
+    ).trimEnd());
+
+    // Visit existing cells at rows x cols, calling fn(key, c, r). rows null
+    // = all; cols default all.
+    const eachLoc = (rows, locCols, fn) =&gt; {
+      for (let r = 1; r &lt;= nRow; r++) {
+        if (rows &amp;&amp; !rows.includes(r)) continue;
+        for (const c of (locCols || cols)) {
+          const ci = cols.indexOf(c);
+          if (ci &gt;= 0) fn(`${r},${ci}`, c, r);
+        }
+      }
+    };
+
+    // Style map: accumulate css (&quot;;&quot;) and class (&quot; &quot;) per cell.
+    const styleMap = {}, classMap = {};
+    const addTo = (map, key, val, sep) =&gt; { map[key] = map[key] ? map[key] + sep + val : val; };
+    for (const s of styles)
+      eachLoc(s.rows, s.columns ? [].concat(s.columns) : null, (key, c, r) =&gt; {
+        if (s.test &amp;&amp; !s.test(data[c][r - 1])) return;
+        if (s.css) addTo(styleMap, key, s.css, &quot;;&quot;);
+        if (s.class) addTo(classMap, key, s.class, &quot; &quot;);
+      });
+
+    // lt_color(): fill numeric cells with a palette color interpolated between
+    // the stops, over the shared domain or each column's own range, and (unless
+    // `contrast` is off) set the text to black or white for legibility.
+    const hex = (c, i) =&gt; parseInt(c.slice(i, i + 2), 16),
+          // WCAG relative luminance of an [r, g, b] triple (0-255)
+          lin = u =&gt; (u /= 255) &lt;= 0.04045 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4,
+          lum = rgb =&gt; 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+    for (const op of (spec.ops || []).filter(op =&gt; op.type === &quot;color&quot;))
+      for (const c of [].concat(op.columns)) {
+        const nums = (data[c] || []).filter((v, i) =&gt; isNum(v) &amp;&amp; !sumSet.has(i + 1)), P = op.palette,
+              [lo, hi] = op.domain || [nums.reduce((a, b) =&gt; Math.min(a, b), Infinity), nums.reduce((a, b) =&gt; Math.max(a, b), -Infinity)];
+        eachLoc(null, [c], (key, c, r) =&gt; {
+          const v = data[c][r - 1];
+          if (!isNum(v) || sumSet.has(r)) return;
+          const p = (P.length - 1) * (hi &gt; lo ? Math.min(1, Math.max(0, (v - lo) / (hi - lo))) : 0),
+                i = Math.min(Math.floor(p), P.length - 2), f = p - i,
+                rgb = [1, 3, 5].map(j =&gt; Math.round(hex(P[i], j) * (1 - f) + hex(P[i + 1], j) * f)),
+                // white text wins once it out-contrasts black (luminance 0.179)
+                text = op.contrast === false ? &quot;&quot; : `;color:${lum(rgb) &lt; 0.179 ? &quot;#fff&quot; : &quot;#000&quot;}`;
+          addTo(styleMap, key, `background:rgb(${rgb})${text}`, &quot;;&quot;);
+        });
+      }
+
+    // &lt;colgroup&gt;: leading empty &lt;col&gt;s for rowspan group columns, aligning
+    // widths with body columns (offset nGrp).
+    if (colWidths &amp;&amp; colWidths.some(w =&gt; w)) {
+      out.push(`&lt;colgroup&gt;`);
+      if (nGrp) out.push(&quot;&lt;col&gt;&quot;.repeat(nGrp));
+      colWidths.forEach(w =&gt; out.push(`&lt;col${attr(&quot;style&quot;, w ? `width:${w}` : &quot;&quot;)}&gt;`));
+      out.push(`&lt;/colgroup&gt;`);
+    }
+
+    // &lt;caption&gt;: title + subtitle, each &lt;div&gt; only if non-empty.
+    const caption = [[&quot;title&quot;, &quot;lt-title&quot;], [&quot;subtitle&quot;, &quot;lt-subtitle&quot;]]
+      .filter(([g]) =&gt; hdr[g] != null &amp;&amp; hdr[g] !== &quot;&quot;)
+      .map(([g, cls]) =&gt; `&lt;div class=&quot;${cls}&quot;&gt;${txt(hdr[g])}${mark(&quot;title&quot;, g)}&lt;/div&gt;`);
+    if (caption.length)
+      out.push(`&lt;caption class=&quot;lt-caption&quot;&gt;`, ...caption, `&lt;/caption&gt;`);
+
+    // &lt;thead&gt;
+    out.push(`&lt;thead&gt;`);
+    if (spanners.length) {
+      const emptyTh = `&lt;th class=&quot;lt-spanner-empty&quot;&gt;&lt;/th&gt;`;
+      out.push(`&lt;tr class=&quot;lt-spanner-row&quot;&gt;`);
+      out.push(emptyTh.repeat(nGrp));
+      for (let k = 0; k &lt; cols.length;) {
+        const sp = spanners.find(s =&gt; s.columns[0] === cols[k]);
+        if (sp) {
+          out.push(`&lt;th colspan=&quot;${sp.columns.length}&quot; scope=&quot;colgroup&quot; class=&quot;lt-spanner&quot;&gt;${txt(sp.label)}${mark(&quot;column_spanners&quot;, sp.label)}&lt;/th&gt;`);
+          k += sp.columns.length;
+        } else {
+          out.push(emptyTh);
+          k++;
+        }
+      }
+      out.push(`&lt;/tr&gt;`);
+    }
+    out.push(`&lt;tr&gt;`);
+    for (const rs of rowSpans)
+      out.push(`&lt;th scope=&quot;col&quot; class=&quot;lt-row-group&quot;&gt;${txt(rs.label)}&lt;/th&gt;`);
+    cols.forEach((c, i) =&gt;
+      out.push(`&lt;th scope=&quot;col&quot;${attr(&quot;class&quot;, colCls[i])}${colLabels[i] !== c ? ` title=&quot;${esc(c)}&quot;` : &quot;&quot;}&gt;${txt(colLabels[i])}${mark(&quot;column_labels&quot;, c)}${
+        spec.types ? `&lt;br&gt;&lt;span class=&quot;lt-type&quot;&gt;${esc(spec.types[c])}&lt;/span&gt;` : &quot;&quot;}&lt;/th&gt;`));
+    out.push(`&lt;/tr&gt;&lt;/thead&gt;`);
+
+    // Body footnote markers
+    const bodyMarks = {};
+    for (const f of fns) {
+      if (f.location.type !== &quot;body&quot;) continue;
+      const fi = reg.idx[f.text];
+      eachLoc(f.location.rows, f.location.columns || [], key =&gt; {
+        const a = bodyMarks[key] ||= [];
+        if (!a.includes(fi)) a.push(fi);
+      });
+    }
+
+    // Row rendering
+    const pushRow = (r, spanCells) =&gt; {
+      out.push(`&lt;tr${attr(&quot;class&quot;, sumSet.has(r) &amp;&amp; &quot;lt-summary&quot;)}&gt;`);
+      // Row-group cells. Group spanning n &gt; 1 rows: label in non-spanning
+      // cell on first row (vertical-align centers within that row like
+      // body cells, not across span), then empty filler spanning
+      // remaining n - 1 rows. Single-row group: label cell only.
+      // Per-column descriptor ({label, open} label cell, {fill} filler,
+      // nothing if covered above) comes from caller for reordered rows
+      // (`spanCells`, view order), else from file-order spans.
+      for (let gi = 0; gi &lt; rowSpans.length; gi++) {
+        const rs = rowSpans[gi];
+        let d = spanCells ? spanCells[gi] : null;
+        if (!spanCells) {
+          const span = rs.spans[r - 1], fill = (rs.spans[r - 2] || 0) - 1;
+          d = span &gt; 0 ? { label: true, open: span &gt; 1 } : fill &gt; 0 ? { fill } : null;
+        }
+        if (!d) continue;
+        if (d.label)
+          out.push(`&lt;th scope=&quot;row&quot; class=&quot;lt-row-group${d.open ? &quot; lt-row-open&quot; : &quot;&quot;}&quot;&gt;${escIf(isRaw(rs.col), cell(rs.col, r))}${mark(&quot;row_groups&quot;, str(data[rs.col][r - 1]))}&lt;/th&gt;`);
+        else
+          out.push(`&lt;th class=&quot;lt-row-group&quot;${attr(&quot;rowspan&quot;, d.fill &gt; 1 ? d.fill : 0)}&gt;&lt;/th&gt;`);
+      }
+      const ind = indent[r - 1] || 0;
+      for (let ci = 0; ci &lt; cols.length; ci++) {
+        const k = `${r},${ci}`, c = cols[ci],
+              m = bodyMarks[k], cc = classMap[k],
+              cls = [colCls[ci], cc].filter(Boolean).join(&quot; &quot;);
+        let s = styleMap[k] || &quot;&quot;;
+        if (ci === 0 &amp;&amp; ind) s = (s ? s + &quot;;&quot; : &quot;&quot;) + `padding-left:${ind + 1}em`;
+        const cm = cellMap[c];
+        if (cm) {
+          // Plot cell: renderer supplies inner SVG, may add &lt;td&gt;
+          // class (e.g. zero padding for unbroken gridlines).
+          const extra = cm.rnd.cellClass?.(cm.cfg) || &quot;&quot;,
+                pcls = [cls, extra].filter(Boolean).join(&quot; &quot;);
+          out.push(`&lt;td${attr(&quot;class&quot;, pcls)}${attr(&quot;style&quot;, s)}&gt;${cm.rnd.cell(cm.cfg, data, r, U)}${m ? sup(m.sort((a, b) =&gt; a - b)) : &quot;&quot;}&lt;/td&gt;`);
+          continue;
+        }
+        const raw = str(data[c][r - 1]), disp = display[c][r - 1],
+              tip = raw !== disp ? ` title=&quot;${esc(raw)}&quot;` : &quot;&quot;;
+        out.push(`&lt;td${attr(&quot;class&quot;, cls)}${attr(&quot;style&quot;, s)}${tip}&gt;${escIf(isRaw(c), disp)}${m ? sup(m.sort((a, b) =&gt; a - b)) : &quot;&quot;}&lt;/td&gt;`);
+      }
+      out.push(`&lt;/tr&gt;`);
+    };
+
+    // Separator row-group header: one full-width cell with label.
+    const groupHeader = (label, raw) =&gt;
+      `&lt;tr class=&quot;lt-row-group&quot;&gt;&lt;th colspan=&quot;${nCol}&quot; scope=&quot;colgroup&quot;&gt;${escIf(raw, label)}${mark(&quot;row_groups&quot;, label)}&lt;/th&gt;&lt;/tr&gt;`;
+
+    // Rowspan group cells for reordered view: file-order `rs.spans` no
+    // longer fit, so walk view sequence, grouping rows into runs sharing
+    // group-value prefix (column gi's run breaks when its or any earlier
+    // group column's value changes). Run's first row gets label cell,
+    // second a filler spanning rest, others nothing. Returns descriptor
+    // array per view position (pushRow's `spanCells`).
+    const viewRowSpans = seq =&gt; {
+      const info = seq.map(() =&gt; []);
+      for (let gi = 0; gi &lt; rowSpans.length; gi++) {
+        const key = r =&gt; rowSpans.slice(0, gi + 1)
+          .map(rs =&gt; str(data[rs.col][r - 1])).join(&quot;\u0000&quot;);
+        for (let i = 0; i &lt; seq.length;) {
+          let j = i + 1;
+          const k = key(seq[i]);
+          while (j &lt; seq.length &amp;&amp; key(seq[j]) === k) j++;
+          const len = j - i;
+          info[i][gi] = { label: true, open: len &gt; 1 };
+          if (len &gt; 1) info[i + 1][gi] = { fill: len - 1 };
+          i = j;
+        }
+      }
+      return info;
+    };
+
+    // &lt;tbody&gt;. Optional `spec._viewRows` sets row order/subset: seam for
+    // interactive plugin sort/filter without reimplementing row rendering.
+    // Entry = 1-based original row index or, for grouped tables, `{label,
+    // raw}` separator header the plugin re-emits. Overrides file-order
+    // branches (static table). Row-indexed styles/footnotes/indent stay
+    // keyed to original indices. Rowspan mode recomputes spans from view
+    // order (viewRowSpans).
+    out.push(`&lt;tbody&gt;`);
+    if (spec._viewRows) {
+      const info = rowSpans.length ?
+        viewRowSpans(spec._viewRows.filter(r =&gt; typeof r === &quot;number&quot;)) : null;
+      let vi = 0;
+      for (const r of spec._viewRows)
+        if (r &amp;&amp; typeof r === &quot;object&quot;) out.push(groupHeader(r.label, r.raw));
+        else pushRow(r, info ? info[vi++] : null);
+    } else if (groups.length) {
+      const seen = {};
+      let n = 0;
+      for (const g of groups) {
+        if (lim &amp;&amp; n &gt;= lim) break;
+        out.push(groupHeader(g.label, g.raw));
+        for (const r of g.rows) { seen[r] = 1; pushRow(r); if (lim &amp;&amp; ++n &gt;= lim) break; }
+      }
+      for (let r = 1; r &lt;= nBody &amp;&amp; (!lim || n &lt; lim); r++)
+        if (!seen[r]) { pushRow(r); n++; }
+    } else {
+      const end = lim ? Math.min(nBody, lim) : nBody;
+      for (let r = 1; r &lt;= end; r++) pushRow(r);
+    }
+    out.push(`&lt;/tbody&gt;`);
+
+    // &lt;tfoot&gt;: optional plot-footer row (e.g. shared error-bar axis), then
+    // footnotes and source notes. Footer row has per-column cell so each
+    // renderer's footer SVG aligns under its plot column; note rows span
+    // full width.
+    const footCells = cols.map(c =&gt;
+      cellMap[c] ? (cellMap[c].rnd.foot?.(cellMap[c].cfg, U) || &quot;&quot;) : &quot;&quot;);
+    const hasFoot = footCells.some(h =&gt; h);
+    if (reg.order.length || notes.length || hasFoot || sum?.grand) {
+      const footRow = (cls, html) =&gt; `&lt;tr class=&quot;${cls}&quot;&gt;&lt;td colspan=&quot;${nCol}&quot;&gt;${html}&lt;/td&gt;&lt;/tr&gt;`;
+      out.push(`&lt;tfoot class=&quot;lt-footer&quot;&gt;`);
+      // grand summary: pinned, outside sort/filter/paging; group columns blank
+      if (sum?.grand) pushRow(sum.grand, rowSpans.map(() =&gt; ({ fill: 1 })));
+      if (hasFoot) {
+        out.push(`&lt;tr class=&quot;lt-plot-foot&quot;&gt;`);
+        out.push(`&lt;td&gt;&lt;/td&gt;`.repeat(nGrp));
+        cols.forEach((c, i) =&gt; {
+          const cm = cellMap[c];
+          // reuse renderer's cell class to align footer with plot
+          const extra = footCells[i] &amp;&amp; cm ? (cm.rnd.cellClass?.(cm.cfg) || &quot;&quot;) : &quot;&quot;,
+                ac = [colCls[i], extra].filter(Boolean).join(&quot; &quot;);
+          out.push(`&lt;td${attr(&quot;class&quot;, ac)}&gt;${footCells[i]}&lt;/td&gt;`);
+        });
+        out.push(`&lt;/tr&gt;`);
+      }
+      reg.order.forEach((t, i) =&gt; out.push(footRow(&quot;lt-footnote&quot;, `${sup(i + 1)} ${txt(t)}`)));
+      for (const n of notes) out.push(footRow(&quot;lt-source-note&quot;, txt(n)));
+      out.push(`&lt;/tfoot&gt;`);
+    }
+
+    out.push(`&lt;/table&gt;`);
+    // Expose resolved visible column order (after hide/move) for plugin
+    // sort/filter. Side effect only; core never reads it; harmless for
+    // static/Node.
+    spec._cols = cols;
+    // Also formatted cell text (all columns, hidden too), so plugins can
+    // show displayed values (e.g. row detail).
+    spec._display = display;
+    // Resolved labels, alignment, spanners, titles, and notes, for exporters
+    // (lt-export.js).
+    spec._tbl = { labels: colLabels, align, spanners, header: hdr, notes };
+    // Expose resolved row structure for interactive plugin: separator
+    // groups ({label, rows, raw}), per-row indent levels (array or null),
+    // rowspan group columns (outermost first, or null). Plugin
+    // sorts/filters within each run and recomputes spans in view order (see
+    // viewRowSpans).
+    spec._groups = groups.length ? groups : null;
+    spec._sum = sum || null;
+    spec._indent = indent.some(v =&gt; v) ? indent : null;
+    spec._rowspan = rowSpans.length ? rowSpans.map(rs =&gt; rs.col) : null;
+    // Wrap in div so wide tables scroll horizontally (`overflow-x`).
+    // `spec.wrap` (lt_wrap()) gives attributes: `class` appended to base
+    // `lt-wrap`, rest emitted escaped; hook for scoped CSS, id, fixed
+    // width.
+    const w = spec.wrap || {}, cls = [&quot;lt-wrap&quot;].concat(w.class || []).join(&quot; &quot;);
+    const wa = Object.keys(w).filter(k =&gt; k !== &quot;class&quot;)
+      .map(k =&gt; attr(k, esc(w[k]))).join(&quot;&quot;);
+    // lt_css() rules: a prelude-less @scope limits them to this wrapper, so
+    // they cannot leak to other tables on the page.
+    const rules = spec.rules ? `&lt;style&gt;@scope{:scope{${[].concat(spec.rules).join(&quot;&quot;)}}}&lt;/style&gt;` : &quot;&quot;;
+    return `&lt;div${attr(&quot;class&quot;, cls)}${wa}&gt;${out.join(&quot;&quot;)}${rules}&lt;/div&gt;`;
+  }
+
+  // Plugin seam (lt-interactive.js): plugin attaches handle under LT.plugins
+  // and pushes callback onto LT.onMount; core calls it with each table
+  // element and spec after mount.
+  // Cell-renderer seam (lt-plot.js): module registers renderer under LT.cells
+  // by op type; core consults it *during* buildHtml to draw a column's cells
+  // and optional footer.
+  const plugins = root.LT?.plugins || {}, onMount = root.LT?.onMount || [];
+
+  // Alt-click toggles raw values in this table; alt-dblclick page-wide.
+  // Handlers must not *return* false (cancels click default, e.g. checkbox in
+  // table wouldn't toggle), so use statement bodies.
+  const wireRaw = tbl =&gt; {
+    const raw = (e, el) =&gt; { if (e.altKey) el.classList.toggle(&quot;lt-raw&quot;); };
+    tbl.onclick = e =&gt; { if (e.detail === 1) raw(e, tbl); };
+    tbl.ondblclick = e =&gt; { raw(e, tbl.ownerDocument.documentElement); };
+  };
+
+  // Finish inserted table: remember spec, wire raw toggle, let plugins
+  // enhance. Returns table element.
+  const ready = (tbl, spec) =&gt; {
+    // Stash spec so plugin loaded *after* mount (usual: core drains queue
+    // before plugin file runs) can find and enhance it by scanning
+    // `.lt-table`.
+    tbl._ltSpec = spec;
+    // Map visible column to header cell, for plugins tracking a column
+    // (e.g. width). Built before plugins add &lt;thead&gt; rows, so last header
+    // row is labels; nGrp offsets data columns.
+    const hr = tbl.tHead &amp;&amp; [...tbl.tHead.rows].pop(),
+          nGrp = (spec._rowspan || []).length;
+    if (hr) {
+      const m = tbl._ltHead = {};
+      (spec._cols || []).forEach((c, i) =&gt; m[c] = hr.cells[nGrp + i]);
+    }
+    wireRaw(tbl);
+    onMount.forEach(f =&gt; f(tbl, spec));
+    return tbl;
+  };
+
+  // `data_key` names data shared across tables in LT.d; shallow-copy so
+  // per-table column changes don't leak into the shared store.
+  const store = root.LT?.d || {}, mount = (s, spec) =&gt; {
+    if (spec.data_key) spec.data = {...store[spec.data_key]};
+    s.insertAdjacentHTML(&quot;afterend&quot;, buildHtml(spec));
+    ready($(s.nextElementSibling, &quot;table&quot;), spec);
+  };
+
+  // Render spec into `el` (replacing content) anytime, e.g. on-demand tables
+  // long after load. Unlike build(), needs no anchoring &lt;script&gt;; caller may
+  // keep returned table.
+  const render = (el, spec) =&gt; {
+    el.innerHTML = buildHtml(spec);
+    return ready($(el, &quot;table&quot;), spec);
+  };
+  // Rebuild mounted table in place from stashed spec. For cell module
+  // (lt-plot.js) loading *after* core built a table (e.g. earlier plain table
+  // pulled in lt.js first): module registers renderer, then refreshes tables
+  // needing it.
+  const refresh = tbl =&gt; {
+    const spec = tbl?._ltSpec, wrap = tbl?.closest(&quot;.lt-wrap&quot;);
+    if (!spec || !wrap) return;
+    wrap.insertAdjacentHTML(&quot;afterend&quot;, buildHtml(spec));
+    const next = wrap.nextElementSibling;
+    wrap.remove();
+    return ready($(next, &quot;table&quot;), spec);
+  };
+  // q.push renders now; replay entries queued before load.
+  const q = { push: e =&gt; mount(e.s, e.d) };
+  (root.LT?.q || []).forEach(q.push);
+  root.LT = {
+    build: spec =&gt; mount(document.currentScript, spec),
+    render, refresh, buildHtml, plugins, onMount, cells: cellRenderers, q, d: store,
+    $, $$, on, off, numCol, dateFmt,
+  };
+})(window);
+&lt;/script&gt;
+</code></pre>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/manual.min.css">
 
 </article>
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.20</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.21</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/nav-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/prism-lite.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/link-functions.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/js/link-functions.min.js" defer></script>
 </body>
 </html>

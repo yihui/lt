@@ -11,5 +11,12 @@ d$Temp = list(c(-3, -2, 1, 6, 12, 16), c(14, 15, 18, 23, 28, 31), c(19, 19, 18, 
 d$Rain = list(c(49, 36, 47, 41, 53, 60), c(5, 4, 4, 1, 0, 0), c(8, 4, 2, 1, 1, 1))
 lt(d) |>
   lt_sparkline(~ Temp) |>
-  lt_sparkline(~ Rain, type = "bar", color = "#4caf50")
+  lt_sparkline(~ Rain, type = "bar", color = "#4caf50", limits = c(0, 60))
+```
+
+Several columns read across the row work too; `hide = FALSE` keeps them visible.
+
+```{r}
+m = data.frame(Name = c("X", "Y"), Q1 = c(2, 5), Q2 = c(4, 3), Q3 = c(6, 7))
+lt(m) |> lt_sparkline(~ Q1 + Q2 + Q3, width = 160, hide = FALSE)
 ```

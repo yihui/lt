@@ -6,6 +6,6 @@ title: Downloading the view
 
 ```{r}
 library(lt)
-d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
-lt(d) |> lt_interactive(download = "cars.csv", pager = 5)
+d = penguins[, c("species", "island", "bill_len", "body_mass", "sex")]
+lt(d) |> lt_interactive(download = "penguins.csv", pager = 5)
 ```
