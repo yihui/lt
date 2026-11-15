@@ -25,5 +25,8 @@ calls. Common uses are scoping custom CSS (e.g. attached with \code{\link[=lt_cs
 this table alone, or giving the container a fixed width.
 }
 \examples{
-lt(head(mtcars)) |> lt_wrap(class = "my-table", style = "width:400px")
+tbl = lt(head(mtcars[, 1:3], 3))
+tbl |> lt_wrap(style = "width:300px")
+# a class to scope custom CSS to this table
+tbl |> lt_wrap(class = "my-table") |> lt_css(`.my-table th` = "color: #06c")
 }

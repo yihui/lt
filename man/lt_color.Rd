@@ -43,10 +43,15 @@ palette colors. Cells that are not finite numbers (such as \code{NA}) are left
 unfilled.
 }
 \examples{
-lt(head(mtcars)) |> lt_color(~ mpg + hp)
-# a dark end of the palette gets white text automatically
-lt(head(mtcars)) |> lt_color(~ mpg + hp, c("white", "navy"))
+d = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3), c = c(10, 20, NA))
+# each column uses its own range (NA stays unfilled)
+lt(d) |> lt_color(~ a + c)
+# a single color is the high end
+lt(d) |> lt_color(~ a, "steelblue")
+# a dark end of the palette gets white text automatically; contrast = FALSE
+# leaves the text color alone
+lt(d) |> lt_color(~ a, c("white", "navy"))
+lt(d) |> lt_color(~ a, c("white", "navy"), contrast = FALSE)
 # one shared diverging scale
-d = data.frame(a = c(-2, 0, 2), b = c(-1, 1, 3))
 lt(d) |> lt_color(~ a + b, c("steelblue", "white", "tomato"), domain = c(-3, 3))
 }

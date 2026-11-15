@@ -33,13 +33,13 @@ site:
       contents: ["08-*", "09-*", "10-*", "11-*"]
     Shape the table:
       desc: Merge, span, move, hide, group, and indent.
-      contents: ["12-*", "13-*", "14-*", "15-*", "16-*", "17-*"]
+      contents: ["12-*", "13-*", "14-*", "15-*", "16-*", "17-*", "41-*"]
     Notes and HTML:
       desc: Footnotes, source notes, and raw HTML.
       contents: ["18-*", "19-*", "20-*"]
     Style:
       desc: Cell styles, CSS, and table wrappers.
-      contents: ["21-*", "22-*"]
+      contents: ["21-*", "22-*", "40-*"]
     Inline graphics:
       desc: Error bars, sparklines, and dot plots.
       contents: ["23-*", "24-*", "25-*"]

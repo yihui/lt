@@ -97,15 +97,18 @@ d = data.frame(
   term = c("A", "B", "C"), est = c(0.2, -0.1, 0.4),
   lo = c(0.0, -0.3, 0.1), hi = c(0.4, 0.1, 0.7)
 )
-# a two-sided formula names the estimate (LHS) and the bounds (RHS)
+# estimate (LHS) and bounds (RHS) draw into the estimate column, with a
+# reference line
 lt(d) |> lt_errorbar(est ~ lo + hi, ref = 0)
-# keep the bounds columns visible and add a labeled axis
-lt(d) |> lt_errorbar(est ~ lo + hi, hide = FALSE, axis = "Effect")
-# draw into a dedicated column, keeping every value column visible as text
+# a captioned axis, a fixed scale, a taller plot
+lt(d) |> lt_errorbar(
+  est ~ lo + hi, axis = "Effect", limits = c(-0.5, 1), height = 24
+)
+# a dedicated column, keeping the value columns visible as text
 lt(d) |> lt_errorbar(est ~ lo + hi, into = "forest", hide = FALSE)
-# auto-fit the plot to its column (grows/shrinks as the column is resized)
+# fit the plot to its column (resizes with it)
 lt(d) |> lt_errorbar(est ~ lo + hi, into = "forest", width = "100\%")
-# several series stacked in each cell, colored with a footer legend
+# several series per cell, colored, with a legend
 d2 = data.frame(
   term = c("A", "B"), e1 = c(0.2, 0.4), l1 = c(0, 0.2), u1 = c(0.4, 0.6),
   e2 = c(-0.1, 0.1), l2 = c(-0.3, -0.1), u2 = c(0.1, 0.3)
@@ -113,5 +116,9 @@ d2 = data.frame(
 lt(d2) |> lt_errorbar(
   e1 ~ l1 + u1, e2 ~ l2 + u2, ref = 0, color = TRUE,
   labels = c("Drug A", "Drug B")
+)
+# explicit colors
+lt(d2) |> lt_errorbar(
+  e1 ~ l1 + u1, e2 ~ l2 + u2, color = c("#d7191c", "#2c7bb6")
 )
 }

@@ -6,8 +6,8 @@ Column names are cleaned for display (`.` and `_` become spaces). Override any o
 
 ```{r}
 library(lt)
-tbl = lt(head(iris))
+tbl = lt(head(iris, 3))
 tbl
-lt(head(iris), auto_label = FALSE)
+lt(head(iris, 3), auto_label = FALSE)
 tbl |> lt_label(Sepal.Length = "Length (cm)", Sepal.Width = "Width (cm)")
 ```

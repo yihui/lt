@@ -26,5 +26,9 @@ moved columns. Use \code{NULL} to move to the start.}
 Rearrange column display order without modifying the data frame.
 }
 \examples{
-lt(head(mtcars)) |> lt_move(~ gear + carb, after = "mpg")
+tbl = lt(head(mtcars[, 1:5], 3))
+# after a column (by name or position)
+tbl |> lt_move(~ drat + disp, after = "mpg")
+# to the front
+tbl |> lt_move(~ disp, after = NULL)
 }

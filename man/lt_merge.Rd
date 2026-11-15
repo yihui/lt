@@ -32,6 +32,16 @@ Combine values from multiple columns into a single display column using
 a pattern. Source columns (all except the first) are hidden by default.
 }
 \examples{
-d = data.frame(stat = c("Mean", "SD"), value = c(4.2, 1.1), ci = c("(2.0, 6.4)", "(0.5, 1.7)"))
-lt(d) |> lt_merge(~ value + ci, pattern = "{1} {2}")
+d = data.frame(
+  stat = c("Mean", "SD", "Median"),
+  value = c(4.2, 1.1, 3.9),
+  lo = c(2.0, 0.5, NA),
+  hi = c(6.4, 1.7, NA)
+)
+# concatenate with a pattern; the other columns are hidden
+lt(d) |> lt_merge(~ value + lo + hi, pattern = "{1} ({2}, {3})")
+# drop the parenthesized part when a value is missing
+lt(d) |> lt_merge(~ value + lo + hi, pattern = "{1}<< ({2}, {3})>>")
+# keep the source columns visible
+lt(d) |> lt_merge(~ value + lo, hide = FALSE)
 }

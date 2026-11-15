@@ -35,11 +35,14 @@ shortened to the suffix.
 The columns must be contiguous in the body of the table.
 }
 \examples{
-tbl = lt(head(iris))
-# Explicit spanner
+tbl = lt(head(iris, 3))
+# a formula gives the label (LHS) and the columns (RHS)
 tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
-# Auto-infer from column names
+# or the label and the columns separately; raw HTML label (wrap in I())
+tbl |> lt_spanner(I("<em>Petal</em>"), ~ Petal.Length + Petal.Width)
+# infer spanners from shared prefixes
 tbl |> lt_spanner()
-# raw HTML label (wrap in I())
-tbl |> lt_spanner(I("<em>Sepal</em>"), ~ Sepal.Length + Sepal.Width)
+# ... split at another separator
+d = data.frame(`Sales:Q1` = 1:2, `Sales:Q2` = 3:4, `Cost:Q1` = 5:6, check.names = FALSE)
+lt(d) |> lt_spanner(sep = ":")
 }

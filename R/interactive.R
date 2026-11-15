@@ -130,45 +130,42 @@
 #' @return `x` with interactivity enabled.
 #' @export
 #' @examples
-#' lt(head(mtcars)) |> lt_interactive()
-#' # search only, no click-to-sort or pagination
-#' lt(head(mtcars)) |> lt_interactive(sort = FALSE, pager = FALSE)
-#' # 5 rows at a time, or all of them, with a filter box on one column
-#' lt(mtcars) |> lt_interactive(filter = 'cyl', pager = c(5, Inf))
-#' # filters are on by default, a widget per column chosen from its data
-#' # (sliders, checklists, boxes); filter = FALSE turns them off
-#' lt(iris) |> lt_interactive(filter = FALSE)
+#' d = mtcars[, c("mpg", "cyl", "hp", "wt")]
+#' # click-to-sort headers, a search box, column filters, and paging
+#' lt(d) |> lt_interactive()
+#' # turn features off, e.g., keep only the search box
+#' lt(d) |> lt_interactive(sort = FALSE, filter = FALSE, pager = FALSE)
+#' # page sizes (the first is used initially; Inf shows all rows)
+#' lt(d) |> lt_interactive(pager = c(5, 10, Inf))
+#' # an initial sort: cyl, then mpg descending
+#' lt(d) |> lt_interactive(sort = ~ cyl + -mpg)
+#' # filters: only some columns, or a widget per column
+#' lt(d) |> lt_interactive(filter = c("cyl", "hp"))
+#' lt(d) |> lt_interactive(
+#'   filter = list("auto", mpg = "range", cyl = "select", wt = FALSE)
+#' )
 #' # fixed (non-resizable) columns
-#' lt(head(mtcars)) |> lt_interactive(resize = FALSE)
-#' # a column-visibility menu (all columns shown, or with some hidden to start)
-#' lt(head(mtcars)) |> lt_interactive(hide = NA)
-#' lt(head(mtcars)) |> lt_interactive(hide = ~ hp + drat)
-#' # a labeled button instead of the eye icon
-#' lt(head(mtcars)) |> lt_interactive(hide = list(label = 'Show/Hide columns'))
-#' # an initial sort by cyl, then mpg descending within each
-#' lt(mtcars) |> lt_interactive(sort = ~ cyl + -mpg)
-#' # expandable row detail (drill-down): name the columns to show. Here gear and
-#' # carb are hidden from the main table but revealed in the detail that appears
-#' # when a row is expanded.
-#' lt(head(mtcars)) |>
-#'   lt_hide(~ gear + carb) |>
-#'   lt_interactive(detail = ~ gear + carb)
-#' # for full control, pass a JavaScript callback yourself: (raw row, index,
-#' # displayed row); here showing the row number and mpg as the table displays it
-#' lt(head(mtcars)) |> lt_interactive(
+#' lt(d) |> lt_interactive(resize = FALSE)
+#' # a column-visibility menu: all shown, some hidden to start, or a labeled button
+#' lt(d) |> lt_interactive(hide = NA)
+#' lt(d) |> lt_interactive(hide = ~ hp + wt)
+#' lt(d) |> lt_interactive(hide = list(label = "Columns", columns = ~ wt))
+#' # row detail: hidden columns revealed when a row is expanded
+#' lt(d) |> lt_hide(~ hp + wt) |> lt_interactive(detail = ~ hp + wt)
+#' # a JavaScript callback: (raw row, index, displayed row) to a table spec
+#' lt(d) |> lt_interactive(
 #'   detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
 #'     value: [i, d.mpg] } })')
 #' )
 #' # a distribution plot in each column header, or in the filter popover
 #' lt(iris) |> lt_interactive(profile = TRUE)
-#' lt(iris) |> lt_interactive(profile = 'filter')
-#' # a button to download the current view as a CSV or RTF file
-#' lt(head(mtcars)) |> lt_interactive(download = TRUE)
-#' lt(head(mtcars)) |> lt_interactive(download = 'cars')
-#' # offer only RTF, which downloads directly
-#' lt(head(mtcars)) |> lt_interactive(download = list(formats = 'rtf'))
-#' # export the raw (unformatted) values instead of the displayed text
-#' lt(head(mtcars)) |> lt_interactive(download = list(file = 'cars.csv', mode = 'raw'))
+#' lt(iris) |> lt_interactive(profile = "filter")
+#' # a button to download the current view (CSV and RTF), with a file name
+#' lt(d) |> lt_interactive(download = TRUE)
+#' lt(d) |> lt_interactive(download = "cars")
+#' # only RTF, or the raw unformatted values
+#' lt(d) |> lt_interactive(download = list(formats = "rtf"))
+#' lt(d) |> lt_interactive(download = list(file = "cars.csv", mode = "raw"))
 lt_interactive = function(
   x, sort = TRUE, search = TRUE, filter = 'auto', pager = c(10, 25, 50, Inf),
   resize = TRUE, hide = NULL, detail = NULL, profile = FALSE, download = FALSE

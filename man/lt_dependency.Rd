@@ -30,6 +30,10 @@ cell) and rendering them client-side with \code{LT.render()} / \code{LT.buildHtm
 on a spec from \code{\link[=lt_spec]{lt_spec()}}. Requires the \pkg{htmltools} package.
 }
 \examples{
-if (requireNamespace('htmltools', quietly = TRUE))
-  lt_dependency(interactive = TRUE)
+if (requireNamespace("htmltools", quietly = TRUE)) {
+  # the core runtime only
+  lt_dependency()
+  # with interactivity and inline plots
+  lt_dependency(interactive = TRUE, plot = TRUE)
+}
 }

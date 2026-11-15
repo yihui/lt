@@ -29,7 +29,13 @@ wrap the text in \code{\link[=I]{I()}} in the corresponding \verb{lt_*()} functi
 }
 \examples{
 d = data.frame(
-  name = c("<a href='#a'>A</a>", "<a href='#b'>B</a>"), n = 1:2
+  name = c("<a href='#a'>A</a>", "<a href='#b'>B</a>"),
+  note = c("<b>bold</b>", "<i>italic</i>")
 )
+# escaped by default
+lt(d)
+# one column as raw HTML
 lt(d) |> lt_html(~ name)
+# all columns as raw HTML
+lt(d) |> lt_html()
 }

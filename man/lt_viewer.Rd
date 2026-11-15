@@ -26,5 +26,6 @@ Printing the result at the console opens it in the viewer or browser. Use
 }
 \examples{
 lt_viewer(iris)
-lt_viewer(iris) |> lt_header(NULL)
+# extra arguments go to lt_interactive(); no profiles, 5 rows per page
+lt_viewer(mtcars, profile = FALSE, pager = 5)
 }

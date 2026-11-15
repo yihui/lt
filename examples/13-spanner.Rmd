@@ -2,11 +2,14 @@
 title: Column spanners
 ---
 
-A spanner is a label over a run of columns. Name it with a formula, or call `lt_spanner()` with no arguments to infer spanners from shared prefixes such as `Sepal.` and `Petal.`.
+A spanner is a label over a run of columns. Name it with a formula, or call `lt_spanner()` with no arguments to infer spanners from shared prefixes such as `Sepal.` and `Petal.`. Use `sep` for other separators.
 
 ```{r}
 library(lt)
-tbl = lt(head(iris))
+tbl = lt(head(iris, 3))
 tbl |> lt_spanner(Sepal ~ Sepal.Length + Sepal.Width)
 tbl |> lt_spanner()
+
+d = data.frame(`Sales:Q1` = 1:2, `Sales:Q2` = 3:4, `Cost:Q1` = 5:6, check.names = FALSE)
+lt(d) |> lt_spanner(sep = ":")
 ```

@@ -6,7 +6,7 @@ Numbers align right and text left by default. `lt_align()` changes that, and `lt
 
 ```{r}
 library(lt)
-lt(head(mtcars[, 1:5])) |>
+lt(head(mtcars[, 1:4], 3)) |>
   lt_align(~ mpg + cyl, "center") |>
   lt_width("80%", mpg = "8em", cyl = "5em")
 ```

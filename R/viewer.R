@@ -15,7 +15,8 @@
 #' @export
 #' @examples
 #' lt_viewer(iris)
-#' lt_viewer(iris) |> lt_header(NULL)
+#' # extra arguments go to lt_interactive(); no profiles, 5 rows per page
+#' lt_viewer(mtcars, profile = FALSE, pager = 5)
 lt_viewer = function(data, profile = TRUE, hide = NA, ...) {
   title = deparse1(substitute(data))
   lt(data, show_types = TRUE) |> lt_header(title) |>

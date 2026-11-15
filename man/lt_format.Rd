@@ -54,8 +54,20 @@ formatting (see the \code{auto_format} argument of \code{\link[=lt]{lt()}}). To 
 for a column without otherwise changing its display, call \code{lt_format(x, ~col)} with no other arguments.
 }
 \examples{
-lt(head(mtcars)) |> lt_format(~ mpg + wt, decimals = 1, big_mark = ",")
-d = data.frame(Item = c("A", "B"), Price = c(1234.5, 678.9))
-lt(d) |> lt_format(~ Price, decimals = 2, big_mark = ",", prefix = "$")
-lt(d) |> lt_format(~ Price, sig_digits = 3)
+d = data.frame(
+  item = c("A", "B", "C"),
+  price = c(1234567.891, 98765.432, 4321.0987),
+  share = c(0.1234, 0.0567, 0.8199),
+  mass = c(123456.7, 98765.43, 1234.567),
+  weight = c(1250, 340.5, 89.12)
+)
+# decimals and a thousands mark, with a prefix
+lt(d) |> lt_format(~ price, decimals = 2, big_mark = ",", prefix = "$")
+# percent (values are multiplied by 100)
+lt(d) |> lt_format(~ share, decimals = 1, percent = TRUE)
+# significant digits: 123456.7 becomes 123000
+lt(d) |> lt_format(~ mass, sig_digits = 3)
+# a suffix; percent = "\%" only appends the sign
+lt(d) |> lt_format(~ weight, decimals = 1, suffix = " kg")
+lt(d) |> lt_format(~ weight, percent = "\%")
 }

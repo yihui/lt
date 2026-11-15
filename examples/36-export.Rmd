@@ -6,7 +6,7 @@ title: Exporting a table
 
 ```{r}
 library(lt)
-tbl = lt(head(mtcars[, 1:5])) |> lt_header("Cars")
+tbl = lt(head(mtcars[, 1:4], 3)) |> lt_header("Cars")
 can_export = lt:::can_bake()
 ```
 

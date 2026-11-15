@@ -37,19 +37,22 @@ rowspan cells on the left). Use \code{sep = TRUE} to render groups as
 full-width separator rows instead of rowspan.
 }
 \examples{
-# Group by a column (rowspan, default)
-d = data.frame(arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
-               stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8))
+d = data.frame(
+  arm = c("Placebo", "Placebo", "Treatment", "Treatment"),
+  stat = c("n", "Mean", "n", "Mean"), value = c(30, 4.2, 31, 6.8)
+)
+# group by a column: spanning cells on the left
 lt(d) |> lt_group(~ arm)
-
-# Separator-row style
+# full-width separator rows instead
 lt(d) |> lt_group(~ arm, sep = TRUE)
+# keep the original row order rather than sorting by group
+lt(d[c(3, 1, 4, 2), ]) |> lt_group(~ arm, sort = FALSE)
 
-# Manual groups (always separator rows)
-lt(head(mtcars)) |>
-  lt_group("First three" = 1:3, "Last three" = 4:6)
-
-# Manual groups from conditions on the data
-lt(head(mtcars[, 1:3])) |>
-  lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
+# manual groups: name the rows (always separator rows)
+tbl = lt(head(mtcars[, 1:3], 6))
+tbl |> lt_group("First three" = 1:3, "Last three" = 4:6)
+# ... or give a condition on the data
+tbl |> lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
+# unnamed labels reorder the groups
+lt(d) |> lt_group(~ arm, sep = TRUE) |> lt_group("Treatment", "Placebo")
 }
