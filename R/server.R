@@ -164,7 +164,7 @@ col_sketch = function(x, tx) {
     key = as.character(tx)
     cnt = tabulate(match(key[!is.na(key)], as.character(u)), length(u))
     o = order(-cnt)  # stable: ties keep first-appearance order
-    top = utils::o[1:5, ]
+    top = utils::head(o, 5)
     s$top = unname(lapply(top, function(i) list(as.character(u[i]), cnt[i])))
     n = length(u)
     bar = ifelse(is.na(key), -1L, match(key, as.character(u)[o]) - 1L)
@@ -294,12 +294,7 @@ check_server = function(x) {
 #' @return `x`, with the data URL added.
 #' @export
 #' @examples
-#' # rows stay in R; the browser fetches one page at a time (needs a live session)
-#' if (interactive()) {
-#'   big = data.frame(id = 1:1e5, x = rnorm(1e5), g = sample(letters, 1e5, TRUE))
-#'   lt_serve(lt_viewer(big))
-#'   xfun::stop_app()
-#' }
+#' if (interactive()) lt_serve(lt_viewer(iris))
 lt_serve = function(x, url = NULL, times = NULL, cols = NULL, n = NULL, name = 'lt-server', ...) {
   if (is.null(x$interactive)) x = lt_interactive(x)
   check_server(x)
