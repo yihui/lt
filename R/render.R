@@ -198,7 +198,7 @@ with_missing = function(x) {
 
 html_doc = function(body) c(
   '<!DOCTYPE html><html><head><meta charset="utf-8"><title>lt</title>',
-  '<style>body{font-family:system-ui,sans-serif;padding:1em}</style></head>',
+  '<style>body{font-family:Cambria,Georgia,"Noto Serif",serif;padding:1em}</style></head>',
   '<body>', body, '</body></html>'
 )
 
