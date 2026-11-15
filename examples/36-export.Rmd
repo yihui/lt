@@ -6,17 +6,17 @@ title: Exporting a table
 
 ```{r}
 library(lt)
-tbl = lt(mtcars[1:3, 1:4]) |> lt_header("Cars")
+tbl = lt(penguins[1:3, 1:5]) |> lt_header("Penguins")
 can_export = lt:::can_bake()
 ```
 
 ```{r, eval = can_export}
-lt_export(tbl, "cars.png", width = "min-content")
-lt_export(tbl, "cars.pdf")
+lt_export(tbl, "penguins.png", width = "min-content")
+lt_export(tbl, "penguins.pdf")
 ```
 
 :::: {#fig:export-png .figure}
-![lt table exported to png](cars.png)
+![lt table exported to png](penguins.png)
 
 ::: caption
 [ ](#@fig:export-png) A table exported to PNG.
@@ -24,7 +24,7 @@ lt_export(tbl, "cars.pdf")
 ::::
 
 :::: {#fig:export-pdf .figure}
-![lt table exported to pdf](cars.pdf){width="100%" height="400"}
+![lt table exported to pdf](penguins.pdf){width="100%" height="400"}
 
 ::: caption
 [ ](#@fig:export-pdf) A table exported to PDF.
@@ -34,6 +34,6 @@ lt_export(tbl, "cars.pdf")
 A static `<table>`, with no JavaScript needed to view it, is one more option:
 
 ```{r, eval = can_export, attr.output = ".html"}
-lt(mtcars[1:2, 1:5]) |> lt_header("Cars") |>
+lt(penguins[1:2, 1:5]) |> lt_header("Penguins") |>
   lt_export(NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 ```

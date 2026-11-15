@@ -6,11 +6,11 @@ Groups need not come from a column: name the rows yourself, by row numbers or by
 
 ```{r}
 library(lt)
-tbl = lt(mtcars[1:6, 1:4])
+tbl = lt(penguins[c(1:3, 153:155), c(1, 2, 6)])
 tbl |> lt_group("First three" = 1:3, "Last three" = 4:6)
 
 # a one-sided formula is evaluated in the data
-tbl |> lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
+tbl |> lt_group(Heavy = ~ body_mass > 4000, Light = ~ body_mass <= 4000)
 
 d = data.frame(
   arm = c("Placebo", "Placebo", "Treatment", "Treatment"),

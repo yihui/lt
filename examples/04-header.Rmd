@@ -6,7 +6,7 @@ title: Title and subtitle
 
 ```{r}
 library(lt)
-d = iris[1:3, 4:5]
-lt(d) |> lt_header("Iris Measurements", "First three observations")
-lt(d) |> lt_header(I("<em>Iris</em> Measurements"))
+d = penguins[1:3, c(1, 3, 6)]
+lt(d) |> lt_header("Palmer Penguins", "First three observations")
+lt(d) |> lt_header(I("<em>Palmer</em> Penguins"))
 ```

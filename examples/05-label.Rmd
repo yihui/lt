@@ -6,9 +6,9 @@ Column names are cleaned for display (`.` and `_` become spaces). Override any o
 
 ```{r}
 library(lt)
-d = iris[1:3, ]
+d = penguins[1:3, 1:6]
 tbl = lt(d)
 tbl
 lt(d, auto_label = FALSE)
-tbl |> lt_label(Sepal.Length = "Length (cm)", Sepal.Width = "Width (cm)")
+tbl |> lt_label(bill_len = "Bill length (mm)", bill_dep = "Bill depth (mm)")
 ```

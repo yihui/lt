@@ -6,5 +6,5 @@ title: A data viewer
 
 ```{r}
 library(lt)
-lt_viewer(iris)
+lt_viewer(penguins)
 ```

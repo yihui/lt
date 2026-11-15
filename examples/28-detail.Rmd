@@ -6,8 +6,8 @@ title: Row detail
 
 ```{r}
 library(lt)
-d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
+d = penguins[, c("species", "island", "bill_len", "body_mass", "sex")]
 lt(d) |>
-  lt_hide(~ hp + wt) |>
-  lt_interactive(pager = 5, filter = FALSE, detail = ~ hp + wt)
+  lt_hide(~ bill_len + body_mass) |>
+  lt_interactive(pager = 5, filter = FALSE, detail = ~ bill_len + body_mass)
 ```

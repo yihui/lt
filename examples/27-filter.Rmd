@@ -6,13 +6,13 @@ By default each column gets the filter that suits its data: a slider for numbers
 
 ```{r}
 library(lt)
-lt(iris) |>
-  lt_interactive(filter = list("auto", Species = FALSE), search = FALSE, pager = 5)
+lt(penguins) |>
+  lt_interactive(filter = list("auto", year = FALSE), search = FALSE, pager = 5)
 
-d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
+d = penguins[, c("species", "island", "bill_len", "body_mass", "sex")]
 lt(d) |>
   lt_interactive(
-    filter = list(TRUE, mpg = "range", cyl = "checklist", gear = "select"),
+    filter = list(TRUE, bill_len = "range", species = "checklist", sex = "select"),
     search = FALSE, pager = 5
   )
 ```

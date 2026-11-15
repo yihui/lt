@@ -2,11 +2,11 @@
 title: Sorting, searching, and paging
 ---
 
-`lt_interactive()` makes headers click-to-sort (shift-click adds tie-breakers), adds a search box that reads plain language such as `mpg over 25, cyl is 4`, and pages the rows.
+`lt_interactive()` makes headers click-to-sort (shift-click adds tie-breakers), adds a search box that reads plain language such as `body_mass over 4500, species is Gentoo`, and pages the rows.
 
 ```{r}
 library(lt)
-d = mtcars[, c("mpg", "cyl", "hp", "wt", "gear")]
+d = penguins[, c("species", "island", "bill_len", "body_mass", "sex")]
 lt(d) |>
-  lt_interactive(sort = ~ cyl + -mpg, pager = c(5, 10, Inf), filter = FALSE)
+  lt_interactive(sort = ~ species + -body_mass, pager = c(5, 10, Inf), filter = FALSE)
 ```
