@@ -53,7 +53,7 @@
     .lt-source-note:first-child td { border-top: 1px dashed #aaa; }
     .lt-source-note { font-style: italic; }
   }
-  .lt-footnote, .lt-source-note { font-size: 0.85em; }
+  .lt-footnote, .lt-source-note, .lti-pager-row { font-size: 0.85em; }
 
   .al-r { text-align: right; }
   .al-c { text-align: center; }
