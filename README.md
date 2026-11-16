@@ -5,8 +5,10 @@
 [![R-CMD-check](https://github.com/yihui/lt/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/yihui/lt/actions/workflows/R-CMD-check.yaml)
 [![CRAN release](https://www.r-pkg.org/badges/version/lt)](https://cran.r-project.org/package=lt)
 [![lt on r-universe](https://yihui.r-universe.dev/badges/lt)](https://yihui.r-universe.dev/lt)
-[![lt.min.js size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js?compression=gzip&label=lt.min.js%20gzip)](https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js)
 [![Build site](https://github.com/yihui/lt/actions/workflows/litedown-site.yml/badge.svg)](https://github.com/yihui/lt/actions/workflows/litedown-site.yml)
+[![lt.min.js size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt.min.js?compression=gzip&label=lt.min.js%20gzip)](https://cdn.jsdelivr.net/npm/@xiee/utils/js/)
+[![lt-interactive.min.js size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-interactive.min.js?compression=gzip&label=lt-interactive.min.js%20gzip)](https://cdn.jsdelivr.net/npm/@xiee/utils/js/)
+[![lt-plot.min.js size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@xiee/utils/js/lt-plot.min.js?compression=gzip&label=lt-plot.min.js%20gzip)](https://cdn.jsdelivr.net/npm/@xiee/utils/js/)
 
 <!-- badges: end -->
 
@@ -14,23 +16,31 @@ Lightweight tables for R, inspired by [**gt**](https://gt.rstudio.com) and
 [**DT**](https://github.com/rstudio/DT).
 
 **lt** provides a small grammar of tables that covers the structure most reports
-need — titles, column spanners, row groups, footnotes, and number formatting —
-without the heavy dependency stack. Tables render as HTML, and `lt_export()`
-also writes PDF, PNG, CSV, and RTF. The entire runtime is a single, tiny
-vanilla-JS file (see the size badge above).
+need — titles, column spanners, row groups, footnotes, and number formatting.
 
-Tables can also hold inline plots (`lt_errorbar()`, `lt_sparkline()`,
-`lt_dotplot()`) and be made interactive — sorting, searching, per-column
-filtering, pagination, resizable columns, column hiding, expandable row detail,
-and CSV/RTF download — with `lt_interactive()`.
+- **Light.** Only one dependency, **xfun**. **gt** pulls in 54 other packages,
+  several of which contain C/C++ code that is compiled when installed from
+  source (e.g., **sass**, **V8**, **xml2**, **fs**, **curl**), and some need
+  system libraries. The browser runtime of **lt** is tiny, and extras load only
+  on pages that use them.
 
-Both inline plots and interactivity live in separate extensions on top of the
-core runtime (`lt-plot.js` and `lt-interactive.js`), each loaded only for the
-tables that use it. A plain static table pulls in neither, so it stays as light
-as ever.
+- **Interactive in one call.** `lt_interactive()` adds sorting, search, column
+  filters, pagination, resizable and hideable columns, expandable row detail,
+  and CSV/RTF download.
+
+- **Plots inside cells.** Error bars, sparklines, and dot plots sit right in the
+  table with `lt_errorbar()`, `lt_sparkline()`, and `lt_dotplot()`.
+
+- **Export.** `lt_export()` saves tables as HTML, PDF, PNG, CSV, or RTF.
+
+- **Easy migration.** If you know **gt**, the grammar is the same, so moving over
+  is a function-by-function mapping.
+
 
 [![An lt cheat table for static tables.](https://pkg.yihui.org/lt/examples/01-lt-static.png)](https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheat-static)
+
 [![An lt cheat table for interactive tables.](https://pkg.yihui.org/lt/examples/01-lt-interactive.png)](https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheat-interactive)
+
 [![An lt cheat table for inline plots.](https://pkg.yihui.org/lt/examples/01-lt-plots.png)](https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheat-plots)
 
 ## Installation

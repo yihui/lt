@@ -76,8 +76,8 @@ deliberate trade-offs:
     already has (see @chp:export). Once you commit to HTML, an enormous amount
     of complexity simply evaporates.
 
--   **One dependency.** **lt** imports **xfun**, and that is all. No sass, no V8,
-    no htmltools.
+-   **One dependency.** **lt** imports **xfun**, and that is all. No **sass**,
+    no **V8**.
 
 -   **A tiny runtime.** R does not render the `<table>`. It ships your data and
     a short list of instructions as JSON, and a small, plain JavaScript file

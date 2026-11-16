@@ -745,7 +745,7 @@ col_summary_fn = function(d, fn, cols = NULL) {
     if (!is.null(cols)) stop("'cols' is only for a single 'fn'")
   } else {
     cols = f_cols(cols, d) %||% names(Filter(is.numeric, d))
-    fn = setNames(rep(list(fn), length(cols)), cols)
+    fn = set_names(rep(list(fn), length(cols)), cols)
   }
   if (!all(names(fn) %in% names(d))) stop("'fn' names must be column names")
   fns = lapply(fn, column_fn)
