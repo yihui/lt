@@ -113,22 +113,25 @@ assert("fmt_number prefix and suffix", {
 })
 
 assert("fmt_date formats ISO date strings", {
+  # dates are local midnight in JS; build expected UTC strings in R, same TZ
+  utc = function(x, fmt) format(as.POSIXct(paste(x, '00:00'), tz = ''), fmt, tz = 'UTC')
+  iso = utc('2024-01-15', '%Y-%m-%dT%H:%M:%OS3Z')
   html = build(list(
     data = list(event = c("A", "B"), date = c("2024-01-15", "2024-06-30")),
     ops = list(list(type = "fmt_date", columns = list("date"), method = "toISOString"))
   ))
-  (has_match(html, '>2024-01-15T00:00:00\\.000Z</td>.*>2024-06-30T00:00:00\\.000Z</td>'))
+  (has_match(html, paste0('>', iso, '</td>.*>', utc('2024-06-30', '%Y-%m-%dT%H:%M:%OS3Z'), '</td>')))
   # toUTCString
   html = build(list(
     data = list(date = "2024-01-15"),
     ops = list(list(type = "fmt_date", columns = list("date"), method = "toUTCString"))
   ))
-  (has_match(html, '>Mon, 15 Jan 2024 00:00:00 GMT</td>'))
+  (has_match(html, paste0('>', utc('2024-01-15', '%a, %d %b %Y %H:%M:%S GMT'), '</td>')))
   # fmt_date skips nulls; em dash comes from the missing default injected on
   # the render path (see with_missing())
   html = build(list(
     data = list(date = list("2024-01-15", NULL)),
     ops = list(list(type = "fmt_date", columns = list("date"), method = "toISOString"))
   ))
-  (has_match(html, '>2024-01-15T00:00:00\\.000Z</td>.*>—</td>'))
+  (has_match(html, paste0('>', iso, '</td>.*>—</td>')))
 })
