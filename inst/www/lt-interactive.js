@@ -1555,6 +1555,10 @@
   // Enhance an opted-in table (idempotent via dataset flag).
   const onMount = (el, spec) => {
     if (!spec?.interactive || el.dataset.ltiOn) return;
+    // A download button needs lt-export.js, which a page that deduped this
+    // script from an earlier table may load later: wait for all scripts.
+    if (spec.interactive.download && !LT.plugins.export && document.readyState !== "complete")
+      return addEventListener("load", () => onMount(el, spec), { once: true });
     el.dataset.ltiOn = "1";
     enhance(el, spec);
   };

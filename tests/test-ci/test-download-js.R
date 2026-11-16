@@ -90,3 +90,18 @@ assert("RTF escapes special characters and merges spanners", {
   (count_str(rtf, '\\clmgf') %==% 1L)
   (count_str(rtf, '\\clmrg') %==% 1L)
 })
+
+assert("download button appears when lt-export.js loads after lt-interactive.js", {
+  # a page that deduped scripts from an earlier table without a download
+  x = lt(dt) |> lt_interactive(download = TRUE)
+  html = html_doc(c(
+    spec_block(x), js_block(c('lt.js', 'lt-query.js', 'lt-interactive.js', 'lt-export.js'))
+  ))
+  f = tempfile(fileext = '.html')
+  on.exit(unlink(f), add = TRUE)
+  xfun::write_utf8(sub('</body>', '<script>addEventListener("load", () => setTimeout(() => {
+    document.body.dataset.out = document.querySelectorAll(".lti-download").length;
+    document.body.dataset.ready = "1";
+  }, 50))</script></body>', paste(html, collapse = '\n'), fixed = TRUE), f)
+  (lti_eval_cdp(f) %==% '1')
+})
