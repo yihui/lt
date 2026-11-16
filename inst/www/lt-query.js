@@ -6,7 +6,7 @@
  *
  *   Q.parse(query, names?, col0?) -> tree | null
  *   Q.text(tree, label?)          -> readable one-line summary
- *   Q.expr(tree)                  -> one JS expression over `x`, or null
+ *   Q.expr(tree, col0?)           -> one JS expression over `x`, or null
  *   Q.parsed(tree)                -> true if more than plain text was read
  *
  * A tree is a leaf `{col, term, show?, free?}` or `{op: "and" | "or", items}`. `term` is
@@ -160,12 +160,19 @@
   // Did the parser read anything beyond plain text (a condition, or `or`)?
   const parsed = t => !!t && (t.op === "or" || (t.op ? t.items.some(parsed) : !t.free));
 
-  // The tree as one expression on `x`, or null if any part is plain text (for a
-  // single column's box, which holds one expression).
-  function expr(tree) {
+  // The tree as one expression on `x`, for the box of column `col0`, or null if
+  // any part is free text or reads another column. Text on `col0` becomes a
+  // case-insensitive substring test, as the search does.
+  function expr(tree, col0 = null) {
     if (!tree) return null;
-    if (!tree.op) return isExpr(tree.term) ? tree.term : null;
-    const parts = tree.items.map(expr);
+    if (!tree.op) {
+      if (isExpr(tree.term)) return tree.term;
+      // free text stays as typed
+      if (tree.free || tree.col == null || tree.col !== col0) return null;
+      const neg = tree.term[0] === "!", needle = (neg ? tree.term.slice(1) : tree.term).trim().toLowerCase();
+      return !needle ? null : `${neg ? "!" : ""}String(x).toLowerCase().includes(${JSON.stringify(needle)})`;
+    }
+    const parts = tree.items.map(t => expr(t, col0));
     return parts.includes(null) ? null :
       parts.map(p => `(${p})`).join(tree.op === "and" ? " && " : " || ");
   }

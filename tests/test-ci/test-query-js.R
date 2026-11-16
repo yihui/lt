@@ -9,7 +9,7 @@ vm.runInContext(fs.readFileSync(process.argv[2], "utf8").split("(window)").join(
 vm.runInContext(fs.readFileSync(process.argv[3], "utf8"), ctx);
 const Q = ctx.LT.plugins.query, inp = JSON.parse(fs.readFileSync(0, "utf8"));
 const t = Q.parse(inp.query, inp.names || {}, inp.col0 ?? null);
-process.stdout.write([Q.text(t), Q.expr(t) ?? "", String(Q.parsed(t))].join("\\n"));
+process.stdout.write([Q.text(t), Q.expr(t, inp.col0 ?? null) ?? "", String(Q.parsed(t))].join("\\n"));
 '
 
 # list(text, expr, parsed) for a query; `names` maps names/labels to columns
@@ -88,4 +88,10 @@ assert('contains takes the whole phrase, even with special characters', {
   (read_query('name has p (1-sided)')$text %==% 'name: "p (1-sided)"')
   (read_query('name does not contain p (1-sided)')$expr %==% '!String(x).toLowerCase().includes("p (1-sided)")')
   (read_query('name contains ~HR at bound, price over 5')$text %==% 'name: "~HR at bound" and price: x > 5')
+})
+
+assert("a column's box turns `contains` text into an expression", {
+  p = read_query('contains virginica', names = c(), col0 = 'Species')
+  (p$expr %==% 'String(x).toLowerCase().includes("virginica")')
+  (read_query('virginica', names = c(), col0 = 'Species')$expr %==% '')
 })

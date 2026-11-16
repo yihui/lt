@@ -1474,7 +1474,7 @@
         // Plain-language conditions become one expression (`(x > 5) && (x < 9)`);
         // anything else stays as typed
         onType(box, v => {
-          const t = Q.parse(v, {}, col), e = Q.expr(t);
+          const t = Q.parse(v, {}, col), e = Q.expr(t, col);
           note.textContent = e && Q.parsed(t) ? Q.text(t, () => null) : "";
           setTerm(e ?? v.trim(), boxEd);
         });
