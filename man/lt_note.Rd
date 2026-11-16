@@ -22,5 +22,5 @@ d = mtcars[1:3, 1:4]
 # several notes; raw HTML (wrap in I())
 lt(d) |>
   lt_note("Data from the 1974 Motor Trend US magazine.") |>
-  lt_note(I("<em>mpg</em>: miles per gallon."))
+  lt_note(I("<b>mpg</b>: miles per gallon."))
 }

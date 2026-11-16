@@ -154,35 +154,39 @@ reorders only within its parent block), and the spanning cells are redrawn to
 match.
 }
 \examples{
-d = mtcars[, c("mpg", "cyl", "hp", "wt")]
-# click-to-sort headers, a search box, column filters, and paging
-lt(d) |> lt_interactive()
-# an initial sort (cyl, then mpg descending), page sizes (the first is used
-# initially; Inf shows all rows), a widget per filter (FALSE for none), and
-# fixed (non-resizable) columns
-lt(d) |> lt_interactive(
-  sort = ~ cyl + -mpg, pager = c(5, 10, Inf), resize = FALSE,
-  filter = list("auto", mpg = "range", cyl = "select", wt = FALSE)
+# click-to-sort headers, a search box, column filters, and paging; "auto"
+# gives Species a checklist (text with few values) and numbers a range slider
+lt(iris) |> lt_interactive()
+# an initial sort (Species, then Sepal.Length descending), page sizes (the
+# first is used initially; Inf shows all rows), a widget per filter (FALSE
+# for none), and fixed (non-resizable) columns
+lt(iris) |> lt_interactive(
+  sort = ~ Species + -Sepal.Length, pager = c(5, 10, Inf), resize = FALSE,
+  filter = list("auto", Sepal.Length = "range", Species = "select",
+    Petal.Width = FALSE)
 )
-# keep only the search box, or filter only some columns
-lt(d) |> lt_interactive(sort = FALSE, filter = FALSE, pager = FALSE)
-lt(d) |> lt_interactive(filter = c("cyl", "hp"))
+# keep only the search box, no individual column filters, no pager
+lt(head(iris)) |> lt_interactive(sort = FALSE, filter = FALSE, pager = FALSE)
+# filter boxes for specific columns only
+lt(iris) |> lt_interactive(filter = c('Species', 'Petal.Length'))
 # a column-visibility menu with a label and some columns hidden to start
 # (hide = NA shows all columns; a bare formula hides those columns)
-lt(d) |> lt_interactive(hide = list(label = "Columns", columns = ~ wt))
+lt(iris) |> lt_interactive(hide = NA)
+lt(iris) |> lt_interactive(hide = list(label = 'Show columns', columns = ~ Petal.Width))
 # row detail: hidden columns revealed when a row is expanded
-lt(d) |> lt_hide(~ hp + wt) |> lt_interactive(detail = ~ hp + wt)
+lt(iris) |> lt_hide(~ Petal.Length + Petal.Width) |>
+  lt_interactive(detail = ~ Petal.Length + Petal.Width)
 # a JavaScript callback: (raw row, index, displayed row) to a table spec
-lt(d) |> lt_interactive(
-  detail = js('(row, i, d) => ({ data: { metric: ["row", "mpg"],
-    value: [i, d.mpg] } })')
+lt(iris) |> lt_interactive(
+  detail = js('(row, i, d) => ({ data: { metric: ["row", "Species"],
+    value: [i, d.Species] } })')
 )
 # a distribution plot in each column header, or in the filter popover
 lt(iris) |> lt_interactive(profile = TRUE)
-lt(iris) |> lt_interactive(profile = "filter")
+lt(iris) |> lt_interactive(profile = 'filter')
 # a button to download the current view (CSV and RTF; a string sets the file
 # name), the raw unformatted values, or only RTF
-lt(d) |> lt_interactive(download = TRUE)
-lt(d) |> lt_interactive(download = list(file = "cars.csv", mode = "raw"))
-lt(d) |> lt_interactive(download = list(formats = "rtf"))
+lt(iris) |> lt_interactive(download = TRUE)
+lt(iris) |> lt_interactive(download = list(file = 'iris.csv', mode = 'raw'))
+lt(iris) |> lt_interactive(download = list(formats = 'rtf'))
 }

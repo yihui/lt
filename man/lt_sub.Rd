@@ -44,7 +44,7 @@ d = data.frame(
   other = c(NA, 0, 5, 1)
 )
 # all columns: custom text for NA, zero, and tiny values
-lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.001, small_text = "<0.001")
+lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
 # only chosen columns
 lt(d) |> lt_sub(~ value, missing = "n/a")
 }

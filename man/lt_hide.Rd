@@ -26,8 +26,9 @@ to things that read the whole row, such as an interactive table's row detail
 (see the \code{detail} argument of \code{\link[=lt_interactive]{lt_interactive()}}).
 }
 \examples{
-tbl = lt(mtcars[1:3, 1:5])
-tbl |> lt_hide(~ drat + disp)
+tbl = lt(mtcars[1:3, c("mpg", "cyl", "hp", "drat", "disp")]) |>
+  lt_hide(~ drat + disp)
+tbl
 # the hidden data still reaches the row detail
-tbl |> lt_hide(~ drat + disp) |> lt_interactive(detail = ~ drat + disp)
+tbl |> lt_interactive(detail = ~ drat + disp)
 }

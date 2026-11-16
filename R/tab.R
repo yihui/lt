@@ -6,7 +6,7 @@
 #' @return `x` with the header recorded.
 #' @export
 #' @examples
-#' d = mtcars[1:3, 1:3]
+#' d = mtcars[1:3, 1:6]
 #' lt(d) |> lt_header("Motor Trend Cars", "First 3 rows")
 #' # a title only; raw HTML (wrap in I())
 #' lt(d) |> lt_header(I("<em>Motor Trend</em> Cars"))
@@ -214,7 +214,7 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
 #' # several notes; raw HTML (wrap in I())
 #' lt(d) |>
 #'   lt_note("Data from the 1974 Motor Trend US magazine.") |>
-#'   lt_note(I("<em>mpg</em>: miles per gallon."))
+#'   lt_note(I("<b>mpg</b>: miles per gallon."))
 lt_note = function(x, text) {
   x$notes = c(x$notes, list(text))
   x
@@ -449,7 +449,7 @@ lt_html = function(x, columns) {
 #'   other = c(NA, 0, 5, 1)
 #' )
 #' # all columns: custom text for NA, zero, and tiny values
-#' lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.001, small_text = "<0.001")
+#' lt(d) |> lt_sub(missing = "n/a", zero = "—", small = 0.001, small_text = "< 0.001")
 #' # only chosen columns
 #' lt(d) |> lt_sub(~ value, missing = "n/a")
 lt_sub = function(x, columns = NULL, missing = NULL, zero = NULL,
@@ -792,7 +792,7 @@ lt_width = function(x, ...) {
 #' @return `x` with the column move recorded.
 #' @export
 #' @examples
-#' tbl = lt(mtcars[1:3, 1:5])
+#' tbl = lt(mtcars[1:3, c("mpg", "cyl", "hp", "drat", "disp")])
 #' # after a column (by name or position)
 #' tbl |> lt_move(~ drat + disp, after = "mpg")
 #' # to the front
@@ -815,10 +815,11 @@ lt_move = function(x, columns, after = NULL) {
 #' @return `x` with the hidden columns recorded.
 #' @export
 #' @examples
-#' tbl = lt(mtcars[1:3, 1:5])
-#' tbl |> lt_hide(~ drat + disp)
+#' tbl = lt(mtcars[1:3, c("mpg", "cyl", "hp", "drat", "disp")]) |>
+#'   lt_hide(~ drat + disp)
+#' tbl
 #' # the hidden data still reaches the row detail
-#' tbl |> lt_hide(~ drat + disp) |> lt_interactive(detail = ~ drat + disp)
+#' tbl |> lt_interactive(detail = ~ drat + disp)
 lt_hide = function(x, columns) {
   columns = f_cols(columns, x$data)
   add_op(x, 'hide', columns = I(as.character(columns)))
@@ -1204,9 +1205,7 @@ lt_css = function(x, ...) {
 #' @export
 #' @examples
 #' tbl = lt(mtcars[1:3, 1:3])
-#' tbl |> lt_wrap(style = "width:300px")
-#' # a class to scope custom CSS to this table
-#' tbl |> lt_wrap(class = "my-table") |> lt_css(`.my-table th` = "color: #06c")
+#' tbl |> lt_wrap(style = "width: 300px;", class = "my-table")
 lt_wrap = function(x, ...) {
   attrs = name_value_args(...)
   if (length(attrs) == 0) return(x)

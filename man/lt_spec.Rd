@@ -24,7 +24,7 @@ added by \code{\link[=lt_css]{lt_css()}} are dropped; attach the runtime assets 
 (see \code{\link[=lt_dependency]{lt_dependency()}}).
 }
 \examples{
-spec = lt_spec(lt(mtcars[1:3, 1:3]) |> lt_header("Cars"))
+spec = lt(mtcars[1:3, 1:3]) |> lt_header("Cars") |> lt_spec()
 str(spec, max.level = 1)
 # ship this, then LT.render(container, spec) in the browser
 xfun::tojson(spec)

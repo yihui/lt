@@ -26,7 +26,5 @@ this table alone, or giving the container a fixed width.
 }
 \examples{
 tbl = lt(mtcars[1:3, 1:3])
-tbl |> lt_wrap(style = "width:300px")
-# a class to scope custom CSS to this table
-tbl |> lt_wrap(class = "my-table") |> lt_css(`.my-table th` = "color: #06c")
+tbl |> lt_wrap(style = "width: 300px;", class = "my-table")
 }

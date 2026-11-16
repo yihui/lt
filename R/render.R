@@ -102,7 +102,7 @@ js_block = function(files, inline = TRUE) {
 #'   table), ready to serialize to JSON.
 #' @export
 #' @examples
-#' spec = lt_spec(lt(mtcars[1:3, 1:3]) |> lt_header("Cars"))
+#' spec = lt(mtcars[1:3, 1:3]) |> lt_header("Cars") |> lt_spec()
 #' str(spec, max.level = 1)
 #' # ship this, then LT.render(container, spec) in the browser
 #' xfun::tojson(spec)
@@ -228,8 +228,6 @@ html_doc = function(body) c(
 #' html = format(tbl)
 #' # a full page, linking the assets instead of inlining them
 #' format(tbl, fragment = FALSE, inline_assets = FALSE)
-#' # without the CSS (or both: assets = FALSE)
-#' format(tbl, assets = "js")
 format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE, ...) {
   if (isTRUE(assets)) assets = c('css', 'js')
   if (isFALSE(assets)) assets = character()
@@ -247,7 +245,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
       inline_assets)
   )
   if (!fragment) body = html_doc(body)
-  xfun::raw_string(paste(body, collapse = '\n'))
+  xfun::raw_string(paste(body, collapse = '\n'), lang = '.html')
 }
 
 #' Print an `lt_tbl` (opens in the viewer or browser)
@@ -404,7 +402,7 @@ lt_static = function(
   html = switch(method, browser = lt_static_browser(x, css), node = lt_static_node(x, css))
   if (tidy) html = tidy_html(html)
   if (!fragment) html = html_doc(html)
-  xfun::raw_string(html)
+  xfun::raw_string(html, lang = '.html')
 }
 
 # Pretty-print lt's baked <table> HTML: break before each structural tag and

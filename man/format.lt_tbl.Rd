@@ -37,6 +37,4 @@ tbl = lt(mtcars[1:3, 1:3])
 html = format(tbl)
 # a full page, linking the assets instead of inlining them
 format(tbl, fragment = FALSE, inline_assets = FALSE)
-# without the CSS (or both: assets = FALSE)
-format(tbl, assets = "js")
 }
