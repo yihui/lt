@@ -1,3 +1,5 @@
+# Beyond the Basics {.part}
+
 # Coming from gt {#chp:gt}
 
 If you know [**gt**](https://gt.rstudio.com), you already know most of **lt**.

@@ -142,14 +142,15 @@ You can also play with the package in your browser, with nothing installed, at
 
 ## How to read this book
 
-The chapters follow the life of a table. We start with a first table
-(@chp:start), then teach it to format numbers (@chp:format), shape its rows and
-columns (@chp:structure), explain itself (@chp:notes), draw (@chp:plots), and
-dress up (@chp:style). After that comes the fun part: making it interactive
-(@chp:interactive), putting it in Shiny apps (@chp:shiny), and getting it out of
-R (@chp:export). Two chapters stand apart: one for those who want to use the
-JavaScript runtime directly (@chp:js), and one for those arriving from **gt**
-(@chp:gt).
+The book has five parts. Part I, Foundations, covers a first table
+(@chp:start), formatting numbers (@chp:format), and shaping rows and columns
+(@chp:structure). Part II, Enrichment, teaches the table to explain itself
+(@chp:notes), draw (@chp:plots), and dress up (@chp:style). Part III is the fun
+part: making tables interactive (@chp:interactive), putting them in Shiny apps
+(@chp:shiny), and getting them out of R (@chp:export). Part IV is for those who
+want to use the JavaScript runtime directly (@chp:js), without R. Part V is for
+those arriving from **gt** (@chp:gt) and those building on **lt** in their own
+packages (@chp:extend).
 
 Almost every code block here is a small, self-contained example that lives in
 the [`examples/`](https://github.com/yihui/lt/tree/main/examples) folder of the

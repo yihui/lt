@@ -4,8 +4,8 @@ The default look of an **lt** table is deliberately plain: a rule on top, a rule
 below the header, a rule at the bottom, and nothing else. It is a good canvas.
 This chapter is about the functions that let you paint on it: `lt_style()` for
 individual cells, `lt_color()` for color scales driven by values, `lt_css()` for
-rules that apply to the whole table, and `lt_wrap()` for keeping those rules from
-leaking into other tables on the same page.
+rules that apply to the whole table, and `lt_wrap()` for setting attributes on a
+table's container, such as a class to scope CSS rules to one table, or a width.
 
 ## Paint a few cells {#sec:style-cells}
 

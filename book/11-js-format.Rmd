@@ -1,0 +1,319 @@
+# Formatting and Columns {#chp:js-format}
+
+Every R formatting and column function has a counterpart in the spec. This
+chapter shows the JavaScript side of formatting values (@chp:format) and of
+shaping columns (@chp:structure).
+
+## Formatting numbers and dates {#sec:js-format}
+
+### Auto-formatting {#sec:js-auto}
+
+Numeric columns format themselves, so a bare `data` already looks decent. The
+rules, all visible in this example:
+
+- Values round to about four significant digits, adapting the decimals to the
+  magnitude.
+- Large numbers get a thin-space thousands separator, and negatives get a
+  typographic minus (U+2212).
+- A column whose name matches `/%|[ _](pct|percent)$/i` is read as a proportion:
+  values are multiplied by 100 and suffixed with "%".
+- A column named like `/year/i` holding 4-digit integers is left alone.
+
+```{js}
+LT.build({
+  data: {
+    Year: [2020, 2021, 2022],
+    Revenue: [1234567.89, 2345678.12, -3456.789],
+    Margin_pct: [0.1234, 0.0567, 0.2345]
+  }
+});
+```
+
+Set `auto_format: false` to see the raw values instead:
+
+```{js}
+LT.build({
+  data: {
+    Year: [2020, 2021, 2022],
+    Revenue: [1234567.89, 2345678.12, -3456.789],
+    Margin_pct: [0.1234, 0.0567, 0.2345]
+  },
+  auto_format: false
+});
+```
+
+### Numbers with `fmt_number` {#sec:js-number}
+
+When you want control, a `fmt_number` op sets the decimals and thousands
+separator (`big_mark`) per column. Add `percent: true` to multiply by 100 and
+append "%".
+
+```{js}
+LT.build({
+  data: {
+    Item: ["Widget", "Gadget", "Doohickey"],
+    Revenue: [1234567.891, 987654.321, 246913.57],
+    Margin: [0.1234, 0.0567, 0.2345]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Revenue"], decimals: 0, big_mark: "," },
+    { type: "fmt_number", columns: ["Margin"], decimals: 2, percent: true }
+  ]
+});
+```
+
+For columns that span several orders of magnitude, `sig_digits` keeps a fixed
+number of significant digits instead of a fixed number of decimals:
+
+```{js}
+LT.build({
+  data: {
+    Particle: ["Electron", "Proton", "Alpha"],
+    Mass: [0.00054858, 1.00727647, 4.00150618]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Mass"], sig_digits: 3 }
+  ]
+});
+```
+
+If the values are already on the percent scale, use `percent: "%"`, which
+appends the sign without multiplying:
+
+```{js}
+LT.build({
+  data: {
+    Test: ["A", "B"],
+    Rate: [78.5, 42.1]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Rate"], decimals: 1, percent: "%" }
+  ]
+});
+```
+
+`prefix` and `suffix` add currency symbols or units:
+
+```{js}
+LT.build({
+  data: {
+    Item: ["Widget", "Gadget", "Doohickey"],
+    Price: [1234.5, 678.9, 42.0],
+    Weight: [1250, 340.5, 89.12]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Price"], decimals: 2, big_mark: ",", prefix: "$" },
+    { type: "fmt_number", columns: ["Weight"], decimals: 1, suffix: " kg" }
+  ]
+});
+```
+
+### Dates with `fmt_date` {#sec:js-date}
+
+Values can be `Date` objects or ISO strings. By default `fmt_date` calls
+`toLocaleDateString()`. Pass `method` to call another `Date` method, or
+`locale` and `options` for full `Intl.DateTimeFormat` control.
+
+Mind the time zone. `new Date("2024-01-15")` is parsed as UTC midnight, but
+`toLocaleDateString()` converts to local time, so that date shows as
+`2024-01-14` for a reader at GMT-6. Pass `options: { timeZone: "UTC" }` to avoid
+the shift.
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Launch", "Update", "Release"],
+    Date: [new Date("2024-01-15"), new Date("2024-06-30"), new Date("2024-12-01")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Date"] }
+  ]
+});
+```
+
+A locale and options give you, say, a Chinese long date:
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Launch", "Update"],
+    Date: [new Date("2024-01-15"), new Date("2024-06-30")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Date"], locale: "zh-CN",
+      options: { year: "numeric", month: "long", day: "numeric",
+                 weekday: "long", timeZone: "UTC" } }
+  ]
+});
+```
+
+Use `method` for a different `Date` method:
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Launch", "Update"],
+    Date: [new Date("2024-01-15"), new Date("2024-06-30")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Date"], method: "toDateString" }
+  ]
+});
+```
+
+For date-times, include the time components in `options`:
+
+```{js}
+LT.build({
+  data: {
+    Event: ["Start", "End"],
+    Time: [new Date("2024-01-15T09:30:00Z"), new Date("2024-01-15T17:45:00Z")]
+  },
+  ops: [
+    { type: "fmt_date", columns: ["Time"], locale: "en-US",
+      options: { year: "numeric", month: "short", day: "numeric",
+                 hour: "2-digit", minute: "2-digit" } }
+  ]
+});
+```
+
+### Substituting values with `sub` {#sec:js-sub}
+
+Replace missing, zero, or small values with display text. Put `sub` after the
+formatting op so it sees the numbers first.
+
+```{js}
+LT.build({
+  data: {
+    Metric: ["HR", "p-value", "Events", "Rate"],
+    Value: [0.62, 0.0003, 0, null]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Value"], decimals: 2 },
+    { type: "sub", columns: ["Value"], missing: "n/a", zero: "—", small: 0.001, small_text: "< 0.001" }
+  ]
+});
+```
+
+Infinities need a JavaScript object rather than JSON (JSON has no `Infinity`),
+and they format as the symbols themselves:
+
+```{js}
+LT.build({
+  data: {
+    Metric: ["Lower bound", "Upper bound", "Rate", "Missing"],
+    Value: [-Infinity, Infinity, 1.5, null]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["Value"], decimals: 2 }
+  ]
+});
+```
+
+## Columns {#sec:js-columns}
+
+### Merging with `merge` {#sec:js-merge}
+
+Combine several columns into one display column. The `pattern` uses `{1}`,
+`{2}`, and so on for the columns in order. Wrap a stretch in `<<` and `>>` to
+make it conditional: it vanishes when any value inside it is missing, which is
+how the tertiary row below loses its empty confidence interval.
+
+```{js}
+LT.build({
+  data: {
+    Endpoint: ["Primary", "Secondary", "Tertiary"],
+    est: [0.61, 0.79, 0.45],
+    ci_lo: [0.40, 0.57, null],
+    ci_hi: [0.82, 1.01, null]
+  },
+  ops: [
+    { type: "fmt_number", columns: ["est", "ci_lo", "ci_hi"], decimals: 2 },
+    { type: "merge", columns: ["est", "ci_lo", "ci_hi"], pattern: "{1}<< ({2}, {3})>>" },
+    { type: "label", labels: { est: "Estimate (95% CI)" } }
+  ]
+});
+```
+
+### Spanners {#sec:js-spanner}
+
+A spanner groups contiguous columns under a shared header:
+
+```{js}
+LT.build({
+  data: iris,
+  spanners: [
+    { label: "Sepal", columns: ["Sepal.Length", "Sepal.Width"] },
+    { label: "Petal", columns: ["Petal.Length", "Petal.Width"] }
+  ]
+});
+```
+
+Set `auto_span: true` to infer spanners from the column names. Names split on
+the first `.` or `_`, contiguous columns sharing a prefix are grouped, and the
+labels shrink to the suffix. A string such as `"[.]"` is taken as a regular
+expression for a custom separator.
+
+```{js}
+LT.build({ data: iris, auto_span: true });
+```
+
+### Widths {#sec:js-width}
+
+A `width` op sets column widths with any CSS length:
+
+```{js}
+LT.build({
+  data: mtcars,
+  ops: [
+    { type: "width", widths: { mpg: "10em", cyl: "5em", disp: "10em", hp: "8em" } }
+  ]
+});
+```
+
+Give it `table` to size the whole table. It combines with column `widths`:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "width", table: "80%" }
+  ]
+});
+```
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "width", table: "100%", widths: { Species: "20em" } }
+  ]
+});
+```
+
+### Moving and hiding {#sec:js-move}
+
+A `move` op puts columns first (`after: null`) or after a named column:
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "move", columns: ["Petal.Length", "Petal.Width"], after: null }
+  ]
+});
+```
+
+A `hide` op drops columns from view but not from the spec. Their values still
+travel with the row, so anything that reads the whole row, such as an
+interactive table's `detail`, can use them.
+
+```{js}
+LT.build({
+  data: iris,
+  ops: [
+    { type: "hide", columns: ["Petal.Length", "Petal.Width"] }
+  ]
+});
+```
+

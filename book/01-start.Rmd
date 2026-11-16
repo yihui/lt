@@ -1,3 +1,5 @@
+# Foundations {.part}
+
 # Your First Table {#chp:start}
 
 A table is the one data visualization that everyone can read without a legend.

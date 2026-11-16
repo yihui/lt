@@ -1,3 +1,5 @@
+# Interactivity and Output {.part}
+
 # Interactive Tables {#chp:interactive}
 
 A static table answers the question you thought to ask. An interactive table
@@ -476,6 +478,6 @@ lt(data.frame(id = integer(), x = numeric())) |>
 ```
 
 The request and response format is the same protocol the JavaScript runtime
-speaks, and it is described in full in @sec:server, in the JavaScript chapter
-(@chp:js). Any server that follows it can power a table, whatever it is built
+speaks, and it is described in full in @sec:server, in the JavaScript part
+(@chp:js-interactive). Any server that follows it can power a table, whatever it is built
 on.

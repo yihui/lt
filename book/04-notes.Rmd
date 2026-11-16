@@ -1,3 +1,5 @@
+# Enrichment {.part}
+
 # Footnotes, Notes, and HTML {#chp:notes}
 
 Every good table has fine print. A number needs a caveat, a column needs a
