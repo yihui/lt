@@ -22,7 +22,7 @@
 <div class="title"><h1>lt: Tables That Travel Light</h1></div>
 <div class="subtitle"><h2>A grammar of lightweight static and interactive tables for R and beyond</h2></div>
 <div class="author"><h2>Yihui Xie</h2></div>
-<div class="date"><h3>2026-11-15</h3></div>
+<div class="date"><h3>2026-11-16</h3></div>
 </header>
 <main>
 <div class="">
@@ -36,6 +36,7 @@
 <li><a href="#sec:how-to-read-this-book">How to read this book</a></li>
 </ul>
 </li>
+<li><a href="#prt:foundations"><span class="section-number">I</span> Foundations</a></li>
 <li><a href="#chp:start"><span class="section-number main-number">1</span> Your First Table</a>
 <ul>
 <li><a href="#sec:verbs"><span class="section-number">1.1</span> One function, many verbs</a></li>
@@ -74,6 +75,7 @@
 <li><a href="#sec:indent"><span class="section-number">3.6</span> Indentation</a></li>
 </ul>
 </li>
+<li><a href="#prt:enrichment"><span class="section-number">II</span> Enrichment</a></li>
 <li><a href="#chp:notes"><span class="section-number main-number">4</span> Footnotes, Notes, and HTML</a>
 <ul>
 <li><a href="#sec:footnote"><span class="section-number">4.1</span> Footnotes</a></li>
@@ -112,6 +114,7 @@
 <li><a href="#sec:style-raw"><span class="section-number">6.6</span> Peek behind the format</a></li>
 </ul>
 </li>
+<li><a href="#prt:interactivity-and-output"><span class="section-number">III</span> Interactivity and Output</a></li>
 <li><a href="#chp:interactive"><span class="section-number main-number">7</span> Interactive Tables</a>
 <ul>
 <li><a href="#sec:search-sort"><span class="section-number">7.1</span> Searching and sorting</a>
@@ -169,6 +172,7 @@
 <li><a href="#sec:spec"><span class="section-number">9.3</span> The spec underneath</a></li>
 </ul>
 </li>
+<li><a href="#prt:the-javascript-runtime"><span class="section-number">IV</span> The JavaScript Runtime</a></li>
 <li><a href="#chp:js"><span class="section-number main-number">10</span> Using lt from JavaScript</a>
 <ul>
 <li><a href="#sec:js-include"><span class="section-number">10.1</span> Including lt.js</a></li>
@@ -181,110 +185,123 @@
 <li><a href="#sec:js-align"><span class="section-number">10.3.4</span> Alignment</a></li>
 </ul>
 </li>
-<li><a href="#sec:js-format"><span class="section-number">10.4</span> Formatting numbers and dates</a>
-<ul>
-<li><a href="#sec:js-auto"><span class="section-number">10.4.1</span> Auto-formatting</a></li>
-<li><a href="#sec:js-number"><span class="section-number">10.4.2</span> Numbers with <code>fmt_number</code></a></li>
-<li><a href="#sec:js-date"><span class="section-number">10.4.3</span> Dates with <code>fmt_date</code></a></li>
-<li><a href="#sec:js-sub"><span class="section-number">10.4.4</span> Substituting values with <code>sub</code></a></li>
 </ul>
 </li>
-<li><a href="#sec:js-columns"><span class="section-number">10.5</span> Columns</a>
+<li><a href="#chp:js-format"><span class="section-number main-number">11</span> Formatting and Columns</a>
 <ul>
-<li><a href="#sec:js-merge"><span class="section-number">10.5.1</span> Merging with <code>merge</code></a></li>
-<li><a href="#sec:js-spanner"><span class="section-number">10.5.2</span> Spanners</a></li>
-<li><a href="#sec:js-width"><span class="section-number">10.5.3</span> Widths</a></li>
-<li><a href="#sec:js-move"><span class="section-number">10.5.4</span> Moving and hiding</a></li>
+<li><a href="#sec:js-format"><span class="section-number">11.1</span> Formatting numbers and dates</a>
+<ul>
+<li><a href="#sec:js-auto"><span class="section-number">11.1.1</span> Auto-formatting</a></li>
+<li><a href="#sec:js-number"><span class="section-number">11.1.2</span> Numbers with <code>fmt_number</code></a></li>
+<li><a href="#sec:js-date"><span class="section-number">11.1.3</span> Dates with <code>fmt_date</code></a></li>
+<li><a href="#sec:js-sub"><span class="section-number">11.1.4</span> Substituting values with <code>sub</code></a></li>
 </ul>
 </li>
-<li><a href="#sec:js-plots"><span class="section-number">10.6</span> Inline plots</a>
+<li><a href="#sec:js-columns"><span class="section-number">11.2</span> Columns</a>
 <ul>
-<li><a href="#sec:js-errorbar"><span class="section-number">10.6.1</span> Error bars</a></li>
-<li><a href="#sec:js-sparkline"><span class="section-number">10.6.2</span> Sparklines</a></li>
-<li><a href="#sec:js-dotplot"><span class="section-number">10.6.3</span> Dot plots</a></li>
-</ul>
-</li>
-<li><a href="#sec:js-groups"><span class="section-number">10.7</span> Row groups and indentation</a>
-<ul>
-<li><a href="#sec:js-group"><span class="section-number">10.7.1</span> Grouping by a column</a></li>
-<li><a href="#sec:js-manual-group"><span class="section-number">10.7.2</span> Manual groups</a></li>
-<li><a href="#sec:js-indent"><span class="section-number">10.7.3</span> Indentation</a></li>
-</ul>
-</li>
-<li><a href="#sec:js-style"><span class="section-number">10.8</span> Styling</a>
-<ul>
-<li><a href="#sec:js-style-cells"><span class="section-number">10.8.1</span> Styling cells</a></li>
-<li><a href="#sec:js-style-test"><span class="section-number">10.8.2</span> Conditional styling</a></li>
-<li><a href="#sec:js-scope"><span class="section-number">10.8.3</span> Scoping a style to one table</a></li>
-</ul>
-</li>
-<li><a href="#sec:js-html"><span class="section-number">10.9</span> HTML content</a></li>
-<li><a href="#sec:js-notes"><span class="section-number">10.10</span> Footnotes and source notes</a></li>
-<li><a href="#sec:js-complete"><span class="section-number">10.11</span> A complete example</a></li>
-<li><a href="#sec:js-interactive"><span class="section-number">10.12</span> Interactive tables</a>
-<ul>
-<li><a href="#sec:js-sort"><span class="section-number">10.12.1</span> Sorting</a></li>
-<li><a href="#sec:js-search"><span class="section-number">10.12.2</span> Searching</a></li>
-<li><a href="#sec:js-filter"><span class="section-number">10.12.3</span> Filters</a></li>
-<li><a href="#sec:js-pager"><span class="section-number">10.12.4</span> Paging</a></li>
-<li><a href="#sec:js-resize"><span class="section-number">10.12.5</span> Resizing and hiding columns</a></li>
-<li><a href="#sec:js-detail"><span class="section-number">10.12.6</span> Row detail</a></li>
-<li><a href="#sec:js-profile"><span class="section-number">10.12.7</span> Profiles</a></li>
-<li><a href="#sec:js-download"><span class="section-number">10.12.8</span> Downloading the view</a></li>
-<li><a href="#sec:js-structure"><span class="section-number">10.12.9</span> Row structure</a></li>
-<li><a href="#sec:js-raw"><span class="section-number">10.12.10</span> Raw values</a></li>
-</ul>
-</li>
-<li><a href="#sec:js-render"><span class="section-number">10.13</span> Rendering on demand</a></li>
-<li><a href="#sec:js-control"><span class="section-number">10.14</span> Driving a table from outside</a></li>
-<li><a href="#sec:server"><span class="section-number">10.15</span> Server mode</a>
-<ul>
-<li><a href="#sec:the-request"><span class="section-number">10.15.1</span> The request</a></li>
-<li><a href="#sec:the-reply"><span class="section-number">10.15.2</span> The reply</a></li>
+<li><a href="#sec:js-merge"><span class="section-number">11.2.1</span> Merging with <code>merge</code></a></li>
+<li><a href="#sec:js-spanner"><span class="section-number">11.2.2</span> Spanners</a></li>
+<li><a href="#sec:js-width"><span class="section-number">11.2.3</span> Widths</a></li>
+<li><a href="#sec:js-move"><span class="section-number">11.2.4</span> Moving and hiding</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#chp:gt"><span class="section-number main-number">11</span> Coming from gt</a>
+<li><a href="#chp:js-plots"><span class="section-number main-number">12</span> Plots, Groups, and Styling</a>
 <ul>
-<li><a href="#sec:mapping"><span class="section-number">11.1</span> The phrasebook</a>
+<li><a href="#sec:js-plots"><span class="section-number">12.1</span> Inline plots</a>
 <ul>
-<li><a href="#sec:building-the-table"><span class="section-number">11.1.1</span> Building the table</a></li>
-<li><a href="#sec:labels-headers-spanners-and-notes"><span class="section-number">11.1.2</span> Labels, headers, spanners, and notes</a></li>
-<li><a href="#sec:formatting-values"><span class="section-number">11.1.3</span> Formatting values</a></li>
-<li><a href="#sec:layout-and-styling"><span class="section-number">11.1.4</span> Layout and styling</a></li>
-<li><a href="#sec:interactivity"><span class="section-number">11.1.5</span> Interactivity</a></li>
-<li><a href="#sec:output-and-shiny"><span class="section-number">11.1.6</span> Output and Shiny</a></li>
-<li><a href="#sec:things-gt-does-not-do-or-needs-an-add-on-for"><span class="section-number">11.1.7</span> Things gt does not do (or needs an add-on for)</a></li>
+<li><a href="#sec:js-errorbar"><span class="section-number">12.1.1</span> Error bars</a></li>
+<li><a href="#sec:js-sparkline"><span class="section-number">12.1.2</span> Sparklines</a></li>
+<li><a href="#sec:js-dotplot"><span class="section-number">12.1.3</span> Dot plots</a></li>
 </ul>
 </li>
-<li><a href="#sec:differences"><span class="section-number">11.2</span> Notable differences</a>
+<li><a href="#sec:js-groups"><span class="section-number">12.2</span> Row groups and indentation</a>
 <ul>
-<li><a href="#sec:selection"><span class="section-number">11.2.1</span> Column selection: formulas, strings, or positions, not tidy-select</a></li>
-<li><a href="#sec:one-interactive"><span class="section-number">11.2.2</span> Interactivity is one function, not a separate step</a></li>
-<li><a href="#sec:footnotes-vs-notes"><span class="section-number">11.2.3</span> Footnotes and source notes are two different functions</a></li>
-<li><a href="#sec:groups"><span class="section-number">11.2.4</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</a></li>
-<li><a href="#sec:raw-html"><span class="section-number">11.2.5</span> Raw HTML: <code>I()</code> is the new <code>html()</code> and <code>md()</code></a></li>
-<li><a href="#sec:sub-defaults"><span class="section-number">11.2.6</span> Substitutions: the defaults already do the work</a></li>
-<li><a href="#sec:styling"><span class="section-number">11.2.7</span> Styling: you probably don’t need CSS</a></li>
-<li><a href="#sec:missing"><span class="section-number">11.2.8</span> What lt does not have</a></li>
+<li><a href="#sec:js-group"><span class="section-number">12.2.1</span> Grouping by a column</a></li>
+<li><a href="#sec:js-manual-group"><span class="section-number">12.2.2</span> Manual groups</a></li>
+<li><a href="#sec:js-indent"><span class="section-number">12.2.3</span> Indentation</a></li>
 </ul>
 </li>
-<li><a href="#sec:recipes"><span class="section-number">11.3</span> Recipes for what lt does not have</a>
+<li><a href="#sec:js-style"><span class="section-number">12.3</span> Styling</a>
 <ul>
-<li><a href="#sec:recipe-stripe"><span class="section-number">11.3.1</span> Row striping and other themes</a></li>
-<li><a href="#sec:recipe-transform"><span class="section-number">11.3.2</span> Other formats: transform in R</a></li>
+<li><a href="#sec:js-style-cells"><span class="section-number">12.3.1</span> Styling cells</a></li>
+<li><a href="#sec:js-style-test"><span class="section-number">12.3.2</span> Conditional styling</a></li>
+<li><a href="#sec:js-scope"><span class="section-number">12.3.3</span> Scoping a style to one table</a></li>
 </ul>
 </li>
-<li><a href="#sec:gt-static"><span class="section-number">11.4</span> Generating a static HTML table</a></li>
-<li><a href="#sec:demo"><span class="section-number">11.5</span> A runnable example</a></li>
+<li><a href="#sec:js-html"><span class="section-number">12.4</span> HTML content</a></li>
+<li><a href="#sec:js-notes"><span class="section-number">12.5</span> Footnotes and source notes</a></li>
+<li><a href="#sec:js-complete"><span class="section-number">12.6</span> A complete example</a></li>
 </ul>
 </li>
-<li><a href="#chp:extend"><span class="section-number main-number">12</span> Building on lt</a>
+<li><a href="#chp:js-interactive"><span class="section-number main-number">13</span> Interactivity and Control</a>
 <ul>
-<li><a href="#sec:generic"><span class="section-number">12.1</span> Why <code>lt()</code> is an S3 generic</a></li>
-<li><a href="#sec:ship"><span class="section-number">12.2</span> Shipping lt methods from your package</a></li>
-<li><a href="#sec:embed-pointer"><span class="section-number">12.3</span> Embedding tables in other widgets</a></li>
+<li><a href="#sec:js-interactive"><span class="section-number">13.1</span> Interactive tables</a>
+<ul>
+<li><a href="#sec:js-sort"><span class="section-number">13.1.1</span> Sorting</a></li>
+<li><a href="#sec:js-search"><span class="section-number">13.1.2</span> Searching</a></li>
+<li><a href="#sec:js-filter"><span class="section-number">13.1.3</span> Filters</a></li>
+<li><a href="#sec:js-pager"><span class="section-number">13.1.4</span> Paging</a></li>
+<li><a href="#sec:js-resize"><span class="section-number">13.1.5</span> Resizing and hiding columns</a></li>
+<li><a href="#sec:js-detail"><span class="section-number">13.1.6</span> Row detail</a></li>
+<li><a href="#sec:js-profile"><span class="section-number">13.1.7</span> Profiles</a></li>
+<li><a href="#sec:js-download"><span class="section-number">13.1.8</span> Downloading the view</a></li>
+<li><a href="#sec:js-structure"><span class="section-number">13.1.9</span> Row structure</a></li>
+<li><a href="#sec:js-raw"><span class="section-number">13.1.10</span> Raw values</a></li>
+</ul>
+</li>
+<li><a href="#sec:js-render"><span class="section-number">13.2</span> Rendering on demand</a></li>
+<li><a href="#sec:js-control"><span class="section-number">13.3</span> Driving a table from outside</a></li>
+<li><a href="#sec:server"><span class="section-number">13.4</span> Server mode</a>
+<ul>
+<li><a href="#sec:the-request"><span class="section-number">13.4.1</span> The request</a></li>
+<li><a href="#sec:the-reply"><span class="section-number">13.4.2</span> The reply</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#prt:beyond-the-basics"><span class="section-number">V</span> Beyond the Basics</a></li>
+<li><a href="#chp:gt"><span class="section-number main-number">14</span> Coming from gt</a>
+<ul>
+<li><a href="#sec:mapping"><span class="section-number">14.1</span> The phrasebook</a>
+<ul>
+<li><a href="#sec:building-the-table"><span class="section-number">14.1.1</span> Building the table</a></li>
+<li><a href="#sec:labels-headers-spanners-and-notes"><span class="section-number">14.1.2</span> Labels, headers, spanners, and notes</a></li>
+<li><a href="#sec:formatting-values"><span class="section-number">14.1.3</span> Formatting values</a></li>
+<li><a href="#sec:layout-and-styling"><span class="section-number">14.1.4</span> Layout and styling</a></li>
+<li><a href="#sec:interactivity"><span class="section-number">14.1.5</span> Interactivity</a></li>
+<li><a href="#sec:output-and-shiny"><span class="section-number">14.1.6</span> Output and Shiny</a></li>
+<li><a href="#sec:things-gt-does-not-do-or-needs-an-add-on-for"><span class="section-number">14.1.7</span> Things gt does not do (or needs an add-on for)</a></li>
+</ul>
+</li>
+<li><a href="#sec:differences"><span class="section-number">14.2</span> Notable differences</a>
+<ul>
+<li><a href="#sec:selection"><span class="section-number">14.2.1</span> Column selection: formulas, strings, or positions, not tidy-select</a></li>
+<li><a href="#sec:one-interactive"><span class="section-number">14.2.2</span> Interactivity is one function, not a separate step</a></li>
+<li><a href="#sec:footnotes-vs-notes"><span class="section-number">14.2.3</span> Footnotes and source notes are two different functions</a></li>
+<li><a href="#sec:groups"><span class="section-number">14.2.4</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</a></li>
+<li><a href="#sec:raw-html"><span class="section-number">14.2.5</span> Raw HTML: <code>I()</code> is the new <code>html()</code> and <code>md()</code></a></li>
+<li><a href="#sec:sub-defaults"><span class="section-number">14.2.6</span> Substitutions: the defaults already do the work</a></li>
+<li><a href="#sec:styling"><span class="section-number">14.2.7</span> Styling: you probably don’t need CSS</a></li>
+<li><a href="#sec:missing"><span class="section-number">14.2.8</span> What lt does not have</a></li>
+</ul>
+</li>
+<li><a href="#sec:recipes"><span class="section-number">14.3</span> Recipes for what lt does not have</a>
+<ul>
+<li><a href="#sec:recipe-stripe"><span class="section-number">14.3.1</span> Row striping and other themes</a></li>
+<li><a href="#sec:recipe-transform"><span class="section-number">14.3.2</span> Other formats: transform in R</a></li>
+</ul>
+</li>
+<li><a href="#sec:gt-static"><span class="section-number">14.4</span> Generating a static HTML table</a></li>
+<li><a href="#sec:demo"><span class="section-number">14.5</span> A runnable example</a></li>
+</ul>
+</li>
+<li><a href="#chp:extend"><span class="section-number main-number">15</span> Building on lt</a>
+<ul>
+<li><a href="#sec:generic"><span class="section-number">15.1</span> Why <code>lt()</code> is an S3 generic</a></li>
+<li><a href="#sec:ship"><span class="section-number">15.2</span> Shipping lt methods from your package</a></li>
+<li><a href="#sec:embed-pointer"><span class="section-number">15.3</span> Embedding tables in other widgets</a></li>
 </ul>
 </li>
 </ul>
@@ -324,7 +341,7 @@ lt(d) |&gt;
   lt_sub(~ P_Value, missing = &quot;n/a&quot;) |&gt;
   lt_footnote(&quot;Two-sided p-value from log-rank test.&quot;, &quot;column&quot;, ~ P_Value)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["dc25b969"]=
 {
   "Group": ["Treatment", "Treatment", "Control", "Control"],
@@ -372,7 +389,7 @@ lt(d) |&gt;
   "data_key": "dc25b969"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt.min.js" defer></script>
 <p>That is the whole idea. The rest of this book is about the details, and there
 are more of them than the pitch suggests: <strong>lt</strong> can also draw forest plots
 and sparklines inside cells, turn a table into an interactive explorer with
@@ -468,14 +485,15 @@ install.packages(&quot;lt&quot;, repos = &quot;https://yihui.r-universe.dev&quot
 <p>You can also play with the package in your browser, with nothing installed, at
 <a href="https://pkg.yihui.org/lt/playground/">https://pkg.yihui.org/lt/playground/</a>.</p>
 <h2 id="sec:how-to-read-this-book">How to read this book</h2>
-<p>The chapters follow the life of a table. We start with a first table
-(<a class="cross-ref-chp" href="#chp:start">1</a>), then teach it to format numbers (<a class="cross-ref-chp" href="#chp:format">2</a>), shape its rows and
-columns (<a class="cross-ref-chp" href="#chp:structure">3</a>), explain itself (<a class="cross-ref-chp" href="#chp:notes">4</a>), draw (<a class="cross-ref-chp" href="#chp:plots">5</a>), and
-dress up (<a class="cross-ref-chp" href="#chp:style">6</a>). After that comes the fun part: making it interactive
-(<a class="cross-ref-chp" href="#chp:interactive">7</a>), putting it in Shiny apps (<a class="cross-ref-chp" href="#chp:shiny">8</a>), and getting it out of
-R (<a class="cross-ref-chp" href="#chp:export">9</a>). Two chapters stand apart: one for those who want to use the
-JavaScript runtime directly (<a class="cross-ref-chp" href="#chp:js">10</a>), and one for those arriving from <strong>gt</strong>
-(<a class="cross-ref-chp" href="#chp:gt">11</a>).</p>
+<p>The book has five parts. Part I, Foundations, covers a first table
+(<a class="cross-ref-chp" href="#chp:start">1</a>), formatting numbers (<a class="cross-ref-chp" href="#chp:format">2</a>), and shaping rows and columns
+(<a class="cross-ref-chp" href="#chp:structure">3</a>). Part II, Enrichment, teaches the table to explain itself
+(<a class="cross-ref-chp" href="#chp:notes">4</a>), draw (<a class="cross-ref-chp" href="#chp:plots">5</a>), and dress up (<a class="cross-ref-chp" href="#chp:style">6</a>). Part III is the fun
+part: making tables interactive (<a class="cross-ref-chp" href="#chp:interactive">7</a>), putting them in Shiny apps
+(<a class="cross-ref-chp" href="#chp:shiny">8</a>), and getting them out of R (<a class="cross-ref-chp" href="#chp:export">9</a>). Part IV is for those who
+want to use the JavaScript runtime directly (<a class="cross-ref-chp" href="#chp:js">10</a>), without R. Part V is for
+those arriving from <strong>gt</strong> (<a class="cross-ref-chp" href="#chp:gt">14</a>) and those building on <strong>lt</strong> in their own
+packages (<a class="cross-ref-chp" href="#chp:extend">15</a>).</p>
 <p>Almost every code block here is a small, self-contained example that lives in
 the <a href="https://github.com/yihui/lt/tree/main/examples"><code>examples/</code></a> folder of the
 package, one feature per file. The link under a block (“Open as a page”) opens
@@ -490,6 +508,7 @@ the file as a starting point. If you would rather learn by poking, the
 <div class="chapter-before side side-right">
 <p><a href="https://github.com/yihui/lt/edit/main/book/01-start.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
+<h1 id="prt:foundations" class="part"><span class="section-number">I</span> Foundations</h1>
 <h1 id="chp:start"><span class="section-number main-number">1</span> Your First Table</h1>
 <p>A table is the one data visualization that everyone can read without a legend.
 This chapter shows how to make one with <strong>lt</strong>, and then how to give it a title,
@@ -816,7 +835,7 @@ tbl_interactive = lt(d) |&gt;
   lt_note(&quot;lt_viewer() and lt_serve() view and serve big data.&quot;)
 tbl_interactive
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt-interactive.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["025aa0f9"]=
 {
   "Argument": ["sort", "search", "filter", "pager", "resize", "hide", "detail", "profile", "download"],
@@ -852,9 +871,9 @@ tbl_interactive
   "data_key": "025aa0f9"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt-query.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt-export.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt-interactive.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt-query.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt-export.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt-interactive.min.js" defer></script>
 <h3 id="sec:cheat-plots"><span class="section-number">1.2.3</span> Inline plots</h3>
 <p>Each plotting function draws in the cell of the column that carries its name.</p>
 <pre><code class="language-r">d = data.frame(
@@ -877,7 +896,7 @@ tbl_plots = lt(d) |&gt;
   )
 tbl_plots
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt-plot.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["beb9e5fd"]=
 {
   "Study": ["A", "B", "C"],
@@ -974,7 +993,7 @@ tbl_plots
   "data_key": "beb9e5fd"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt-plot.min.js" defer></script>
 <h2 id="sec:labels"><span class="section-number">1.3</span> Titles and labels</h2>
 <p><code>lt_header()</code> puts a title, and optionally a subtitle, above the table:</p>
 <pre><code class="language-r">d = penguins[1:3, c(1, 3, 6)]
@@ -1156,7 +1175,7 @@ keeps the output file small.</p>
 <p>Because a table is just an object until it is printed, you can build it in a
 function, return it from a package, and let the caller add a few verbs of their
 own. That is how a package can offer tables that its users can still customize
-(<a class="cross-ref-chp" href="#chp:extend">12</a>).</p>
+(<a class="cross-ref-chp" href="#chp:extend">15</a>).</p>
 <p>By default, <code>NA</code> is displayed as an em dash (—), so that a missing value is never
 mistaken for an empty string. To show something else everywhere, set
 <code>options(lt.missing = &quot;n/a&quot;)</code>; to leave <code>NA</code> cells blank, use <code>&quot;&quot;</code>. To change it
@@ -1932,6 +1951,7 @@ If you also want interactive sorting to keep each child with its parent, see
 <div class="chapter-before side side-right">
 <p><a href="https://github.com/yihui/lt/edit/main/book/04-notes.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
+<h1 id="prt:enrichment" class="part"><span class="section-number">II</span> Enrichment</h1>
 <h1 id="chp:notes"><span class="section-number main-number">4</span> Footnotes, Notes, and HTML</h1>
 <p>Every good table has fine print. A number needs a caveat, a column needs a
 definition, a source needs credit. This chapter is about the small words that
@@ -2619,8 +2639,8 @@ tables that use one. A plain table does not pay for it. <code>lt_dependency(plot
 below the header, a rule at the bottom, and nothing else. It is a good canvas.
 This chapter is about the functions that let you paint on it: <code>lt_style()</code> for
 individual cells, <code>lt_color()</code> for color scales driven by values, <code>lt_css()</code> for
-rules that apply to the whole table, and <code>lt_wrap()</code> for keeping those rules from
-leaking into other tables on the same page.</p>
+rules that apply to the whole table, and <code>lt_wrap()</code> for setting attributes on a
+table’s container, such as a class to scope CSS rules to one table, or a width.</p>
 <h2 id="sec:style-cells"><span class="section-number">6.1</span> Paint a few cells</h2>
 <p>Start with the shortcuts. <code>lt_style()</code> takes the columns and rows to hit, and
 then a handful of arguments you would otherwise have to spell in CSS: <code>bold</code>,
@@ -2748,7 +2768,7 @@ lt(d) |&gt;
 survive sorting, filtering, and paging in an interactive table (<a class="cross-ref-chp" href="#chp:interactive">7</a>):
 the table re-evaluates the test whenever the rows move. The price is that <code>test</code>
 is a string of JavaScript, not an R expression, and it sees the <em>raw</em> value, so
-<code>v &lt; 0.05</code> compares numbers even if the cell shows <code>&quot;&lt;0.05&quot;</code> after formatting.</p>
+<code>v &lt; 0.05</code> compares numbers even if the cell shows <code>&quot;&lt; 0.05&quot;</code> after formatting.</p>
 </div>
 <p>A missing value arrives in the test as <code>null</code>, which makes it easy to flag the
 holes in your data:</p>
@@ -3033,6 +3053,7 @@ and not information.</p>
 <div class="chapter-before side side-right">
 <p><a href="https://github.com/yihui/lt/edit/main/book/07-interactive.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
+<h1 id="prt:interactivity-and-output" class="part"><span class="section-number">III</span> Interactivity and Output</h1>
 <h1 id="chp:interactive"><span class="section-number main-number">7</span> Interactive Tables</h1>
 <p>A static table answers the question you thought to ask. An interactive table
 lets your reader ask the ones you did not. Which cars have the most horsepower
@@ -3858,8 +3879,8 @@ zero-row data frame is enough, because the first page is fetched too:</p>
   lt_serve(url = &quot;https://example.org/rows&quot;)
 </code></pre>
 <p>The request and response format is the same protocol the JavaScript runtime
-speaks, and it is described in full in <a class="cross-ref-sec" href="#sec:server">10.15</a>, in the JavaScript chapter
-(<a class="cross-ref-chp" href="#chp:js">10</a>). Any server that follows it can power a table, whatever it is built
+speaks, and it is described in full in <a class="cross-ref-sec" href="#sec:server">13.4</a>, in the JavaScript part
+(<a class="cross-ref-chp" href="#chp:js-interactive">13</a>). Any server that follows it can power a table, whatever it is built
 on.</p>
 <div class="chapter-after side side-right">
 </div>
@@ -3942,7 +3963,7 @@ lt_viewer(big) |&gt; lt_serve()
 rows from the session itself, so no extra port is needed. Either way the pager
 shows the size of the whole data, not just of the page.</p>
 <p>The conversation between the table and its server is a small JSON protocol. It
-is documented in <a class="cross-ref-sec" href="#sec:server">10.15</a>, in case you would rather feed a table from a
+is documented in <a class="cross-ref-sec" href="#sec:server">13.4</a>, in case you would rather feed a table from a
 database or a file than from R.</p>
 <div class="chapter-after side side-right">
 </div>
@@ -4084,13 +4105,20 @@ page written in plain JavaScript, which is where the next chapter begins.</p>
 <div class="chapter-before side side-right">
 <p><a href="https://github.com/yihui/lt/edit/main/book/10-js.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
+<h1 id="prt:the-javascript-runtime" class="part"><span class="section-number">IV</span> The JavaScript Runtime</h1>
+<p>The R functions of the previous parts all write the same thing: a JSON spec that
+a small runtime turns into a table in the browser. This part uses that runtime
+directly.</p>
 <h1 id="chp:js"><span class="section-number main-number">10</span> Using lt from JavaScript</h1>
 <p>You do not need R to use lt. The whole library is a few small scripts and one
-idea: <em>a table is JSON</em>. Hand the runtime a spec, get a table back. This
-chapter is for people building pages by hand, for apps written in other
-languages, and for the curious who want to see what R is quietly writing for
-them. Every example below is live: the code is the whole program, and the table
-under it is what the browser built from it.</p>
+idea: <em>a table is JSON</em>. Hand the runtime a spec, get a table back. This part is
+for people building pages by hand, for apps written in other languages, and for
+the curious who want to see what R is quietly writing for them. This first
+chapter covers the basics: linking the runtime, the shape of a spec, and
+building a table. The next chapters cover formatting and columns
+(<a class="cross-ref-chp" href="#chp:js-format">11</a>), plots, groups, and styling (<a class="cross-ref-chp" href="#chp:js-plots">12</a>), and interactivity
+and control (<a class="cross-ref-chp" href="#chp:js-interactive">13</a>). Every example is live: the code is the whole
+program, and the table under it is what the browser built from it.</p>
 <script>// lt.js is deferred: queue LT.build() calls until it loads (other chapters
 // may have created window.LT already, so add build() to it)
 (window.LT ??= {}).build ??= function(spec) {
@@ -4133,7 +4161,7 @@ that exist).</p>
 </tr>
 <tr>
 <td><code>lt-server.js</code></td>
-<td>Optional. Server mode: fetch rows from a server (<a class="cross-ref-sec" href="#sec:server">10.15</a>). Before <code>lt-interactive.js</code>.</td>
+<td>Optional. Server mode: fetch rows from a server (<a class="cross-ref-sec" href="#sec:server">13.4</a>). Before <code>lt-interactive.js</code>.</td>
 </tr>
 <tr>
 <td><code>lt-export.js</code></td>
@@ -4170,7 +4198,7 @@ those files in Node.js, and <code>LT.plugins.query</code> is the query parser.</
 <p>Then call <code>LT.build(spec)</code> from an inline <code>&lt;script&gt;</code> wherever you want a table.
 The runtime renders it right after the calling script element. To build a table
 at any other time, such as when the reader expands a row, use
-<code>LT.render(element, spec)</code> instead (<a class="cross-ref-sec" href="#sec:js-render">10.13</a>).</p>
+<code>LT.render(element, spec)</code> instead (<a class="cross-ref-sec" href="#sec:js-render">13.2</a>).</p>
 <p>If you load the core script with <code>defer</code>, as this book does, an inline
 <code>LT.build()</code> runs before the script arrives. Queue the calls with a tiny shim
 placed before them: define <code>window.LT</code> with a <code>build()</code> that stores
@@ -4221,7 +4249,7 @@ is needed.</p>
 </tr>
 <tr>
 <td><code>interactive</code></td>
-<td>Switches on sorting, search, filters, and more (<a class="cross-ref-sec" href="#sec:js-interactive">10.12</a>).</td>
+<td>Switches on sorting, search, filters, and more (<a class="cross-ref-sec" href="#sec:js-interactive">13.1</a>).</td>
 </tr>
 <tr>
 <td><code>auto_label</code>, <code>auto_format</code>, <code>auto_span</code>, <code>auto_sep</code></td>
@@ -4425,8 +4453,19 @@ with an <code>align</code> op:</p>
     { type: "align", columns: ["mpg", "cyl"], align: "center" }
   ]
 });</script>
-<h2 id="sec:js-format"><span class="section-number">10.4</span> Formatting numbers and dates</h2>
-<h3 id="sec:js-auto"><span class="section-number">10.4.1</span> Auto-formatting</h3>
+<div class="chapter-after side side-right">
+</div>
+</article>
+<article class="chapter" data-source="book/11-js-format.Rmd">
+<div class="chapter-before side side-right">
+<p><a href="https://github.com/yihui/lt/edit/main/book/11-js-format.Rmd">Edit this chapter</a> on GitHub</p>
+</div>
+<h1 id="chp:js-format"><span class="section-number main-number">11</span> Formatting and Columns</h1>
+<p>Every R formatting and column function has a counterpart in the spec. This
+chapter shows the JavaScript side of formatting values (<a class="cross-ref-chp" href="#chp:format">2</a>) and of
+shaping columns (<a class="cross-ref-chp" href="#chp:structure">3</a>).</p>
+<h2 id="sec:js-format"><span class="section-number">11.1</span> Formatting numbers and dates</h2>
+<h3 id="sec:js-auto"><span class="section-number">11.1.1</span> Auto-formatting</h3>
 <p>Numeric columns format themselves, so a bare <code>data</code> already looks decent. The
 rules, all visible in this example:</p>
 <ul>
@@ -4471,7 +4510,7 @@ values are multiplied by 100 and suffixed with “%”.</li>
   },
   auto_format: false
 });</script>
-<h3 id="sec:js-number"><span class="section-number">10.4.2</span> Numbers with <code>fmt_number</code></h3>
+<h3 id="sec:js-number"><span class="section-number">11.1.2</span> Numbers with <code>fmt_number</code></h3>
 <p>When you want control, a <code>fmt_number</code> op sets the decimals and thousands
 separator (<code>big_mark</code>) per column. Add <code>percent: true</code> to multiply by 100 and
 append “%”.</p>
@@ -4564,7 +4603,7 @@ appends the sign without multiplying:</p>
     { type: "fmt_number", columns: ["Weight"], decimals: 1, suffix: " kg" }
   ]
 });</script>
-<h3 id="sec:js-date"><span class="section-number">10.4.3</span> Dates with <code>fmt_date</code></h3>
+<h3 id="sec:js-date"><span class="section-number">11.1.3</span> Dates with <code>fmt_date</code></h3>
 <p>Values can be <code>Date</code> objects or ISO strings. By default <code>fmt_date</code> calls
 <code>toLocaleDateString()</code>. Pass <code>method</code> to call another <code>Date</code> method, or
 <code>locale</code> and <code>options</code> for full <code>Intl.DateTimeFormat</code> control.</p>
@@ -4659,7 +4698,7 @@ the shift.</p>
                  hour: "2-digit", minute: "2-digit" } }
   ]
 });</script>
-<h3 id="sec:js-sub"><span class="section-number">10.4.4</span> Substituting values with <code>sub</code></h3>
+<h3 id="sec:js-sub"><span class="section-number">11.1.4</span> Substituting values with <code>sub</code></h3>
 <p>Replace missing, zero, or small values with display text. Put <code>sub</code> after the
 formatting op so it sees the numbers first.</p>
 <pre><code class="language-js">LT.build({
@@ -4704,8 +4743,8 @@ and they format as the symbols themselves:</p>
     { type: "fmt_number", columns: ["Value"], decimals: 2 }
   ]
 });</script>
-<h2 id="sec:js-columns"><span class="section-number">10.5</span> Columns</h2>
-<h3 id="sec:js-merge"><span class="section-number">10.5.1</span> Merging with <code>merge</code></h3>
+<h2 id="sec:js-columns"><span class="section-number">11.2</span> Columns</h2>
+<h3 id="sec:js-merge"><span class="section-number">11.2.1</span> Merging with <code>merge</code></h3>
 <p>Combine several columns into one display column. The <code>pattern</code> uses <code>{1}</code>,
 <code>{2}</code>, and so on for the columns in order. Wrap a stretch in <code>&lt;&lt;</code> and <code>&gt;&gt;</code> to
 make it conditional: it vanishes when any value inside it is missing, which is
@@ -4737,7 +4776,7 @@ how the tertiary row below loses its empty confidence interval.</p>
     { type: "label", labels: { est: "Estimate (95% CI)" } }
   ]
 });</script>
-<h3 id="sec:js-spanner"><span class="section-number">10.5.2</span> Spanners</h3>
+<h3 id="sec:js-spanner"><span class="section-number">11.2.2</span> Spanners</h3>
 <p>A spanner groups contiguous columns under a shared header:</p>
 <pre><code class="language-js">LT.build({
   data: iris,
@@ -4761,7 +4800,7 @@ expression for a custom separator.</p>
 <pre><code class="language-js">LT.build({ data: iris, auto_span: true });
 </code></pre>
 <script>LT.build({ data: iris, auto_span: true });</script>
-<h3 id="sec:js-width"><span class="section-number">10.5.3</span> Widths</h3>
+<h3 id="sec:js-width"><span class="section-number">11.2.3</span> Widths</h3>
 <p>A <code>width</code> op sets column widths with any CSS length:</p>
 <pre><code class="language-js">LT.build({
   data: mtcars,
@@ -4803,7 +4842,7 @@ expression for a custom separator.</p>
     { type: "width", table: "100%", widths: { Species: "20em" } }
   ]
 });</script>
-<h3 id="sec:js-move"><span class="section-number">10.5.4</span> Moving and hiding</h3>
+<h3 id="sec:js-move"><span class="section-number">11.2.4</span> Moving and hiding</h3>
 <p>A <code>move</code> op puts columns first (<code>after: null</code>) or after a named column:</p>
 <pre><code class="language-js">LT.build({
   data: iris,
@@ -4834,12 +4873,23 @@ interactive table’s <code>detail</code>, can use them.</p>
     { type: "hide", columns: ["Petal.Length", "Petal.Width"] }
   ]
 });</script>
-<h2 id="sec:js-plots"><span class="section-number">10.6</span> Inline plots</h2>
+<div class="chapter-after side side-right">
+</div>
+</article>
+<article class="chapter" data-source="book/12-js-plots.Rmd">
+<div class="chapter-before side side-right">
+<p><a href="https://github.com/yihui/lt/edit/main/book/12-js-plots.Rmd">Edit this chapter</a> on GitHub</p>
+</div>
+<h1 id="chp:js-plots"><span class="section-number main-number">12</span> Plots, Groups, and Styling</h1>
+<p>This chapter covers the JavaScript side of inline plots (<a class="cross-ref-chp" href="#chp:plots">5</a>), row
+groups (<a class="cross-ref-chp" href="#chp:structure">3</a>), styling (<a class="cross-ref-chp" href="#chp:style">6</a>), HTML cells and notes
+(<a class="cross-ref-chp" href="#chp:notes">4</a>), and ends with a complete example that combines several features.</p>
+<h2 id="sec:js-plots"><span class="section-number">12.1</span> Inline plots</h2>
 <p>Three ops draw small SVG graphics in cells. They come from the graphics module
 (<code>lt-plot.js</code>, loaded before the core script), and the SVG is built in the
 browser from the numbers, so an interactive table draws only the rows on the
 current page.</p>
-<h3 id="sec:js-errorbar"><span class="section-number">10.6.1</span> Error bars</h3>
+<h3 id="sec:js-errorbar"><span class="section-number">12.1.1</span> Error bars</h3>
 <p><code>errorbar</code> draws a point at the estimate with a bar (and end caps) from the
 lower to the upper bound, on a scale shared by the column. <code>columns</code> lists the
 value column, <code>lowers</code> and <code>uppers</code> the matching bounds; the plot replaces the
@@ -4905,7 +4955,7 @@ entry per series, and <code>colors</code> and <code>labels</code> to key them in
       min: -5, max: 7, ref: 0, axis: true, axis_label: "Risk difference (%)" }
   ]
 });</script>
-<h3 id="sec:js-sparkline"><span class="section-number">10.6.2</span> Sparklines</h3>
+<h3 id="sec:js-sparkline"><span class="section-number">12.1.2</span> Sparklines</h3>
 <p><code>sparkline</code> draws a per-row series as a small line or bar chart. <code>columns</code> is
 either a single list-column (each cell a numeric array) or several numeric
 columns read across the row (hide all but the first). <code>kind</code> is <code>&quot;line&quot;</code>
@@ -4934,7 +4984,7 @@ shared vertical scale (by default each row scales to its own range).</p>
     { type: "sparkline", columns: ["Rain"], kind: "bar", color: "#4caf50" }
   ]
 });</script>
-<h3 id="sec:js-dotplot"><span class="section-number">10.6.3</span> Dot plots</h3>
+<h3 id="sec:js-dotplot"><span class="section-number">12.1.3</span> Dot plots</h3>
 <p><code>dotplot</code> puts one dot per column on a shared scale, so a row with N columns
 shows N dots laid out by value. <code>columns</code> lists the value columns (hide all but
 the first), <code>colors</code> gives one color per column, and <code>labels</code> names them in a
@@ -5001,8 +5051,8 @@ overlap, and the cell grows taller to fit one track per column:</p>
       min: 2.5, max: 5.5, axis: true, axis_label: "Score" }
   ]
 });</script>
-<h2 id="sec:js-groups"><span class="section-number">10.7</span> Row groups and indentation</h2>
-<h3 id="sec:js-group"><span class="section-number">10.7.1</span> Grouping by a column</h3>
+<h2 id="sec:js-groups"><span class="section-number">12.2</span> Row groups and indentation</h2>
+<h3 id="sec:js-group"><span class="section-number">12.2.1</span> Grouping by a column</h3>
 <p><code>row_group</code> takes a column name or an array of names. An array of one name
 groups by that column’s values, shown as rowspan cells on the left:</p>
 <pre><code class="language-js">LT.build({
@@ -5130,7 +5180,7 @@ LT.build({
     { type: "group_order", order: ["Treatment", "Placebo"] }
   ]
 });</script>
-<h3 id="sec:js-manual-group"><span class="section-number">10.7.2</span> Manual groups</h3>
+<h3 id="sec:js-manual-group"><span class="section-number">12.2.2</span> Manual groups</h3>
 <p>Define groups by hand, with 1-based row indices, using <code>row_group</code> ops:</p>
 <pre><code class="language-js">LT.build({
   data: mtcars,
@@ -5147,7 +5197,7 @@ LT.build({
     { type: "row_group", label: "Last three", rows: [4, 5, 6] }
   ]
 });</script>
-<h3 id="sec:js-indent"><span class="section-number">10.7.3</span> Indentation</h3>
+<h3 id="sec:js-indent"><span class="section-number">12.2.3</span> Indentation</h3>
 <p>An <code>indent</code> op nests rows to show hierarchy:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -5170,8 +5220,8 @@ LT.build({
     { type: "indent", rows: [3, 4, 6], level: 2 }
   ]
 });</script>
-<h2 id="sec:js-style"><span class="section-number">10.8</span> Styling</h2>
-<h3 id="sec:js-style-cells"><span class="section-number">10.8.1</span> Styling cells</h3>
+<h2 id="sec:js-style"><span class="section-number">12.3</span> Styling</h2>
+<h3 id="sec:js-style-cells"><span class="section-number">12.3.1</span> Styling cells</h3>
 <p>A <code>style</code> op applies CSS to cells chosen by <code>columns</code> and/or 1-based <code>rows</code>:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -5200,7 +5250,7 @@ LT.build({
     { type: "style", columns: ["HR"], rows: [1], css: "background:#e8f4e8;border-bottom:2px solid #4a4" }
   ]
 });</script>
-<h3 id="sec:js-style-test"><span class="section-number">10.8.2</span> Conditional styling</h3>
+<h3 id="sec:js-style-test"><span class="section-number">12.3.2</span> Conditional styling</h3>
 <p>Give <code>test</code> a JavaScript function and the style applies where it returns true.
 The function receives the raw (pre-format) value. Use <code>class</code> to assign a CSS
 class instead of inline <code>css</code>:</p>
@@ -5261,7 +5311,7 @@ class instead of inline <code>css</code>:</p>
 <style type="text/css">
 .lt-table .na { background: #fee; }
 </style>
-<h3 id="sec:js-scope"><span class="section-number">10.8.3</span> Scoping a style to one table</h3>
+<h3 id="sec:js-scope"><span class="section-number">12.3.3</span> Scoping a style to one table</h3>
 <p>A top-level <code>class</code> (a string or an array of names) lands on the table’s
 container, so a stylesheet can target one table and not every lt table on the
 page. Here the container is tagged <code>striped</code>, and a rule keyed on <code>.striped</code>
@@ -5274,7 +5324,7 @@ zebra-stripes this table alone:</p>
 <style type="text/css">
 .striped tbody tr:nth-child(even) td { background: #f2f6ff; }
 </style>
-<h2 id="sec:js-html"><span class="section-number">10.9</span> HTML content</h2>
+<h2 id="sec:js-html"><span class="section-number">12.4</span> HTML content</h2>
 <p>Everything is HTML-escaped by default, so <code>&lt;</code>, <code>&gt;</code>, and <code>&amp;</code> show as typed. Two
 mechanisms opt into raw HTML:</p>
 <ul>
@@ -5315,7 +5365,7 @@ text): pass a one-element array instead of a string. <code>&quot;&lt;b&gt;x&lt;/
   ],
   notes: [["See <a href='https://yihui.org/'>the author</a>."]]
 });</script>
-<h2 id="sec:js-notes"><span class="section-number">10.10</span> Footnotes and source notes</h2>
+<h2 id="sec:js-notes"><span class="section-number">12.5</span> Footnotes and source notes</h2>
 <p>Footnotes are de-duplicated by text and numbered automatically. Each one has a
 <code>location</code> whose <code>type</code> picks a region: <code>title</code> (with <code>group: &quot;title&quot;</code> or
 <code>group: &quot;subtitle&quot;</code>), <code>column_labels</code>, <code>column_spanners</code>, <code>row_groups</code>, or
@@ -5379,7 +5429,7 @@ text): pass a one-element array instead of a string. <code>&quot;&lt;b&gt;x&lt;/
   data: mtcars,
   notes: ["Data from the 1974 Motor Trend US magazine."]
 });</script>
-<h2 id="sec:js-complete"><span class="section-number">10.11</span> A complete example</h2>
+<h2 id="sec:js-complete"><span class="section-number">12.6</span> A complete example</h2>
 <p>Several features working together in one spec:</p>
 <pre><code class="language-js">LT.build({
   data: {
@@ -5434,7 +5484,18 @@ text): pass a one-element array instead of a string. <code>&quot;&lt;b&gt;x&lt;/
     { text: "Two-sided p-value from log-rank test.", location: { type: "column_labels", columns: ["P_Value"] } }
   ]
 });</script>
-<h2 id="sec:js-interactive"><span class="section-number">10.12</span> Interactive tables</h2>
+<div class="chapter-after side side-right">
+</div>
+</article>
+<article class="chapter" data-source="book/13-js-interactive.Rmd">
+<div class="chapter-before side side-right">
+<p><a href="https://github.com/yihui/lt/edit/main/book/13-js-interactive.Rmd">Edit this chapter</a> on GitHub</p>
+</div>
+<h1 id="chp:js-interactive"><span class="section-number main-number">13</span> Interactivity and Control</h1>
+<p>This chapter covers the JavaScript side of interactive tables
+(<a class="cross-ref-chp" href="#chp:interactive">7</a>), and how to render tables on demand, drive a table from
+outside code, and talk to a server.</p>
+<h2 id="sec:js-interactive"><span class="section-number">13.1</span> Interactive tables</h2>
 <p>With <code>lt-interactive.js</code> on the page, a spec carrying an <code>interactive</code> object
 gets the requested controls. Every field is optional. <a class="cross-ref-tab" href="#tab:js-interactive">8</a> lists
 them; the rest of the section explains each.</p>
@@ -5489,12 +5550,12 @@ them; the rest of the section explains each.</p>
 </tbody>
 </table>
 </div>
-<h3 id="sec:js-sort"><span class="section-number">10.12.1</span> Sorting</h3>
+<h3 id="sec:js-sort"><span class="section-number">13.1.1</span> Sorting</h3>
 <p>Headers sort on click: ascending, then descending, then back to unsorted.
 Shift-click adds a column as a tie-breaker. An array requests an initial order,
 each element a column name, <code>&quot;-name&quot;</code> for descending, or a <code>{ col, dir }</code>
 object. <code>false</code> turns sorting off.</p>
-<h3 id="sec:js-search"><span class="section-number">10.12.2</span> Searching</h3>
+<h3 id="sec:js-search"><span class="section-number">13.1.2</span> Searching</h3>
 <p>The search box matches any cell, case-insensitively, against the displayed text
 (<code>false</code> hides it). It also reads plain language:</p>
 <ul>
@@ -5511,7 +5572,7 @@ expression on the raw cell value.</li>
 </ul>
 <p>The box echoes how it read your query, and its placeholder and dropdown offer
 random example queries built from the table’s own values.</p>
-<h3 id="sec:js-filter"><span class="section-number">10.12.3</span> Filters</h3>
+<h3 id="sec:js-filter"><span class="section-number">13.1.3</span> Filters</h3>
 <p><code>filter</code> is <code>{ default, cols }</code>. <code>default</code> applies to every visible column
 left unnamed, and <code>cols</code> maps a column to its own spec. A spec is one of:</p>
 <ul>
@@ -5598,11 +5659,11 @@ release, so the table does not reflow under your cursor. Focus a thumb to use
 the keyboard: arrows step it, <code>Home</code> and <code>End</code> jump to the ends. With <code>min</code>,
 <code>max</code>, and <code>step</code> omitted, they come from the data as round, data-bracketing
 values.</p>
-<h3 id="sec:js-pager"><span class="section-number">10.12.4</span> Paging</h3>
+<h3 id="sec:js-pager"><span class="section-number">13.1.4</span> Paging</h3>
 <p><code>pager</code> is an array of page sizes to offer, the first being the initial size;
 <code>0</code> means every row on one page. Omit it for the default sizes, or set <code>false</code>
 to show all rows with no pager.</p>
-<h3 id="sec:js-resize"><span class="section-number">10.12.5</span> Resizing and hiding columns</h3>
+<h3 id="sec:js-resize"><span class="section-number">13.1.5</span> Resizing and hiding columns</h3>
 <p><code>resize: true</code> lets readers drag a column’s right edge (double-click the edge to
 fit the column to its content). <code>hide</code> adds an eye button at the start of the
 search row that opens a checklist of every column by its displayed label.
@@ -5617,7 +5678,7 @@ hidden, though all stay listed so any can be toggled back.</p>
   data: mtcars,
   interactive: { hide: { hidden: ["hp", "wt"] }, pager: 5 }
 });</script>
-<h3 id="sec:js-detail"><span class="section-number">10.12.6</span> Row detail</h3>
+<h3 id="sec:js-detail"><span class="section-number">13.1.6</span> Row detail</h3>
 <p><code>detail</code> adds an expand caret to each row and builds a table below it on first
 expand. Give an array of column names for a one-row table of their displayed
 values (hidden columns included), or a function <code>(row, index, display) =&gt; spec</code>
@@ -5636,7 +5697,7 @@ column. The returned spec is an ordinary table spec, so it can carry its own
   ops: [{ type: "hide", columns: ["Petal.Length", "Petal.Width"] }],
   interactive: { pager: false, detail: ["Petal.Length", "Petal.Width"] }
 });</script>
-<h3 id="sec:js-profile"><span class="section-number">10.12.7</span> Profiles</h3>
+<h3 id="sec:js-profile"><span class="section-number">13.1.7</span> Profiles</h3>
 <p><code>profile</code> draws a mini chart of each column, a histogram for numbers and dates
 or a bar per category for text, with summary statistics as a tooltip. The bars
 highlight the rows the filters keep. <code>&quot;header&quot;</code> puts it in the column header,
@@ -5650,7 +5711,7 @@ highlight the rows the filters keep. <code>&quot;header&quot;</code> puts it in 
   data: mtcars,
   interactive: { profile: "header", pager: 5 }
 });</script>
-<h3 id="sec:js-download"><span class="section-number">10.12.8</span> Downloading the view</h3>
+<h3 id="sec:js-download"><span class="section-number">13.1.8</span> Downloading the view</h3>
 <p><code>download</code> adds a button that saves the current view (every row the filters and
 search keep, in sort order, across all pages) as a file of the displayed text,
 in a format picked from a menu (CSV or RTF). <code>true</code> picks a default file name; a
@@ -5666,7 +5727,7 @@ sort first, and the file follows:</p>
   data: mtcars,
   interactive: { download: "cars.csv", filter: { default: true }, pager: 5 }
 });</script>
-<h3 id="sec:js-structure"><span class="section-number">10.12.9</span> Row structure</h3>
+<h3 id="sec:js-structure"><span class="section-number">13.1.9</span> Row structure</h3>
 <p>Sorting and filtering happen within each group or subtree, never across it. A
 separator group whose rows all filter out drops its header; a rowspan group
 reorders its blocks when its header is clicked and stays nested with several
@@ -5683,12 +5744,12 @@ ancestors visible. Spanners, styles, and footnotes are no obstacle.</p>
   row_group: ["cyl"],
   interactive: { pager: [8] }
 });</script>
-<h3 id="sec:js-raw"><span class="section-number">10.12.10</span> Raw values</h3>
+<h3 id="sec:js-raw"><span class="section-number">13.1.10</span> Raw values</h3>
 <p>Formatting changes what you see, not what is stored. Hover over a cell to see its
 original value in a tooltip, <code>Alt + Click</code> a table to reveal all of its raw
 values, or <code>Alt + Double-Click</code> to toggle raw values for every table on the
 page.</p>
-<h2 id="sec:js-render"><span class="section-number">10.13</span> Rendering on demand</h2>
+<h2 id="sec:js-render"><span class="section-number">13.2</span> Rendering on demand</h2>
 <p><code>LT.build()</code> renders the table where its <code>&lt;script&gt;</code> sits, so it has to run while
 the page is parsing. <code>LT.render(element, spec)</code> has no such constraint: it
 renders into a container whenever you call it and returns the table element.
@@ -5711,7 +5772,7 @@ btn.onclick = () => {
 };
 document.currentScript.after(box);
 document.currentScript.after(btn);</script>
-<h2 id="sec:js-control"><span class="section-number">10.14</span> Driving a table from outside</h2>
+<h2 id="sec:js-control"><span class="section-number">13.3</span> Driving a table from outside</h2>
 <p>Every enhanced table carries a small controller at <code>el._lt</code>, so widgets outside
 the table, such as a dropdown or a range slider, can filter it without the
 built-in boxes:</p>
@@ -5760,7 +5821,7 @@ addEventListener("load", () => {
   );
   t.before(sel);
 });</script>
-<h2 id="sec:server"><span class="section-number">10.15</span> Server mode</h2>
+<h2 id="sec:server"><span class="section-number">13.4</span> Server mode</h2>
 <p>When there are too many rows to ship, a table can ask a server for them
 instead. Load <code>lt-server.js</code> before <code>lt-interactive.js</code>, and set
 <code>interactive.data_url</code>. <code>lt_serve()</code> in R does exactly this (see <a class="cross-ref-sec" href="#sec:serve">8.3</a>),
@@ -5771,7 +5832,7 @@ first page is fetched too. Optional fields: <code>data_times</code> lists date-t
 columns (sent as ISO 8601 strings), <code>data_n</code> is the number of rows in the whole
 data, and <code>data_cols</code> holds per-column summaries for profiles and filter
 widgets. Without <code>data_cols</code>, columns get a plain filter box.</p>
-<h3 id="sec:the-request"><span class="section-number">10.15.1</span> The request</h3>
+<h3 id="sec:the-request"><span class="section-number">13.4.1</span> The request</h3>
 <p>The browser sends <code>POST &lt;data_url&gt;</code> with a JSON body, using
 <code>Content-Type: text/plain</code> to dodge a CORS preflight. The body is an object:</p>
 <ul>
@@ -5788,7 +5849,7 @@ missing values last.</li>
 <li><code>cols</code>: the visible columns.</li>
 <li><code>prof</code> (optional): the columns whose profile bars are wanted.</li>
 </ul>
-<h3 id="sec:the-reply"><span class="section-number">10.15.2</span> The reply</h3>
+<h3 id="sec:the-reply"><span class="section-number">13.4.2</span> The reply</h3>
 <p>The server answers with JSON (<code>Content-Type: application/json</code>, plus
 <code>Access-Control-Allow-Origin</code> if the page lives on another origin):</p>
 <ul>
@@ -5803,11 +5864,12 @@ put a billion-row table in front of a reader.</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/11-gt.Rmd">
+<article class="chapter" data-source="book/14-gt.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/11-gt.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/book/14-gt.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
-<h1 id="chp:gt"><span class="section-number main-number">11</span> Coming from gt</h1>
+<h1 id="prt:beyond-the-basics" class="part"><span class="section-number">V</span> Beyond the Basics</h1>
+<h1 id="chp:gt"><span class="section-number main-number">14</span> Coming from gt</h1>
 <p>If you know <a href="https://gt.rstudio.com"><strong>gt</strong></a>, you already know most of <strong>lt</strong>.
 This chapter is a travel guide for crossing the border: a phrasebook (which
 <code>lt_*()</code> function says what the <code>gt</code> function said), a list of the places where
@@ -5832,10 +5894,10 @@ migrations, and you can read their pull requests for more worked examples:</p>
 <li><a href="https://github.com/keaven/gsDesign/pull/282">keaven/gsDesign#282</a></li>
 <li><a href="https://github.com/keaven/gsDesignNB/pull/48">keaven/gsDesignNB#48</a></li>
 </ul>
-<h2 id="sec:mapping"><span class="section-number">11.1</span> The phrasebook</h2>
+<h2 id="sec:mapping"><span class="section-number">14.1</span> The phrasebook</h2>
 <p>Nearly every <code>lt_*()</code> function has a <strong>gt</strong> counterpart. The tables below cover the common ones, grouped by what you are
 trying to say; the last one lists things <strong>lt</strong> can do that have no direct <strong>gt</strong> equivalent.</p>
-<h3 id="sec:building-the-table"><span class="section-number">11.1.1</span> Building the table</h3>
+<h3 id="sec:building-the-table"><span class="section-number">14.1.1</span> Building the table</h3>
 <p><a class="cross-ref-tab" href="#tab:gt-build">9</a> maps the constructors, including grouped data.</p>
 <div class="table" id="tab:gt-build">
 <div class="caption">
@@ -5868,7 +5930,7 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </tbody>
 </table>
 </div>
-<h3 id="sec:labels-headers-spanners-and-notes"><span class="section-number">11.1.2</span> Labels, headers, spanners, and notes</h3>
+<h3 id="sec:labels-headers-spanners-and-notes"><span class="section-number">14.1.2</span> Labels, headers, spanners, and notes</h3>
 <p>Titles, labels, and every flavor of footnote are in <a class="cross-ref-tab" href="#tab:gt-labels">10</a>.</p>
 <div class="table" id="tab:gt-labels">
 <div class="caption">
@@ -5937,7 +5999,7 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </tbody>
 </table>
 </div>
-<h3 id="sec:formatting-values"><span class="section-number">11.1.3</span> Formatting values</h3>
+<h3 id="sec:formatting-values"><span class="section-number">14.1.3</span> Formatting values</h3>
 <p><a class="cross-ref-tab" href="#tab:gt-format">11</a> covers formatting and substitution.</p>
 <div class="table" id="tab:gt-format">
 <div class="caption">
@@ -5994,7 +6056,7 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </tbody>
 </table>
 </div>
-<h3 id="sec:layout-and-styling"><span class="section-number">11.1.4</span> Layout and styling</h3>
+<h3 id="sec:layout-and-styling"><span class="section-number">14.1.4</span> Layout and styling</h3>
 <p><a class="cross-ref-tab" href="#tab:gt-layout">12</a> covers alignment, widths, column order, and style.</p>
 <div class="table" id="tab:gt-layout">
 <div class="caption">
@@ -6046,7 +6108,7 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </tr>
 <tr>
 <td><code>opt_row_striping()</code></td>
-<td><code>lt_css(...)</code> (<a class="cross-ref-sec" href="#sec:recipe-stripe">11.3.1</a>)</td>
+<td><code>lt_css(...)</code> (<a class="cross-ref-sec" href="#sec:recipe-stripe">14.3.1</a>)</td>
 </tr>
 <tr>
 <td><code>data_color()</code></td>
@@ -6059,7 +6121,7 @@ trying to say; the last one lists things <strong>lt</strong> can do that have no
 </tbody>
 </table>
 </div>
-<h3 id="sec:interactivity"><span class="section-number">11.1.5</span> Interactivity</h3>
+<h3 id="sec:interactivity"><span class="section-number">14.1.5</span> Interactivity</h3>
 <p><strong>gt</strong> has <code>opt_interactive()</code>, and hides columns permanently with
 <code>cols_hide()</code>; <strong>lt</strong> gathers all interactivity, including a reader-togglable
 column menu, into <code>lt_interactive()</code> (<a class="cross-ref-tab" href="#tab:gt-interactive">13</a>).</p>
@@ -6102,7 +6164,7 @@ column menu, into <code>lt_interactive()</code> (<a class="cross-ref-tab" href="
 </tbody>
 </table>
 </div>
-<h3 id="sec:output-and-shiny"><span class="section-number">11.1.6</span> Output and Shiny</h3>
+<h3 id="sec:output-and-shiny"><span class="section-number">14.1.6</span> Output and Shiny</h3>
 <p>Saving and Shiny bindings are in <a class="cross-ref-tab" href="#tab:gt-output">14</a>.</p>
 <div class="table" id="tab:gt-output">
 <div class="caption">
@@ -6131,7 +6193,7 @@ column menu, into <code>lt_interactive()</code> (<a class="cross-ref-tab" href="
 </tbody>
 </table>
 </div>
-<h3 id="sec:things-gt-does-not-do-or-needs-an-add-on-for"><span class="section-number">11.1.7</span> Things gt does not do (or needs an add-on for)</h3>
+<h3 id="sec:things-gt-does-not-do-or-needs-an-add-on-for"><span class="section-number">14.1.7</span> Things gt does not do (or needs an add-on for)</h3>
 <p>Some of <strong>lt</strong>’s verbs have no <strong>gt</strong> twin, and a few overlap with what you might
 have used <strong>DT</strong> or <strong>gtExtras</strong> for (<a class="cross-ref-tab" href="#tab:gt-extra">15</a>).</p>
 <div class="table" id="tab:gt-extra">
@@ -6215,12 +6277,12 @@ have used <strong>DT</strong> or <strong>gtExtras</strong> for (<a class="cross-
 </tbody>
 </table>
 </div>
-<h2 id="sec:differences"><span class="section-number">11.2</span> Notable differences</h2>
+<h2 id="sec:differences"><span class="section-number">14.2</span> Notable differences</h2>
 <p>A few places where <strong>lt</strong> works differently enough from <strong>gt</strong> to be worth
 spelling out, drawn from porting <strong>gsDesign2</strong>, <strong>gsDesign</strong>, and <strong>gsDesignNB</strong>.
 None of them is hard, but each is the kind of thing you only learn by tripping
 over it once, so consider this the cheaper way.</p>
-<h3 id="sec:selection"><span class="section-number">11.2.1</span> Column selection: formulas, strings, or positions, not tidy-select</h3>
+<h3 id="sec:selection"><span class="section-number">14.2.1</span> Column selection: formulas, strings, or positions, not tidy-select</h3>
 <p><strong>gt</strong> uses tidy-select, so unquoted column names and <code>tidyselect</code> helpers work.
 <strong>lt</strong> deliberately does not: it takes column names as a one-sided <em>formula</em>,
 <em>character strings</em>, or integer positions. Tidy-select’s ergonomic win is
@@ -6260,13 +6322,13 @@ is no name-based way to say “the numeric ones”, so pick out the columns you 
 the ones you do. (Tables already format numeric columns on their own, so you may
 not need <code>lt_format()</code> at all; see <a class="cross-ref-sec" href="#sec:auto">2.1</a>.)</p>
 </div>
-<h3 id="sec:one-interactive"><span class="section-number">11.2.2</span> Interactivity is one function, not a separate step</h3>
+<h3 id="sec:one-interactive"><span class="section-number">14.2.2</span> Interactivity is one function, not a separate step</h3>
 <p><strong>gt</strong> turns on client-side interactivity with <code>opt_interactive()</code>. <strong>lt</strong> folds all of it into
 <code>lt_interactive()</code>: sorting, searching, filtering, paging, resizing, row detail,
 profiles, a CSV or RTF download, and a reader-togglable column menu. Whatever you do not
 ask for is not loaded, so non-interactive tables cost nothing extra
 (<a class="cross-ref-chp" href="#chp:interactive">7</a>).</p>
-<h3 id="sec:footnotes-vs-notes"><span class="section-number">11.2.3</span> Footnotes and source notes are two different functions</h3>
+<h3 id="sec:footnotes-vs-notes"><span class="section-number">14.2.3</span> Footnotes and source notes are two different functions</h3>
 <p><code>gt::tab_footnote()</code> does double duty: with a location it attaches a footnote to
 cells; without one it adds a general note. <strong>lt</strong> splits these:</p>
 <ul>
@@ -6280,7 +6342,7 @@ match a group label by prefix, or <code>&quot;all&quot;</code> for every group.<
 <li><code>lt_note(text)</code> adds a plain table note at the bottom. It is also the
 replacement for <code>tab_source_note()</code>.</li>
 </ul>
-<h3 id="sec:groups"><span class="section-number">11.2.4</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</h3>
+<h3 id="sec:groups"><span class="section-number">14.2.4</span> Row groups: <code>lt_group(~ col)</code>, and two rendering styles</h3>
 <p><strong>gt</strong> groups either via <code>gt(groupname_col=)</code> or a preceding
 <code>dplyr::group_by()</code>. In <strong>lt</strong>, grouping is a separate step, <code>lt_group(~ col)</code>,
 with a one-sided formula for the grouping column.</p>
@@ -6327,7 +6389,7 @@ lt(df) |&gt; lt_group(
 <p>Rows that match no group stay at the end, without a label.</p>
 <p>If all you need is to reorder groups that already exist, a second <code>lt_group()</code>
 call with the labels in the order you want does it (<a class="cross-ref-sec" href="#sec:group-manual">3.4.1</a>).</p>
-<h3 id="sec:raw-html"><span class="section-number">11.2.5</span> Raw HTML: <code>I()</code> is the new <code>html()</code> and <code>md()</code></h3>
+<h3 id="sec:raw-html"><span class="section-number">14.2.5</span> Raw HTML: <code>I()</code> is the new <code>html()</code> and <code>md()</code></h3>
 <p>To keep raw HTML (e.g., a line break) from being escaped in a title, column
 label, or footnote, wrap it in <code>I()</code>:</p>
 <pre><code class="language-r">lt_label(theta = I(&quot;Underlying&lt;br&gt;response rate&quot;))
@@ -6338,14 +6400,14 @@ equivalent. Pass plain text (the common case: <code>md(&quot;**Power**&quot;)</c
 <code>&quot;Power&quot;</code>), or, if you truly need formatting, use <code>I()</code> with raw HTML:
 <code>I(&quot;&lt;b&gt;Power&lt;/b&gt;&quot;)</code>. For body cells, mark whole columns with <code>lt_html()</code>
 (<a class="cross-ref-sec" href="#sec:html">4.3</a>).</p>
-<h3 id="sec:sub-defaults"><span class="section-number">11.2.6</span> Substitutions: the defaults already do the work</h3>
+<h3 id="sec:sub-defaults"><span class="section-number">14.2.6</span> Substitutions: the defaults already do the work</h3>
 <p>Two <code>lt_sub()</code> defaults are worth knowing before you translate a <code>sub_*()</code> call.
 Missing values already render as an em dash (<code>—</code>), and nothing special is done to
 zeros or small values. So a <code>sub_missing(missing_text = &quot;—&quot;)</code> in <strong>gt</strong> is
 usually just noise in <strong>lt</strong>: drop it unless you want a <em>different</em> placeholder,
 set per column with <code>lt_sub(columns, missing = )</code> or table-wide with the
 <code>lt.missing</code> option (see <code>?lt</code>).</p>
-<h3 id="sec:styling"><span class="section-number">11.2.7</span> Styling: you probably don’t need CSS</h3>
+<h3 id="sec:styling"><span class="section-number">14.2.7</span> Styling: you probably don’t need CSS</h3>
 <p><strong>lt</strong>’s default look is close to <strong>gt</strong>’s out of the box, so you rarely need CSS
 just to reproduce <strong>gt</strong>‘s base appearance. The whole stylesheet
 (<a href="https://cdn.jsdelivr.net/npm/@xiee/utils/css/lt.min.css"><code>lt.min.css</code></a>) is only
@@ -6359,21 +6421,21 @@ rules, with no need to fight a heavy default. Add them with <code>lt_css()</code
 document, e.g.:</p>
 <pre><code class="language-css">.lt-table { font-size: 0.9em; width: 100%; }
 </code></pre>
-<h3 id="sec:missing"><span class="section-number">11.2.8</span> What lt does not have</h3>
+<h3 id="sec:missing"><span class="section-number">14.2.8</span> What lt does not have</h3>
 <p>A few <strong>gt</strong> features have no <strong>lt</strong> function. Each is a short recipe in
-<a class="cross-ref-sec" href="#sec:recipes">11.3</a>, because the table is just data plus CSS:</p>
+<a class="cross-ref-sec" href="#sec:recipes">14.3</a>, because the table is just data plus CSS:</p>
 <ul>
 <li>
 <p><code>opt_row_striping()</code> and similar <code>opt_*()</code> themes: a few CSS rules
-(<a class="cross-ref-sec" href="#sec:recipe-stripe">11.3.1</a>).</p>
+(<a class="cross-ref-sec" href="#sec:recipe-stripe">14.3.1</a>).</p>
 </li>
 <li>
 <p><code>fmt_scientific()</code>, <code>fmt_bytes()</code>, <code>fmt_markdown()</code>, <code>text_transform()</code>,
 and <code>sub_values()</code>: transform the column in R before calling <code>lt()</code>
-(<a class="cross-ref-sec" href="#sec:recipe-transform">11.3.2</a>).</p>
+(<a class="cross-ref-sec" href="#sec:recipe-transform">14.3.2</a>).</p>
 </li>
 </ul>
-<h2 id="sec:recipes"><span class="section-number">11.3</span> Recipes for what lt does not have</h2>
+<h2 id="sec:recipes"><span class="section-number">14.3</span> Recipes for what lt does not have</h2>
 <p>Each recipe is a small helper function, not a one-off snippet, so you can paste
 it into your own package and apply it to any table. The helpers use only base R
 and the <strong>lt</strong> functions in the phrasebook. They share this data frame:</p>
@@ -6384,7 +6446,7 @@ and the <strong>lt</strong> functions in the phrasebook. They share this data fr
   rate = c(0.12, 0.34, 0.56, 0.78)
 )
 </code></pre>
-<h3 id="sec:recipe-stripe"><span class="section-number">11.3.1</span> Row striping and other themes</h3>
+<h3 id="sec:recipe-stripe"><span class="section-number">14.3.1</span> Row striping and other themes</h3>
 <p><strong>gt</strong>‘s <code>opt_row_striping()</code> is one CSS rule. In <strong>lt</strong>, write that rule once
 in your page’s CSS, so it applies to every table:</p>
 <pre><code class="language-r"># gt
@@ -6398,7 +6460,7 @@ tables on the page. The same goes for other <code>opt_*()</code> themes: write t
 global CSS. Use <code>lt_css()</code> only for a rule that should apply to one table, and
 <code>lt_wrap(style = ...)</code> for a setting on the container, such as the font or width
 that <code>tab_options()</code> sets in <strong>gt</strong>.</p>
-<h3 id="sec:recipe-transform"><span class="section-number">11.3.2</span> Other formats: transform in R</h3>
+<h3 id="sec:recipe-transform"><span class="section-number">14.3.2</span> Other formats: transform in R</h3>
 <p><strong>gt</strong> has a <code>fmt_*()</code> function for every format imaginable. <strong>lt</strong> only formats
 numbers (<code>lt_format()</code>) and dates (<code>lt_date()</code>); for anything else, turn the
 column into the text you want with base R or a helper such as
@@ -6447,7 +6509,7 @@ d3 |&gt;
   "data_key": "33cb8d09"
 }
 })</script>
-<h2 id="sec:gt-static"><span class="section-number">11.4</span> Generating a static HTML table</h2>
+<h2 id="sec:gt-static"><span class="section-number">14.4</span> Generating a static HTML table</h2>
 <p>By default an <strong>lt</strong> table is built in the browser by the JavaScript runtime
 (<a class="cross-ref-chp" href="#chp:js">10</a>) at view time, which is perfect for HTML pages but useless for output
 that must already contain the finished <code>&lt;table&gt;</code>: a GitHub <code>README.md</code>, an email,
@@ -6481,7 +6543,7 @@ knit: |
 </code></pre>
 <p>With that header, each <code>lt(data)</code> chunk in the README emits a finished <code>&lt;table&gt;</code>
 straight into <code>README.md</code>, with no post-processing needed.</p>
-<h2 id="sec:demo"><span class="section-number">11.5</span> A runnable example</h2>
+<h2 id="sec:demo"><span class="section-number">14.5</span> A runnable example</h2>
 <p>Here is a small table that exercises most of the mappings above. Each comment
 names the <strong>gt</strong> function that would have done the job:</p>
 <pre><code class="language-r">df = data.frame(
@@ -6553,20 +6615,20 @@ lt(df) |&gt;
 })</script>
 <p>If your own package builds <strong>gt</strong> tables for its result classes, the next chapter
 shows how to offer <strong>lt</strong> tables the idiomatic way: with an S3 method for <code>lt()</code>
-(<a class="cross-ref-chp" href="#chp:extend">12</a>).</p>
+(<a class="cross-ref-chp" href="#chp:extend">15</a>).</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/12-extend.Rmd">
+<article class="chapter" data-source="book/15-extend.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/12-extend.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/book/15-extend.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
-<h1 id="chp:extend"><span class="section-number main-number">12</span> Building on lt</h1>
+<h1 id="chp:extend"><span class="section-number main-number">15</span> Building on lt</h1>
 <p>Sooner or later, a package author wants to print their own objects as tables: a
 model summary, a design object, a study result. This chapter is for you. The good
 news is that <strong>lt</strong> was built to be extended, and the whole recipe fits on one
 page.</p>
-<h2 id="sec:generic"><span class="section-number">12.1</span> Why <code>lt()</code> is an S3 generic</h2>
+<h2 id="sec:generic"><span class="section-number">15.1</span> Why <code>lt()</code> is an S3 generic</h2>
 <p><code>gt::gt()</code> is not an S3 generic; it is a plain function. A package that wants
 <code>gt()</code>-style output for its own object classes therefore has nowhere to hang a
 method. Both <strong>gsDesign</strong> and <strong>gsDesign2</strong> worked around this the same way: each
@@ -6586,7 +6648,7 @@ function you can call on “whatever table-like object I have”.</p>
 <p>Extending it to a custom class means defining a method. Users then call the one
 verb they already know, <code>lt(x)</code>, on any object, yours included. No new generic, no
 name collisions, and <code>summary() |&gt; lt()</code> reads the same everywhere.</p>
-<h2 id="sec:ship"><span class="section-number">12.2</span> Shipping lt methods from your package</h2>
+<h2 id="sec:ship"><span class="section-number">15.2</span> Shipping lt methods from your package</h2>
 <p>The pattern <strong>gsDesign2</strong> and <strong>gsDesign</strong> settled on has two steps.</p>
 <ol>
 <li><strong>Re-export the generic</strong>, so that users can call <code>lt()</code> without attaching
@@ -6644,7 +6706,7 @@ and <code>show_types</code> stay available to the caller.</li>
 <li><strong>Put sensible defaults in arguments</strong> (a <code>title</code>, a <code>footnote</code>) rather than
 hard-coding them, and let the caller switch them off.</li>
 </ul>
-<h2 id="sec:embed-pointer"><span class="section-number">12.3</span> Embedding tables in other widgets</h2>
+<h2 id="sec:embed-pointer"><span class="section-number">15.3</span> Embedding tables in other widgets</h2>
 <p>Methods return tables for R to print. If instead you need an <strong>lt</strong> table <em>inside</em>
 another HTML widget (a <strong>reactable</strong> cell, a tooltip, a custom htmlwidget), use
 <code>lt_spec()</code> and <code>lt_dependency()</code> to ship the table as JSON and render it in the

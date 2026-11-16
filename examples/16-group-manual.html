@@ -15,7 +15,7 @@
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.27</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -37,7 +37,7 @@
 tbl = lt(penguins[c(1:3, 153:155), c(1, 2, 6)])
 tbl |&gt; lt_group(&quot;First three&quot; = 1:3, &quot;Last three&quot; = 4:6)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["0dbf3ceb"]=
 {
   "species": ["Adelie", "Adelie", "Adelie", "Gentoo", "Gentoo", "Gentoo"],
@@ -62,7 +62,7 @@ tbl |&gt; lt_group(&quot;First three&quot; = 1:3, &quot;Last three&quot; = 4:6)
   "data_key": "0dbf3ceb"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt.min.js" defer></script>
 <pre><code class="language-r"># a one-sided formula is evaluated in the data
 tbl |&gt; lt_group(Heavy = ~ body_mass &gt; 4000, Light = ~ body_mass &lt;= 4000)
 </code></pre>

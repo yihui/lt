@@ -15,7 +15,7 @@
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.27</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -130,7 +130,7 @@ so that each group's rows stay together.
 # a function (or its name) for every numeric column, after each group + total
 lt(d) |&gt; lt_group(~ grp, sep = TRUE) |&gt; lt_summary(&quot;sum&quot;, by = ~ grp)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -150,7 +150,7 @@ lt(d) |&gt; lt_group(~ grp, sep = TRUE) |&gt; lt_summary(&quot;sum&quot;, by = ~
   "row_group": "grp"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt.min.js" defer></script>
 <pre><code class="language-r"># a grand summary only, with a different function per column
 lt(d) |&gt; lt_summary(list(n = sum, rate = &quot;mean&quot;))
 </code></pre>

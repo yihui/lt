@@ -15,7 +15,7 @@
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.27</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -68,18 +68,19 @@ side are used, e.g. <code>~ x + y</code>.</p>
 <p><code>x</code> with the hidden columns recorded.
 </p>
 <h2 id="sec:examples" class="unnumbered">Examples</h2>
-<pre><code class="language-r">tbl = lt(mtcars[1:3, 1:5])
-tbl |&gt; lt_hide(~ drat + disp)
+<pre><code class="language-r">tbl = lt(mtcars[1:3, c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;hp&quot;, &quot;drat&quot;, &quot;disp&quot;)]) |&gt;
+  lt_hide(~ drat + disp)
+tbl
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
     "mpg": [21, 21, 22.8],
     "cyl": [6, 6, 4],
-    "disp": [160, 160, 108],
     "hp": [110, 110, 93],
-    "drat": [3.9, 3.9, 3.85]
+    "drat": [3.9, 3.9, 3.85],
+    "disp": [160, 160, 108]
   },
   "ops": [
     {
@@ -89,19 +90,19 @@ tbl |&gt; lt_hide(~ drat + disp)
   ]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt.min.js" defer></script>
 <pre><code class="language-r"># the hidden data still reaches the row detail
-tbl |&gt; lt_hide(~ drat + disp) |&gt; lt_interactive(detail = ~ drat + disp)
+tbl |&gt; lt_interactive(detail = ~ drat + disp)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt-interactive.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
     "mpg": [21, 21, 22.8],
     "cyl": [6, 6, 4],
-    "disp": [160, 160, 108],
     "hp": [110, 110, 93],
-    "drat": [3.9, 3.9, 3.85]
+    "drat": [3.9, 3.9, 3.85],
+    "disp": [160, 160, 108]
   },
   "ops": [
     {
@@ -123,8 +124,8 @@ tbl |&gt; lt_hide(~ drat + disp) |&gt; lt_interactive(detail = ~ drat + disp)
   }
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt-query.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt-interactive.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt-query.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt-interactive.min.js" defer></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.5/css/manual.min.css">
 
 </article>

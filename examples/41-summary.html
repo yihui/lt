@@ -15,7 +15,7 @@
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.27</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -40,7 +40,7 @@ d = data.frame(
 )
 lt(d) |&gt; lt_group(~ grp, sep = TRUE) |&gt; lt_summary(&quot;sum&quot;, by = ~ grp)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["5e57fb8e"]=
 {
   "grp": ["A", "A", "A", "B", "B", "B", null],
@@ -63,7 +63,7 @@ lt(d) |&gt; lt_group(~ grp, sep = TRUE) |&gt; lt_summary(&quot;sum&quot;, by = ~
   "data_key": "5e57fb8e"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt.min.js" defer></script>
 <pre><code class="language-r">lt(d) |&gt; lt_summary(list(n = sum, rate = &quot;mean&quot;), label = &quot;Overall&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["e20a57cf"]=

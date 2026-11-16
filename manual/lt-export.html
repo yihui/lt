@@ -15,7 +15,7 @@
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.27</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -163,14 +163,14 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 f1 = tempfile(fileext = &quot;.html&quot;)
 lt_export(tbl, f1, method = &quot;raw&quot;)
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmpVIrLNO/file28405d66ca54.html&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp41BPve/file15b277dd6f3d.html&quot;
 </code></pre>
 <pre><code class="language-r"># a static &lt;table class=&quot;desc-table&quot;&gt; (needs Node.js or a headless browser), returned as a
 # string: just the fragment, without the lt.css stylesheet, pretty-printed
 if (lt:::can_bake())
   lt_export(tbl, NA, fragment = TRUE, css = FALSE, tidy = TRUE)
 </code></pre>
-<pre><code>&lt;div class=&quot;lt-wrap&quot;&gt;
+<pre><code class="language-html plain">&lt;div class=&quot;lt-wrap&quot;&gt;
   &lt;table class=&quot;desc-table lt-table&quot;&gt;
     &lt;caption class=&quot;lt-caption&quot;&gt;
       &lt;div class=&quot;lt-title&quot;&gt;Cars
@@ -213,13 +213,13 @@ if (lt:::has_browser(pdf = TRUE)) {
   lt_export(tbl, f3, crop = FALSE)
 }
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmpVIrLNO/file284024b11009.png&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp41BPve/file15b2209d5a95.png&quot;
 </code></pre>
 <pre><code class="language-r"># the table's text as CSV or RTF
 f4 = tempfile(fileext = &quot;.rtf&quot;)
 if (lt:::has_node()) lt_export(tbl, f4)
 </code></pre>
-<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//RtmpVIrLNO/file28407da50875.rtf&quot;
+<pre><code>#&gt; [1] &quot;/var/folders/h5/t85nd63d71x27_8gl5gw3l_w0000gn/T//Rtmp41BPve/file15b24af82450.rtf&quot;
 </code></pre>
 <pre><code class="language-r">unlink(c(f1, f2, f3, f4))
 </code></pre>

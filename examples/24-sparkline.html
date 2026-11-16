@@ -15,7 +15,7 @@
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.26</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.27</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -41,8 +41,8 @@ lt(d) |&gt;
   lt_sparkline(~ Temp) |&gt;
   lt_sparkline(~ Rain, type = &quot;bar&quot;, color = &quot;#4caf50&quot;, limits = c(0, 60))
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/css/lt-plot.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["b93ca66d"]=
 {
   "City": ["Oslo", "Cairo", "Lima"],
@@ -82,8 +82,8 @@ lt(d) |&gt;
   "data_key": "b93ca66d"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt-plot.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.4/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.6/js/lt.min.js" defer></script>
 <p>Several columns read across the row work too; <code>hide = FALSE</code> keeps them visible.</p>
 <pre><code class="language-r">m = data.frame(Name = c(&quot;X&quot;, &quot;Y&quot;), Q1 = c(2, 5), Q2 = c(4, 3), Q3 = c(6, 7))
 lt(m) |&gt; lt_sparkline(~ Q1 + Q2 + Q3, width = 160, hide = FALSE)
