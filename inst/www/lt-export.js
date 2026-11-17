@@ -29,7 +29,7 @@
   // A fixed look: rules above and below the header and below the last row, bold
   // header, spanners as merged cells, title above and notes below, column
   // widths by text length.
-  const rtf = ({ head, rows, align, indent, spans, title, subtitle, notes }) => {
+  const rtf = ({ head, rows, align, indent, groups, spans, title, subtitle, notes }) => {
     const W = 9360,  // text width in twips (6.5in)
           len = head.map((h, j) => Math.min(30, rows.reduce((n, r) => Math.max(n, r[j].length), Math.max(4, h.length)))),
           tot = len.reduce((a, b) => a + b, 0);
@@ -56,9 +56,17 @@
       out.push(row(cells));
     }
     out.push(row(head.map((h, j) => [h, { a: align[j], b: 1, bd: (spans.length ? "" : "t") + "b" }])));
-    rows.forEach((r, i) => out.push(row(r.map((t, j) => [t, {
-      a: align[j], li: j ? 0 : indent[i] * 240, bd: i === rows.length - 1 ? "b" : ""
-    }]))));
+    let prev = [];
+    rows.forEach((r, i) => {
+      // a bold row spanning the table whenever a row group starts
+      const g = groups[i], k = g.findIndex((l, d) => l !== prev[d]);
+      if (k >= 0) g.slice(k).forEach((l, d) => l && out.push(row(head.map((_, j) =>
+        j ? ["", { m: "\\clmrg" }] : [l, { b: 1, li: (k + d) * 240, m: "\\clmgf" }]))));
+      prev = g;
+      out.push(row(r.map((t, j) => [t, {
+        a: align[j], li: j ? 0 : indent[i] * 240, bd: i === rows.length - 1 ? "b" : ""
+      }])));
+    });
     for (const n of notes) out.push(`{\\pard\\fs16 ${rtfEsc(n)}\\par}\n`);
     return out.join("") + "}";
   };
@@ -70,9 +78,18 @@
     rtf: { label: "RTF", mime: "application/rtf", fn: rtf },
   };
 
+  // Row group labels (outermost first) of each row: from the hidden group
+  // columns (rowspan mode) or the separator groups.
+  const groupsOf = (spec, rows, src) => {
+    const span = spec._rowspan, sep = {};
+    for (const g of spec._groups || [])
+      for (const r of g.rows) sep[r] = g.raw ? plain([g.label]) : String(g.label);
+    return rows.map(r => span ? span.map(c => String(src[c]?.[r - 1] ?? "")) : sep[r] ? [sep[r]] : []);
+  };
+
   // The table as plain strings: header, body rows, and what a format may use
-  // beyond them (alignment, row indents, spanners as column ranges, title,
-  // notes).
+  // beyond them (alignment, row indents, row groups, spanners as column
+  // ranges, title, notes).
   const model = (spec, rows, src = spec._display) => {
     const cols = spec._cols, t = spec._tbl, ind = spec._indent;
     rows ||= Array.from({ length: src[cols[0]]?.length ?? 0 }, (_, i) => i + 1);
@@ -81,6 +98,7 @@
       rows: rows.map(r => cols.map(c => String(src[c]?.[r - 1] ?? ""))),
       align: t.align.map(a => ({ center: "c", right: "r" })[a] || "l"),
       indent: rows.map(r => ind?.[r - 1] || 0),
+      groups: groupsOf(spec, rows, src),
       spans: (t.spanners || []).map(s => ({
         label: plain(s.label), from: cols.indexOf(s.columns[0]), n: s.columns.length
       })),

@@ -91,6 +91,20 @@ assert("RTF escapes special characters and merges spanners", {
   (count_str(rtf, '\\clmrg') %==% 1L)
 })
 
+assert("RTF shows row group labels as spanning rows (rowspan and separator modes)", {
+  d = data.frame(g = c('A', 'A', 'B'), v = 1:3)
+  f = tempfile(fileext = '.rtf')
+  on.exit(unlink(f), add = TRUE)
+  for (sep in c(FALSE, TRUE)) {
+    lt_export(lt(d) |> lt_group(~ g, sep = sep), f)
+    rtf = paste(xfun::read_utf8(f), collapse = '\n')
+    # header + 2 group rows + 3 body rows; the group column itself is hidden
+    (count_str(rtf, '\\trowd') %==% 6L)
+    (count_str(rtf, '{\\b A}') %==% 1L)
+    (count_str(rtf, '\\clmgf') %==% 2L)
+  }
+})
+
 assert("download button appears when lt-export.js loads after lt-interactive.js", {
   # a page that deduped scripts from an earlier table without a download
   x = lt(dt) |> lt_interactive(download = TRUE)
