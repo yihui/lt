@@ -91,7 +91,7 @@ Sometimes no column tells the story. Maybe the first three rows are the
 treatment arm because you know it from the study design, not because a column
 says so. In that case, name the rows yourself: `"Label" = rows` makes a group
 from row numbers, a logical vector, or a one-sided formula evaluated in the data,
-such as `~ mpg > 20`. Groups appear in the order you give them, and rows that
+such as `~ len > 10`. Groups appear in the order you give them, and rows that
 match none stay at the end.
 
 The same trick reorders groups. Pass the group labels, unnamed, to a later

@@ -24,7 +24,7 @@ inputs invalidate it the usual way:
 
 ```{r, eval = FALSE}
 output$tbl = render_lt(
-  lt(mtcars[mtcars$cyl == input$cyl, ]) |> lt_interactive()
+  lt(CO2[CO2$Type == input$type, ]) |> lt_interactive()
 )
 ```
 
@@ -44,10 +44,14 @@ A few things are worth knowing:
 
 - Click a cell to edit it. `Enter` commits and moves down, and clicking away
   commits too.
+
 - Numeric columns stay numeric. A cell that does not parse as a number is
   rejected, so `input$m` never turns into a column of strings by accident.
+
 - If you pass a matrix, you get a matrix back.
+
 - Only the columns named in `columns` are editable; the others are plain text.
+
 - Editing cannot be combined with `lt_interactive()` or with row groups that
   span rows.
 
