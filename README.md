@@ -17,6 +17,7 @@ Lightweight tables for R, inspired by [**gt**](https://gt.rstudio.com) and
 
 **lt** provides a small grammar of tables that covers the structure most reports
 need — titles, column spanners, row groups, footnotes, and number formatting.
+See the package site at <https://pkg.yihui.org/lt/> for documentation.
 
 - **Light.** Only one dependency, **xfun**. **gt** pulls in 54 other packages,
   several of which contain C/C++ code that is compiled when installed from
@@ -53,16 +54,17 @@ install.packages("lt")
 install.packages("lt", repos = "https://yihui.r-universe.dev")
 ```
 
-You may also play with the package at <https://pkg.yihui.org/lt/playground/>
-without installing it.
+You may also play with the package in [the
+playground](https://pkg.yihui.org/lt/playground/) without installing it.
 
 ## Functions
 
 `lt()` creates a table object from a data frame. The `lt_*()` functions build
-on it via the pipe. See the manual at <https://pkg.yihui.org/lt/manual.html>
-for all functions, grouped by task. The "cheat tables" at
-<https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheatsheet> give a visual
-overview, and the book at <https://pkg.yihui.org/lt/book/> is a guided tour.
+on it via the pipe. See [the
+manual](https://pkg.yihui.org/lt/manual.html) for all functions, grouped by
+task. [The "cheat tables"](https://pkg.yihui.org/lt/examples/01-lt.html#sec:cheatsheet)
+give a visual overview, and [the book](https://pkg.yihui.org/lt/book/) is a
+guided tour.
 
 ## Examples
 
@@ -127,10 +129,10 @@ LT.build({
 `LT.build()` renders the table in place of the calling `<script>` tag. One
 `lt.js` inclusion handles any number of tables on the page.
 
-You can find more examples at <https://pkg.yihui.org/lt/examples.html>. If you
-are coming from **gt**, see the migration guide at
-<https://pkg.yihui.org/lt/book/#chp:gt> for a function-by-function mapping and
-notes on where **lt** differs.
+You can find [more examples](https://pkg.yihui.org/lt/examples.html). If you
+are coming from **gt**, see the
+[migration guide](https://pkg.yihui.org/lt/book/#chp:gt) for a
+function-by-function mapping and notes on where **lt** differs.
 
 ## Acknowledgements
 

@@ -7,7 +7,7 @@ date: "`{r} Sys.Date()`"
 
 ```{r, include = FALSE}
 library(lt)
-source('_ex.R')  # defines ex(), which embeds examples from ../examples
+source('_ex.R')  # defines ex(), which embeds examples from ../../examples
 ```
 
 # Preface {.unnumbered}

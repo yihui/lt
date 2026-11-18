@@ -3,7 +3,7 @@
 # line, the runtime-assets chunk (the JS chapter loads it once), and anything
 # after an `<!-- end -->` marker. A link to the example's own page follows.
 ex = function(name) {
-  f = Sys.glob(sprintf('../examples/[0-9][0-9]-%s.Rmd', name))
+  f = Sys.glob(sprintf('../../examples/[0-9][0-9]-%s.Rmd', name))
   if (length(f) != 1) stop('found ', length(f), ' example(s) named ', name)
   x = xfun::read_utf8(f)
   x = x[seq(grep('^```', x)[1], length(x))]
