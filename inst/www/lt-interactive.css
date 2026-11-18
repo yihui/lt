@@ -45,7 +45,7 @@
   .lti-prof svg {
     width: 100%;
     height: 1.5em;
-    min-width: 4em;
+    min-width: 3em;
     fill: currentColor;
     overflow: visible;
     rect, line { opacity: 0.25; }
