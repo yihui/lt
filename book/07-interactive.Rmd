@@ -3,9 +3,9 @@
 # Interactive Tables {#chp:interactive}
 
 A static table answers the question you thought to ask. An interactive table
-lets your reader ask the ones you did not. Which cars have the most horsepower
-per cylinder? Which species sits in the middle of the sepal lengths? Click a
-header, type a phrase, drag a slider, and the answer is already on the screen.
+lets your reader ask the ones you did not. Which treatment takes up the
+most carbon dioxide? Which plant sits in the middle of the pack? Click a header,
+type a phrase, drag a slider, and the answer is already on the screen.
 
 The best part is the price. Everything interactive is handled in the browser by
 an extension that loads only for tables that ask for it. Add
@@ -14,18 +14,39 @@ leave it off and the table costs nothing extra.
 
 ```{r}
 library(lt)
-lt(mtcars[, 1:4]) |> lt_interactive()
+lt(CO2) |> lt_interactive()
 ```
 
-Click a header to sort, use the box above the table to search, and page through
-the rows with the controls below. Each feature is an option of `lt_interactive()`,
-and each option can be switched off with `FALSE`, so you only ever pay for the
-controls you keep.
+Click a header to sort, use the box above the table to search, filter a column
+with the widget under its header (a slider for numbers, a checklist for
+plant type), and page through the rows with the controls below. Each feature is an
+option of `lt_interactive()`, and each option can be switched off with `FALSE`,
+so you only ever pay for the controls you keep.
 
-## Searching and sorting {#sec:search-sort}
+## The data viewer {#sec:viewer}
 
-Let's start with the feature readers reach for first. This example combines
-sorting and search, with the pager limited to five rows:
+Most of the time, the table you want is the one that answers "what is in this
+data frame?". `lt_viewer()` is that table, ready made. It is a shorthand for
+`lt_interactive()` with a few sensible defaults: each column shows its type and
+a profile (@sec:profile), the column menu (@sec:column-menu) is on, and the
+title is the expression you passed:
+
+```{r, child = ex('viewer')}
+```
+
+Printed at the console, a viewer opens in the RStudio or Positron pane when it is
+available, or in your browser otherwise. Remove the title with
+`lt_header(NULL)`. Every argument of `lt_interactive()` also works here, so
+`lt_viewer(airquality, pager = 5)` is a viewer with five-row pages.
+
+Use `lt_viewer()` to explore, and `lt_interactive()` to publish. The viewer
+packs in types and profiles for the explorer's benefit. In a report, a leaner
+table that says exactly what you mean usually reads better.
+
+## Sorting and search {#sec:search-sort}
+
+Sorting and search are the features readers reach for first. This example
+combines both, with the pager limited to five rows:
 
 ```{r, child = ex('sort-search')}
 ```
@@ -43,19 +64,21 @@ place in the order.
 
 You can also start the table already sorted. Give `sort` a character vector of
 column names, where a `-` prefix means descending, or a one-sided formula with
-the same rule (`~ cyl + -mpg`, for instance):
+the same rule (`~ supp + -len`, for instance):
 
 ```{r}
-lt(mtcars[, 1:4]) |> lt_interactive(sort = c("cyl", "-mpg"), search = FALSE, filter = FALSE, pager = 5)
+lt(ToothGrowth) |> lt_interactive(sort = c("supp", "-len"), search = FALSE, filter = FALSE, pager = 5)
 ```
 
-### Search and the plain-language box {#sec:search}
+### Search {#sec:search}
 
 The search box looks for a term in every cell of every row, and keeps only the
 rows that match. Matching ignores case, so `merc` finds the Mercedes rows.
 
-Typing a term is only the beginning. The box also reads a small, forgiving
-mini-language that feels a lot like English. A condition names a column (by its
+### Plain-language queries {#sec:query}
+
+The box also reads a small, forgiving mini-language that feels a lot like
+English. A condition names a column (by its
 name, or by its label if the label has spaces), says what to check, and gives a
 value:
 
@@ -102,6 +125,8 @@ Click the box to see a few random queries built from the table's own values, and
 pick one to run it. It is the fastest way to learn the mini-language, and it
 works on any table, including tables you did not build yourself.
 
+### JavaScript expressions {#sec:expr}
+
 If the mini-language is too gentle for you, a term that mentions `x` is
 evaluated as a JavaScript expression against each raw cell value. So `x > 20`
 keeps every row where any cell is above 20, and `x == null` finds the missing
@@ -114,25 +139,6 @@ The `x` expression runs in the browser, so it speaks JavaScript, not R. Write
 expressions must be valid R if you serve the table from R (see
 @sec:large-data).
 :::
-
-## Paging {#sec:paging}
-
-A table with thousands of rows is a wall, and a wall is not very friendly. The
-`pager` option breaks the rows into pages. Give it the page sizes to offer as a
-vector, and the first one is used at the start:
-
-```{r}
-lt(mtcars[, 1:4]) |> lt_interactive(pager = c(3, 6, Inf), search = FALSE, filter = FALSE)
-```
-
-The selector offers 3, 6, or every row (the infinity symbol means all of them).
-A size only appears if it would actually split the table, so a short table does
-not show a useless pager. Use `pager = FALSE` to show every row with no pager
-at all.
-
-Paging works with everything else. Sorting, filtering, and searching are applied
-first, and the pager then shows the page of the rows that survived. The row
-count beside the pager tells you how many rows the current view holds.
 
 ## Filters {#sec:filter}
 
@@ -166,7 +172,9 @@ type, and a widget when the reader is going to pick.
 
 -   a **range slider** for numbers, dates, and date-times (or a plain search
     box if every value is the same),
+
 -   a **checklist** for text with at most 10 distinct values,
+
 -   a **plain box** for everything else.
 
 It is the default for `lt_interactive()` because it usually gets the answer
@@ -181,8 +189,10 @@ them by name:
 
 -   `"select"` is a dropdown of the column's values. It keeps the one value
     chosen.
+
 -   `"checklist"` is a popover of checkboxes. It keeps every value whose box is
     ticked, so the reader can keep several at once. All ticked means no filter.
+
 -   `"range"` is a two-thumb slider for the low and high end. When you do not
     supply the ends, they are read from the data and rounded outwards to values
     that bracket it nicely.
@@ -225,74 +235,13 @@ column name and the current value. Click anywhere on the chip to open its
 control. This is a good way to offer a filter on a value you do not want to show:
 
 ```{r}
-lt(mtcars[, 1:5]) |>
-  lt_hide(~ mpg) |>
+lt(CO2) |>
+  lt_hide(~ conc) |>
   lt_interactive(
-    filter = list(TRUE, mpg = "range", cyl = "checklist"),
+    filter = list(TRUE, conc = "range", Treatment = "checklist"),
     search = FALSE, pager = 5
   )
 ```
-
-## Row detail {#sec:detail}
-
-Sometimes a row has more to say than fits in a row. The `detail` option adds an
-expand caret to each row, and clicking it reveals the rest of that row's story
-beneath it. The simplest form names the columns to show, and those can include
-columns you hid from the main table:
-
-```{r, child = ex('detail')}
-```
-
-For full control, pass a JavaScript function wrapped in `js()`. It receives the
-row's raw values, the formatted text, and the row number, and returns a table
-spec of its own. Here the detail is a small table that sorts itself:
-
-```{r}
-lt(mtcars[, 1:5]) |>
-  lt_interactive(
-    pager = 3, filter = FALSE, search = FALSE,
-    detail = js('(row, i, d) => ({
-      data: { field: ["hp", "wt"], value: [d.hp, d.wt] },
-      interactive: { sort: ["value"], search: false }
-    })')
-  )
-```
-
-The returned spec is an ordinary table spec, so it can carry its own
-`interactive` field. The detail table can be sorted, filtered, or paged, just
-like its parent.
-
-## Columns: resizing and hiding {#sec:columns}
-
-### Resizing
-
-Drag the right edge of any header to widen or narrow that column. Widening a
-column widens the table and leaves the rest alone. Double-click the edge to fit
-the column to its contents, which is the quickest way to rescue a column whose
-header is cut short. Starting widths still come from `lt_width()`.
-
-```{r}
-lt(head(mtcars[, 1:4])) |> lt_interactive(pager = FALSE, search = FALSE, filter = FALSE) |>
-  lt_width(mpg = "8em")
-```
-
-Use `resize = FALSE` to fix the widths.
-
-### The column menu {#sec:column-menu}
-
-The `hide` option adds a menu that shows or hides columns. It opens from an eye
-button at the start of the search row, and it lists every column by its label.
-Uncheck one to hide its header and its cells; check it again to bring it back.
-
-```{r, child = ex('column-menu')}
-```
-
-Name columns to start with them hidden, as the example does, or use
-`hide = NA` to start with everything visible. Passing `label` swaps the eye icon for a labeled chip in the
-control bar, which is clearer when the reader might not know what the eye means.
-
-Older code passes `hide = TRUE` to mean "show the menu". It still works, but it
-will be dropped in a future release, so write `hide = NA` for the same effect.
 
 ## Profiles: a picture of each column {#sec:profile}
 
@@ -314,8 +263,44 @@ its column's filter popover instead. The popover only exists for columns with a
 typed filter, so pair this option with `filter = "auto"`:
 
 ```{r}
-lt(iris) |> lt_interactive(profile = "filter", pager = 3, search = FALSE)
+lt(ChickWeight) |> lt_interactive(profile = "filter", pager = 3, search = FALSE)
 ```
+
+## Paging {#sec:paging}
+
+A table with thousands of rows is a wall, and a wall is not very friendly. The
+`pager` option breaks the rows into pages. Give it the page sizes to offer as a
+vector, and the first one is used at the start:
+
+```{r}
+lt(trees) |> lt_interactive(pager = c(3, 6, Inf), search = FALSE, filter = FALSE)
+```
+
+The selector offers 3, 6, or every row (the infinity symbol means all of them).
+A size only appears if it would actually split the table, so a short table does
+not show a useless pager. Use `pager = FALSE` to show every row with no pager
+at all.
+
+Paging works with everything else. Sorting, filtering, and searching are applied
+first, and the pager then shows the page of the rows that survived. The row
+count beside the pager tells you how many rows the current view holds.
+
+## Long tables in a scrolling box {#sec:scroll-box}
+
+Sometimes you do not want a page scrollbar at all. Put the table in a box with a
+fixed height instead, and the table scrolls inside it. With `lt_wrap()`, you can
+set that box's style directly. The header is sticky, so the column names,
+spanners, and controls stay in view however far the reader scrolls:
+
+```{r}
+lt(PlantGrowth) |>
+  lt_interactive(pager = FALSE, filter = FALSE) |>
+  lt_wrap(style = "max-height: 14em; overflow-y: auto")
+```
+
+Printing an interactive table in the viewer or a browser already fits it to the
+window in the same way, so a tall table scrolls inside its frame rather than
+pushing the page around.
 
 ## Downloading the view {#sec:download}
 
@@ -333,7 +318,7 @@ figure the reader saw. If you need the underlying numbers at full precision, for
 re-importing into analysis code, ask for the raw values instead:
 
 ```{r, eval = FALSE}
-lt(mtcars) |> lt_interactive(download = list(file = "cars.csv", mode = "raw"))
+lt(ToothGrowth) |> lt_interactive(download = list(file = "teeth.csv", mode = "raw"))
 ```
 
 Row detail is never included in the download. Pass `download = TRUE` for a
@@ -342,8 +327,69 @@ replaced by the chosen format's). To offer only some formats, name them: with a
 single format the button downloads directly, without a menu.
 
 ```{r, eval = FALSE}
-lt(mtcars) |> lt_interactive(download = list(file = "cars", formats = "rtf"))
+lt(ToothGrowth) |> lt_interactive(download = list(file = "teeth", formats = "rtf"))
 ```
+
+## Columns: resizing and hiding {#sec:columns}
+
+### Resizing
+
+Drag the right edge of any header to widen or narrow that column. Widening a
+column widens the table and leaves the rest alone. Double-click the edge to fit
+the column to its contents, which is the quickest way to rescue a column whose
+header is cut short. Starting widths still come from `lt_width()`.
+
+```{r}
+lt(head(ToothGrowth)) |> lt_interactive(pager = FALSE, search = FALSE, filter = FALSE) |>
+  lt_width(len = "8em")
+```
+
+Use `resize = FALSE` to fix the widths.
+
+### The column menu {#sec:column-menu}
+
+The `hide` option adds a menu that shows or hides columns. It opens from an eye
+button at the start of the search row, and it lists every column by its label.
+Uncheck one to hide its header and its cells; check it again to bring it back.
+
+```{r, child = ex('column-menu')}
+```
+
+Name columns to start with them hidden, as the example does, or use
+`hide = NA` to start with everything visible. Passing `label` swaps the eye icon for a labeled chip in the
+control bar, which is clearer when the reader might not know what the eye means.
+
+Older code passes `hide = TRUE` to mean "show the menu". It still works, but it
+will be dropped in a future release, so write `hide = NA` for the same effect.
+
+## Row detail {#sec:detail}
+
+Sometimes a row has more to say than fits in a row. The `detail` option adds an
+expand caret to each row, and clicking it reveals the rest of that row's story
+beneath it. The simplest form names the columns to show, and those can include
+columns you hid from the main table:
+
+```{r, child = ex('detail')}
+```
+
+For full control, pass a JavaScript function wrapped in `js()`. It receives the
+row's raw values, the formatted text, and the row number, and returns a table
+spec of its own. Here the detail is a small table that sorts itself:
+
+```{r}
+lt(trees) |>
+  lt_interactive(
+    pager = 3, filter = FALSE, search = FALSE,
+    detail = js('(row, i, d) => ({
+      data: { field: ["Height", "Volume"], value: [d.Height, d.Volume] },
+      interactive: { sort: ["value"], search: false }
+    })')
+  )
+```
+
+The returned spec is an ordinary table spec, so it can carry its own
+`interactive` field. The detail table can be sorted, filtered, or paged, just
+like its parent.
 
 ## When rows have structure {#sec:structure}
 
@@ -382,42 +428,6 @@ lt(d3) |> lt_indent(c(2, 3, 4, 6, 7, 8), level = 1) |> lt_interactive(pager = 5)
 
 Spanners, styles, and footnotes are no obstacle to any of this.
 
-## Long tables in a scrolling box {#sec:scroll-box}
-
-Sometimes you do not want a page scrollbar at all. Put the table in a box with a
-fixed height instead, and the table scrolls inside it. With `lt_wrap()`, you can
-set that box's style directly. The header is sticky, so the column names,
-spanners, and controls stay in view however far the reader scrolls:
-
-```{r}
-lt(mtcars[, 1:4]) |>
-  lt_interactive(pager = FALSE, filter = FALSE) |>
-  lt_wrap(style = "max-height: 14em; overflow-y: auto")
-```
-
-Printing an interactive table in the viewer or a browser already fits it to the
-window in the same way, so a tall table scrolls inside its frame rather than
-pushing the page around.
-
-## The data viewer {#sec:viewer}
-
-Most of the time, the table you want is the one that answers "what is in this
-data frame?". `lt_viewer()` is that table, ready made. It is a shorthand for
-`lt_interactive()` with a few sensible defaults: each column shows its type and
-a profile, the column menu is on, and the title is the expression you passed:
-
-```{r, child = ex('viewer')}
-```
-
-Printed at the console, a viewer opens in the RStudio or Positron pane when it is
-available, or in your browser otherwise. Remove the title with
-`lt_header(NULL)`. Every argument of `lt_interactive()` also works here, so
-`lt_viewer(iris, pager = 5)` is a viewer with five-row pages.
-
-Use `lt_viewer()` to explore, and `lt_interactive()` to publish. The viewer
-packs in types and profiles for the explorer's benefit. In a report, a leaner
-table that says exactly what you mean usually reads better.
-
 ## Large data: serving rows from R {#sec:large-data}
 
 Everything so far keeps the rows in the browser. That is fine for thousands of
@@ -444,15 +454,19 @@ it:
     `x != "A"` must be valid R. The phrases and the widgets' own filters work
     in both places, and a missing value never passes an expression unless the
     expression is negated.
+
 -   **Substring matching uses the underlying values.** Search and text filters
     look at the raw values rather than the formatted text, so a number is
     matched as its full precision, not as the rounded figure on screen.
+
 -   **Profiles and choices come from all the data.** They are computed once when
     the app starts, so a dropdown lists every value, not just the current page.
     Plots drawn in cells scale to the current page.
+
 -   **Some table features are missing.** Row groups, indentation, row-specific
     styles and footnotes, and external filter predicates do not work through
     the server. A JavaScript row detail sees only the current page.
+
 -   **The download fetches every row of the view.** It is complete, but a
     huge view takes a while to arrive.
 
