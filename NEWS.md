@@ -40,6 +40,8 @@
 
 - `lt_export()` also writes `.csv` and `.rtf` files (all rows; needs Node.js or a Chromium-based browser). The formats live in a new standalone `lt-export.js`, loaded only for tables with a download button.
 
+- The RTF export (`lt_export()` and the download button) shows row groups as bold rows spanning the table, in rowspan and separator modes alike, instead of dropping the group column.
+
 - The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, download), and the column menu button's tooltip reads "Show/Hide columns".
 
 - The inline rules of `lt_css(.class = ...)` now apply to their own table only; they used to leak to every other table on the page. This needs a browser with CSS `@scope` support (Chrome 118+, Safari 17.4+, Firefox 128+). `lt_spec()` now keeps the rules.
