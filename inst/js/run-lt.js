@@ -15,9 +15,5 @@ const spec = eval('(' + raw + ')');
 if (spec.data) for (const k of Object.keys(spec.data)) {
   if (!Array.isArray(spec.data[k])) spec.data[k] = [spec.data[k]];
 }
-// Revive test functions from strings (style ops)
-for (const op of (spec.ops || [])) {
-  if (typeof op.test === 'string') op.test = eval(op.test);
-}
 const html = root.LT.buildHtml(spec);
 process.stdout.write(fmt ? root.LT.plugins.export.text(fmt, spec) : html);

@@ -49,8 +49,10 @@ style, which keeps the output small.
 The test runs in the browser, not in R. That is what lets the highlighting
 survive sorting, filtering, and paging in an interactive table (@chp:interactive):
 the table re-evaluates the test whenever the rows move. The price is that `test`
-is a string of JavaScript, not an R expression, and it sees the *raw* value, so
-`v < 0.05` compares numbers even if the cell shows `"< 0.05"` after formatting.
+is a string of JavaScript, not an R expression, and it receives the *raw* value
+of the cell, not the text on the screen. For example, if the value `0.042` is
+rounded by `lt_format(decimals = 2)` and displayed as `0.04`, `test` still gets
+the number `0.042`.
 :::
 
 A missing value arrives in the test as `null`, which makes it easy to flag the

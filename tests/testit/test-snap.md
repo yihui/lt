@@ -136,7 +136,7 @@ xfun::tojson(spec(x))
     {
       "type": "style",
       "columns": ["x"],
-      "test": v => v > 1,
+      "test": "v => v > 1",
       "class": "hi"
     }
   ]

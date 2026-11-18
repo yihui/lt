@@ -54,6 +54,8 @@
 
 - `lt_format(percent = TRUE)` without `decimals` no longer shows floating-point noise (e.g., `56.00000000000001%` for 0.56).
 
+- In the JavaScript runtime, the `test` of a `style` op and the `detail` of `interactive` may be given as function source strings (e.g., `"v => v > 3"`), so a spec can be plain JSON. `lt_style(test = )` now ships its function this way.
+
 # CHANGES IN lt VERSION 0.5
 
 - Added `lt_interactive()` to make a table interactive in the browser: click-to-sort headers, a search box, per-column filters (plain, or typed dropdown/range/checklist widgets), pagination, column resizing, a column-visibility menu, expandable row detail, and a CSV download of the current view. Everything runs client-side via an extension loaded only for opted-in tables, and sorting and filtering stay within each row group or subtree.

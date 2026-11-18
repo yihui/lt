@@ -30,6 +30,8 @@
   const escIf = (raw, s) => raw ? String(s ?? "") : esc(s);
   // Column `c` raw HTML? `hc` = spec.html_cols: true (all) or column names.
   const rawCol = (hc, c) => hc === true || (Array.isArray(hc) && hc.includes(c));
+  // A function given as source (JSON can't carry functions), e.g. a style `test`
+  const asFn = s => typeof s === "string" ? new Function(`return (${s})`)() : s;
   const sup = i => `<sup class="lt-fnref">${[].concat(i)}</sup>`;  // i: number or array (joined by ",")
   // Stringify; null/undefined -> "". ±Infinity -> ∞/-∞ (ASCII minus, raw
   // values); formatted columns get typographic minus via fmtNumber.
@@ -562,12 +564,14 @@
     // Style map: accumulate css (";") and class (" ") per cell.
     const styleMap = {}, classMap = {};
     const addTo = (map, key, val, sep) => { map[key] = map[key] ? map[key] + sep + val : val; };
-    for (const s of styles)
+    for (const s of styles) {
+      const test = s.test && asFn(s.test);
       eachLoc(s.rows, s.columns ? [].concat(s.columns) : null, (key, c, r) => {
-        if (s.test && !s.test(data[c][r - 1])) return;
+        if (test && !test(data[c][r - 1])) return;
         if (s.css) addTo(styleMap, key, s.css, ";");
         if (s.class) addTo(classMap, key, s.class, " ");
       });
+    }
 
     // lt_color(): fill numeric cells with a palette color interpolated between
     // the stops, over the shared domain or each column's own range, and (unless
@@ -883,6 +887,6 @@
   root.LT = {
     build: spec => mount(document.currentScript, spec),
     render, refresh, buildHtml, plugins, onMount, cells: cellRenderers, q, d: store,
-    $, $$, on, off, numCol, dateFmt,
+    $, $$, on, off, numCol, dateFmt, asFn,
   };
 })(window);
