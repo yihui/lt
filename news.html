@@ -14,7 +14,7 @@
 <meta name="function-index" content="function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.27</small>
+<nav class="site-nav"><p><a href="index.html" class="brand">lt</a> <small class="version">v0.5.28</small>
 <a href="examples.html">Examples</a>
 <a href="manual.html">Manual</a>
 <a href="news.html">News</a>
@@ -101,6 +101,9 @@
 </li>
 <li>
 <p><code>lt_export()</code> also writes <code>.csv</code> and <code>.rtf</code> files (all rows; needs Node.js or a Chromium-based browser). The formats live in a new standalone <code>lt-export.js</code>, loaded only for tables with a download button.</p>
+</li>
+<li>
+<p>The RTF export (<code>lt_export()</code> and the download button) shows row groups as bold rows spanning the table, in rowspan and separator modes alike, instead of dropping the group column.</p>
 </li>
 <li>
 <p>The control bar of an interactive table now lays out the search box first, then chips, then icons (column menu, download), and the column menu button’s tooltip reads “Show/Hide columns”.</p>
