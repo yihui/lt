@@ -23,12 +23,12 @@ convenient when the labels are computed programmatically, e.g.
 Override column headers without modifying the underlying data frame.
 }
 \examples{
-d = mtcars[1:3, 1:3]
-lt(d) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
+d = ToothGrowth[1:3, ]
+lt(d) |> lt_label(len = "Length (mm)", dose = "Dose (mg/day)")
 # raw HTML (wrap in I())
-lt(d) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
+lt(d) |> lt_label(len = I("Length<sup>*</sup>"))
 # a named vector or list, handy when labels are computed
-lt(d) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
+lt(d) |> lt_label(c(len = "Length (mm)", dose = "Dose (mg/day)"))
 # a list of two parallel vectors: names and labels
-lt(d) |> lt_label(list(c("mpg", "cyl"), c("Miles/Gallon", "Cylinders")))
+lt(d) |> lt_label(list(c("len", "dose"), c("Length (mm)", "Dose (mg/day)")))
 }

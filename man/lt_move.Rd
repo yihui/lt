@@ -26,9 +26,9 @@ moved columns. Use \code{NULL} to move to the start.}
 Rearrange column display order without modifying the data frame.
 }
 \examples{
-tbl = lt(mtcars[1:3, c("mpg", "cyl", "hp", "drat", "disp")])
+tbl = lt(airquality[1:3, ])
 # after a column (by name or position)
-tbl |> lt_move(~ drat + disp, after = "mpg")
+tbl |> lt_move(~ Month + Day, after = "Ozone")
 # to the front
-tbl |> lt_move(~ disp, after = NULL)
+tbl |> lt_move(~ Temp, after = NULL)
 }

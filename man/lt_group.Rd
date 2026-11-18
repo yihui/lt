@@ -13,7 +13,7 @@ lt_group(x, ..., sep = "auto", sort = TRUE)
 \code{~col1 + col2}) to group by column values, or named arguments of the form
 \code{"Label" = rows} for manual groups. The rows are integer indices
 (1-based), a logical vector, or a one-sided formula evaluated in the data
-(e.g., \code{~ mpg > 20}) that gives one. Groups appear in the order given, and
+(e.g., \code{~ len > 10}) that gives one. Groups appear in the order given, and
 rows in no group stay at the end. Unnamed character strings reorder
 previously defined groups.}
 
@@ -49,10 +49,10 @@ lt(d) |> lt_group(~ arm, sep = TRUE)
 lt(d[c(3, 1, 4, 2), ]) |> lt_group(~ arm, sort = FALSE)
 
 # manual groups: name the rows (always separator rows)
-tbl = lt(mtcars[1:6, 1:3])
+tbl = lt(ToothGrowth[1:6, ])
 tbl |> lt_group("First three" = 1:3, "Last three" = 4:6)
 # ... or give a condition on the data
-tbl |> lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
+tbl |> lt_group(Short = ~ len <= 8, Long = ~ len > 8)
 # unnamed labels reorder the groups
 lt(d) |> lt_group(~ arm, sep = TRUE) |> lt_group("Treatment", "Placebo")
 }

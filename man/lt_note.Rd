@@ -18,9 +18,9 @@ lt_note(x, text)
 Notes are rendered in the table footer below numbered footnotes.
 }
 \examples{
-d = mtcars[1:3, 1:4]
+d = women[1:3, ]
 # several notes; raw HTML (wrap in I())
 lt(d) |>
-  lt_note("Data from the 1974 Motor Trend US magazine.") |>
-  lt_note(I("<b>mpg</b>: miles per gallon."))
+  lt_note("Average heights and weights of American women aged 30-39.") |>
+  lt_note(I("<b>height</b>: inches; <b>weight</b>: pounds."))
 }

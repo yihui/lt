@@ -102,7 +102,7 @@ js_block = function(files, inline = TRUE) {
 #'   table), ready to serialize to JSON.
 #' @export
 #' @examples
-#' spec = lt(mtcars[1:3, 1:3]) |> lt_header("Cars") |> lt_spec()
+#' spec = lt(ToothGrowth[1:3, ]) |> lt_header("Guinea pigs") |> lt_spec()
 #' str(spec, max.level = 1)
 #' # ship this, then LT.render(container, spec) in the browser
 #' xfun::tojson(spec)
@@ -223,7 +223,7 @@ html_doc = function(body) c(
 #' @return A character scalar containing HTML.
 #' @export
 #' @examples
-#' tbl = lt(mtcars[1:3, 1:3])
+#' tbl = lt(ToothGrowth[1:3, ])
 #' # an HTML fragment with the assets inlined
 #' html = format(tbl)
 #' # a full page, linking the assets instead of inlining them
@@ -255,7 +255,7 @@ format.lt_tbl = function(x, fragment = TRUE, inline_assets = TRUE, assets = TRUE
 #' @return `x`, invisibly.
 #' @export
 #' @examples
-#' print(lt(mtcars[1:3, 1:3]))
+#' print(lt(ToothGrowth[1:3, ]))
 print.lt_tbl = function(x, ...) {
   # assets live under the reserved `_lt/` path (other paths are left for the
   # working dir) and are read from disk per request: edits show on refresh
@@ -598,7 +598,7 @@ lt_measure = function(html, pad, width = NULL, browser = NULL) {
 #' HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 #' @export
 #' @examples
-#' tbl = lt(mtcars[1:3, 1:3]) |> lt_header("Cars")
+#' tbl = lt(ToothGrowth[1:3, ]) |> lt_header("Guinea pigs")
 #'
 #' # HTML with the JavaScript spec (table built by lt.js when viewed)
 #' f1 = tempfile(fileext = ".html")

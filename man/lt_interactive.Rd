@@ -155,38 +155,37 @@ match.
 }
 \examples{
 # click-to-sort headers, a search box, column filters, and paging; "auto"
-# gives Species a checklist (text with few values) and numbers a range slider
-lt(iris) |> lt_interactive()
-# an initial sort (Species, then Sepal.Length descending), page sizes (the
-# first is used initially; Inf shows all rows), a widget per filter (FALSE
-# for none), and fixed (non-resizable) columns
-lt(iris) |> lt_interactive(
-  sort = ~ Species + -Sepal.Length, pager = c(5, 10, Inf), resize = FALSE,
-  filter = list("auto", Sepal.Length = "range", Species = "select",
-    Petal.Width = FALSE)
+# gives Type a checklist (text with few values) and numbers a range slider
+lt(CO2) |> lt_interactive()
+# an initial sort (Diet, then weight descending), page sizes (the first is
+# used initially; Inf shows all rows), a widget per filter (FALSE for none),
+# and fixed (non-resizable) columns
+lt(ChickWeight) |> lt_interactive(
+  sort = ~ Diet + -weight, pager = c(5, 10, Inf), resize = FALSE,
+  filter = list("auto", weight = "range", Diet = "select", Time = FALSE)
 )
 # keep only the search box, no individual column filters, no pager
-lt(head(iris)) |> lt_interactive(sort = FALSE, filter = FALSE, pager = FALSE)
+lt(head(airquality)) |> lt_interactive(sort = FALSE, filter = FALSE, pager = FALSE)
 # filter boxes for specific columns only
-lt(iris) |> lt_interactive(filter = c('Species', 'Petal.Length'))
+lt(warpbreaks) |> lt_interactive(filter = c('wool', 'breaks'))
 # a column-visibility menu with a label and some columns hidden to start
 # (hide = NA shows all columns; a bare formula hides those columns)
-lt(iris) |> lt_interactive(hide = NA)
-lt(iris) |> lt_interactive(hide = list(label = 'Show columns', columns = ~ Petal.Width))
+lt(esoph) |> lt_interactive(hide = NA)
+lt(esoph) |> lt_interactive(hide = list(label = 'Show columns', columns = ~ ncontrols))
 # row detail: hidden columns revealed when a row is expanded
-lt(iris) |> lt_hide(~ Petal.Length + Petal.Width) |>
-  lt_interactive(detail = ~ Petal.Length + Petal.Width)
+lt(esoph) |> lt_hide(~ ncases + ncontrols) |>
+  lt_interactive(detail = ~ ncases + ncontrols)
 # a JavaScript callback: (raw row, index, displayed row) to a table spec
-lt(iris) |> lt_interactive(
-  detail = js('(row, i, d) => ({ data: { metric: ["row", "Species"],
-    value: [i, d.Species] } })')
+lt(chickwts) |> lt_interactive(
+  detail = js('(row, i, d) => ({ data: { metric: ["row", "feed"],
+    value: [i, d.feed] } })')
 )
 # a distribution plot in each column header, or in the filter popover
-lt(iris) |> lt_interactive(profile = TRUE)
-lt(iris) |> lt_interactive(profile = 'filter')
+lt(airquality) |> lt_interactive(profile = TRUE)
+lt(ToothGrowth) |> lt_interactive(profile = 'filter')
 # a button to download the current view (CSV and RTF; a string sets the file
 # name), the raw unformatted values, or only RTF
-lt(iris) |> lt_interactive(download = TRUE)
-lt(iris) |> lt_interactive(download = list(file = 'iris.csv', mode = 'raw'))
-lt(iris) |> lt_interactive(download = list(formats = 'rtf'))
+lt(PlantGrowth) |> lt_interactive(download = TRUE)
+lt(PlantGrowth) |> lt_interactive(download = list(file = 'plants.csv', mode = 'raw'))
+lt(PlantGrowth) |> lt_interactive(download = list(formats = 'rtf'))
 }

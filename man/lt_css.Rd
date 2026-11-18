@@ -32,10 +32,10 @@ built-in CSS, so rules can override the defaults. Inline rules are scoped to
 the table; stylesheets are page-wide, as usual.
 }
 \examples{
-d = mtcars[1:4, 1:3]
+d = trees[1:4, ]
 # rules for this table only: a selector and a CSS string or list
 lt(d) |>
-  lt_style(~ mpg, test = "v => v > 21", class = "high") |>
+  lt_style(~ Girth, test = "v => v > 8.5", class = "high") |>
   lt_css(.high = list(background = "#cfc", fontWeight = "bold"), td = "color: #06c")
 # a stylesheet (here one shipped with lt)
 lt(d) |> lt_css("lt-plot.css")

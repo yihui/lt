@@ -18,5 +18,5 @@
 Print an \code{lt_tbl} (opens in the viewer or browser)
 }
 \examples{
-print(lt(mtcars[1:3, 1:3]))
+print(lt(ToothGrowth[1:3, ]))
 }

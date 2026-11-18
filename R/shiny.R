@@ -88,16 +88,16 @@ lt_dependency = function(
 #' @examples
 #' if (interactive()) {
 #'   library(shiny)
-#'   d = mtcars[1:6, 1:3]
+#'   d = ToothGrowth[1:6, ]
 #'   ui = fluidPage(
 #'     lt_output("tbl"),
 #'     # an editable table; only some columns can be edited
-#'     lt_input("m", d, "Edit the cells:", columns = ~ mpg + cyl),
+#'     lt_input("m", d, "Edit the cells:", columns = ~ len + dose),
 #'     actionButton("reset", "Reset"),
 #'     verbatimTextOutput("out")
 #'   )
 #'   server = function(input, output, session) {
-#'     output$tbl = render_lt(lt(d) |> lt_header("Motor Trend"))
+#'     output$tbl = render_lt(lt(d) |> lt_header("Tooth Growth"))
 #'     output$out = renderPrint(input$m)  # the edited data frame
 #'     observeEvent(input$reset, lt_update(session, "m", d))
 #'   }

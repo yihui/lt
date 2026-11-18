@@ -6,10 +6,10 @@
 #' @return `x` with the header recorded.
 #' @export
 #' @examples
-#' d = mtcars[1:3, 1:6]
-#' lt(d) |> lt_header("Motor Trend Cars", "First 3 rows")
+#' d = ToothGrowth[1:3, ]
+#' lt(d) |> lt_header("Tooth Growth in Guinea Pigs", "First 3 rows")
 #' # a title only; raw HTML (wrap in I())
-#' lt(d) |> lt_header(I("<em>Motor Trend</em> Cars"))
+#' lt(d) |> lt_header(I("<em>Tooth</em> Growth"))
 lt_header = function(x, title = NULL, subtitle = NULL) {
   x$header = drop_null(list(title = title, subtitle = subtitle))
   x
@@ -72,7 +72,7 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #'   `~col1 + col2`) to group by column values, or named arguments of the form
 #'   `"Label" = rows` for manual groups. The rows are integer indices
 #'   (1-based), a logical vector, or a one-sided formula evaluated in the data
-#'   (e.g., `~ mpg > 20`) that gives one. Groups appear in the order given, and
+#'   (e.g., `~ len > 10`) that gives one. Groups appear in the order given, and
 #'   rows in no group stay at the end. Unnamed character strings reorder
 #'   previously defined groups.
 #' @param sep If `TRUE`, render groups as full-width separator rows instead
@@ -98,10 +98,10 @@ lt_spanner = function(x, label, columns, sep = '[._]') {
 #' lt(d[c(3, 1, 4, 2), ]) |> lt_group(~ arm, sort = FALSE)
 #'
 #' # manual groups: name the rows (always separator rows)
-#' tbl = lt(mtcars[1:6, 1:3])
+#' tbl = lt(ToothGrowth[1:6, ])
 #' tbl |> lt_group("First three" = 1:3, "Last three" = 4:6)
 #' # ... or give a condition on the data
-#' tbl |> lt_group(Efficient = ~ mpg > 20, Thirsty = ~ mpg <= 20)
+#' tbl |> lt_group(Short = ~ len <= 8, Long = ~ len > 8)
 #' # unnamed labels reorder the groups
 #' lt(d) |> lt_group(~ arm, sep = TRUE) |> lt_group("Treatment", "Placebo")
 lt_group = function(x, ..., sep = 'auto', sort = TRUE) {
@@ -210,11 +210,11 @@ lt_footnote = function(x, text, where, columns = NULL, rows = NULL, match = NULL
 #' @return `x` with the note recorded.
 #' @export
 #' @examples
-#' d = mtcars[1:3, 1:4]
+#' d = women[1:3, ]
 #' # several notes; raw HTML (wrap in I())
 #' lt(d) |>
-#'   lt_note("Data from the 1974 Motor Trend US magazine.") |>
-#'   lt_note(I("<b>mpg</b>: miles per gallon."))
+#'   lt_note("Average heights and weights of American women aged 30-39.") |>
+#'   lt_note(I("<b>height</b>: inches; <b>weight</b>: pounds."))
 lt_note = function(x, text) {
   x$notes = c(x$notes, list(text))
   x
@@ -236,11 +236,11 @@ lt_note = function(x, text) {
 #' @return `x` with the alignment recorded.
 #' @export
 #' @examples
-#' d = mtcars[1:3, 1:4]
+#' d = airquality[1:3, 1:4]
 #' # numbers align right by default; select columns by name or by a predicate
 #' lt(d) |>
-#'   lt_align(~ cyl, "center") |>
-#'   lt_align(~ startsWith(., "d"), "left")
+#'   lt_align(~ Wind, "center") |>
+#'   lt_align(~ startsWith(., "S"), "left")
 lt_align = function(x, columns, align = c('left', 'center', 'right')) {
   columns = f_cols(columns, x$data)
   align = match.arg(align)
@@ -377,14 +377,14 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #' @return `x` with the column label overrides recorded.
 #' @export
 #' @examples
-#' d = mtcars[1:3, 1:3]
-#' lt(d) |> lt_label(mpg = "Miles/Gallon", cyl = "Cylinders")
+#' d = ToothGrowth[1:3, ]
+#' lt(d) |> lt_label(len = "Length (mm)", dose = "Dose (mg/day)")
 #' # raw HTML (wrap in I())
-#' lt(d) |> lt_label(mpg = I("Miles/Gallon<sup>*</sup>"))
+#' lt(d) |> lt_label(len = I("Length<sup>*</sup>"))
 #' # a named vector or list, handy when labels are computed
-#' lt(d) |> lt_label(c(mpg = "Miles/Gallon", cyl = "Cylinders"))
+#' lt(d) |> lt_label(c(len = "Length (mm)", dose = "Dose (mg/day)"))
 #' # a list of two parallel vectors: names and labels
-#' lt(d) |> lt_label(list(c("mpg", "cyl"), c("Miles/Gallon", "Cylinders")))
+#' lt(d) |> lt_label(list(c("len", "dose"), c("Length (mm)", "Dose (mg/day)")))
 lt_label = function(x, ...) {
   add_op(x, 'label', labels = name_value_args(...))
 }
@@ -547,16 +547,16 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @return `x` with the style recorded.
 #' @export
 #' @examples
-#' d = mtcars[1:4, 1:3]
+#' d = trees[1:4, ]
 #' # inline styles on chosen rows and columns, plus any CSS property
 #' lt(d) |>
-#'   lt_style(~ mpg, rows = 1, bold = TRUE, italic = TRUE, color = "#06c") |>
-#'   lt_style(~ cyl, bg = "#ffd", borderBottom = "2px solid red")
+#'   lt_style(~ Girth, rows = 1, bold = TRUE, italic = TRUE, color = "#06c") |>
+#'   lt_style(~ Height, bg = "#ffd", borderBottom = "2px solid red")
 #' # all cells, when columns is omitted
 #' lt(d) |> lt_style(color = "gray")
 #' # a JavaScript test picks the cells; a class keeps the rules in lt_css()
 #' lt(d) |>
-#'   lt_style(~ mpg, test = "v => v > 21", class = "high") |>
+#'   lt_style(~ Girth, test = "v => v > 8.5", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc"))
 lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
                     bold = NULL, italic = NULL, color = NULL, bg = NULL, ...) {
@@ -762,12 +762,12 @@ col_summary_fn = function(d, fn, cols = NULL) {
 #' @return `x` with the widths recorded.
 #' @export
 #' @examples
-#' d = mtcars[1:3, 1:3]
+#' d = trees[1:3, ]
 #' # an unnamed value sets the whole table's width; named ones set columns (any
 #' # CSS unit)
-#' lt(d) |> lt_width("60%", mpg = "40%", cyl = "5em")
+#' lt(d) |> lt_width("60%", Girth = "40%", Height = "5em")
 #' # a list of two parallel vectors: names and widths
-#' lt(d) |> lt_width(list(c("mpg", "cyl"), c("8em", "50px")))
+#' lt(d) |> lt_width(list(c("Girth", "Height"), c("8em", "50px")))
 lt_width = function(x, ...) {
   args = name_value_args(...)
   nms = names(args)
@@ -791,11 +791,11 @@ lt_width = function(x, ...) {
 #' @return `x` with the column move recorded.
 #' @export
 #' @examples
-#' tbl = lt(mtcars[1:3, c("mpg", "cyl", "hp", "drat", "disp")])
+#' tbl = lt(airquality[1:3, ])
 #' # after a column (by name or position)
-#' tbl |> lt_move(~ drat + disp, after = "mpg")
+#' tbl |> lt_move(~ Month + Day, after = "Ozone")
 #' # to the front
-#' tbl |> lt_move(~ disp, after = NULL)
+#' tbl |> lt_move(~ Temp, after = NULL)
 lt_move = function(x, columns, after = NULL) {
   columns = f_cols(columns, x$data)
   if (is.numeric(after)) after = names(x$data)[after]
@@ -814,11 +814,10 @@ lt_move = function(x, columns, after = NULL) {
 #' @return `x` with the hidden columns recorded.
 #' @export
 #' @examples
-#' tbl = lt(mtcars[1:3, c("mpg", "cyl", "hp", "drat", "disp")]) |>
-#'   lt_hide(~ drat + disp)
+#' tbl = lt(esoph[1:3, ]) |> lt_hide(~ ncases + ncontrols)
 #' tbl
 #' # the hidden data still reaches the row detail
-#' tbl |> lt_interactive(detail = ~ drat + disp)
+#' tbl |> lt_interactive(detail = ~ ncases + ncontrols)
 lt_hide = function(x, columns) {
   columns = f_cols(columns, x$data)
   add_op(x, 'hide', columns = I(as.character(columns)))
@@ -1157,10 +1156,10 @@ lt_dotplot = function(
 #' @return `x` with the stylesheets recorded.
 #' @export
 #' @examples
-#' d = mtcars[1:4, 1:3]
+#' d = trees[1:4, ]
 #' # rules for this table only: a selector and a CSS string or list
 #' lt(d) |>
-#'   lt_style(~ mpg, test = "v => v > 21", class = "high") |>
+#'   lt_style(~ Girth, test = "v => v > 8.5", class = "high") |>
 #'   lt_css(.high = list(background = "#cfc", fontWeight = "bold"), td = "color: #06c")
 #' # a stylesheet (here one shipped with lt)
 #' lt(d) |> lt_css("lt-plot.css")
@@ -1203,7 +1202,7 @@ lt_css = function(x, ...) {
 #' @return `x` with the container attributes recorded.
 #' @export
 #' @examples
-#' tbl = lt(mtcars[1:3, 1:3])
+#' tbl = lt(women[1:3, ])
 #' tbl |> lt_wrap(style = "width: 300px;", class = "my-table")
 lt_wrap = function(x, ...) {
   attrs = name_value_args(...)

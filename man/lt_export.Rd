@@ -97,7 +97,7 @@ HTML but cannot run JavaScript (e.g., GitHub Flavored Markdown).
 }
 
 \examples{
-tbl = lt(mtcars[1:3, 1:3]) |> lt_header("Cars")
+tbl = lt(ToothGrowth[1:3, ]) |> lt_header("Guinea pigs")
 
 # HTML with the JavaScript spec (table built by lt.js when viewed)
 f1 = tempfile(fileext = ".html")
