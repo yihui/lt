@@ -14,8 +14,8 @@ rules, all visible in this example:
 - Values round to about four significant digits, adapting the decimals to the
   magnitude.
 
-- Large numbers get a thin-space thousands separator, and negatives get a
-  typographic minus (U+2212).
+- Large numbers get a non-breaking-space thousands separator, and negatives get
+  a typographic minus (U+2212).
 
 - A column whose name matches `/%|[ _](pct|percent)$/i` is read as a proportion:
   values are multiplied by 100 and suffixed with "%".
@@ -113,7 +113,8 @@ LT.build({
 
 ### Dates with `fmt_date` {#sec:js-date}
 
-Values can be `Date` objects or ISO strings. By default `fmt_date` calls
+Values can be `Date` objects or ISO strings (a plain `YYYY-MM-DD` string is read
+as that calendar day in local time). By default `fmt_date` calls
 `toLocaleDateString()`. Pass `method` to call another `Date` method, or
 `locale` and `options` for full `Intl.DateTimeFormat` control.
 
@@ -183,7 +184,7 @@ LT.build({
 ### Substituting values with `sub` {#sec:js-sub}
 
 Replace missing, zero, or small values with display text. Put `sub` after the
-formatting op so it sees the numbers first.
+formatting op, or the formatting overwrites the substituted text.
 
 ```{js}
 LT.build({

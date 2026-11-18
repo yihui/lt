@@ -18,10 +18,10 @@ lt(CO2) |> lt_interactive()
 ```
 
 Click a header to sort, use the box above the table to search, filter a column
-with the widget under its header (a slider for numbers, a checklist for
-plant type), and page through the rows with the controls below. Each feature is an
-option of `lt_interactive()`, and each option can be switched off with `FALSE`,
-so you only ever pay for the controls you keep.
+with the widget under its header (a slider for numbers, a checklist for `Type`
+and `Treatment`), and page through the rows with the controls below. Each
+feature is an option of `lt_interactive()`, and each option can be switched off
+with `FALSE`, so you only ever pay for the controls you keep.
 
 ## The data viewer {#sec:viewer}
 
@@ -73,17 +73,18 @@ lt(ToothGrowth) |> lt_interactive(sort = c("supp", "-len"), search = FALSE, filt
 ### Search {#sec:search}
 
 The search box looks for a term in every cell of every row, and keeps only the
-rows that match. Matching ignores case, so `merc` finds the Mercedes rows.
+rows that match. Matching ignores case, so `adel` finds the Adelie rows.
 
 ### Plain-language queries {#sec:query}
 
 The box also reads a small, forgiving mini-language that feels a lot like
 English. A condition names a column (by its
-name, or by its label if the label has spaces), says what to check, and gives a
-value:
+name, or by its label, which may contain spaces, such as `bill len`), says what
+to check, and gives a value:
 
 ```{r}
-lt(mtcars[, 1:5]) |> lt_interactive(search = TRUE, pager = 5, filter = FALSE)
+d = penguins[, c("species", "island", "bill_len", "body_mass", "sex")]
+lt(d) |> lt_interactive(pager = 5, filter = FALSE)
 ```
 
 @tab:query-phrases shows the phrases the box understands, each with what it keeps.
@@ -95,31 +96,32 @@ lt(mtcars[, 1:5]) |> lt_interactive(search = TRUE, pager = 5, filter = FALSE)
 
 | You type | It keeps the rows where |
 |:---------------------------------|:------------------------------------------|
-| `mpg over 25` | `mpg` is greater than 25 (also `above`, `more than`, `greater than`, `bigger than`, `larger than`, `>`) |
-| `hp under 100` | `hp` is less than 100 (also `below`, `less than`, `smaller than`, `fewer than`, `<`) |
-| `wt at least 3` | `wt` is 3 or more (also `greater than or equal to`, `>=`) |
-| `wt at most 3` | `wt` is 3 or less (also `no more than`, `up to`, `less than or equal to`, `<=`) |
-| `mpg between 15 and 20` | `mpg` is from 15 to 20, inclusive |
-| `cyl is 4` | `cyl` equals 4 (also `equals`, `equal to`, `=`, `==`) |
-| `cyl is not 4` | `cyl` is anything but 4 (also `not`, `isn't`, `other than`, `!=`) |
-| `cyl 6` | `cyl` contains `6`, in short form |
-| `cyl contains 6` | the same, spelled out (also `has`, `:`) |
-| `does not contain merc` | no cell mentions `merc` (also `doesn't contain`, `excludes`) |
-| `cyl is 4, mpg over 25` | both conditions hold (`,`, `;`, or `and` all work) |
-| `cyl is 4 or cyl is 6` | either one holds (`or` gives alternatives) |
-| `cyl is 4 or cyl is 6, mpg over 20` | `cyl` is 4, or `cyl` is 6 *and* `mpg` is over 20 |
-| `"Hornet Sportabout"` | the quoted phrase, matched as one piece |
+| `body_mass over 4500` | `body_mass` is greater than 4500 (also `above`, `more than`, `greater than`, `bigger than`, `larger than`, `>`) |
+| `bill_len under 40` | `bill_len` is less than 40 (also `below`, `less than`, `smaller than`, `fewer than`, `<`) |
+| `body_mass at least 4000` | `body_mass` is 4000 or more (also `greater than or equal to`, `>=`) |
+| `body_mass at most 3500` | `body_mass` is 3500 or less (also `no more than`, `up to`, `less than or equal to`, `<=`) |
+| `bill_len between 40 and 45` | `bill_len` is from 40 to 45, inclusive |
+| `island is Dream` | `island` equals `Dream`, ignoring case (also `equals`, `equal to`, `=`, `==`) |
+| `island is not Dream` | `island` is anything but `Dream` (also `not`, `isn't`, `other than`, `!=`) |
+| `species chin` | `species` contains `chin`, in short form |
+| `species contains chin` | the same, spelled out (also `has`, `:`) |
+| `does not contain chin` | no cell mentions `chin` (also `doesn't contain`, `excludes`) |
+| `island is Dream, body_mass over 4000` | both conditions hold (`,`, `;`, or `and` all work) |
+| `species is Adelie or species is Gentoo` | either one holds (`or` gives alternatives) |
+| `species is Adelie or species is Gentoo, body_mass over 4000` | `species` is Adelie, or `species` is Gentoo *and* `body_mass` is over 4000 |
+| `"Dream"` | the quoted phrase, matched as one piece |
 ::::
 
 Two rules make the mini-language predictable. First, `and` binds tighter than
-`or`, so the last example reads as "4, or (6 and over 20)": the comma and `and`
-group first, then `or` splits the alternatives. Second, any words that do not
-form a condition are searched as typed, so `hornet` still does what you would
-expect.
+`or`, so the last example reads as "Adelie, or (Gentoo and over 4000)": the
+comma and `and` group first, then `or` splits the alternatives. Second, any
+words that do not form a condition are searched as typed, so `gentoo` still does
+what you would expect.
 
-A line under the box shows how the query was read. If it reads `cyl is 4 or
-cyl is 6` as you meant it, you are good to go; if it reads it differently, you
-have found a typo before the rows have a chance to mislead anyone.
+A line under the box shows how the query was read. If it reads `species is
+Adelie or species is Gentoo` as you meant it, you are good to go; if it reads it
+differently, you have found a typo before the rows have a chance to mislead
+anyone.
 
 Click the box to see a few random queries built from the table's own values, and
 pick one to run it. It is the fastest way to learn the mini-language, and it
@@ -150,17 +152,17 @@ one dimension at a time:
 ```{r, child = ex('filter')}
 ```
 
-The first table above asks for `filter = list("auto", Species = FALSE)`. The
+The first table above asks for `filter = list("auto", year = FALSE)`. The
 `"auto"` picks a filter per column from the data, and the `FALSE` removes the
-filter from `Species`. The second table asks for typed controls by name, one
+filter from `year`. The second table asks for typed controls by name, one
 kind of widget per column, and a plain box for every other column.
 
 ### Plain boxes
 
 `filter = TRUE` puts a plain box under each header. It matches the same way as
 the search, but only in its own column, and it takes the same phrases without
-the column name. So under `mpg` you can type `over 25`, and under `cyl` you can
-type `is 4 or is 6`.
+the column name. So under `bill_len` you can type `over 50`, and under `island`
+you can type `is Dream or is Biscoe`.
 
 A plain box suits a reader who knows what to type. Typed widgets suit a reader
 who would rather pick from what is there. Use a box when the reader is going to
@@ -179,8 +181,8 @@ type, and a widget when the reader is going to pick.
 
 It is the default for `lt_interactive()` because it usually gets the answer
 right without asking. Override a single column by naming it in a list:
-`list("auto", cyl = "select")` keeps the automatic choice for every column but
-`cyl`, which gets a dropdown.
+`list("auto", island = "select")` keeps the automatic choice for every column
+but `island`, which gets a dropdown.
 
 ### Typed controls
 
@@ -277,9 +279,9 @@ lt(trees) |> lt_interactive(pager = c(3, 6, Inf), search = FALSE, filter = FALSE
 ```
 
 The selector offers 3, 6, or every row (the infinity symbol means all of them).
-A size only appears if it would actually split the table, so a short table does
-not show a useless pager. Use `pager = FALSE` to show every row with no pager
-at all.
+If the table has no more rows than the smallest size, no size would split it, so
+the selector is left out (the page buttons and row count stay). Use
+`pager = FALSE` to show every row with no pager at all.
 
 Paging works with everything else. Sorting, filtering, and searching are applied
 first, and the pager then shows the page of the rows that survived. The row
@@ -349,18 +351,19 @@ Use `resize = FALSE` to fix the widths.
 ### The column menu {#sec:column-menu}
 
 The `hide` option adds a menu that shows or hides columns. It opens from an eye
-button at the start of the search row, and it lists every column by its label.
+button in the control bar, and it lists every column by its label.
 Uncheck one to hide its header and its cells; check it again to bring it back.
 
 ```{r, child = ex('column-menu')}
 ```
 
-Name columns to start with them hidden, as the example does, or use
-`hide = NA` to start with everything visible. Passing `label` swaps the eye icon for a labeled chip in the
-control bar, which is clearer when the reader might not know what the eye means.
+Name columns to start with them hidden, as the example does, or use `hide = NA`
+to start with everything visible. Passing a list with a `label` swaps the eye
+icon for a labeled chip in the control bar, which is clearer when the reader
+might not know what the eye means.
 
-Older code passes `hide = TRUE` to mean "show the menu". It still works, but it
-will be dropped in a future release, so write `hide = NA` for the same effect.
+Write `hide = NA`, not `hide = TRUE`, to show the menu with every column
+visible.
 
 ## Row detail {#sec:detail}
 
@@ -373,7 +376,7 @@ columns you hid from the main table:
 ```
 
 For full control, pass a JavaScript function wrapped in `js()`. It receives the
-row's raw values, the formatted text, and the row number, and returns a table
+row's raw values, the row number, and the formatted text, and returns a table
 spec of its own. Here the detail is a small table that sorts itself:
 
 ```{r}
@@ -444,7 +447,7 @@ serves the table while that session runs. In a Shiny app, you do not need it at
 all: return the table from `render_lt()`, and the session serves the rows.
 
 ```{r, eval = FALSE}
-output$big = lt_interactive(my_data) |> lt_serve() |> render_lt()
+output$big = lt(my_data) |> lt_serve() |> render_lt()
 ```
 
 There is a price for the extra reach, and it is worth knowing before you lean on

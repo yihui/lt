@@ -21,7 +21,7 @@ down (@tab:footnote-where).
 | `"subtitle"` | the subtitle              | nothing                   |
 | `"column"`   | a column label            | `columns`                 |
 | `"spanner"`  | a spanner label           | `columns` (the spanner)   |
-| `"group"`    | a row group label         | `match`                   |
+| `"group"`    | a row group label         | `columns` (the label), `match` |
 | `"body"`     | specific cells            | `columns` and `rows`      |
 ::::
 
@@ -50,7 +50,7 @@ Call it more than once to add more lines. Notes keep the order you gave them.
 
 ## HTML in cells and labels {#sec:html}
 
-By default, lt treats every string as plain text and escapes it. That is a
+By default, **lt** treats every string as plain text and escapes it. That is a
 feature: a stray `<` in your data will not break the page, and nobody can sneak
 a `<script>` into a cell. But sometimes you really do want a link, some bold
 text, or a superscript.

@@ -3,5 +3,5 @@
 examples/*.html
 examples/*.png
 examples/*.pdf
-book/*.png
-book/*.pdf
+site/book/*.png
+site/book/*.pdf

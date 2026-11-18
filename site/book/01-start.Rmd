@@ -12,24 +12,25 @@ Everything starts with `lt()`, which takes a data frame:
 
 ```{r}
 library(lt)
-lt(head(CO2))
+lt(head(penguins))
 ```
 
 That is already a respectable table: numbers are rounded sensibly and right
-aligned, and the column names are cleaned up. But the real fun begins when you
+aligned, the column names are cleaned up (`bill_len` is shown as "bill len"),
+and the missing value is shown as a dash. But the real fun begins when you
 pipe it into one of the `lt_*()` verbs. Each verb adds one instruction to the
 table, and you can stack as many as you like, in any order:
 
 ```{r}
-lt(head(CO2)) |>
-  lt_header("Grass, Briefly", "One plant at six CO2 concentrations") |>
-  lt_format(~ uptake, decimals = 0) |>
-  lt_note("Data from a 1990 study of cold tolerance in grasses.")
+lt(head(penguins)) |>
+  lt_header("Penguins, Briefly", "The first six birds measured") |>
+  lt_format(~ bill_len, decimals = 0) |>
+  lt_note("Data collected at Palmer Station, Antarctica.")
 ```
 
 Notice that your data frame is never modified. A table is the data *plus* a
 to-do list; the to-do list is carried out later, in the browser. That is why an
-**lt** table can show `30` while remembering that the real value was `30.4`
+**lt** table can show `39` while remembering that the real value was `39.1`
 (hover over a cell, or press <kbd>Alt</kbd> and click the table to reveal the
 raw values).
 
@@ -44,8 +45,8 @@ the chapters of this book.
 | Family | Verbs |
 |:-----------------|:---------------------------------------------------------------|
 | Format values | `lt_format()`, `lt_date()`, `lt_sub()` (@chp:format) |
-| Shape the table | `lt_spanner()`, `lt_merge()`, `lt_move()`, `lt_hide()`, `lt_group()`, `lt_indent()` (@chp:structure) |
-| Style it | `lt_style()`, `lt_css()`, `lt_wrap()` (@chp:style) |
+| Shape the table | `lt_spanner()`, `lt_merge()`, `lt_move()`, `lt_hide()`, `lt_group()`, `lt_summary()`, `lt_indent()` (@chp:structure) |
+| Style it | `lt_style()`, `lt_color()`, `lt_css()`, `lt_wrap()` (@chp:style) |
 | Explain it | `lt_footnote()`, `lt_note()`, `lt_html()` (@chp:notes) |
 | Draw in cells | `lt_errorbar()`, `lt_sparkline()`, `lt_dotplot()` (@chp:plots) |
 | Make it interactive | `lt_interactive()`, `lt_viewer()`, `lt_serve()` (@chp:interactive) |
@@ -54,10 +55,10 @@ the chapters of this book.
 ::::
 
 Many verbs take columns as their second argument. You can name them as a
-one-sided formula (`~ conc + uptake`), as a character vector (`c("conc", "uptake")`),
-or by position (`1:2`). A formula can even use the pronoun `.` for "the column
-names", so `~ endsWith(., "_time")` selects every column whose name ends in
-`_time`.
+one-sided formula (`~ bill_len + bill_dep`), as a character vector
+(`c("bill_len", "bill_dep")`), or by position (`3:4`). A formula can even use
+the pronoun `.` for "the column names", so `~ endsWith(., "_len")` selects every
+column whose name ends in `_len`.
 
 ## The cheat sheet {#sec:cheatsheet}
 

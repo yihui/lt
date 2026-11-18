@@ -81,8 +81,8 @@ deliberate trade-offs:
 
 -   **A tiny runtime.** R does not render the `<table>`. It ships your data and
     a short list of instructions as JSON, and a small, plain JavaScript file
-    (about 10 KB minified, no framework, no build step) builds the table in the
-    browser. A page full of tables loads that file once.
+    (about 15 KB minified, 7 KB gzipped; no framework, no build step) builds the
+    table in the browser. A page full of tables loads that file once.
 
 -   **Pay for what you use.** Inline plots and interactivity live in separate
     extensions that a page loads only when some table asks for them. A plain
@@ -154,9 +154,10 @@ from **gt** (@chp:gt) and those building on **lt** in their own packages
 
 Almost every code block here is a small, self-contained example that lives in
 the [`examples/`](https://github.com/yihui/lt/tree/main/examples) folder of the
-package, one feature per file. The link under a block ("Open as a page") opens
-it on its own, so you can read the source, view the table at full width, or copy
-the file as a starting point. If you would rather learn by poking, the
-[playground](https://pkg.yihui.org/lt/playground/) is the place.
+package, one feature per file, and each is also published as a
+[page of its own](https://pkg.yihui.org/lt/examples.html), where you can view
+the table at full width or copy the file as a starting point. If you would
+rather learn by poking, [the playground](https://pkg.yihui.org/lt/playground/)
+is the place.
 
 Throughout, we use the native pipe `|>`.

@@ -92,17 +92,17 @@ LT.build({
 Typed filters: a dropdown on `cyl`, a range slider on `wt`, a checklist on `hp`,
 and a plain box for the rest. A typed filter on a hidden column has no header
 to sit under, so it moves into the control bar as a labeled chip (click anywhere
-on the chip to open it). Here `gear` is hidden yet still filterable.
+on the chip to open it). Here `disp` is hidden yet still filterable.
 
 ```{js}
 LT.build({
   data: mtcars,
   interactive: {
     search: false, pager: 6,
-    hide: { hidden: ["gear"] },
+    hide: { hidden: ["disp"] },
     filter: { default: true, cols: {
       cyl: { type: "select" }, wt: { type: "range" }, hp: { type: "checklist" },
-      gear: { type: "select" }
+      disp: { type: "select" }
     } }
   }
 });
@@ -300,10 +300,10 @@ and any server that speaks the protocol below can feed a table, such as one
 backed by a database or Parquet files.
 
 `spec.data` only needs the column names (empty arrays will do), because the
-first page is fetched too. Optional fields: `data_times` lists date-time
-columns (sent as ISO 8601 strings), `data_n` is the number of rows in the whole
-data, and `data_cols` holds per-column summaries for profiles and filter
-widgets. Without `data_cols`, columns get a plain filter box.
+first page is fetched too. Optional fields of `interactive`: `data_times` lists
+date-time columns (sent as ISO 8601 strings), `data_n` is the number of rows in
+the whole data, and `data_cols` holds per-column summaries for profiles and
+filter widgets. Without `data_cols`, columns get a plain filter box.
 
 ### The request
 
