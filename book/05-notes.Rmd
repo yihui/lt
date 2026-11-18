@@ -1,5 +1,3 @@
-# Enrichment {.part}
-
 # Footnotes, Notes, and HTML {#chp:notes}
 
 Every good table has fine print. A number needs a caveat, a column needs a
@@ -61,6 +59,7 @@ Two tools, two jobs:
 
 - `lt_html()` marks whole *columns* as HTML. Use it when the data itself
   contains markup, like a column of links.
+
 - `I()` marks a single *string* as raw HTML. Use it for titles, labels, and
   notes. (It is the base R "as is" wrapper, so there is nothing new to learn.)
 

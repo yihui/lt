@@ -131,9 +131,9 @@ live in the chart. Use `hide = FALSE` to keep them visible.
 ### A shared scale for honest comparisons
 
 Per-row scaling makes every line fill its cell, which is pretty but can mislead.
-A row that moves from 2 to 3 looks just as dramatic as one that goes from 20 to
-30. When the rows should be compared with each other, pass `limits` to put every
-sparkline on one scale. The example above did exactly that with `limits = c(0,
+A row that moves from 2 to 3 looks just as dramatic as one that goes from 20 up
+to 30. When the rows should be compared with each other, pass `limits` to put
+every sparkline on one scale. The example above did exactly that with `limits = c(0,
 8)`, so the North and West rows can be read against each other directly.
 
 ## Sizing and layout {#sec:plot-size}
