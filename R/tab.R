@@ -575,8 +575,7 @@ lt_style = function(x, columns = NULL, rows = NULL, test = NULL, class = NULL,
   add_op(x, 'style',
     columns = if (!is.null(columns)) I(as.character(columns)),
     rows = if (!is.null(rows)) I(as.integer(rows)),
-    test = if (!is.null(test)) xfun::js(test),
-    class = class, css = css)
+    test = test, class = class, css = css)
 }
 
 #' Color cells by value

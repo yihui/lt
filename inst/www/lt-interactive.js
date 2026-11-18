@@ -885,6 +885,9 @@
     const pick = (src, r) => {
       const o = {}; for (const c in src) o[c] = src[c]?.[r - 1] ?? null; return o;
     };
+    let compiled;
+    const cb = () => typeof detailOpt === "string" ?
+      /^[\w$]+$/.test(detailOpt) ? root[detailOpt] : compiled ||= LT.asFn(detailOpt) : detailOpt;
     const build = r => {
       if (r in cache) return cache[r];
       const disp = pick(spec._display || {}, r);
@@ -895,9 +898,9 @@
         for (const c of detailOpt) data[c] = [disp[c] ?? null];
         out = { data };
       } else {
-        // callback or its global name
-        const fn = typeof detailOpt === "function" ? detailOpt : root[detailOpt];
-        if (typeof fn === "function") out = fn(pick(spec.data || {}, r), r, disp);
+        // callback: a function, its source, or its global name
+        const f = cb();
+        if (typeof f === "function") out = f(pick(spec.data || {}, r), r, disp);
       }
       return cache[r] = out;
     };
