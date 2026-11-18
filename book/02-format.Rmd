@@ -34,12 +34,16 @@ takes the columns and then whichever of these you need:
 
 -   `decimals`: how many digits after the decimal point, always the same for
     every value in the column.
+
 -   `sig_digits`: how many significant digits to keep, which adapts to the size
     of each value. This is the better choice when a column spans several orders
     of magnitude, such as particle masses.
+
 -   `big_mark`: a thousands separator, such as `","`.
+
 -   `percent`: `TRUE` multiplies values by 100 and adds a `%`; `"%"` only adds
     the sign, for values that are already in percent.
+
 -   `prefix` and `suffix`: text glued to each value, such as `"$"` or `" kg"`.
 
 ```{r, child = ex('number')}

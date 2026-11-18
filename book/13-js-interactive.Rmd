@@ -44,11 +44,14 @@ The search box matches any cell, case-insensitively, against the displayed text
   operator: `over` / `above` / `more than`, `under` / `below` / `less than`,
   `at least`, `at most`, `between 5 and 10`, `is` / `equals`, `is not`,
   `contains`, or `does not contain` (the column name is optional for the last).
+
 - Join conditions with `and`, `,`, or `;`; use `or` for alternatives. `and`
   binds tighter, so `cyl is 4 or cyl is 6` and `mpg over 25, cyl is 4` both do
   what they look like.
+
 - A term that mentions `x`, such as `x > 20`, is evaluated as a JavaScript
   expression on the raw cell value.
+
 - Anything else is searched as typed, and a quoted phrase stays whole.
 
 The box echoes how it read your query, and its placeholder and dropdown offer
@@ -60,13 +63,18 @@ random example queries built from the table's own values.
 left unnamed, and `cols` maps a column to its own spec. A spec is one of:
 
 - `true`: a plain box, matching that column the way the search does.
+
 - `{ type: "select" }`: a dropdown that keeps one chosen value.
+
 - `{ type: "range" }`: a two-thumb slider.
+
 - `{ type: "checklist" }`: a popover of checkboxes that keeps every checked
   value (all checked means no filter).
+
 - `{ type: "auto" }`: picks the control from the data. Numbers get a slider (a
   plain box if constant), strings with at most 10 distinct values get a
   checklist, anything else gets a box.
+
 - `false`: no filter for that column, even under a default.
 
 Choices and ends are read from the column, or set with `choices`, or `min` and
@@ -252,11 +260,14 @@ built-in boxes:
   replace the predicate, or with a `null` `func` to remove it. Predicates from
   every id, together with the built-in column filters and the search, combine
   with AND.
+
 - `el._lt.refresh()` re-renders the body. `filter()` calls it for you, so you
   rarely need it directly.
+
 - `el._lt.view()` returns the current view as 1-based original row indices
   (every row the filters and search keep, in sort order, across all pages),
   which is what a "download what is shown" button reads.
+
 - `el._lt.spec` and `el._lt.state` are there for reading. A widget can read
   `el._lt.spec.data[col]` to build its choices: the unique categories for a
   dropdown, the min and max for a slider.
@@ -306,10 +317,14 @@ The browser sends `POST <data_url>` with a JSON body, using
   with `!` or is `x != ...` negates. Any other term is a case-insensitive
   substring of the cell text. If `col` is `null`, the term is tried on every
   visible column.
+
 - `sort`: `[{ col, dir: "asc" | "desc" }, ...]`, most significant first,
   missing values last.
+
 - `page` (from 0) and `size`: the page wanted. `size` 0 means every row.
+
 - `cols`: the visible columns.
+
 - `prof` (optional): the columns whose profile bars are wanted.
 
 ### The reply
@@ -318,9 +333,12 @@ The server answers with JSON (`Content-Type: application/json`, plus
 `Access-Control-Allow-Origin` if the page lives on another origin):
 
 - `n`: the number of rows in the view.
+
 - `page`: the page returned, clamped to the last page.
+
 - `data`: the page's values by column, such as `{ "a": [1, 2], "b": ["x", "y"] }`,
   with `null` for missing values and dates as `"YYYY-MM-DD"`.
+
 - `prof` (optional): bar counts over the kept rows, for each column in `prof`.
 
 That is the whole contract. A forty-line server in any language is enough to

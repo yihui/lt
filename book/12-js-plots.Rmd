@@ -337,6 +337,7 @@ mechanisms opt into raw HTML:
 
 - Body cells: set `html_cols` to `true` (all columns) or an array of column
   names, and those cells are emitted verbatim.
+
 - Text fields (title, subtitle, column and spanner labels, footnote and note
   text): pass a one-element array instead of a string. `"<b>x</b>"` is escaped;
   `["<b>x</b>"]` is raw. This is what R's `I()` becomes in the JSON.

@@ -13,10 +13,13 @@ rules, all visible in this example:
 
 - Values round to about four significant digits, adapting the decimals to the
   magnitude.
+
 - Large numbers get a thin-space thousands separator, and negatives get a
   typographic minus (U+2212).
+
 - A column whose name matches `/%|[ _](pct|percent)$/i` is read as a proportion:
   values are multiplied by 100 and suffixed with "%".
+
 - A column named like `/year/i` holding 4-digit integers is left alone.
 
 ```{js}

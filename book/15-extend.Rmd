@@ -41,6 +41,7 @@ The pattern **gsDesign2** and **gsDesign** settled on has two steps.
 1.  **Re-export the generic**, so that users can call `lt()` without attaching
     **lt** via `library(lt)` or writing `lt::lt()`. Re-exporting puts `lt()` in
     your package's namespace.
+
 2.  **Define `lt.<class>()` methods** for your summary or result classes. With the
     generic re-exported into your namespace, each method is registered with a
     plain `#' @export`.
@@ -92,8 +93,10 @@ A few habits make such methods pleasant to use:
 -   **Return the `lt` table, not HTML.** Let the caller add more verbs
     (`lt_style()`, `lt_interactive()`, ...) before the table is printed. A method
     is a table *builder*; printing is somebody else's job.
+
 -   **Pass `...` on to `lt()`**, as above, so that `auto_format`, `auto_label`,
     and `show_types` stay available to the caller.
+
 -   **Put sensible defaults in arguments** (a `title`, a `footnote`) rather than
     hard-coding them, and let the caller switch them off.
 

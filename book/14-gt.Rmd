@@ -33,7 +33,9 @@ The mapping and the notes below distill the practical experience of three real
 migrations, and you can read their pull requests for more worked examples:
 
 -   [Merck/gsDesign2#629](https://github.com/Merck/gsDesign2/pull/629)
+
 -   [keaven/gsDesign#282](https://github.com/keaven/gsDesign/pull/282)
+
 -   [keaven/gsDesignNB#48](https://github.com/keaven/gsDesignNB/pull/48)
 
 ## The phrasebook {#sec:mapping}
@@ -272,6 +274,7 @@ cells; without one it adds a general note. **lt** splits these:
     name(s) in `columns` (names, positions, or a formula); for `"body"` also pass
     `rows`; for `"group"`, `match` is `"exact"` (the default), `"starts_with"` to
     match a group label by prefix, or `"all"` for every group.
+
 -   `lt_note(text)` adds a plain table note at the bottom. It is also the
     replacement for `tab_source_note()`.
 
@@ -285,6 +288,7 @@ There are two rendering styles, chosen by `sep`:
 
 -   **Separator rows**: the group label sits on its own full-width row above the
     group. This is **gt**'s default; in **lt** you request it with `sep = TRUE`.
+
 -   **Rowspan**: the group value is a merged cell down the left. This is
     **gt**'s `row_group_as_column = TRUE`; in **lt** you request it with
     `sep = FALSE`.
