@@ -18,6 +18,11 @@
 #'
 #' @param data A data frame (or anything coercible to one).
 #' @param ... Arguments passed to methods.
+#' @param wide For a time series (class `ts`), whether to lay a single monthly
+#'   or quarterly series out with one row per year and one column per month or
+#'   quarter. Otherwise, the table has a `Time` column and one column per
+#'   series (`value` for a single series). The default is `TRUE` only for a
+#'   single series with a frequency of 4 or 12.
 #' @param auto_format Whether to automatically format numeric columns (rounding,
 #'   thousand separators, percentage detection) and date/time columns (as
 #'   `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS`). Set to `FALSE` to disable
@@ -107,6 +112,34 @@ lt.default = function(
   if (show_types) x$types = lapply(data, type_tag)
   if (length(grp)) x$row_group = I(grp)
   x
+}
+
+#' @rdname lt
+#' @export
+lt.ts = function(
+  data, wide = NCOL(data) == 1 && frequency(data) %in% c(4, 12), ...
+) {
+  fr = frequency(data)
+  tm = as.numeric(time(data))
+  # a tiny offset guards against floating-point error in the year boundaries
+  yr = floor(tm + 1e-6)
+  cyc = as.integer(cycle(data))
+  nms = if (fr == 12) month.abb else if (fr == 4) paste0('Q', 1:4) else seq_len(fr)
+  d = if (wide && NCOL(data) == 1) {
+    m = tapply(as.numeric(data), list(yr, cyc), identity)
+    data.frame(Year = rownames(m), m, check.names = FALSE, row.names = NULL) |>
+      setNames(c('Year', nms[as.integer(colnames(m))]))
+  } else {
+    d = if (NCOL(data) == 1) data.frame(value = as.numeric(data)) else
+      as.data.frame(data, check.names = FALSE)
+    # label times by year and period ("1949 Jan", "1991 #130") when they fall on
+    # whole periods; otherwise by their value
+    time = if (fr > 1 && isTRUE(all.equal(tm, yr + (cyc - 1) / fr)))
+      paste(yr, if (fr %in% c(4, 12)) nms[cyc] else paste0('#', cyc)) else
+      format(tm, trim = TRUE)
+    cbind(Time = time, d)
+  }
+  lt.default(d, ...)
 }
 
 # A column's type as a short tag, in the style of tibble's printing

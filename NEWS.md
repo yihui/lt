@@ -2,6 +2,8 @@
 
 - New book at <https://pkg.yihui.org/lt/book/> covering every feature, from the first table to Shiny, export, and the JavaScript runtime. The long examples `01-lt`, `02-lt-js`, and `03-gt` are now short overviews that point to it, and new one-feature examples cover the functions one at a time.
 
+- `lt()` gains a method for time series (`ts`): a single monthly or quarterly series becomes a table with one row per year and one column per month or quarter (`wide = FALSE` gives a `Time` and `value` table instead), and a multiple series gets a `Time` column, which the default method dropped.
+
 - Added `lt_viewer()`, a data viewer for exploring a data frame: an interactive table with the data expression as the title, each column's type and profile, filters, and a column-visibility menu (thanks, @keaven, #56).
 
 - New `lt_serve()` makes an interactive table fetch its rows from a data URL, for data too big for the browser: the browser requests only the current page as JSON whenever the sort, filters, search, or page change. By default a local app (built on `xfun::new_app()`) serves the rows of the table in R; pass `url` to use your own server (e.g., backed by a database or Parquet files), whose request and response format is documented in `?lt_serve`. In Shiny, `render_lt()` serves the rows from the session itself.

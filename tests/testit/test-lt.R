@@ -55,3 +55,23 @@ assert("add_op() drops NULL values", {
   x = add_op(x, "test", foo = "bar", baz = NULL)
   (names(x$ops[[1]]) %==% c("type", "foo"))
 })
+
+assert('lt() lays a monthly time series out by year and month', {
+  x = lt(window(AirPassengers, start = c(1949, 3), end = c(1950, 2)))$data
+  (names(x) %==% c('Year', month.abb))
+  (x$Year %==% c('1949', '1950'))
+  # incomplete years are padded with NA
+  (is.na(x$Jan[1]) && x$Mar[1] == 132 && is.na(x$Mar[2]))
+  (lt(ts(1:8, start = c(2000, 2), frequency = 4))$data$Q2 %==% c(1, 5, NA))
+})
+
+assert('lt() gives a Time column for other time series', {
+  x = lt(AirPassengers, wide = FALSE)$data
+  (names(x) %==% c('Time', 'value'))
+  (x$Time[1:2] %==% c('1949 Jan', '1949 Feb'))
+  x = lt(EuStockMarkets)$data
+  (names(x) %==% c('Time', 'DAX', 'SMI', 'CAC', 'FTSE'))
+  (x$Time[1:2] %==% c('1991 #130', '1991 #131'))
+  (lt(ts(1:2, start = 2000.5))$data$Time %==% c('2000.5', '2001.5'))
+  (names(lt(ts(1:3, start = 2000))$data) %==% c('Time', 'value'))
+})

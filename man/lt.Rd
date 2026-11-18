@@ -3,11 +3,14 @@
 \name{lt}
 \alias{lt}
 \alias{lt.default}
+\alias{lt.ts}
 \title{Create a table specification}
 \usage{
 lt(data, ...)
 
 \method{lt}{default}(data, auto_format = TRUE, auto_label = TRUE, show_types = FALSE, ...)
+
+\method{lt}{ts}(data, wide = NCOL(data) == 1 && frequency(data) \%in\% c(4, 12), ...)
 }
 \arguments{
 \item{data}{A data frame (or anything coercible to one).}
@@ -28,6 +31,12 @@ show raw column names.}
 \verb{<chr>}, \verb{<fct>}, \verb{<date>}) under the column labels, like the types
 printed under a tibble's column names. In an interactive table (see
 \code{\link[=lt_interactive]{lt_interactive()}}), the filter controls follow the tags.}
+
+\item{wide}{For a time series (class \code{ts}), whether to lay a single monthly
+or quarterly series out with one row per year and one column per month or
+quarter. Otherwise, the table has a \code{Time} column and one column per
+series (\code{value} for a single series). The default is \code{TRUE} only for a
+single series with a frequency of 4 or 12.}
 }
 \value{
 A table object that can be piped into \verb{lt_*()} functions.
