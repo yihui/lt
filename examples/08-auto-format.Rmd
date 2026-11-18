@@ -2,7 +2,10 @@
 title: Automatic formatting
 ---
 
-By default `lt()` formats numbers for you: about four significant digits, thin-space thousands separators, a typographic minus, percent for columns named like `*_pct`, and a hands-off policy for years. Set `auto_format = FALSE` to see the raw values.
+By default `lt()` formats numbers for you: about four significant digits,
+non-breaking-space thousands separators, a typographic minus, percent for
+columns named like `*_pct`, and a hands-off policy for years. Set `auto_format =
+FALSE` to see the raw values.
 
 ```{r}
 library(lt)

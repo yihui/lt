@@ -334,12 +334,12 @@ lt_format = function(
 #'   (`"numeric"`, `"2-digit"`), `hour`, `minute`, `second` (`"numeric"`,
 #'   `"2-digit"`), `weekday` (`"long"`, `"short"`, `"narrow"`), and
 #'   `timeZoneName` (`"long"`, `"short"`). Only used when `method` is `NULL`.
-#' @note The formatted date may differ from the input date depending on the
-#'   viewer's local timezone. JavaScript's `new Date("2024-01-15")` parses
-#'   date-only strings as UTC midnight, but `toLocaleDateString()` converts to
-#'   the local timezone. For example, `2024-01-15` will display as
-#'   `2024-01-14` for a viewer at GMT-6. To avoid this, pass
-#'   `options = list(timeZone = "UTC")`.
+#' @note A date (without a time) is a calendar day and displays as the same day
+#'   in every time zone, so do not set `timeZone` for it: `timeZone = "UTC"`
+#'   would show `2024-01-14` for `2024-01-15` to a viewer east of Greenwich.
+#'   A date-time is an instant and displays in the viewer's local time zone by
+#'   default; set `options = list(timeZone = "UTC")` (or another zone) to show
+#'   the same clock time to everyone.
 #' @return `x` with the date formatting recorded.
 #' @export
 #' @examples
@@ -348,11 +348,10 @@ lt_format = function(
 #'   date = as.Date(c("2024-01-15", "2024-06-30")),
 #'   time = as.POSIXct(c("2024-01-15 09:30:00", "2024-06-30 17:45:00"), tz = "UTC")
 #' )
-#' # locale and Intl.DateTimeFormat options (timeZone = "UTC" keeps the date as
-#' # is), or call a JavaScript Date method
+#' # locale and Intl.DateTimeFormat options, or call a JavaScript Date method
 #' lt(d) |>
 #'   lt_date(~ date, locale = "fr-FR", options = list(
-#'     weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
+#'     weekday = "long", day = "numeric", month = "long"
 #'   )) |>
 #'   lt_date(~ time, method = "toISOString")
 lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
