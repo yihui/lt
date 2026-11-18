@@ -112,7 +112,7 @@ tbl_plots = lt(d) |>
   lt_errorbar(Eff ~ Lo + Hi, ref = 0) |>
   lt_sparkline(~ Temp) |>
   lt_sparkline(~ Rain, type = "bar", color = "limegreen") |>
-  lt_dotplot(~ Before + After, color = TRUE) |>
+  lt_dotplot(~ Before + After, color = TRUE, width = 140) |>
   lt_spanner(`lt_sparkline()` ~ Temp + Rain) |>
   lt_label(
     Eff = "lt_errorbar()", Temp = "line", Rain = "bar", Before = "lt_dotplot()"
