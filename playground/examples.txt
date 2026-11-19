@@ -39,3 +39,4 @@
 39-js-control.Rmd
 40-color.Rmd
 41-summary.Rmd
+42-ts.Rmd

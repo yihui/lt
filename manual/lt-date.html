@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.21">
+<meta name="generator" content="litedown 1.0.23">
 <title>Format date/time columns</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/site.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/prism-xcode.min.css">
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
-<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.30</small>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.31</small>
 <a href="../examples.html">Examples</a>
 <a href="../manual.html">Manual</a>
 <a href="../news.html">News</a>
@@ -96,12 +96,12 @@ options. Common fields include <code>year</code> (<code>"numeric"</code>, <code>
 <p><code>x</code> with the date formatting recorded.
 </p>
 <h2 id="sec:note" class="unnumbered">Note</h2>
-<p>The formatted date may differ from the input date depending on the
-viewer's local timezone. JavaScript's <code>new Date("2024-01-15")</code> parses
-date-only strings as UTC midnight, but <code>toLocaleDateString()</code> converts to
-the local timezone. For example, <code>2024-01-15</code> will display as
-<code>2024-01-14</code> for a viewer at GMT-6. To avoid this, pass
-<code>options = list(timeZone = "UTC")</code>.
+<p>A date (without a time) is a calendar day and displays as the same day
+in every time zone, so do not set <code>timeZone</code> for it: <code>timeZone = "UTC"</code>
+would show <code>2024-01-14</code> for <code>2024-01-15</code> to a viewer east of Greenwich.
+A date-time is an instant and displays in the viewer's local time zone by
+default; set <code>options = list(timeZone = "UTC")</code> (or another zone) to show
+the same clock time to everyone.
 </p>
 <h2 id="sec:examples" class="unnumbered">Examples</h2>
 <pre><code class="language-r">d = data.frame(
@@ -109,15 +109,14 @@ the local timezone. For example, <code>2024-01-15</code> will display as
   date = as.Date(c(&quot;2024-01-15&quot;, &quot;2024-06-30&quot;)),
   time = as.POSIXct(c(&quot;2024-01-15 09:30:00&quot;, &quot;2024-06-30 17:45:00&quot;), tz = &quot;UTC&quot;)
 )
-# locale and Intl.DateTimeFormat options (timeZone = &quot;UTC&quot; keeps the date as
-# is), or call a JavaScript Date method
+# locale and Intl.DateTimeFormat options, or call a JavaScript Date method
 lt(d) |&gt;
   lt_date(~ date, locale = &quot;fr-FR&quot;, options = list(
-    weekday = &quot;long&quot;, day = &quot;numeric&quot;, month = &quot;long&quot;, timeZone = &quot;UTC&quot;
+    weekday = &quot;long&quot;, day = &quot;numeric&quot;, month = &quot;long&quot;
   )) |&gt;
   lt_date(~ time, method = &quot;toISOString&quot;)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/lt.min.css">
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "data": {
@@ -133,8 +132,7 @@ lt(d) |&gt;
       "options": {
         "weekday": "long",
         "day": "numeric",
-        "month": "long",
-        "timeZone": "UTC"
+        "month": "long"
       }
     },
     {
@@ -146,22 +144,22 @@ lt(d) |&gt;
   "dates": ["date"]
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/lt.min.js" defer></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/manual.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/lt.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/manual.min.css">
 
 </article>
 </main>
 <footer><div class="flex-col">
 <p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
-<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.21</p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.23</p>
 </div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/nav-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/prism-lite.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/link-functions.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/link-functions.min.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,18 @@
+---
+title: Time series
+---
+
+`lt()` accepts a time series. A single monthly or quarterly series becomes one row per year and one column per month or quarter.
+
+```{r}
+library(lt)
+lt(AirPassengers)
+```
+
+Set `wide = FALSE` for a `Time` and `value` table instead. A multiple series always gets a `Time` column and one column per series.
+
+```{r}
+q = ts(c(10.2, 11.5, 9.8, 12.1, 13.4, 12.9), start = c(2023, 1), frequency = 4)
+lt(q, wide = FALSE)
+lt(cbind(sales = q, cost = q * 0.6))
+```

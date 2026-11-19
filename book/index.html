@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<meta name="generator" content="litedown 1.0.21">
+<meta name="generator" content="litedown 1.0.23">
 <title>lt: Tables That Travel Light</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/default.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/article.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/copy-button.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/heading-anchor.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/pages.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/book.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/book-litedown.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/key-buttons.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/callout.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/prism-xcode.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/book.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/book-litedown.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/key-buttons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/callout.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/prism-xcode.min.css">
 <meta name="function-index" content="../function-index.json">
 </head>
 <body>
@@ -22,7 +22,7 @@
 <div class="title"><h1>lt: Tables That Travel Light</h1></div>
 <div class="subtitle"><h2>A grammar of lightweight static and interactive tables for R and beyond</h2></div>
 <div class="author"><h2>Yihui Xie</h2></div>
-<div class="date"><h3>2026-11-18</h3></div>
+<div class="date"><h3>2026-11-19</h3></div>
 </header>
 <main>
 <div class="">
@@ -50,7 +50,8 @@
 <li><a href="#sec:labels"><span class="section-number">1.3</span> Titles and labels</a></li>
 <li><a href="#sec:align"><span class="section-number">1.4</span> Alignment and widths</a></li>
 <li><a href="#sec:types"><span class="section-number">1.5</span> What kind of column is this?</a></li>
-<li><a href="#sec:printing"><span class="section-number">1.6</span> Where tables show up</a></li>
+<li><a href="#sec:ts"><span class="section-number">1.6</span> Time series</a></li>
+<li><a href="#sec:printing"><span class="section-number">1.7</span> Where tables show up</a></li>
 </ul>
 </li>
 <li><a href="#chp:format"><span class="section-number main-number">2</span> Formatting Values</a>
@@ -312,9 +313,9 @@
 </li>
 </ul>
 </nav>
-<article class="chapter" data-source="book/index.Rmd">
+<article class="chapter" data-source="site/book/index.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/index.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/index.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:preface" class="unnumbered">Preface</h1>
 <div class="epigraph">
@@ -347,7 +348,7 @@ lt(d) |&gt;
   lt_sub(~ P_Value, missing = &quot;n/a&quot;) |&gt;
   lt_footnote(&quot;Two-sided p-value from log-rank test.&quot;, &quot;column&quot;, ~ P_Value)
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/lt.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/lt.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["dc25b969"]=
 {
   "Group": ["Treatment", "Treatment", "Control", "Control"],
@@ -395,7 +396,7 @@ lt(d) |&gt;
   "data_key": "dc25b969"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/lt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/lt.min.js" defer></script>
 <p>That is the whole idea. The rest of this book is about the details, and there
 are more of them than the pitch suggests: <strong>lt</strong> can also draw forest plots
 and sparklines inside cells, turn a table into an interactive explorer with
@@ -431,8 +432,8 @@ no <strong>V8</strong>.</p>
 <li>
 <p><strong>A tiny runtime.</strong> R does not render the <code>&lt;table&gt;</code>. It ships your data and
 a short list of instructions as JSON, and a small, plain JavaScript file
-(about 10 KB minified, no framework, no build step) builds the table in the
-browser. A page full of tables loads that file once.</p>
+(about 15 KB minified, 7 KB gzipped; no framework, no build step) builds the
+table in the browser. A page full of tables loads that file once.</p>
 </li>
 <li>
 <p><strong>Pay for what you use.</strong> Inline plots and interactivity live in separate
@@ -502,17 +503,18 @@ from <strong>gt</strong> (<a class="cross-ref-chp" href="#chp:gt">14</a>) and th
 (<a class="cross-ref-chp" href="#chp:extend">15</a>).</p>
 <p>Almost every code block here is a small, self-contained example that lives in
 the <a href="https://github.com/yihui/lt/tree/main/examples"><code>examples/</code></a> folder of the
-package, one feature per file. The link under a block (“Open as a page”) opens
-it on its own, so you can read the source, view the table at full width, or copy
-the file as a starting point. If you would rather learn by poking, the
-<a href="https://pkg.yihui.org/lt/playground/">playground</a> is the place.</p>
+package, one feature per file, and each is also published as a
+<a href="https://pkg.yihui.org/lt/examples.html">page of its own</a>, where you can view
+the table at full width or copy the file as a starting point. If you would
+rather learn by poking, <a href="https://pkg.yihui.org/lt/playground/">the playground</a>
+is the place.</p>
 <p>Throughout, we use the native pipe <code>|&gt;</code>.</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/01-start.Rmd">
+<article class="chapter" data-source="site/book/01-start.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/01-start.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/01-start.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="prt:foundations" class="part"><span class="section-number">I</span> Foundations</h1>
 <h1 id="chp:start"><span class="section-number main-number">1</span> Your First Table</h1>
@@ -522,53 +524,57 @@ sensible labels, and a bit of polish.</p>
 <h2 id="sec:verbs"><span class="section-number">1.1</span> One function, many verbs</h2>
 <p>Everything starts with <code>lt()</code>, which takes a data frame:</p>
 <pre><code class="language-r">library(lt)
-lt(head(CO2))
+lt(head(penguins))
 </code></pre>
-<script>((window.LT=window.LT||{}).d=window.LT.d||{})["fc3c6e64"]=
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["bb36cd20"]=
 {
-  "Plant": ["Qn1", "Qn1", "Qn1", "Qn1", "Qn1", "Qn1"],
-  "Type": ["Quebec", "Quebec", "Quebec", "Quebec", "Quebec", "Quebec"],
-  "Treatment": ["nonchilled", "nonchilled", "nonchilled", "nonchilled", "nonchilled", "nonchilled"],
-  "conc": [95, 175, 250, 350, 500, 675],
-  "uptake": [16, 30.4, 34.8, 37.2, 35.3, 39.2]
+  "species": ["Adelie", "Adelie", "Adelie", "Adelie", "Adelie", "Adelie"],
+  "island": ["Torgersen", "Torgersen", "Torgersen", "Torgersen", "Torgersen", "Torgersen"],
+  "bill_len": [39.1, 39.5, 40.3, null, 36.7, 39.3],
+  "bill_dep": [18.7, 17.4, 18, null, 19.3, 20.6],
+  "flipper_len": [181, 186, 195, null, 193, 190],
+  "body_mass": [3750, 3800, 3250, null, 3450, 3650],
+  "sex": ["male", "female", "female", null, "female", "male"],
+  "year": [2007, 2007, 2007, 2007, 2007, 2007]
 }
 </script>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
-  "data_key": "fc3c6e64"
+  "data_key": "bb36cd20"
 }
 })</script>
 <p>That is already a respectable table: numbers are rounded sensibly and right
-aligned, and the column names are cleaned up. But the real fun begins when you
+aligned, the column names are cleaned up (<code>bill_len</code> is shown as “bill len”),
+and the missing value is shown as a dash. But the real fun begins when you
 pipe it into one of the <code>lt_*()</code> verbs. Each verb adds one instruction to the
 table, and you can stack as many as you like, in any order:</p>
-<pre><code class="language-r">lt(head(CO2)) |&gt;
-  lt_header(&quot;Grass, Briefly&quot;, &quot;One plant at six CO2 concentrations&quot;) |&gt;
-  lt_format(~ uptake, decimals = 0) |&gt;
-  lt_note(&quot;Data from a 1990 study of cold tolerance in grasses.&quot;)
+<pre><code class="language-r">lt(head(penguins)) |&gt;
+  lt_header(&quot;Penguins, Briefly&quot;, &quot;The first six birds measured&quot;) |&gt;
+  lt_format(~ bill_len, decimals = 0) |&gt;
+  lt_note(&quot;Data collected at Palmer Station, Antarctica.&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "ops": [
     {
       "type": "fmt_number",
-      "columns": ["uptake"],
+      "columns": ["bill_len"],
       "decimals": 0
     }
   ],
   "header": {
-    "title": "Grass, Briefly",
-    "subtitle": "One plant at six CO2 concentrations"
+    "title": "Penguins, Briefly",
+    "subtitle": "The first six birds measured"
   },
   "notes": [
-    "Data from a 1990 study of cold tolerance in grasses."
+    "Data collected at Palmer Station, Antarctica."
   ],
-  "data_key": "fc3c6e64"
+  "data_key": "bb36cd20"
 }
 })</script>
 <p>Notice that your data frame is never modified. A table is the data <em>plus</em> a
 to-do list; the to-do list is carried out later, in the browser. That is why an
-<strong>lt</strong> table can show <code>30</code> while remembering that the real value was <code>30.4</code>
+<strong>lt</strong> table can show <code>39</code> while remembering that the real value was <code>39.1</code>
 (hover over a cell, or press <kbd>Alt</kbd> and click the table to reveal the
 raw values).</p>
 <p>The verbs fall into a few families (<a class="cross-ref-tab" href="#tab:verb-families">1</a>), which also happen to be
@@ -591,11 +597,11 @@ the chapters of this book.</p>
 </tr>
 <tr>
 <td align="left">Shape the table</td>
-<td align="left"><code>lt_spanner()</code>, <code>lt_merge()</code>, <code>lt_move()</code>, <code>lt_hide()</code>, <code>lt_group()</code>, <code>lt_indent()</code> (<a class="cross-ref-chp" href="#chp:structure">3</a>)</td>
+<td align="left"><code>lt_spanner()</code>, <code>lt_merge()</code>, <code>lt_move()</code>, <code>lt_hide()</code>, <code>lt_group()</code>, <code>lt_summary()</code>, <code>lt_indent()</code> (<a class="cross-ref-chp" href="#chp:structure">3</a>)</td>
 </tr>
 <tr>
 <td align="left">Style it</td>
-<td align="left"><code>lt_style()</code>, <code>lt_css()</code>, <code>lt_wrap()</code> (<a class="cross-ref-chp" href="#chp:style">4</a>)</td>
+<td align="left"><code>lt_style()</code>, <code>lt_color()</code>, <code>lt_css()</code>, <code>lt_wrap()</code> (<a class="cross-ref-chp" href="#chp:style">4</a>)</td>
 </tr>
 <tr>
 <td align="left">Explain it</td>
@@ -621,10 +627,10 @@ the chapters of this book.</p>
 </table>
 </div>
 <p>Many verbs take columns as their second argument. You can name them as a
-one-sided formula (<code>~ conc + uptake</code>), as a character vector (<code>c(&quot;conc&quot;, &quot;uptake&quot;)</code>),
-or by position (<code>1:2</code>). A formula can even use the pronoun <code>.</code> for “the column
-names”, so <code>~ endsWith(., &quot;_time&quot;)</code> selects every column whose name ends in
-<code>_time</code>.</p>
+one-sided formula (<code>~ bill_len + bill_dep</code>), as a character vector
+(<code>c(&quot;bill_len&quot;, &quot;bill_dep&quot;)</code>), or by position (<code>3:4</code>). A formula can even use
+the pronoun <code>.</code> for “the column names”, so <code>~ endsWith(., &quot;_len&quot;)</code> selects every
+column whose name ends in <code>_len</code>.</p>
 <h2 id="sec:cheatsheet"><span class="section-number">1.2</span> The cheat sheet</h2>
 <p>Before we go through the verbs one by one, here is the whole package in three
 cheat tables: one for static tables, one for interactive tables, and one for
@@ -827,7 +833,7 @@ tbl_interactive = lt(d) |&gt;
   lt_note(&quot;lt_viewer() and lt_serve() view and serve big data.&quot;)
 tbl_interactive
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/lt-interactive.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/lt-interactive.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["025aa0f9"]=
 {
   "Argument": ["sort", "search", "filter", "pager", "resize", "hide", "detail", "profile", "download"],
@@ -863,9 +869,9 @@ tbl_interactive
   "data_key": "025aa0f9"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/lt-query.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/lt-export.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/lt-interactive.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/lt-query.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/lt-export.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/lt-interactive.min.js" defer></script>
 <h3 id="sec:cheat-plots"><span class="section-number">1.2.3</span> Inline plots</h3>
 <p>Each plotting function draws in the cell of the column that carries its name.</p>
 <pre><code class="language-r">d = data.frame(
@@ -888,7 +894,7 @@ tbl_plots = lt(d) |&gt;
   )
 tbl_plots
 </code></pre>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/css/lt-plot.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/lt-plot.min.css">
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["beb9e5fd"]=
 {
   "Study": ["A", "B", "C"],
@@ -985,7 +991,7 @@ tbl_plots
   "data_key": "beb9e5fd"
 }
 })</script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/lt-plot.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/lt-plot.min.js" defer></script>
 <h2 id="sec:labels"><span class="section-number">1.3</span> Titles and labels</h2>
 <p><code>lt_header()</code> puts a title, and optionally a subtitle, above the table:</p>
 <pre><code class="language-r">d = penguins[1:3, c(1, 3, 6)]
@@ -1049,7 +1055,7 @@ tbl
   "data_key": "a40b4080"
 }
 })</script>
-<pre><code class="language-r">tbl |&gt; lt_label(bill_len = &quot;Bill length (mm)&quot;, bill_dep = &quot;Bill depth (mm)&quot;)
+<pre><code class="language-r">tbl |&gt; lt_label(bill_len = &quot;bill length (mm)&quot;, bill_dep = &quot;bill depth (mm)&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
@@ -1057,8 +1063,8 @@ tbl
     {
       "type": "label",
       "labels": {
-        "bill_len": "Bill length (mm)",
-        "bill_dep": "Bill depth (mm)"
+        "bill_len": "bill length (mm)",
+        "bill_dep": "bill depth (mm)"
       }
     }
   ],
@@ -1139,7 +1145,66 @@ lt(d, show_types = TRUE)
   "data_key": "b00758d4"
 }
 })</script>
-<h2 id="sec:printing"><span class="section-number">1.6</span> Where tables show up</h2>
+<h2 id="sec:ts"><span class="section-number">1.6</span> Time series</h2>
+<p>A time series is not a data frame, but <code>lt()</code> knows how to lay one out. A single
+monthly or quarterly series becomes a calendar: one row per year and one column
+per month or quarter. Use <code>wide = FALSE</code> for a <code>Time</code> and <code>value</code> table instead,
+which is also the default for any other frequency. A multiple series always has a
+<code>Time</code> column and one column per series.</p>
+<pre><code class="language-r">lt(AirPassengers)
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["31f0ce5b"]=
+{
+  "Year": ["1949", "1950", "1951", "1952", "1953", "1954", "1955", "1956", "1957", "1958", "1959", "1960"],
+  "Jan": [112, 115, 145, 171, 196, 204, 242, 284, 315, 340, 360, 417],
+  "Feb": [118, 126, 150, 180, 196, 188, 233, 277, 301, 318, 342, 391],
+  "Mar": [132, 141, 178, 193, 236, 235, 267, 317, 356, 362, 406, 419],
+  "Apr": [129, 135, 163, 181, 235, 227, 269, 313, 348, 348, 396, 461],
+  "May": [121, 125, 172, 183, 229, 234, 270, 318, 355, 363, 420, 472],
+  "Jun": [135, 149, 178, 218, 243, 264, 315, 374, 422, 435, 472, 535],
+  "Jul": [148, 170, 199, 230, 264, 302, 364, 413, 465, 491, 548, 622],
+  "Aug": [148, 170, 199, 242, 272, 293, 347, 405, 467, 505, 559, 606],
+  "Sep": [136, 158, 184, 209, 237, 259, 312, 355, 404, 404, 463, 508],
+  "Oct": [119, 133, 162, 191, 211, 229, 274, 306, 347, 359, 407, 461],
+  "Nov": [104, 114, 146, 172, 180, 203, 237, 271, 305, 310, 362, 390],
+  "Dec": [118, 140, 166, 194, 201, 229, 278, 306, 336, 337, 405, 432]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data_key": "31f0ce5b"
+}
+})</script>
+<p>Set <code>wide = FALSE</code> for a <code>Time</code> and <code>value</code> table instead. A multiple series always gets a <code>Time</code> column and one column per series.</p>
+<pre><code class="language-r">q = ts(c(10.2, 11.5, 9.8, 12.1, 13.4, 12.9), start = c(2023, 1), frequency = 4)
+lt(q, wide = FALSE)
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["db95ae0b"]=
+{
+  "Time": ["2023 Q1", "2023 Q2", "2023 Q3", "2023 Q4", "2024 Q1", "2024 Q2"],
+  "value": [10.2, 11.5, 9.8, 12.1, 13.4, 12.9]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data_key": "db95ae0b"
+}
+})</script>
+<pre><code class="language-r">lt(cbind(sales = q, cost = q * 0.6))
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["a21b71ff"]=
+{
+  "Time": ["2023 Q1", "2023 Q2", "2023 Q3", "2023 Q4", "2024 Q1", "2024 Q2"],
+  "sales": [10.2, 11.5, 9.8, 12.1, 13.4, 12.9],
+  "cost": [6.12, 6.9, 5.88, 7.26, 8.04, 7.74]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data_key": "a21b71ff"
+}
+})</script>
+<h2 id="sec:printing"><span class="section-number">1.7</span> Where tables show up</h2>
 <p>An <code>lt</code> table is displayed wherever R can display HTML:</p>
 <ul>
 <li>
@@ -1175,9 +1240,9 @@ for one column, use <code>lt_sub()</code> (<a class="cross-ref-sec" href="#sec:s
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/02-format.Rmd">
+<article class="chapter" data-source="site/book/02-format.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/02-format.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/02-format.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:format"><span class="section-number main-number">2</span> Formatting Values</h1>
 <p>Raw numbers are honest, which is the problem. <code>0.1234567891</code> is a true value, but
@@ -1187,13 +1252,14 @@ you turn honest numbers into readable ones, without changing the numbers
 themselves.</p>
 <p>The good news is that <strong>lt</strong> does a lot of this before you ask.</p>
 <h2 id="sec:auto"><span class="section-number">2.1</span> Automatic formatting</h2>
-<p>By default, <code>lt()</code> formats every numeric column for you. It rounds to about four
-significant digits, so a value that needs decimals in one row and a million in
-another both look reasonable. It adds a thin-space thousands separator, uses a
-proper typographic minus sign (<code>−</code>) rather than a hyphen, and recognizes
-percentage columns by their names (<code>rate_pct</code>, <code>Margin_percent</code>), multiplying
-their values by 100 and adding a <code>%</code>. It also leaves year-like columns alone, so
-<code>2024</code> never becomes <code>2,024</code>.</p>
+<p>By default, <code>lt()</code> formats every numeric column for you. It rounds each column
+to a common number of decimals, enough to show about four significant digits
+for its largest value (so a column of values in the thousands shows none),
+and adds a non-breaking space as the thousands separator. It uses a proper
+typographic minus sign (<code>−</code>) rather than a hyphen, and recognizes percentage
+columns by their names (<code>rate_pct</code>, <code>Margin_percent</code>), multiplying their values
+by 100 and adding a <code>%</code>. It also leaves columns named like years (e.g., <code>Year</code>)
+alone, so <code>2024</code> never becomes <code>2 024</code>.</p>
 <pre><code class="language-r">d = data.frame(
   Year = c(2020, 2021, 2022),
   Revenue = c(1234567.89, 2345678.12, -3456.789),
@@ -1343,11 +1409,12 @@ data already holds <code>25</code> for twenty-five percent, use <code>percent = 
 otherwise your reader sees <code>2500%</code>.</p>
 </div>
 <h2 id="sec:date"><span class="section-number">2.3</span> Dates and times</h2>
-<p>Dates need more care, because the browser is the one that formats them. <code>lt_date()</code>
-hands each value to the browser’s own date formatting, so the output follows the
-reader’s locale and the options you ask for. Pass a <code>locale</code> such as <code>&quot;fr-FR&quot;</code> or
-<code>&quot;zh-CN&quot;</code>, and an <code>options</code> list in the style of <code>Intl.DateTimeFormat</code>, to choose
-what appears: weekday, month name, hours, time zone, and so on.</p>
+<p>Dates need more care, because the browser is the one that formats them.
+<code>lt_date()</code> hands each value to the browser’s own date formatting, so the output
+follows the reader’s locale (unless you give <code>locale</code>) and the options you ask
+for. Pass a <code>locale</code> such as <code>&quot;fr-FR&quot;</code> or <code>&quot;zh-CN&quot;</code>, and an <code>options</code> list in
+the style of <code>Intl.DateTimeFormat</code>, to choose what appears: weekday, month name,
+hours, time zone, and so on.</p>
 <pre><code class="language-r">d = data.frame(
   Event = c(&quot;Launch&quot;, &quot;Update&quot;, &quot;Release&quot;),
   Date = as.Date(c(&quot;2024-01-15&quot;, &quot;2024-06-30&quot;, &quot;2024-12-01&quot;)),
@@ -1356,7 +1423,7 @@ what appears: weekday, month name, hours, time zone, and so on.</p>
 )
 lt(d) |&gt;
   lt_date(~ Date, locale = &quot;fr-FR&quot;, options = list(
-    weekday = &quot;long&quot;, day = &quot;numeric&quot;, month = &quot;long&quot;, timeZone = &quot;UTC&quot;
+    weekday = &quot;long&quot;, day = &quot;numeric&quot;, month = &quot;long&quot;
   )) |&gt;
   lt_date(~ Time, locale = &quot;en-US&quot;, options = list(
     hour = &quot;2-digit&quot;, minute = &quot;2-digit&quot;, timeZone = &quot;UTC&quot;
@@ -1379,8 +1446,7 @@ lt(d) |&gt;
       "options": {
         "weekday": "long",
         "day": "numeric",
-        "month": "long",
-        "timeZone": "UTC"
+        "month": "long"
       }
     },
     {
@@ -1398,15 +1464,16 @@ lt(d) |&gt;
   "data_key": "96fd58c3"
 }
 })</script>
-<p>Here is the gotcha that has bitten nearly everyone once. A plain date such as
-<code>2024-01-15</code> is stored as midnight in UTC. Show it in a time zone behind UTC, and
-the reader sees the day before. Passing <code>timeZone = &quot;UTC&quot;</code> in <code>options</code> tells the
-browser to format the date in UTC as well, so the day stays put.</p>
+<p>Time zones are the usual gotcha. A plain date such as <code>2024-01-15</code> is a
+calendar day, which <strong>lt</strong> shows as the same day to every reader, so leave
+<code>timeZone</code> out of <code>options</code> for dates. A date-time, on the other hand, is an
+instant, and by default each reader sees it in their own time zone. Pass
+<code>timeZone = &quot;UTC&quot;</code> (or any other zone) in <code>options</code> to show the same clock time
+to everyone.</p>
 <div class="callout-warning" data-legend="Watch the time zone">
-<p>Without <code>timeZone = &quot;UTC&quot;</code>, a reader west of Greenwich may see <code>2024-01-14</code> for a
-date you wrote as <code>2024-01-15</code>. For date-times, the opposite is what you usually
-want: leave the time zone alone so that each reader sees the time in their own
-zone.</p>
+<p>Do not set <code>timeZone = &quot;UTC&quot;</code> for a plain date: the date is read as local
+midnight, which is the day before in UTC for a reader east of Greenwich, so
+<code>2024-01-15</code> would show as <code>2024-01-14</code>.</p>
 </div>
 <p>Two more things. The <code>method</code> argument calls a specific JavaScript date method,
 such as <code>&quot;toDateString&quot;</code> or <code>&quot;toISOString&quot;</code>, when you want one exact format rather
@@ -1484,9 +1551,9 @@ much. <code>Inf</code> and <code>-Inf</code> need no help at all, since they pri
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/03-structure.Rmd">
+<article class="chapter" data-source="site/book/03-structure.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/03-structure.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/03-structure.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:structure"><span class="section-number main-number">3</span> Shaping the Table</h1>
 <p>A table is not only a grid of values. It has a shape: a few columns that belong
@@ -1507,7 +1574,7 @@ pieces together. <code>{1}</code> is the first column, <code>{2}</code> the seco
 lt(d) |&gt;
   lt_format(~ est + lo + hi, decimals = 2) |&gt;
   lt_merge(~ est + lo + hi, pattern = &quot;{1}&lt;&lt; ({2}, {3})&gt;&gt;&quot;) |&gt;
-  lt_label(est = &quot;Estimate (95% CI)&quot;)
+  lt_label(est = &quot;estimate (95% CI)&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["9a6d8d8e"]=
 {
@@ -1534,7 +1601,7 @@ lt(d) |&gt;
     {
       "type": "label",
       "labels": {
-        "est": "Estimate (95% CI)"
+        "est": "estimate (95% CI)"
       }
     }
   ],
@@ -1607,8 +1674,9 @@ lt(d) |&gt; lt_spanner(sep = &quot;:&quot;)
 <p>If your columns already share a prefix, you may not need to name anything at
 all. Calling <code>lt_spanner()</code> with no arguments looks for a common prefix before
 the first <code>.</code> or <code>_</code> and groups the columns that share it, shortening each
-column label to its suffix. In the example, <code>Sepal.Length</code> and <code>Sepal.Width</code>
-collapse under a “Sepal” spanner, and their labels become “Length” and “Width”.</p>
+column label to its suffix. In the example, <code>bill_len</code> and <code>bill_dep</code>
+collapse under a “bill” spanner, and their labels become “len” and “dep”. Use
+<code>sep</code> to split at another separator, such as <code>&quot;:&quot;</code>.</p>
 <h2 id="sec:move-hide"><span class="section-number">3.3</span> Moving and hiding columns</h2>
 <p>Your data frame has the column order it has, but the report should read
 differently. <code>lt_move()</code> shuffles columns without touching the data. Name the
@@ -1833,9 +1901,10 @@ lt(d) |&gt; lt_summary(&quot;sum&quot;, by = ~ grp)
   "data_key": "5e57fb8e"
 }
 })</script>
-<p>With <code>by</code>, the group rows are labeled with the function’s name (“Sum”) and a
-total labeled “Total” closes the table; change them with <code>label</code> and <code>grand</code>, or
-drop the total with <code>grand = FALSE</code>. Give a named list to use a different
+<p>With <code>by</code>, the group rows are labeled with the function’s name (“Sum”, or
+“Subtotal” when you give <code>data_fn</code>) and a total labeled “Total” closes the
+table; change them with <code>label</code> and <code>grand</code>, or drop the total with
+<code>grand = FALSE</code>. Give a named list to use a different
 function per column.</p>
 <pre><code class="language-r">lt(d) |&gt; lt_summary(list(n = &quot;sum&quot;, rate = &quot;mean&quot;), by = ~ grp, grand = FALSE)
 </code></pre>
@@ -1949,14 +2018,15 @@ If you also want interactive sorting to keep each child with its parent, see
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/04-style.Rmd">
+<article class="chapter" data-source="site/book/04-style.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/04-style.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/04-style.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="prt:enrichment" class="part"><span class="section-number">II</span> Enrichment</h1>
 <h1 id="chp:style"><span class="section-number main-number">4</span> Styling</h1>
 <p>The default look of an <strong>lt</strong> table is deliberately plain: a rule on top, a rule
-below the header, a rule at the bottom, and nothing else. It is a good canvas.
+below the header, a rule at the bottom, and faint lines between rows. It is a
+good canvas.
 This chapter is about the functions that let you paint on it: <code>lt_style()</code> for
 individual cells, <code>lt_color()</code> for color scales driven by values, <code>lt_css()</code> for
 rules that apply to the whole table, and <code>lt_wrap()</code> for setting attributes on a
@@ -2121,7 +2191,7 @@ lt(d) |&gt;
   "data_key": "073ff866"
 }
 })</script>
-<p>By default <code>NA</code> cells show an em dash (<a class="cross-ref-sec" href="#sec:printing">1.6</a> explains how to change the
+<p>By default <code>NA</code> cells show an em dash (<a class="cross-ref-sec" href="#sec:printing">1.7</a> explains how to change the
 text), so a pink background plus the dash is hard to miss.</p>
 <h2 id="sec:style-color"><span class="section-number">4.3</span> Color by value</h2>
 <p><code>lt_color()</code> shades numeric cells along a palette, so the eye can compare values
@@ -2265,9 +2335,9 @@ distinguishable.</p>
 <p><code>lt_css()</code> is the home for everything that is not a one-off. It attaches CSS that
 is emitted after the built-in stylesheet, so your rules win ties.</p>
 <p>A <strong>named</strong> argument is an inline rule: the name is a selector, the value is
-either a CSS string or a list of properties. Rules are scoped to the table, so
-<code>.good</code> really means <code>.lt-table .good</code>. In a list, property names can be written
-in camelCase as in <code>lt_style()</code>.</p>
+either a CSS string or a list of properties. Rules apply to this table only, so
+another table on the page can reuse the class name <code>.good</code> for something else.
+In a list, property names can be written in camelCase as in <code>lt_style()</code>.</p>
 <pre><code class="language-r">lt(head(trees, 5)) |&gt;
   lt_style(~ Volume, test = &quot;v =&gt; v &gt;= 16&quot;, class = &quot;good&quot;) |&gt;
   lt_css(
@@ -2302,7 +2372,7 @@ once, not once per table.</p>
 at the structure. <a class="cross-ref-tab" href="#tab:style-selectors">2</a> lists the ones you will reach for most.</p>
 <div class="table" id="tab:style-selectors">
 <div class="caption">
-<p><span class="ref-number-tab">2</span> CSS selectors for the parts of an lt table.</p>
+<p><span class="ref-number-tab">2</span> CSS selectors for the parts of an <strong>lt</strong> table.</p>
 </div>
 <table>
 <thead>
@@ -2331,6 +2401,10 @@ at the structure. <a class="cross-ref-tab" href="#tab:style-selectors">2</a> lis
 <tr>
 <td align="left">Indented stub cells</td>
 <td align="left"><code>.lt-indent</code></td>
+</tr>
+<tr>
+<td align="left">Summary rows</td>
+<td align="left"><code>.lt-summary</code></td>
 </tr>
 <tr>
 <td align="left">Footer rows</td>
@@ -2381,10 +2455,11 @@ stylesheet rule that begins with that class touches this table only.</p>
 <style type="text/css">
 .striped tbody tr:nth-child(even) { background: #f2f6ff; }
 </style>
-<p>The wrapper takes any HTML attribute, not only <code>class</code>. A fixed width and an
-<code>id</code> for deep links are the usual suspects:</p>
+<p>The wrapper takes any HTML attribute, not only <code>class</code>. For example, an <code>id</code>
+gives a CSS rule (<code>#women { ... }</code>) something to select, and <code>style</code> sets
+properties on the wrapper directly:</p>
 <pre><code class="language-r">lt(head(women, 3)) |&gt;
-  lt_wrap(id = &quot;women&quot;, style = &quot;max-width: 28em&quot;)
+  lt_wrap(id = &quot;women&quot;, style = &quot;background: aliceblue;&quot;)
 </code></pre>
 <script>((window.LT=window.LT||{}).d=window.LT.d||{})["e06c738a"]=
 {
@@ -2396,7 +2471,7 @@ stylesheet rule that begins with that class touches this table only.</p>
 {
   "wrap": {
     "id": "women",
-    "style": "max-width: 28em"
+    "style": "background: aliceblue;"
   },
   "data_key": "e06c738a"
 }
@@ -2412,9 +2487,9 @@ and not information.</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/05-notes.Rmd">
+<article class="chapter" data-source="site/book/05-notes.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/05-notes.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/05-notes.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:notes"><span class="section-number main-number">5</span> Footnotes, Notes, and HTML</h1>
 <p>Every good table has fine print. A number needs a caveat, a column needs a
@@ -2460,7 +2535,7 @@ down (<a class="cross-ref-tab" href="#tab:footnote-where">3</a>).</p>
 <tr>
 <td><code>&quot;group&quot;</code></td>
 <td>a row group label</td>
-<td><code>match</code></td>
+<td><code>columns</code> (the label), <code>match</code></td>
 </tr>
 <tr>
 <td><code>&quot;body&quot;</code></td>
@@ -2592,7 +2667,7 @@ whole table: where the data came from, what was excluded, who to blame.
 })</script>
 <p>Call it more than once to add more lines. Notes keep the order you gave them.</p>
 <h2 id="sec:html"><span class="section-number">5.3</span> HTML in cells and labels</h2>
-<p>By default, lt treats every string as plain text and escapes it. That is a
+<p>By default, <strong>lt</strong> treats every string as plain text and escapes it. That is a
 feature: a stray <code>&lt;</code> in your data will not break the page, and nobody can sneak
 a <code>&lt;script&gt;</code> into a cell. But sometimes you really do want a link, some bold
 text, or a superscript.</p>
@@ -2657,9 +2732,9 @@ numbers speak in pictures: <a class="cross-ref-chp" href="#chp:plots">6</a>.</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/06-plots.Rmd">
+<article class="chapter" data-source="site/book/06-plots.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/06-plots.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/06-plots.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:plots"><span class="section-number main-number">6</span> Plots in Cells</h1>
 <p>A table is good at exact numbers. A chart is good at patterns. Why not have both
@@ -2781,9 +2856,10 @@ reference line for a risk difference (or <code>ref = 1</code> for an odds ratio)
 values; pass a string to caption it, as above.</p>
 <p>Look at the <code>into = &quot;Forest&quot;</code> argument. By default, the plot replaces the first
 value column, which is tidy but hides the numbers. With <code>into</code>, the plot gets a
-column of its own, and the numbers stay visible as text beside it. If the column
-does not exist yet, <strong>lt</strong> creates it at the end, so use <code>lt_move()</code> (<a class="cross-ref-sec" href="#sec:labels">1.3</a>)
-if you want it somewhere else.</p>
+column of its own. The columns it reads are still hidden unless you also set
+<code>hide = FALSE</code>, as the example does, which keeps the numbers visible as text
+beside the plot. If the column does not exist yet, <strong>lt</strong> creates it at the end,
+so use <code>lt_move()</code> (<a class="cross-ref-sec" href="#sec:move-hide">3.3</a>) if you want it somewhere else.</p>
 <h3 id="sec:several-series-in-one-cell"><span class="section-number">6.1.1</span> Several series in one cell</h3>
 <p>Sometimes one row should carry several intervals. Picture a trial with two
 treatment arms, both compared with placebo: you want to see both differences for
@@ -2845,9 +2921,10 @@ lt(d_grp) |&gt;
 }
 })</script>
 <p><code>color = TRUE</code> takes colors from the current palette. Pass a character vector
-such as <code>c(&quot;#5b8ff9&quot;, &quot;#f6903d&quot;)</code> if you want specific ones. The bounds are
-hidden by default because the plot already shows them. <code>color = FALSE</code>, the
-default, draws every series in a single color, and the legend is then omitted.</p>
+such as <code>c(&quot;#5b8ff9&quot;, &quot;#f6903d&quot;)</code> if you want specific ones. The other columns
+the plot reads are hidden by default because the plot already shows them (set
+<code>hide = FALSE</code> to keep them). <code>color = FALSE</code>, the default, draws every series
+in a single color, and the legend is then omitted.</p>
 <p>Every bar in a column shares one scale. The scale runs from the smallest to the
 largest finite value across all the columns the plot reads, so a single extreme
 row squeezes the rest. Set <code>limits = c(min, max)</code> to choose the scale yourself,
@@ -2943,10 +3020,9 @@ them vanishes. That is what <code>stagger = TRUE</code> is for, as in the exampl
 moves each column’s dot onto its own track, so both stay visible. The position
 up or down is cosmetic. The value still reads from left to right, and the cell
 grows taller to make room for the tracks.</p>
-<p>The cell shows every column at once, so its column header should name them all.
-Use <code>lt_label()</code> to write something like <code>&quot;Before / After&quot;</code>, as the example
-does. Otherwise a reader sees a single “Before” header over a row of dots that
-mean two things.</p>
+<p>The cell shows every column at once, so its column header names them all:
+<strong>lt</strong> labels the column “Before / After” for you. Use <code>lt_label()</code> if you
+prefer other wording, such as “Change over time”.</p>
 <h2 id="sec:sparkline"><span class="section-number">6.3</span> Sparklines: a trend in a cell</h2>
 <p>A sparkline is a word-sized line chart. Edward Tufte popularized the idea of
 putting such graphics inside a sentence, and it works just as well inside a table row. You
@@ -3082,12 +3158,12 @@ A row that moves from 2 to 3 looks just as dramatic as one that goes from 20 up
 to 30. When the rows should be compared with each other, pass <code>limits</code> to put
 every sparkline on one scale. The example above did exactly that with <code>limits = c(0, 8)</code>, so the North and West rows can be read against each other directly.</p>
 <h2 id="sec:plot-size"><span class="section-number">6.4</span> Sizing and layout</h2>
-<p>Each plot is a fixed pixel size by default: <code>width</code> and <code>height</code> set it, and
-<code>width = 160</code> for <code>lt_errorbar()</code> is a sensible start. If you want the plot to
-follow its column, give a relative width such as <code>&quot;100%&quot;</code>. The plot then grows and
-shrinks as the column is resized, which pairs nicely with the resizable columns
-of an interactive table (<a class="cross-ref-chp" href="#chp:interactive">7</a>). Use <code>list(min = 200, width = &quot;100%&quot;)</code> to
-keep it from shrinking below 200 pixels.</p>
+<p>Each plot is a fixed pixel size by default: <code>width</code> and <code>height</code> set it (the
+default width is 160 for error bars and dot plots, and 120 for sparklines). If
+you want the plot to follow its column, give a relative width such as <code>&quot;100%&quot;</code>.
+The plot then grows and shrinks as the column is resized, which pairs nicely
+with the resizable columns of an interactive table (<a class="cross-ref-chp" href="#chp:interactive">7</a>). Use
+<code>list(min = 200, width = &quot;100%&quot;)</code> to keep it from shrinking below 200 pixels.</p>
 <p>Plots work in interactive tables, and they are drawn only for the visible page.
 Sorting a table with a sparkline in it reorders the rows and redraws their
 charts. Filtering keeps the charts of the rows that remain.</p>
@@ -3098,9 +3174,9 @@ tables that use one. A plain table does not pay for it. <code>lt_dependency(plot
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/07-interactive.Rmd">
+<article class="chapter" data-source="site/book/07-interactive.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/07-interactive.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/07-interactive.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="prt:interactivity-and-output" class="part"><span class="section-number">III</span> Interactivity and Output</h1>
 <h1 id="chp:interactive"><span class="section-number main-number">7</span> Interactive Tables</h1>
@@ -3141,10 +3217,10 @@ lt(CO2) |&gt; lt_interactive()
 }
 })</script>
 <p>Click a header to sort, use the box above the table to search, filter a column
-with the widget under its header (a slider for numbers, a checklist for
-plant type), and page through the rows with the controls below. Each feature is an
-option of <code>lt_interactive()</code>, and each option can be switched off with <code>FALSE</code>,
-so you only ever pay for the controls you keep.</p>
+with the widget under its header (a slider for numbers, a checklist for <code>Type</code>
+and <code>Treatment</code>), and page through the rows with the controls below. Each
+feature is an option of <code>lt_interactive()</code>, and each option can be switched off
+with <code>FALSE</code>, so you only ever pay for the controls you keep.</p>
 <h2 id="sec:viewer"><span class="section-number">7.1</span> The data viewer</h2>
 <p>Most of the time, the table you want is the one that answers “what is in this
 data frame?”. <code>lt_viewer()</code> is that table, ready made. It is a shorthand for
@@ -3263,23 +3339,15 @@ the same rule (<code>~ supp + -len</code>, for instance):</p>
 })</script>
 <h3 id="sec:search"><span class="section-number">7.2.2</span> Search</h3>
 <p>The search box looks for a term in every cell of every row, and keeps only the
-rows that match. Matching ignores case, so <code>merc</code> finds the Mercedes rows.</p>
+rows that match. Matching ignores case, so <code>adel</code> finds the Adelie rows.</p>
 <h3 id="sec:query"><span class="section-number">7.2.3</span> Plain-language queries</h3>
 <p>The box also reads a small, forgiving mini-language that feels a lot like
 English. A condition names a column (by its
-name, or by its label if the label has spaces), says what to check, and gives a
-value:</p>
-<pre><code class="language-r">lt(mtcars[, 1:5]) |&gt; lt_interactive(search = TRUE, pager = 5, filter = FALSE)
+name, or by its label, which may contain spaces, such as <code>bill len</code>), says what
+to check, and gives a value:</p>
+<pre><code class="language-r">d = penguins[, c(&quot;species&quot;, &quot;island&quot;, &quot;bill_len&quot;, &quot;body_mass&quot;, &quot;sex&quot;)]
+lt(d) |&gt; lt_interactive(pager = 5, filter = FALSE)
 </code></pre>
-<script>((window.LT=window.LT||{}).d=window.LT.d||{})["71d71eeb"]=
-{
-  "mpg": [21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 24.4, 22.8, 19.2, 17.8, 16.4, 17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 30.4, 33.9, 21.5, 15.5, 15.2, 13.3, 19.2, 27.3, 26, 30.4, 15.8, 19.7, 15, 21.4],
-  "cyl": [6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 8, 6, 8, 4],
-  "disp": [160, 160, 108, 258, 360, 225, 360, 146.7, 140.8, 167.6, 167.6, 275.8, 275.8, 275.8, 472, 460, 440, 78.7, 75.7, 71.1, 120.1, 318, 304, 350, 400, 79, 120.3, 95.1, 351, 145, 301, 121],
-  "hp": [110, 110, 93, 110, 175, 105, 245, 62, 95, 123, 123, 180, 180, 180, 205, 215, 230, 66, 52, 65, 97, 150, 150, 245, 175, 66, 91, 113, 264, 175, 335, 109],
-  "drat": [3.9, 3.9, 3.85, 3.08, 3.15, 2.76, 3.21, 3.69, 3.92, 3.92, 3.92, 3.07, 3.07, 3.07, 2.93, 3, 3.23, 4.08, 4.93, 4.22, 3.7, 2.76, 3.15, 3.73, 3.08, 4.08, 4.43, 3.77, 4.22, 3.62, 3.54, 4.11]
-}
-</script>
 <script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
 {
   "interactive": {
@@ -3288,7 +3356,7 @@ value:</p>
     "pager": [5],
     "resize": true
   },
-  "data_key": "71d71eeb"
+  "data_key": "1448a687"
 }
 })</script>
 <p><a class="cross-ref-tab" href="#tab:query-phrases">4</a> shows the phrases the box understands, each with what it keeps.</p>
@@ -3305,71 +3373,72 @@ value:</p>
 </thead>
 <tbody>
 <tr>
-<td align="left"><code>mpg over 25</code></td>
-<td align="left"><code>mpg</code> is greater than 25 (also <code>above</code>, <code>more than</code>, <code>greater than</code>, <code>bigger than</code>, <code>larger than</code>, <code>&gt;</code>)</td>
+<td align="left"><code>body_mass over 4500</code></td>
+<td align="left"><code>body_mass</code> is greater than 4500 (also <code>above</code>, <code>more than</code>, <code>greater than</code>, <code>bigger than</code>, <code>larger than</code>, <code>&gt;</code>)</td>
 </tr>
 <tr>
-<td align="left"><code>hp under 100</code></td>
-<td align="left"><code>hp</code> is less than 100 (also <code>below</code>, <code>less than</code>, <code>smaller than</code>, <code>fewer than</code>, <code>&lt;</code>)</td>
+<td align="left"><code>bill_len under 40</code></td>
+<td align="left"><code>bill_len</code> is less than 40 (also <code>below</code>, <code>less than</code>, <code>smaller than</code>, <code>fewer than</code>, <code>&lt;</code>)</td>
 </tr>
 <tr>
-<td align="left"><code>wt at least 3</code></td>
-<td align="left"><code>wt</code> is 3 or more (also <code>greater than or equal to</code>, <code>&gt;=</code>)</td>
+<td align="left"><code>body_mass at least 4000</code></td>
+<td align="left"><code>body_mass</code> is 4000 or more (also <code>greater than or equal to</code>, <code>&gt;=</code>)</td>
 </tr>
 <tr>
-<td align="left"><code>wt at most 3</code></td>
-<td align="left"><code>wt</code> is 3 or less (also <code>no more than</code>, <code>up to</code>, <code>less than or equal to</code>, <code>&lt;=</code>)</td>
+<td align="left"><code>body_mass at most 3500</code></td>
+<td align="left"><code>body_mass</code> is 3500 or less (also <code>no more than</code>, <code>up to</code>, <code>less than or equal to</code>, <code>&lt;=</code>)</td>
 </tr>
 <tr>
-<td align="left"><code>mpg between 15 and 20</code></td>
-<td align="left"><code>mpg</code> is from 15 to 20, inclusive</td>
+<td align="left"><code>bill_len between 40 and 45</code></td>
+<td align="left"><code>bill_len</code> is from 40 to 45, inclusive</td>
 </tr>
 <tr>
-<td align="left"><code>cyl is 4</code></td>
-<td align="left"><code>cyl</code> equals 4 (also <code>equals</code>, <code>equal to</code>, <code>=</code>, <code>==</code>)</td>
+<td align="left"><code>island is Dream</code></td>
+<td align="left"><code>island</code> equals <code>Dream</code>, ignoring case (also <code>equals</code>, <code>equal to</code>, <code>=</code>, <code>==</code>)</td>
 </tr>
 <tr>
-<td align="left"><code>cyl is not 4</code></td>
-<td align="left"><code>cyl</code> is anything but 4 (also <code>not</code>, <code>isn't</code>, <code>other than</code>, <code>!=</code>)</td>
+<td align="left"><code>island is not Dream</code></td>
+<td align="left"><code>island</code> is anything but <code>Dream</code> (also <code>not</code>, <code>isn't</code>, <code>other than</code>, <code>!=</code>)</td>
 </tr>
 <tr>
-<td align="left"><code>cyl 6</code></td>
-<td align="left"><code>cyl</code> contains <code>6</code>, in short form</td>
+<td align="left"><code>species chin</code></td>
+<td align="left"><code>species</code> contains <code>chin</code>, in short form</td>
 </tr>
 <tr>
-<td align="left"><code>cyl contains 6</code></td>
+<td align="left"><code>species contains chin</code></td>
 <td align="left">the same, spelled out (also <code>has</code>, <code>:</code>)</td>
 </tr>
 <tr>
-<td align="left"><code>does not contain merc</code></td>
-<td align="left">no cell mentions <code>merc</code> (also <code>doesn't contain</code>, <code>excludes</code>)</td>
+<td align="left"><code>does not contain chin</code></td>
+<td align="left">no cell mentions <code>chin</code> (also <code>doesn't contain</code>, <code>excludes</code>)</td>
 </tr>
 <tr>
-<td align="left"><code>cyl is 4, mpg over 25</code></td>
+<td align="left"><code>island is Dream, body_mass over 4000</code></td>
 <td align="left">both conditions hold (<code>,</code>, <code>;</code>, or <code>and</code> all work)</td>
 </tr>
 <tr>
-<td align="left"><code>cyl is 4 or cyl is 6</code></td>
+<td align="left"><code>species is Adelie or species is Gentoo</code></td>
 <td align="left">either one holds (<code>or</code> gives alternatives)</td>
 </tr>
 <tr>
-<td align="left"><code>cyl is 4 or cyl is 6, mpg over 20</code></td>
-<td align="left"><code>cyl</code> is 4, or <code>cyl</code> is 6 <em>and</em> <code>mpg</code> is over 20</td>
+<td align="left"><code>species is Adelie or species is Gentoo, body_mass over 4000</code></td>
+<td align="left"><code>species</code> is Adelie, or <code>species</code> is Gentoo <em>and</em> <code>body_mass</code> is over 4000</td>
 </tr>
 <tr>
-<td align="left"><code>&quot;Hornet Sportabout&quot;</code></td>
+<td align="left"><code>&quot;Dream&quot;</code></td>
 <td align="left">the quoted phrase, matched as one piece</td>
 </tr>
 </tbody>
 </table>
 </div>
 <p>Two rules make the mini-language predictable. First, <code>and</code> binds tighter than
-<code>or</code>, so the last example reads as “4, or (6 and over 20)”: the comma and <code>and</code>
-group first, then <code>or</code> splits the alternatives. Second, any words that do not
-form a condition are searched as typed, so <code>hornet</code> still does what you would
-expect.</p>
-<p>A line under the box shows how the query was read. If it reads <code>cyl is 4 or cyl is 6</code> as you meant it, you are good to go; if it reads it differently, you
-have found a typo before the rows have a chance to mislead anyone.</p>
+<code>or</code>, so the last example reads as “Adelie, or (Gentoo and over 4000)”: the
+comma and <code>and</code> group first, then <code>or</code> splits the alternatives. Second, any
+words that do not form a condition are searched as typed, so <code>gentoo</code> still does
+what you would expect.</p>
+<p>A line under the box shows how the query was read. If it reads <code>species is Adelie or species is Gentoo</code> as you meant it, you are good to go; if it reads it
+differently, you have found a typo before the rows have a chance to mislead
+anyone.</p>
 <p>Click the box to see a few random queries built from the table’s own values, and
 pick one to run it. It is the fastest way to learn the mini-language, and it
 works on any table, including tables you did not build yourself.</p>
@@ -3444,15 +3513,15 @@ lt(d) |&gt;
   "data_key": "1448a687"
 }
 })</script>
-<p>The first table above asks for <code>filter = list(&quot;auto&quot;, Species = FALSE)</code>. The
+<p>The first table above asks for <code>filter = list(&quot;auto&quot;, year = FALSE)</code>. The
 <code>&quot;auto&quot;</code> picks a filter per column from the data, and the <code>FALSE</code> removes the
-filter from <code>Species</code>. The second table asks for typed controls by name, one
+filter from <code>year</code>. The second table asks for typed controls by name, one
 kind of widget per column, and a plain box for every other column.</p>
 <h3 id="sec:plain-boxes"><span class="section-number">7.3.1</span> Plain boxes</h3>
 <p><code>filter = TRUE</code> puts a plain box under each header. It matches the same way as
 the search, but only in its own column, and it takes the same phrases without
-the column name. So under <code>mpg</code> you can type <code>over 25</code>, and under <code>cyl</code> you can
-type <code>is 4 or is 6</code>.</p>
+the column name. So under <code>bill_len</code> you can type <code>over 50</code>, and under <code>island</code>
+you can type <code>is Dream or is Biscoe</code>.</p>
 <p>A plain box suits a reader who knows what to type. Typed widgets suit a reader
 who would rather pick from what is there. Use a box when the reader is going to
 type, and a widget when the reader is going to pick.</p>
@@ -3472,8 +3541,8 @@ box if every value is the same),</p>
 </ul>
 <p>It is the default for <code>lt_interactive()</code> because it usually gets the answer
 right without asking. Override a single column by naming it in a list:
-<code>list(&quot;auto&quot;, cyl = &quot;select&quot;)</code> keeps the automatic choice for every column but
-<code>cyl</code>, which gets a dropdown.</p>
+<code>list(&quot;auto&quot;, island = &quot;select&quot;)</code> keeps the automatic choice for every column
+but <code>island</code>, which gets a dropdown.</p>
 <h3 id="sec:typed-controls"><span class="section-number">7.3.3</span> Typed controls</h3>
 <p>The typed controls are the widgets behind <code>&quot;auto&quot;</code>, and you can ask for any of
 them by name:</p>
@@ -3637,9 +3706,9 @@ vector, and the first one is used at the start:</p>
 }
 })</script>
 <p>The selector offers 3, 6, or every row (the infinity symbol means all of them).
-A size only appears if it would actually split the table, so a short table does
-not show a useless pager. Use <code>pager = FALSE</code> to show every row with no pager
-at all.</p>
+If the table has no more rows than the smallest size, no size would split it, so
+the selector is left out (the page buttons and row count stay). Use
+<code>pager = FALSE</code> to show every row with no pager at all.</p>
 <p>Paging works with everything else. Sorting, filtering, and searching are applied
 first, and the pager then shows the page of the rows that survived. The row
 count beside the pager tells you how many rows the current view holds.</p>
@@ -3748,7 +3817,7 @@ header is cut short. Starting widths still come from <code>lt_width()</code>.</p
 <p>Use <code>resize = FALSE</code> to fix the widths.</p>
 <h3 id="sec:column-menu"><span class="section-number">7.8.2</span> The column menu</h3>
 <p>The <code>hide</code> option adds a menu that shows or hides columns. It opens from an eye
-button at the start of the search row, and it lists every column by its label.
+button in the control bar, and it lists every column by its label.
 Uncheck one to hide its header and its cells; check it again to bring it back.</p>
 <pre><code class="language-r">d = penguins[, c(&quot;species&quot;, &quot;island&quot;, &quot;bill_len&quot;, &quot;body_mass&quot;, &quot;sex&quot;)]
 lt(d) |&gt;
@@ -3770,11 +3839,12 @@ lt(d) |&gt;
   "data_key": "1448a687"
 }
 })</script>
-<p>Name columns to start with them hidden, as the example does, or use
-<code>hide = NA</code> to start with everything visible. Passing <code>label</code> swaps the eye icon for a labeled chip in the
-control bar, which is clearer when the reader might not know what the eye means.</p>
-<p>Older code passes <code>hide = TRUE</code> to mean “show the menu”. It still works, but it
-will be dropped in a future release, so write <code>hide = NA</code> for the same effect.</p>
+<p>Name columns to start with them hidden, as the example does, or use <code>hide = NA</code>
+to start with everything visible. Passing a list with a <code>label</code> swaps the eye
+icon for a labeled chip in the control bar, which is clearer when the reader
+might not know what the eye means.</p>
+<p>Write <code>hide = NA</code>, not <code>hide = TRUE</code>, to show the menu with every column
+visible.</p>
 <h2 id="sec:detail"><span class="section-number">7.9</span> Row detail</h2>
 <p>Sometimes a row has more to say than fits in a row. The <code>detail</code> option adds an
 expand caret to each row, and clicking it reveals the rest of that row’s story
@@ -3804,7 +3874,7 @@ lt(d) |&gt;
 }
 })</script>
 <p>For full control, pass a JavaScript function wrapped in <code>js()</code>. It receives the
-row’s raw values, the formatted text, and the row number, and returns a table
+row’s raw values, the row number, and the formatted text, and returns a table
 spec of its own. Here the detail is a small table that sorts itself:</p>
 <pre><code class="language-r">lt(trees) |&gt;
   lt_interactive(
@@ -3925,7 +3995,7 @@ lt_viewer(big) |&gt; lt_serve()
 <p>The app is local, built on <code>xfun::new_app()</code>, so it lives in your R session and
 serves the table while that session runs. In a Shiny app, you do not need it at
 all: return the table from <code>render_lt()</code>, and the session serves the rows.</p>
-<pre><code class="language-r">output$big = lt_interactive(my_data) |&gt; lt_serve() |&gt; render_lt()
+<pre><code class="language-r">output$big = lt(my_data) |&gt; lt_serve() |&gt; render_lt()
 </code></pre>
 <p>There is a price for the extra reach, and it is worth knowing before you lean on
 it:</p>
@@ -3979,13 +4049,13 @@ on.</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/08-shiny.Rmd">
+<article class="chapter" data-source="site/book/08-shiny.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/08-shiny.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/08-shiny.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:shiny"><span class="section-number main-number">8</span> Tables in Shiny</h1>
-<p>A Shiny app is a conversation: the reader changes something, R answers. lt joins
-in with three small pieces. <code>lt_output()</code> and <code>render_lt()</code> show a table.
+<p>A Shiny app is a conversation: the reader changes something, R answers. <strong>lt</strong>
+joins in with three small pieces. <code>lt_output()</code> and <code>render_lt()</code> show a table.
 <code>lt_input()</code> lets the reader edit one. <code>lt_update()</code> lets the server rewrite
 what the reader sees.</p>
 <p>None of the Shiny chunks in this chapter are run when the book is built, since
@@ -4072,14 +4142,14 @@ database or a file than from R.</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/09-export.Rmd">
+<article class="chapter" data-source="site/book/09-export.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/09-export.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/09-export.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:export"><span class="section-number main-number">9</span> Exporting and Embedding</h1>
-<p>An lt table is born in a browser, but your readers are not always there. They
-open PDFs, paste tables into slides, and read Markdown on GitHub. This chapter
-is about getting a table out, and about the plain data underneath it.</p>
+<p>An <strong>lt</strong> table is born in a browser, but your readers are not always there.
+They open PDFs, paste tables into slides, and read Markdown on GitHub. This
+chapter is about getting a table out, and about the plain data underneath it.</p>
 <h2 id="sec:export"><span class="section-number">9.1</span> Saving a file</h2>
 <p><code>lt_export()</code> writes a table to <code>.html</code>, <code>.pdf</code>, <code>.png</code>, <code>.csv</code>, or <code>.rtf</code>, chosen
 by the file extension.</p>
@@ -4159,9 +4229,9 @@ shrinks the canvas to fit.</p>
 <li>
 <p><strong><code>.csv</code></strong> and <strong><code>.rtf</code></strong> write the table’s text (all rows, in order), without
 printing: Node.js (or else a Chromium-based browser) runs the same code as the
-download button of an interactive table. RTF opens in Word and keeps the title, column spanners (as merged
-cells), alignment, indentation, and notes, with a fixed look: a bold header
-between rules.</p>
+download button of an interactive table. RTF opens in Word and keeps the
+title, column spanners (as merged cells), alignment, indentation, and notes,
+with a fixed look: a bold header between rules.</p>
 </li>
 <li>
 <p>Passing <code>NA</code> as the output returns the HTML as a string instead of writing a
@@ -4182,7 +4252,7 @@ and every table is baked on the way out:</p>
 <p>The list holds arguments of <code>lt_export()</code>. Leave the option unset and tables
 stay dynamic.</p>
 <h2 id="sec:spec"><span class="section-number">9.3</span> The spec underneath</h2>
-<p>Strip away the browser and an lt table is just data plus a list of
+<p>Strip away the browser and an <strong>lt</strong> table is just data plus a list of
 declarative operations. <code>lt_spec()</code> hands you that payload as an R list.</p>
 <pre><code class="language-r">tbl = lt(penguins[1:3, 1:4]) |&gt; lt_format(~ bill_len, decimals = 0)
 str(lt_spec(tbl), max.level = 2)
@@ -4212,20 +4282,20 @@ page written in plain JavaScript, which is where the next chapter begins.</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/10-js.Rmd">
+<article class="chapter" data-source="site/book/10-js.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/10-js.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/10-js.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="prt:the-javascript-runtime" class="part"><span class="section-number">IV</span> The JavaScript Runtime</h1>
 <p>The R functions of the previous parts all write the same thing: a JSON spec that
 a small runtime turns into a table in the browser. This part uses that runtime
 directly.</p>
 <h1 id="chp:js"><span class="section-number main-number">10</span> Using lt from JavaScript</h1>
-<p>You do not need R to use lt. The whole library is a few small scripts and one
-idea: <em>a table is JSON</em>. Hand the runtime a spec, get a table back. This part is
-for people building pages by hand, for apps written in other languages, and for
-the curious who want to see what R is quietly writing for them. This first
-chapter covers the basics: linking the runtime, the shape of a spec, and
+<p>You do not need R to use <strong>lt</strong>. The whole library is a few small scripts and
+one idea: <em>a table is JSON</em>. Hand the runtime a spec, get a table back. This
+part is for people building pages by hand, for apps written in other languages,
+and for the curious who want to see what R is quietly writing for them. This
+first chapter covers the basics: linking the runtime, the shape of a spec, and
 building a table. The next chapters cover formatting and columns
 (<a class="cross-ref-chp" href="#chp:js-format">11</a>), plots, groups, and styling (<a class="cross-ref-chp" href="#chp:js-plots">12</a>), and interactivity
 and control (<a class="cross-ref-chp" href="#chp:js-interactive">13</a>). Every example is live: the code is the whole
@@ -4301,7 +4371,7 @@ that exist).</p>
 </code></pre>
 <p>The files are published on npm as <code>@xiee/utils</code>. The URLs above track the latest
 release; to pin a version, put it after the package name, such as
-<code>@xiee/utils@1.14.154/js/lt.min.js</code> (use the version you tested with). Shiny
+<code>@xiee/utils@1.16.8/js/lt.min.js</code> (use the version you tested with). Shiny
 apps have one more script, <code>lt-binding.js</code>, which ships with the R package and
 is loaded for you by <code>lt_output()</code>.</p>
 <p><code>lt-export.js</code> and <code>lt-query.js</code> need no DOM: <code>LT.plugins.export.text(format, spec)</code> turns a built spec into CSV or RTF text, which is how <code>lt_export()</code> writes
@@ -4367,8 +4437,32 @@ is needed.</p>
 <td>Switches for the automatic behaviors.</td>
 </tr>
 <tr>
-<td><code>html_cols</code>, <code>class</code></td>
-<td>Raw-HTML columns and a scoping class.</td>
+<td><code>html_cols</code></td>
+<td>Columns (or <code>true</code> for all) whose values are raw HTML (<a class="cross-ref-sec" href="#sec:js-html">12.4</a>).</td>
+</tr>
+<tr>
+<td><code>missing</code></td>
+<td>Display text for <code>null</code> values (an em dash by default).</td>
+</tr>
+<tr>
+<td><code>sort</code></td>
+<td>Set to <code>false</code> to keep rows in data order instead of gathering them by row group.</td>
+</tr>
+<tr>
+<td><code>wrap</code></td>
+<td>Attributes of the table’s container, such as <code>class</code> or <code>id</code> (<a class="cross-ref-sec" href="#sec:js-scope">12.3.3</a>).</td>
+</tr>
+<tr>
+<td><code>rules</code></td>
+<td>CSS rules (a string or an array) scoped to this table.</td>
+</tr>
+<tr>
+<td><code>types</code></td>
+<td>Type labels shown under the column labels.</td>
+</tr>
+<tr>
+<td><code>data_key</code></td>
+<td>Name of a dataset shared by several tables (instead of <code>data</code>).</td>
 </tr>
 </tbody>
 </table>
@@ -4405,8 +4499,12 @@ merge it into a string.</p>
 <td>Manual groups, their order, and nesting.</td>
 </tr>
 <tr>
-<td><code>style</code></td>
-<td>CSS for chosen cells.</td>
+<td><code>style</code>, <code>color</code></td>
+<td>CSS for chosen cells; a color scale over numeric cells.</td>
+</tr>
+<tr>
+<td><code>summary</code>, <code>add_col</code></td>
+<td>Summary rows (written by <code>lt_summary()</code>); an empty new column.</td>
 </tr>
 <tr>
 <td><code>errorbar</code>, <code>sparkline</code>, <code>dotplot</code></td>
@@ -4543,11 +4641,6 @@ LT.build({
     }}
   ]
 });</script>
-<pre><code class="language-js">// Disable auto-labeling
-LT.build({ data: iris, auto_label: false });
-</code></pre>
-<script>// Disable auto-labeling
-LT.build({ data: iris, auto_label: false });</script>
 <h3 id="sec:js-align"><span class="section-number">10.3.4</span> Alignment</h3>
 <p>Numeric columns are right-aligned and everything else left-aligned. Override
 with an <code>align</code> op:</p>
@@ -4567,9 +4660,9 @@ with an <code>align</code> op:</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/11-js-format.Rmd">
+<article class="chapter" data-source="site/book/11-js-format.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/11-js-format.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/11-js-format.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:js-format"><span class="section-number main-number">11</span> Formatting and Columns</h1>
 <p>Every R formatting and column function has a counterpart in the spec. This
@@ -4585,8 +4678,8 @@ rules, all visible in this example:</p>
 magnitude.</p>
 </li>
 <li>
-<p>Large numbers get a thin-space thousands separator, and negatives get a
-typographic minus (U+2212).</p>
+<p>Large numbers get a non-breaking-space thousands separator, and negatives get
+a typographic minus (U+2212).</p>
 </li>
 <li>
 <p>A column whose name matches <code>/%|[ _](pct|percent)$/i</code> is read as a proportion:
@@ -4723,7 +4816,8 @@ appends the sign without multiplying:</p>
   ]
 });</script>
 <h3 id="sec:js-date"><span class="section-number">11.1.3</span> Dates with <code>fmt_date</code></h3>
-<p>Values can be <code>Date</code> objects or ISO strings. By default <code>fmt_date</code> calls
+<p>Values can be <code>Date</code> objects or ISO strings (a plain <code>YYYY-MM-DD</code> string is read
+as that calendar day in local time). By default <code>fmt_date</code> calls
 <code>toLocaleDateString()</code>. Pass <code>method</code> to call another <code>Date</code> method, or
 <code>locale</code> and <code>options</code> for full <code>Intl.DateTimeFormat</code> control.</p>
 <p>Mind the time zone. <code>new Date(&quot;2024-01-15&quot;)</code> is parsed as UTC midnight, but
@@ -4819,7 +4913,7 @@ the shift.</p>
 });</script>
 <h3 id="sec:js-sub"><span class="section-number">11.1.4</span> Substituting values with <code>sub</code></h3>
 <p>Replace missing, zero, or small values with display text. Put <code>sub</code> after the
-formatting op so it sees the numbers first.</p>
+formatting op, or the formatting overwrites the substituted text.</p>
 <pre><code class="language-js">LT.build({
   data: {
     Metric: [&quot;HR&quot;, &quot;p-value&quot;, &quot;Events&quot;, &quot;Rate&quot;],
@@ -4995,9 +5089,9 @@ interactive table’s <code>detail</code>, can use them.</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/12-js-plots.Rmd">
+<article class="chapter" data-source="site/book/12-js-plots.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/12-js-plots.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/12-js-plots.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:js-plots"><span class="section-number main-number">12</span> Plots, Groups, and Styling</h1>
 <p>This chapter covers the JavaScript side of inline plots (<a class="cross-ref-chp" href="#chp:plots">6</a>), row
@@ -5431,13 +5525,14 @@ class instead of inline <code>css</code>:</p>
 .lt-table .na { background: #fee; }
 </style>
 <h3 id="sec:js-scope"><span class="section-number">12.3.3</span> Scoping a style to one table</h3>
-<p>A top-level <code>class</code> (a string or an array of names) lands on the table’s
-container, so a stylesheet can target one table and not every lt table on the
-page. Here the container is tagged <code>striped</code>, and a rule keyed on <code>.striped</code>
-zebra-stripes this table alone:</p>
-<pre><code class="language-js">LT.build({ data: mtcars, class: &quot;striped&quot; });
+<p>A <code>wrap</code> object sets attributes on the table’s container, and its <code>class</code> (a
+string or an array of names) is added to the container’s classes, so a
+stylesheet can target one table and not every <strong>lt</strong> table on the page. Here the
+container is tagged <code>striped</code>, and a rule keyed on <code>.striped</code> zebra-stripes this
+table alone:</p>
+<pre><code class="language-js">LT.build({ data: mtcars, wrap: { class: &quot;striped&quot; } });
 </code></pre>
-<script>LT.build({ data: mtcars, class: "striped" });</script>
+<script>LT.build({ data: mtcars, wrap: { class: "striped" } });</script>
 <pre><code class="language-css">.striped tbody tr:nth-child(even) td { background: #f2f6ff; }
 </code></pre>
 <style type="text/css">
@@ -5610,9 +5705,9 @@ text): pass a one-element array instead of a string. <code>&quot;&lt;b&gt;x&lt;/
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/13-js-interactive.Rmd">
+<article class="chapter" data-source="site/book/13-js-interactive.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/13-js-interactive.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/13-js-interactive.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:js-interactive"><span class="section-number main-number">13</span> Interactivity and Control</h1>
 <p>This chapter covers the JavaScript side of interactive tables
@@ -5745,15 +5840,15 @@ checklist, anything else gets a box.</p>
 <p>Typed filters: a dropdown on <code>cyl</code>, a range slider on <code>wt</code>, a checklist on <code>hp</code>,
 and a plain box for the rest. A typed filter on a hidden column has no header
 to sit under, so it moves into the control bar as a labeled chip (click anywhere
-on the chip to open it). Here <code>gear</code> is hidden yet still filterable.</p>
+on the chip to open it). Here <code>disp</code> is hidden yet still filterable.</p>
 <pre><code class="language-js">LT.build({
   data: mtcars,
   interactive: {
     search: false, pager: 6,
-    hide: { hidden: [&quot;gear&quot;] },
+    hide: { hidden: [&quot;disp&quot;] },
     filter: { default: true, cols: {
       cyl: { type: &quot;select&quot; }, wt: { type: &quot;range&quot; }, hp: { type: &quot;checklist&quot; },
-      gear: { type: &quot;select&quot; }
+      disp: { type: &quot;select&quot; }
     } }
   }
 });
@@ -5762,10 +5857,10 @@ on the chip to open it). Here <code>gear</code> is hidden yet still filterable.<
   data: mtcars,
   interactive: {
     search: false, pager: 6,
-    hide: { hidden: ["gear"] },
+    hide: { hidden: ["disp"] },
     filter: { default: true, cols: {
       cyl: { type: "select" }, wt: { type: "range" }, hp: { type: "checklist" },
-      gear: { type: "select" }
+      disp: { type: "select" }
     } }
   }
 });</script>
@@ -5979,10 +6074,10 @@ instead. Load <code>lt-server.js</code> before <code>lt-interactive.js</code>, a
 and any server that speaks the protocol below can feed a table, such as one
 backed by a database or Parquet files.</p>
 <p><code>spec.data</code> only needs the column names (empty arrays will do), because the
-first page is fetched too. Optional fields: <code>data_times</code> lists date-time
-columns (sent as ISO 8601 strings), <code>data_n</code> is the number of rows in the whole
-data, and <code>data_cols</code> holds per-column summaries for profiles and filter
-widgets. Without <code>data_cols</code>, columns get a plain filter box.</p>
+first page is fetched too. Optional fields of <code>interactive</code>: <code>data_times</code> lists
+date-time columns (sent as ISO 8601 strings), <code>data_n</code> is the number of rows in
+the whole data, and <code>data_cols</code> holds per-column summaries for profiles and
+filter widgets. Without <code>data_cols</code>, columns get a plain filter box.</p>
 <h3 id="sec:the-request"><span class="section-number">13.4.1</span> The request</h3>
 <p>The browser sends <code>POST &lt;data_url&gt;</code> with a JSON body, using
 <code>Content-Type: text/plain</code> to dodge a CORS preflight. The body is an object:</p>
@@ -6033,9 +6128,9 @@ put a billion-row table in front of a reader.</p>
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/14-gt.Rmd">
+<article class="chapter" data-source="site/book/14-gt.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/14-gt.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/14-gt.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="prt:beyond-the-basics" class="part"><span class="section-number">V</span> Beyond the Basics</h1>
 <h1 id="chp:gt"><span class="section-number main-number">14</span> Coming from gt</h1>
@@ -6802,9 +6897,9 @@ shows how to offer <strong>lt</strong> tables the idiomatic way: with an S3 meth
 <div class="chapter-after side side-right">
 </div>
 </article>
-<article class="chapter" data-source="book/15-extend.Rmd">
+<article class="chapter" data-source="site/book/15-extend.Rmd">
 <div class="chapter-before side side-right">
-<p><a href="https://github.com/yihui/lt/edit/main/book/15-extend.Rmd">Edit this chapter</a> on GitHub</p>
+<p><a href="https://github.com/yihui/lt/edit/main/site/book/15-extend.Rmd">Edit this chapter</a> on GitHub</p>
 </div>
 <h1 id="chp:extend"><span class="section-number main-number">15</span> Building on lt</h1>
 <p>Sooner or later, a package author wants to print their own objects as tables: a
@@ -6940,19 +7035,19 @@ stripped. It is the right tool there, just not a good default elsewhere.) <a hre
 </section>
 </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/sidenotes.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/toc-highlight.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/copy-button.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/heading-anchor.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/pages.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/chapter-toc.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/external-link.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/right-quote.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/key-buttons.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/callout.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/chapter-toc.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/external-link.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/right-quote.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/key-buttons.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/callout.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/prism-lite.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/pele@1.13.0/dist/pele.global.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/render-pele.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.8/js/link-functions.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/render-pele.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/link-functions.min.js" defer></script>
 </body>
 </html>

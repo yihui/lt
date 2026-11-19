@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 1.0.23">
+<title>Time series</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/default.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/article.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/copy-button.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/heading-anchor.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/pages.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/site.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/prism-xcode.min.css">
+<meta name="function-index" content="../function-index.json">
+</head>
+<body>
+<nav class="site-nav"><p><a href="../index.html" class="brand">lt</a> <small class="version">v0.5.31</small>
+<a href="../examples.html">Examples</a>
+<a href="../manual.html">Manual</a>
+<a href="../news.html">News</a>
+<a href="../book/">Book</a>
+<a href="../playground/">Playground</a>
+<span class="pagesjs-toggle"></span>
+<a href="https://github.com/yihui/lt/edit/main/examples/42-ts.Rmd" title="Edit this page" class="edit-page"><img src="https://cdn.jsdelivr.net/npm/@primer/octicons@19/build/svg/pencil-24.svg" alt="Edit this page" class="no-invert" /></a>
+<a href="https://github.com/yihui/lt/" title="GitHub repository"><img src="https://cdn.jsdelivr.net/npm/@primer/octicons@19/build/svg/mark-github-24.svg" alt="GitHub" class="no-invert" /></a></p></nav>
+<header class="frontmatter">
+<div class="title"><h1>Time series</h1></div>
+
+
+
+</header>
+<main>
+<article class="">
+<p><code>lt()</code> accepts a time series. A single monthly or quarterly series becomes one row per year and one column per month or quarter.</p>
+<pre><code class="language-r">library(lt)
+lt(AirPassengers)
+</code></pre>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/css/lt.min.css">
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["31f0ce5b"]=
+{
+  "Year": ["1949", "1950", "1951", "1952", "1953", "1954", "1955", "1956", "1957", "1958", "1959", "1960"],
+  "Jan": [112, 115, 145, 171, 196, 204, 242, 284, 315, 340, 360, 417],
+  "Feb": [118, 126, 150, 180, 196, 188, 233, 277, 301, 318, 342, 391],
+  "Mar": [132, 141, 178, 193, 236, 235, 267, 317, 356, 362, 406, 419],
+  "Apr": [129, 135, 163, 181, 235, 227, 269, 313, 348, 348, 396, 461],
+  "May": [121, 125, 172, 183, 229, 234, 270, 318, 355, 363, 420, 472],
+  "Jun": [135, 149, 178, 218, 243, 264, 315, 374, 422, 435, 472, 535],
+  "Jul": [148, 170, 199, 230, 264, 302, 364, 413, 465, 491, 548, 622],
+  "Aug": [148, 170, 199, 242, 272, 293, 347, 405, 467, 505, 559, 606],
+  "Sep": [136, 158, 184, 209, 237, 259, 312, 355, 404, 404, 463, 508],
+  "Oct": [119, 133, 162, 191, 211, 229, 274, 306, 347, 359, 407, 461],
+  "Nov": [104, 114, 146, 172, 180, 203, 237, 271, 305, 310, 362, 390],
+  "Dec": [118, 140, 166, 194, 201, 229, 278, 306, 336, 337, 405, 432]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data_key": "31f0ce5b"
+}
+})</script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/lt.min.js" defer></script>
+<p>Set <code>wide = FALSE</code> for a <code>Time</code> and <code>value</code> table instead. A multiple series always gets a <code>Time</code> column and one column per series.</p>
+<pre><code class="language-r">q = ts(c(10.2, 11.5, 9.8, 12.1, 13.4, 12.9), start = c(2023, 1), frequency = 4)
+lt(q, wide = FALSE)
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["db95ae0b"]=
+{
+  "Time": ["2023 Q1", "2023 Q2", "2023 Q3", "2023 Q4", "2024 Q1", "2024 Q2"],
+  "value": [10.2, 11.5, 9.8, 12.1, 13.4, 12.9]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data_key": "db95ae0b"
+}
+})</script>
+<pre><code class="language-r">lt(cbind(sales = q, cost = q * 0.6))
+</code></pre>
+<script>((window.LT=window.LT||{}).d=window.LT.d||{})["a21b71ff"]=
+{
+  "Time": ["2023 Q1", "2023 Q2", "2023 Q3", "2023 Q4", "2024 Q1", "2024 Q2"],
+  "sales": [10.2, 11.5, 9.8, 12.1, 13.4, 12.9],
+  "cost": [6.12, 6.9, 5.88, 7.26, 8.04, 7.74]
+}
+</script>
+<script>((window.LT=window.LT||{}).q=window.LT.q||[]).push({s:document.currentScript,d:
+{
+  "data_key": "a21b71ff"
+}
+})</script>
+
+</article>
+</main>
+<footer><div class="flex-col">
+<p>Developed by <a href="https://yihui.org">Yihui Xie</a></p>
+<p>Site built with <a href="https://github.com/yihui/litedown">litedown</a> v1.0.23</p>
+</div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/sidenotes.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/toc-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/copy-button.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/heading-anchor.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/pages.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/nav-highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/prism-lite.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.16.9/js/link-functions.min.js" defer></script>
+</body>
+</html>

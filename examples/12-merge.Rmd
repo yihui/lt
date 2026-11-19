@@ -15,5 +15,5 @@ d = data.frame(
 lt(d) |>
   lt_format(~ est + lo + hi, decimals = 2) |>
   lt_merge(~ est + lo + hi, pattern = "{1}<< ({2}, {3})>>") |>
-  lt_label(est = "Estimate (95% CI)")
+  lt_label(est = "estimate (95% CI)")
 ```
