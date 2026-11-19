@@ -530,7 +530,9 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @param columns Character names, integer positions, a one-sided formula
 #'   (predicate formulas such as `~ endsWith(., "_time")` are also allowed; see
 #'   [lt_align()]), or `NULL` for all.
-#' @param rows Integer vector of 1-based row indices (or `NULL` for all).
+#' @param rows Integer vector of 1-based row indices (or `NULL` for all). With
+#'   `rows` but no `columns` or `test`, the CSS applies to the whole row (its
+#'   `<tr>`), and cells can still override it.
 #' @param test A JavaScript function as a string (e.g., `"v => v < 0"`) that
 #'   receives the raw cell value and returns `true` to apply the style. When
 #'   `NULL`, the style applies unconditionally.

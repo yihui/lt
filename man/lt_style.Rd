@@ -24,7 +24,9 @@ lt_style(
 (predicate formulas such as \code{~ endsWith(., "_time")} are also allowed; see
 \code{\link[=lt_align]{lt_align()}}), or \code{NULL} for all.}
 
-\item{rows}{Integer vector of 1-based row indices (or \code{NULL} for all).}
+\item{rows}{Integer vector of 1-based row indices (or \code{NULL} for all). With
+\code{rows} but no \code{columns} or \code{test}, the CSS applies to the whole row (its
+\verb{<tr>}), and cells can still override it.}
 
 \item{test}{A JavaScript function as a string (e.g., \code{"v => v < 0"}) that
 receives the raw cell value and returns \code{true} to apply the style. When
