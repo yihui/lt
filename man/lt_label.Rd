@@ -13,7 +13,7 @@ lt_label(x, ...)
 label in \code{\link[=I]{I()}} to treat it as raw HTML. Alternatively, pass a single named
 list or named character vector mapping column names to labels, which is
 convenient when the labels are computed programmatically, e.g.
-\code{lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))}, or as a single
+\code{lt_label(x, c(mpg = "miles/gallon", cyl = "cylinders"))}, or as a single
 \code{list(names, labels)} of two parallel vectors.}
 }
 \value{
@@ -24,11 +24,11 @@ Override column headers without modifying the underlying data frame.
 }
 \examples{
 d = ToothGrowth[1:3, ]
-lt(d) |> lt_label(len = "Length (mm)", dose = "Dose (mg/day)")
+lt(d) |> lt_label(len = "length (mm)", dose = "dose (mg/day)")
 # raw HTML (wrap in I())
-lt(d) |> lt_label(len = I("Length<sup>*</sup>"))
+lt(d) |> lt_label(len = I("length<sup>*</sup>"))
 # a named vector or list, handy when labels are computed
-lt(d) |> lt_label(c(len = "Length (mm)", dose = "Dose (mg/day)"))
+lt(d) |> lt_label(c(len = "length (mm)", dose = "dose (mg/day)"))
 # a list of two parallel vectors: names and labels
-lt(d) |> lt_label(list(c("len", "dose"), c("Length (mm)", "Dose (mg/day)")))
+lt(d) |> lt_label(list(c("len", "dose"), c("length (mm)", "dose (mg/day)")))
 }
