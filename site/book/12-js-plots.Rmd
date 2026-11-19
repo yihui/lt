@@ -317,13 +317,14 @@ LT.build({
 
 ### Scoping a style to one table {#sec:js-scope}
 
-A top-level `class` (a string or an array of names) lands on the table's
-container, so a stylesheet can target one table and not every lt table on the
-page. Here the container is tagged `striped`, and a rule keyed on `.striped`
-zebra-stripes this table alone:
+A `wrap` object sets attributes on the table's container, and its `class` (a
+string or an array of names) is added to the container's classes, so a
+stylesheet can target one table and not every **lt** table on the page. Here the
+container is tagged `striped`, and a rule keyed on `.striped` zebra-stripes this
+table alone:
 
 ```{js}
-LT.build({ data: mtcars, class: "striped" });
+LT.build({ data: mtcars, wrap: { class: "striped" } });
 ```
 
 ```{css}

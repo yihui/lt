@@ -2,7 +2,10 @@
 title: Dates and times
 ---
 
-`lt_date()` formats dates and date-times in the browser with `Intl.DateTimeFormat`, so `locale` and `options` work as in JavaScript. Pass `timeZone = "UTC"` to keep a date from shifting with the reader's time zone.
+`lt_date()` formats dates and date-times in the browser with
+`Intl.DateTimeFormat`, so `locale` and `options` work as in JavaScript. A plain
+date is a calendar day that looks the same to every reader. Pass `timeZone =
+"UTC"` for a date-time to show the same clock time to everyone.
 
 ```{r}
 library(lt)
@@ -14,7 +17,7 @@ d = data.frame(
 )
 lt(d) |>
   lt_date(~ Date, locale = "fr-FR", options = list(
-    weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
+    weekday = "long", day = "numeric", month = "long"
   )) |>
   lt_date(~ Time, locale = "en-US", options = list(
     hour = "2-digit", minute = "2-digit", timeZone = "UTC"

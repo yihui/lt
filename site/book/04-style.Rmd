@@ -3,7 +3,8 @@
 # Styling {#chp:style}
 
 The default look of an **lt** table is deliberately plain: a rule on top, a rule
-below the header, a rule at the bottom, and nothing else. It is a good canvas.
+below the header, a rule at the bottom, and faint lines between rows. It is a
+good canvas.
 This chapter is about the functions that let you paint on it: `lt_style()` for
 individual cells, `lt_color()` for color scales driven by values, `lt_css()` for
 rules that apply to the whole table, and `lt_wrap()` for setting attributes on a
@@ -137,9 +138,9 @@ distinguishable.
 is emitted after the built-in stylesheet, so your rules win ties.
 
 A **named** argument is an inline rule: the name is a selector, the value is
-either a CSS string or a list of properties. Rules are scoped to the table, so
-`.good` really means `.lt-table .good`. In a list, property names can be written
-in camelCase as in `lt_style()`.
+either a CSS string or a list of properties. Rules apply to this table only, so
+another table on the page can reuse the class name `.good` for something else.
+In a list, property names can be written in camelCase as in `lt_style()`.
 
 ```{r}
 lt(head(trees, 5)) |>
@@ -169,7 +170,7 @@ at the structure. @tab:style-selectors lists the ones you will reach for most.
 
 :::: {.table #tab:style-selectors}
 ::: caption
-[ ](#@tab:style-selectors) CSS selectors for the parts of an lt table.
+[ ](#@tab:style-selectors) CSS selectors for the parts of an **lt** table.
 :::
 
 | Part | Selector |
@@ -179,6 +180,7 @@ at the structure. @tab:style-selectors lists the ones you will reach for most.
 | Column spanners | `.lt-spanner` |
 | Row group labels | `.lt-row-group` |
 | Indented stub cells | `.lt-indent` |
+| Summary rows | `.lt-summary` |
 | Footer rows | `.lt-footer`, `.lt-footnote`, `.lt-source-note` |
 | Footnote marks | `.lt-fnref` |
 | Right/center aligned cells | `.al-r`, `.al-c` |
@@ -197,12 +199,13 @@ stylesheet rule that begins with that class touches this table only.
 ```{r, child = ex('css-wrap')}
 ```
 
-The wrapper takes any HTML attribute, not only `class`. A fixed width and an
-`id` for deep links are the usual suspects:
+The wrapper takes any HTML attribute, not only `class`. For example, an `id`
+gives a CSS rule (`#women { ... }`) something to select, and `style` sets
+properties on the wrapper directly:
 
 ```{r}
 lt(head(women, 3)) |>
-  lt_wrap(id = "women", style = "max-width: 28em")
+  lt_wrap(id = "women", style = "background: aliceblue;")
 ```
 
 Repeated calls accumulate classes instead of replacing them, so a helper

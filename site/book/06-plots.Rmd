@@ -34,9 +34,10 @@ values; pass a string to caption it, as above.
 
 Look at the `into = "Forest"` argument. By default, the plot replaces the first
 value column, which is tidy but hides the numbers. With `into`, the plot gets a
-column of its own, and the numbers stay visible as text beside it. If the column
-does not exist yet, **lt** creates it at the end, so use `lt_move()` (@sec:labels)
-if you want it somewhere else.
+column of its own. The columns it reads are still hidden unless you also set
+`hide = FALSE`, as the example does, which keeps the numbers visible as text
+beside the plot. If the column does not exist yet, **lt** creates it at the end,
+so use `lt_move()` (@sec:move-hide) if you want it somewhere else.
 
 ### Several series in one cell
 
@@ -60,9 +61,10 @@ lt(d_grp) |>
 ```
 
 `color = TRUE` takes colors from the current palette. Pass a character vector
-such as `c("#5b8ff9", "#f6903d")` if you want specific ones. The bounds are
-hidden by default because the plot already shows them. `color = FALSE`, the
-default, draws every series in a single color, and the legend is then omitted.
+such as `c("#5b8ff9", "#f6903d")` if you want specific ones. The other columns
+the plot reads are hidden by default because the plot already shows them (set
+`hide = FALSE` to keep them). `color = FALSE`, the default, draws every series
+in a single color, and the legend is then omitted.
 
 Every bar in a column shares one scale. The scale runs from the smallest to the
 largest finite value across all the columns the plot reads, so a single extreme
@@ -92,10 +94,9 @@ moves each column's dot onto its own track, so both stay visible. The position
 up or down is cosmetic. The value still reads from left to right, and the cell
 grows taller to make room for the tracks.
 
-The cell shows every column at once, so its column header should name them all.
-Use `lt_label()` to write something like `"Before / After"`, as the example
-does. Otherwise a reader sees a single "Before" header over a row of dots that
-mean two things.
+The cell shows every column at once, so its column header names them all:
+**lt** labels the column "Before / After" for you. Use `lt_label()` if you
+prefer other wording, such as "Change over time".
 
 ## Sparklines: a trend in a cell {#sec:sparkline}
 
@@ -138,12 +139,12 @@ every sparkline on one scale. The example above did exactly that with `limits = 
 
 ## Sizing and layout {#sec:plot-size}
 
-Each plot is a fixed pixel size by default: `width` and `height` set it, and
-`width = 160` for `lt_errorbar()` is a sensible start. If you want the plot to
-follow its column, give a relative width such as `"100%"`. The plot then grows and
-shrinks as the column is resized, which pairs nicely with the resizable columns
-of an interactive table (@chp:interactive). Use `list(min = 200, width = "100%")` to
-keep it from shrinking below 200 pixels.
+Each plot is a fixed pixel size by default: `width` and `height` set it (the
+default width is 160 for error bars and dot plots, and 120 for sparklines). If
+you want the plot to follow its column, give a relative width such as `"100%"`.
+The plot then grows and shrinks as the column is resized, which pairs nicely
+with the resizable columns of an interactive table (@chp:interactive). Use
+`list(min = 200, width = "100%")` to keep it from shrinking below 200 pixels.
 
 Plots work in interactive tables, and they are drawn only for the visible page.
 Sorting a table with a sparkline in it reorders the rows and redraws their

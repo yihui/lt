@@ -1,8 +1,8 @@
 # Exporting and Embedding {#chp:export}
 
-An lt table is born in a browser, but your readers are not always there. They
-open PDFs, paste tables into slides, and read Markdown on GitHub. This chapter
-is about getting a table out, and about the plain data underneath it.
+An **lt** table is born in a browser, but your readers are not always there.
+They open PDFs, paste tables into slides, and read Markdown on GitHub. This
+chapter is about getting a table out, and about the plain data underneath it.
 
 ## Saving a file {#sec:export}
 
@@ -25,9 +25,9 @@ table; the last chunk prints the static HTML.
 
 - **`.csv`** and **`.rtf`** write the table's text (all rows, in order), without
   printing: Node.js (or else a Chromium-based browser) runs the same code as the
-  download button of an interactive table. RTF opens in Word and keeps the title, column spanners (as merged
-  cells), alignment, indentation, and notes, with a fixed look: a bold header
-  between rules.
+  download button of an interactive table. RTF opens in Word and keeps the
+  title, column spanners (as merged cells), alignment, indentation, and notes,
+  with a fixed look: a bold header between rules.
 
 - Passing `NA` as the output returns the HTML as a string instead of writing a
   file. With `fragment = TRUE` you get just the `<table>`, and `css = FALSE`
@@ -53,7 +53,7 @@ stay dynamic.
 
 ## The spec underneath {#sec:spec}
 
-Strip away the browser and an lt table is just data plus a list of
+Strip away the browser and an **lt** table is just data plus a list of
 declarative operations. `lt_spec()` hands you that payload as an R list.
 
 ```{r, child = ex('spec')}

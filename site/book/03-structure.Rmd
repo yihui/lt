@@ -43,8 +43,9 @@ visual order: **lt** reorders them to match the body.
 If your columns already share a prefix, you may not need to name anything at
 all. Calling `lt_spanner()` with no arguments looks for a common prefix before
 the first `.` or `_` and groups the columns that share it, shortening each
-column label to its suffix. In the example, `Sepal.Length` and `Sepal.Width`
-collapse under a "Sepal" spanner, and their labels become "Length" and "Width".
+column label to its suffix. In the example, `bill_len` and `bill_dep`
+collapse under a "bill" spanner, and their labels become "len" and "dep". Use
+`sep` to split at another separator, such as `":"`.
 
 ## Moving and hiding columns {#sec:move-hide}
 
@@ -116,9 +117,10 @@ d = data.frame(
 lt(d) |> lt_summary("sum", by = ~ grp)
 ```
 
-With `by`, the group rows are labeled with the function's name ("Sum") and a
-total labeled "Total" closes the table; change them with `label` and `grand`, or
-drop the total with `grand = FALSE`. Give a named list to use a different
+With `by`, the group rows are labeled with the function's name ("Sum", or
+"Subtotal" when you give `data_fn`) and a total labeled "Total" closes the
+table; change them with `label` and `grand`, or drop the total with
+`grand = FALSE`. Give a named list to use a different
 function per column.
 
 ```{r}

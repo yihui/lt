@@ -6,11 +6,11 @@ directly.
 
 # Using lt from JavaScript {#chp:js}
 
-You do not need R to use lt. The whole library is a few small scripts and one
-idea: *a table is JSON*. Hand the runtime a spec, get a table back. This part is
-for people building pages by hand, for apps written in other languages, and for
-the curious who want to see what R is quietly writing for them. This first
-chapter covers the basics: linking the runtime, the shape of a spec, and
+You do not need R to use **lt**. The whole library is a few small scripts and
+one idea: *a table is JSON*. Hand the runtime a spec, get a table back. This
+part is for people building pages by hand, for apps written in other languages,
+and for the curious who want to see what R is quietly writing for them. This
+first chapter covers the basics: linking the runtime, the shape of a spec, and
 building a table. The next chapters cover formatting and columns
 (@chp:js-format), plots, groups, and styling (@chp:js-plots), and interactivity
 and control (@chp:js-interactive). Every example is live: the code is the whole
@@ -83,7 +83,7 @@ For example, a page with plots and interactive features can load this:
 
 The files are published on npm as `@xiee/utils`. The URLs above track the latest
 release; to pin a version, put it after the package name, such as
-`@xiee/utils@1.14.154/js/lt.min.js` (use the version you tested with). Shiny
+`@xiee/utils@1.16.8/js/lt.min.js` (use the version you tested with). Shiny
 apps have one more script, `lt-binding.js`, which ships with the R package and
 is loaded for you by `lt_output()`.
 
@@ -123,7 +123,13 @@ A spec is a plain object. Only `data` is required; everything else decorates it.
 | `ops` | The list of operations, applied in order. |
 | `interactive` | Switches on sorting, search, filters, and more (@sec:js-interactive). |
 | `auto_label`, `auto_format`, `auto_span`, `auto_sep` | Switches for the automatic behaviors. |
-| `html_cols`, `class` | Raw-HTML columns and a scoping class. |
+| `html_cols` | Columns (or `true` for all) whose values are raw HTML (@sec:js-html). |
+| `missing` | Display text for `null` values (an em dash by default). |
+| `sort` | Set to `false` to keep rows in data order instead of gathering them by row group. |
+| `wrap` | Attributes of the table's container, such as `class` or `id` (@sec:js-scope). |
+| `rules` | CSS rules (a string or an array) scoped to this table. |
+| `types` | Type labels shown under the column labels. |
+| `data_key` | Name of a dataset shared by several tables (instead of `data`). |
 ::::
 
 The `ops` do the heavy lifting. Each is an object whose `type` names the
@@ -141,7 +147,8 @@ merge it into a string.
 | `fmt_number`, `fmt_date`, `sub` | Format numbers and dates; substitute text for special values. |
 | `merge`, `move`, `hide` | Combine, reorder, and hide columns. |
 | `row_group`, `group_order`, `indent` | Manual groups, their order, and nesting. |
-| `style` | CSS for chosen cells. |
+| `style`, `color` | CSS for chosen cells; a color scale over numeric cells. |
+| `summary`, `add_col` | Summary rows (written by `lt_summary()`); an empty new column. |
 | `errorbar`, `sparkline`, `dotplot` | Inline graphics. |
 ::::
 
@@ -217,11 +224,6 @@ LT.build({
     }}
   ]
 });
-```
-
-```{js}
-// Disable auto-labeling
-LT.build({ data: iris, auto_label: false });
 ```
 
 ### Alignment {#sec:js-align}

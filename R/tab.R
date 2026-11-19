@@ -334,12 +334,12 @@ lt_format = function(
 #'   (`"numeric"`, `"2-digit"`), `hour`, `minute`, `second` (`"numeric"`,
 #'   `"2-digit"`), `weekday` (`"long"`, `"short"`, `"narrow"`), and
 #'   `timeZoneName` (`"long"`, `"short"`). Only used when `method` is `NULL`.
-#' @note The formatted date may differ from the input date depending on the
-#'   viewer's local timezone. JavaScript's `new Date("2024-01-15")` parses
-#'   date-only strings as UTC midnight, but `toLocaleDateString()` converts to
-#'   the local timezone. For example, `2024-01-15` will display as
-#'   `2024-01-14` for a viewer at GMT-6. To avoid this, pass
-#'   `options = list(timeZone = "UTC")`.
+#' @note A date (without a time) is a calendar day and displays as the same day
+#'   in every time zone, so do not set `timeZone` for it: `timeZone = "UTC"`
+#'   would show `2024-01-14` for `2024-01-15` to a viewer east of Greenwich.
+#'   A date-time is an instant and displays in the viewer's local time zone by
+#'   default; set `options = list(timeZone = "UTC")` (or another zone) to show
+#'   the same clock time to everyone.
 #' @return `x` with the date formatting recorded.
 #' @export
 #' @examples
@@ -348,11 +348,10 @@ lt_format = function(
 #'   date = as.Date(c("2024-01-15", "2024-06-30")),
 #'   time = as.POSIXct(c("2024-01-15 09:30:00", "2024-06-30 17:45:00"), tz = "UTC")
 #' )
-#' # locale and Intl.DateTimeFormat options (timeZone = "UTC" keeps the date as
-#' # is), or call a JavaScript Date method
+#' # locale and Intl.DateTimeFormat options, or call a JavaScript Date method
 #' lt(d) |>
 #'   lt_date(~ date, locale = "fr-FR", options = list(
-#'     weekday = "long", day = "numeric", month = "long", timeZone = "UTC"
+#'     weekday = "long", day = "numeric", month = "long"
 #'   )) |>
 #'   lt_date(~ time, method = "toISOString")
 lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
@@ -372,19 +371,19 @@ lt_date = function(x, columns, method = NULL, locale = NULL, options = NULL) {
 #'   label in [I()] to treat it as raw HTML. Alternatively, pass a single named
 #'   list or named character vector mapping column names to labels, which is
 #'   convenient when the labels are computed programmatically, e.g.
-#'   `lt_label(x, c(mpg = "Miles/Gallon", cyl = "Cylinders"))`, or as a single
+#'   `lt_label(x, c(mpg = "miles/gallon", cyl = "cylinders"))`, or as a single
 #'   `list(names, labels)` of two parallel vectors.
 #' @return `x` with the column label overrides recorded.
 #' @export
 #' @examples
 #' d = ToothGrowth[1:3, ]
-#' lt(d) |> lt_label(len = "Length (mm)", dose = "Dose (mg/day)")
+#' lt(d) |> lt_label(len = "length (mm)", dose = "dose (mg/day)")
 #' # raw HTML (wrap in I())
-#' lt(d) |> lt_label(len = I("Length<sup>*</sup>"))
+#' lt(d) |> lt_label(len = I("length<sup>*</sup>"))
 #' # a named vector or list, handy when labels are computed
-#' lt(d) |> lt_label(c(len = "Length (mm)", dose = "Dose (mg/day)"))
+#' lt(d) |> lt_label(c(len = "length (mm)", dose = "dose (mg/day)"))
 #' # a list of two parallel vectors: names and labels
-#' lt(d) |> lt_label(list(c("len", "dose"), c("Length (mm)", "Dose (mg/day)")))
+#' lt(d) |> lt_label(list(c("len", "dose"), c("length (mm)", "dose (mg/day)")))
 lt_label = function(x, ...) {
   add_op(x, 'label', labels = name_value_args(...))
 }
@@ -531,7 +530,9 @@ lt_merge = function(x, columns, pattern = NULL, hide = TRUE) {
 #' @param columns Character names, integer positions, a one-sided formula
 #'   (predicate formulas such as `~ endsWith(., "_time")` are also allowed; see
 #'   [lt_align()]), or `NULL` for all.
-#' @param rows Integer vector of 1-based row indices (or `NULL` for all).
+#' @param rows Integer vector of 1-based row indices (or `NULL` for all). With
+#'   `rows` but no `columns` or `test`, the CSS applies to the whole row (its
+#'   `<tr>`), and cells can still override it.
 #' @param test A JavaScript function as a string (e.g., `"v => v < 0"`) that
 #'   receives the raw cell value and returns `true` to apply the style. When
 #'   `NULL`, the style applies unconditionally.

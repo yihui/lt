@@ -75,3 +75,13 @@ assert('lt() gives a Time column for other time series', {
   (lt(ts(1:2, start = 2000.5))$data$Time %==% c('2000.5', '2001.5'))
   (names(lt(ts(1:3, start = 2000))$data) %==% c('Time', 'value'))
 })
+
+assert('lt() labels quarterly and half-yearly series in the Time column', {
+  q = ts(c(10, 11, 9, 12, 13), start = c(2023, 1), frequency = 4)
+  (lt(q, wide = FALSE)$data$Time[4:5] %==% c('2023 Q4', '2024 Q1'))
+  # a multiple series is never wide
+  x = lt(cbind(a = q, b = q * 2))$data
+  (names(x) %==% c('Time', 'a', 'b'))
+  (x$Time[1] %==% '2023 Q1')
+  (lt(ts(1:3, start = c(2000, 1), frequency = 2))$data$Time[3] %==% '2001 #1')
+})

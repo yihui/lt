@@ -36,3 +36,18 @@ assert("per-cell style class merges with the column alignment class", {
   # Untouched cell keeps only alignment class.
   (has_match(html, 'class="al-r">1</td>'))
 })
+
+assert("style with rows but no columns goes on the <tr>", {
+  html = build(list(
+    data = list(x = c(1, 5), y = c("a", "b")),
+    ops = list(list(type = "style", rows = list(2L), css = "color:red"))
+  ))
+  (has_match(html, I('<tr style="color:red"><td class="al-r">5</td>')))
+  (has_match(html, !I('<td class="al-r" style=')))
+  # a test or columns keep the style on the cells
+  html = build(list(
+    data = list(x = c(1, 5)),
+    ops = list(list(type = "style", rows = list(2L), css = "color:red", test = "v => v > 0"))
+  ))
+  (has_match(html, I('<td class="al-r" style="color:red">5</td>')))
+})

@@ -562,13 +562,16 @@
     };
 
     // Style map: accumulate css (";") and class (" ") per cell.
-    const styleMap = {}, classMap = {};
+    const styleMap = {}, classMap = {}, rowStyle = {};
     const addTo = (map, key, val, sep) => { map[key] = map[key] ? map[key] + sep + val : val; };
     for (const s of styles) {
       const test = s.test && asFn(s.test);
+      // rows without columns or test: css goes on the <tr>, not each <td>
+      const wholeRow = s.rows && !s.columns && !test;
+      if (wholeRow && s.css) for (const r of s.rows) addTo(rowStyle, r, s.css, ";");
       eachLoc(s.rows, s.columns ? [].concat(s.columns) : null, (key, c, r) => {
         if (test && !test(data[c][r - 1])) return;
-        if (s.css) addTo(styleMap, key, s.css, ";");
+        if (s.css && !wholeRow) addTo(styleMap, key, s.css, ";");
         if (s.class) addTo(classMap, key, s.class, " ");
       });
     }
@@ -651,7 +654,7 @@
 
     // Row rendering
     const pushRow = (r, spanCells) => {
-      out.push(`<tr${attr("class", sumSet.has(r) && "lt-summary")}>`);
+      out.push(`<tr${attr("class", sumSet.has(r) && "lt-summary")}${attr("style", rowStyle[r])}>`);
       // Row-group cells. Group spanning n > 1 rows: label in non-spanning
       // cell on first row (vertical-align centers within that row like
       // body cells, not across span), then empty filler spanning

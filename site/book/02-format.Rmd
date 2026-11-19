@@ -10,13 +10,14 @@ The good news is that **lt** does a lot of this before you ask.
 
 ## Automatic formatting {#sec:auto}
 
-By default, `lt()` formats every numeric column for you. It rounds to about four
-significant digits, so a value that needs decimals in one row and a million in
-another both look reasonable. It adds a thin-space thousands separator, uses a
-proper typographic minus sign (`−`) rather than a hyphen, and recognizes
-percentage columns by their names (`rate_pct`, `Margin_percent`), multiplying
-their values by 100 and adding a `%`. It also leaves year-like columns alone, so
-`2024` never becomes `2,024`.
+By default, `lt()` formats every numeric column for you. It rounds each column
+to a common number of decimals, enough to show about four significant digits
+for its largest value (so a column of values in the thousands shows none),
+and adds a non-breaking space as the thousands separator. It uses a proper
+typographic minus sign (`−`) rather than a hyphen, and recognizes percentage
+columns by their names (`rate_pct`, `Margin_percent`), multiplying their values
+by 100 and adding a `%`. It also leaves columns named like years (e.g., `Year`)
+alone, so `2024` never becomes `2 024`.
 
 ```{r, child = ex('auto-format')}
 ```
@@ -68,25 +69,27 @@ otherwise your reader sees `2500%`.
 
 ## Dates and times {#sec:date}
 
-Dates need more care, because the browser is the one that formats them. `lt_date()`
-hands each value to the browser's own date formatting, so the output follows the
-reader's locale and the options you ask for. Pass a `locale` such as `"fr-FR"` or
-`"zh-CN"`, and an `options` list in the style of `Intl.DateTimeFormat`, to choose
-what appears: weekday, month name, hours, time zone, and so on.
+Dates need more care, because the browser is the one that formats them.
+`lt_date()` hands each value to the browser's own date formatting, so the output
+follows the reader's locale (unless you give `locale`) and the options you ask
+for. Pass a `locale` such as `"fr-FR"` or `"zh-CN"`, and an `options` list in
+the style of `Intl.DateTimeFormat`, to choose what appears: weekday, month name,
+hours, time zone, and so on.
 
 ```{r, child = ex('date')}
 ```
 
-Here is the gotcha that has bitten nearly everyone once. A plain date such as
-`2024-01-15` is stored as midnight in UTC. Show it in a time zone behind UTC, and
-the reader sees the day before. Passing `timeZone = "UTC"` in `options` tells the
-browser to format the date in UTC as well, so the day stays put.
+Time zones are the usual gotcha. A plain date such as `2024-01-15` is a
+calendar day, which **lt** shows as the same day to every reader, so leave
+`timeZone` out of `options` for dates. A date-time, on the other hand, is an
+instant, and by default each reader sees it in their own time zone. Pass
+`timeZone = "UTC"` (or any other zone) in `options` to show the same clock time
+to everyone.
 
 ::: {.callout-warning data-legend="Watch the time zone"}
-Without `timeZone = "UTC"`, a reader west of Greenwich may see `2024-01-14` for a
-date you wrote as `2024-01-15`. For date-times, the opposite is what you usually
-want: leave the time zone alone so that each reader sees the time in their own
-zone.
+Do not set `timeZone = "UTC"` for a plain date: the date is read as local
+midnight, which is the day before in UTC for a reader east of Greenwich, so
+`2024-01-15` would show as `2024-01-14`.
 :::
 
 Two more things. The `method` argument calls a specific JavaScript date method,

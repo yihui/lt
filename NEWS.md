@@ -56,6 +56,8 @@
 
 - `lt_format(percent = TRUE)` without `decimals` no longer shows floating-point noise (e.g., `56.00000000000001%` for 0.56).
 
+- `lt_style()` with `rows` but no `columns` or `test` now puts the CSS on the row's `<tr>` instead of repeating it on every `<td>`, which shrinks the HTML.
+
 - In the JavaScript runtime, the `test` of a `style` op and the `detail` of `interactive` may be given as function source strings (e.g., `"v => v > 3"`), so a spec can be plain JSON. `lt_style(test = )` now ships its function this way.
 
 # CHANGES IN lt VERSION 0.5
