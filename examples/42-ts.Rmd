@@ -1,0 +1,17 @@
+---
+title: Time series
+---
+
+`lt()` accepts a time series. A single monthly or quarterly series becomes one row per year and one column per month or quarter.
+
+```{r}
+library(lt)
+lt(window(AirPassengers, 1958))
+```
+
+Set `wide = FALSE` for a `Time` and `value` table instead. A multiple series always gets a `Time` column and one column per series.
+
+```{r}
+lt(window(AirPassengers, 1960), wide = FALSE)
+lt(window(ts.union(mdeaths, fdeaths), end = c(1974, 6)))
+```

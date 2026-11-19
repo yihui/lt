@@ -92,6 +92,11 @@
 #' lt(d, auto_label = FALSE, auto_format = FALSE)
 #' # a type tag under each column label
 #' lt(d, show_types = TRUE)
+#' # a monthly time series: one row per year, one column per month
+#' lt(window(AirPassengers, 1958))
+#' # a Time and value table; multiple series get one column each
+#' lt(window(AirPassengers, 1960), wide = FALSE)
+#' lt(window(ts.union(mdeaths, fdeaths), end = c(1974, 6)))
 lt = function(data, ...) UseMethod('lt')
 
 #' @rdname lt

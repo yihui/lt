@@ -112,6 +112,17 @@ so on. It also makes a pleasant default for tables meant for exploration (see
 ```{r, child = ex('show-types')}
 ```
 
+## Time series {#sec:ts}
+
+A time series is not a data frame, but `lt()` knows how to lay one out. A single
+monthly or quarterly series becomes a calendar: one row per year and one column
+per month or quarter. Use `wide = FALSE` for a `Time` and `value` table instead,
+which is also the default for any other frequency. A multiple series always has a
+`Time` column and one column per series.
+
+```{r, child = ex('ts')}
+```
+
 ## Where tables show up {#sec:printing}
 
 An `lt` table is displayed wherever R can display HTML:
