@@ -93,10 +93,12 @@
 #' # a type tag under each column label
 #' lt(d, show_types = TRUE)
 #' # a monthly time series: one row per year, one column per month
-#' lt(window(AirPassengers, 1958))
-#' # a Time and value table; multiple series get one column each
-#' lt(window(AirPassengers, 1960), wide = FALSE)
-#' lt(window(ts.union(mdeaths, fdeaths), end = c(1974, 6)))
+#' lt(AirPassengers)
+#' # a quarterly series, as a Time and value table; multiple series get a
+#' # column each
+#' q = ts(c(10.2, 11.5, 9.8, 12.1, 13.4, 12.9), start = c(2023, 1), frequency = 4)
+#' lt(q, wide = FALSE)
+#' lt(cbind(sales = q, cost = q * 0.6))
 lt = function(data, ...) UseMethod('lt')
 
 #' @rdname lt

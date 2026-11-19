@@ -6,12 +6,13 @@ title: Time series
 
 ```{r}
 library(lt)
-lt(window(AirPassengers, 1958))
+lt(AirPassengers)
 ```
 
 Set `wide = FALSE` for a `Time` and `value` table instead. A multiple series always gets a `Time` column and one column per series.
 
 ```{r}
-lt(window(AirPassengers, 1960), wide = FALSE)
-lt(window(ts.union(mdeaths, fdeaths), end = c(1974, 6)))
+q = ts(c(10.2, 11.5, 9.8, 12.1, 13.4, 12.9), start = c(2023, 1), frequency = 4)
+lt(q, wide = FALSE)
+lt(cbind(sales = q, cost = q * 0.6))
 ```
