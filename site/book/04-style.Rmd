@@ -199,12 +199,13 @@ stylesheet rule that begins with that class touches this table only.
 ```{r, child = ex('css-wrap')}
 ```
 
-The wrapper takes any HTML attribute, not only `class`. A fixed width and an
-`id` for deep links are the usual suspects:
+The wrapper takes any HTML attribute, not only `class`. For example, an `id`
+gives a CSS rule (`#women { ... }`) something to select, and `style` sets
+properties on the wrapper directly:
 
 ```{r}
 lt(head(women, 3)) |>
-  lt_wrap(id = "women", style = "max-width: 28em")
+  lt_wrap(id = "women", style = "background: aliceblue;")
 ```
 
 Repeated calls accumulate classes instead of replacing them, so a helper
